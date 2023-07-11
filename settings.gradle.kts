@@ -15,4 +15,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "SaltUI"
 include(":app")
- 
+include(":ui")
