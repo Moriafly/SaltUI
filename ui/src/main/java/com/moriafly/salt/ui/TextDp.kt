@@ -18,17 +18,21 @@
 package com.moriafly.salt.ui
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Stable
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 
+@Stable
 val Int.textDp: TextUnit
     @Composable get() = textDp(density = LocalDensity.current)
 
+@Stable
 val Float.textDp: TextUnit
     @Composable get() = textDp(density = LocalDensity.current)
 
+@Stable
 val Double.textDp: TextUnit
     @Composable get() = textDp(density = LocalDensity.current)
 
