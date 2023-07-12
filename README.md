@@ -6,13 +6,30 @@ SaltUI（UI for Salt Player） 是提取自[椒盐音乐](https://github.com/Mor
 
 ## 使用
 
+⚠️项目还在 dev 开发中。
+
 [![](https://jitpack.io/v/Moriafly/SaltUI.svg)](https://jitpack.io/#Moriafly/SaltUI)
 
+项目 Gradle 添加 jitpack 依赖：
 
+```groovy
+allprojects {
+    repositories {
+        // ...
+		maven { url 'https://jitpack.io' }
+	}
+}
+```
 
-## 作者信息
+要使用的模块下添加 SaltUI 依赖：
 
-[Moriafly](https://github.com/Moriafly)
+```groovy
+dependencies {
+    // ...
+    // 将 <VERSION> 替换为具体的版本号，如 0.1.0-dev04 ，即 implementation 'com.github.Moriafly:SaltUI:0.1.0-dev04'
+    implementation 'com.github.Moriafly:SaltUI:<VERSION>'
+}
+```
 
 ## 版权
 
