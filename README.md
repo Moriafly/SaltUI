@@ -8,9 +8,7 @@ SaltUI（UI for Salt Player） 是提取自[椒盐音乐](https://github.com/Mor
 
 ## 使用
 
-
-
-项目 Gradle 添加 jitpack 依赖：
+### 1. 项目 Gradle 添加 jitpack 依赖
 
 ```groovy
 allprojects {
@@ -21,9 +19,11 @@ allprojects {
 }
 ```
 
-要使用的模块下添加 SaltUI 依赖：
+### 2. 要使用的模块下添加 SaltUI 依赖
 
-最新版本：[![](https://jitpack.io/v/Moriafly/SaltUI.svg)](https://jitpack.io/#Moriafly/SaltUI)（⚠️项目还在开发中）
+最新版本⬇️⬇️⬇️（⚠️项目还在开发中）
+
+[![](https://jitpack.io/v/Moriafly/SaltUI.svg)](https://jitpack.io/#Moriafly/SaltUI)
 
 ```groovy
 dependencies {
@@ -39,13 +39,35 @@ dependencies {
 
 ### 主题
 
-由 SaltTheme 和 SaltColors 组成，将颜色分为软件强调色 highlight ，主背景颜色（background ，用于整个 App 最底层颜色，默认背景色）
+由 SaltTheme 和 SaltColors 组成。
 
-
+| 颜色值 | 说明 |
+| -- | -- |
+| highlight | 软件强调色 |
+| text | 主文本颜色 |
+| subText | 次要文本颜色 |
+| background | 用于整个 App 最底层颜色，默认背景色（底层背景色） |
+| subBackground | 次要背景色（上层背景色） |
 
 ### 页面
 
+| 名称 | 用途 |
+| -- | -- |
+| ItemSpacer | 默认内部的竖向间隔 |
+| RoundedColumn | 以 subBackground 为底色构建圆角内容 Column |
+
 ### 文本
+
+| 名称 | 用途 |
+| -- | -- |
+| .textDp | 文本单位使用 dp 值 |
+
+## 点击效果
+
+| 名称 | 用途 |
+| -- | -- |
+| Modifier.noRippleClickable | 没有涟漪扩散的点击效果 |
+| Modifier.fadeClickable | 减淡点击效果（添加透明度效果） |
 
 ## 版权
 
