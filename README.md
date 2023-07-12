@@ -1,4 +1,7 @@
-# SaltUI
+<div align="center">
+    <img style="width: 200px;" src="ic_salt_ui_500.png">
+    <p style="font-size: 48px">Moriafly/<b>SaltUI</b></p>
+</div>
 
 SaltUI（UI for Salt Player） 是提取自[椒盐音乐](https://github.com/Moriafly/SaltPlayerSource)的 UI 风格组件，用以快速生成椒盐音乐风格用户界面。
 
@@ -30,6 +33,20 @@ dependencies {
     implementation 'com.github.Moriafly:SaltUI:<VERSION>'
 }
 ```
+
+## 设计规范和使用介绍
+
+组件位于 com.moriafly.salt.ui 包下。
+
+### 主题
+
+由 SaltTheme 和 SaltColors 组成，将颜色分为软件强调色 highlight ，主背景颜色（background ，用于整个 App 最底层颜色，默认背景色）
+
+
+
+### 页面
+
+### 文本
 
 ## 版权
 
