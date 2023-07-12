@@ -1,4 +1,4 @@
-# SaltUI
+# SaltUI（⚠️项目还在很初级的开发中）
 
 SaltUI（UI for Salt Player） 是提取自[椒盐音乐](https://github.com/Moriafly/SaltPlayerSource)的 UI 风格组件，用以快速生成椒盐音乐风格用户界面。
 
@@ -19,7 +19,7 @@ allprojects {
 
 ### 2. 要使用的模块下添加 SaltUI 依赖
 
-最新版本⬇️⬇️⬇️（⚠️项目还在开发中）
+最新版本⬇️⬇️⬇️
 
 [![](https://jitpack.io/v/Moriafly/SaltUI.svg)](https://jitpack.io/#Moriafly/SaltUI)
 
