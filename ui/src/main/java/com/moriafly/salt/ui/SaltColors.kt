@@ -24,11 +24,11 @@ import androidx.compose.runtime.structuralEqualityPolicy
 import androidx.compose.ui.graphics.Color
 
 /**
- * @param highlight 主强调色
- * @param text 主文本色
- * @param subText 次文本色
- * @param background 主背景色
- * @param subBackground 次背景色
+ * @param highlight highlight color
+ * @param text main text color
+ * @param subText sub text color
+ * @param background main background color
+ * @param subBackground sub background color
  */
 @Stable
 class SaltColors(
