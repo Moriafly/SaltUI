@@ -1,6 +1,6 @@
 <div align="center">
     <img style="width: 200px;" src="ic_salt_ui_500.png">
-    <p style="font-size: 48px">Moriafly/<b>SaltUI</b></p>
+    <p style="font-size: 4em">Moriafly/<b>SaltUI</b></p>
 </div>
 
 SaltUI（UI for Salt Player） 是提取自[椒盐音乐](https://github.com/Moriafly/SaltPlayerSource)的 UI 风格组件，用以快速生成椒盐音乐风格用户界面。
