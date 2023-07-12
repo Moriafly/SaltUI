@@ -54,8 +54,8 @@ afterEvaluate {
     publishing {
         publications {
             create<MavenPublication>("release") {
-                groupId = "com.moriafly.salt"
-                artifactId = "salt-ui"
+                groupId = "com.github.Moriafly"
+                artifactId = "SaltUI"
                 version = "0.1.0-dev01"
 
                 from(components["release"])
