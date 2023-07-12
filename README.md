@@ -16,8 +16,8 @@ SaltUI（UI for Salt Player） 是提取自[椒盐音乐](https://github.com/Mor
 allprojects {
     repositories {
         // ...
-		maven { url 'https://jitpack.io' }
-	}
+        maven { url 'https://jitpack.io' }
+    }
 }
 ```
 
