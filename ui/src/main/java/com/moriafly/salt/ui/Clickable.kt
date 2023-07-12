@@ -19,6 +19,8 @@ package com.moriafly.salt.ui
 
 import android.annotation.SuppressLint
 import android.view.MotionEvent
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -28,6 +30,21 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInteropFilter
+
+/**
+ * NoRippleClickable
+ */
+@SuppressLint("UnnecessaryComposedModifier")
+fun Modifier.noRippleClickable(
+    onClick: () -> Unit
+): Modifier = this.composed {
+    clickable(
+        indication = null,
+        interactionSource = remember { MutableInteractionSource() }
+    ) {
+        onClick()
+    }
+}
 
 /**
  * FadeClickable
