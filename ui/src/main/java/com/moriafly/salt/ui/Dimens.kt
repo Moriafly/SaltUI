@@ -21,12 +21,14 @@ import androidx.compose.ui.unit.dp
 
 internal object Dimens {
 
-    val outerVerticalPadding = 16.dp
+    val outerHorizontalPadding = 16.dp
+
+    val outerVerticalPadding = 8.dp
+
+    val innerHorizontalPadding = 16.dp
 
     val innerVerticalPadding = 12.dp
 
-    val outerHorizontalPadding = 16.dp
-
-    val innerHorizontalPadding = 16.dp
+    val corner = 8.dp
 
 }
