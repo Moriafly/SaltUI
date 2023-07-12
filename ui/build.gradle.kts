@@ -7,7 +7,7 @@ plugins {
 
 android {
     namespace = "com.moriafly.salt.ui"
-    compileSdk = 33
+    compileSdk = 34
 
     defaultConfig {
         minSdk = 23
@@ -24,12 +24,20 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
     }
 
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = "11"
+    }
+
+    buildFeatures {
+        compose = true
+    }
+
+    composeOptions {
+        kotlinCompilerExtensionVersion = "1.4.7"
     }
 }
 
@@ -56,7 +64,7 @@ afterEvaluate {
             create<MavenPublication>("release") {
                 groupId = "com.github.Moriafly"
                 artifactId = "SaltUI"
-                version = "0.1.0-dev02"
+                version = "0.1.0-dev03"
 
                 from(components["release"])
             }

@@ -15,7 +15,7 @@
  * Lesser General Public License for more details.
  */
 
-package com.moriafly.salt.ui
+package com.moriafly.salt.app
 
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue

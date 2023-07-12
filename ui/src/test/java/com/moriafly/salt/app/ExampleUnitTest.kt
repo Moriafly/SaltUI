@@ -1,4 +1,4 @@
-package com.moriafly.salt.ui
+package com.moriafly.salt.app
 
 import org.junit.Test
 
