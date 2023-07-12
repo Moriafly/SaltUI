@@ -15,7 +15,7 @@
  * Lesser General Public License for more details.
  */
 
-package com.moriafly.salt.app
+package com.moriafly.salt.ui
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider

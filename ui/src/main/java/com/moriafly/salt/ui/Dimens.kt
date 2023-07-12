@@ -15,17 +15,18 @@
  * Lesser General Public License for more details.
  */
 
-package com.moriafly.salt.app
+package com.moriafly.salt.ui
 
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.height
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 
-@Composable
-fun ItemSpacer() {
-    Spacer(
-        modifier = Modifier
-            .height(Dimens.innerVerticalPadding)
-    )
+internal object Dimens {
+
+    val outerVerticalPadding = 16.dp
+
+    val innerVerticalPadding = 12.dp
+
+    val outerHorizontalPadding = 16.dp
+
+    val innerHorizontalPadding = 16.dp
+
 }
