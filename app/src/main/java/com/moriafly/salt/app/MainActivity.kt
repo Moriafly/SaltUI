@@ -18,9 +18,11 @@ import com.moriafly.salt.ui.RoundedColumn
 import com.moriafly.salt.ui.SaltTheme
 import com.moriafly.salt.ui.TextButton
 import com.moriafly.salt.ui.TitleBar
+import com.moriafly.salt.ui.UnstableSaltApi
 
 class MainActivity : ComponentActivity() {
 
+    @OptIn(UnstableSaltApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
