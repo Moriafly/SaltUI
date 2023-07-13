@@ -94,6 +94,8 @@ dependencies {
 
 LGPL-2.1 License，详见 [LICENSE](LICENSE) 。
 
+使用开源库：AndroidX、Kotlin 等。
+
 ```
 SaltUI
 Copyright (C) 2023 Moriafly
@@ -108,3 +110,7 @@ but WITHOUT ANY WARRANTY; without even the implied warranty of
 MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 Lesser General Public License for more details.
 ```
+
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=Moriafly/SaltUI&type=Date)](https://star-history.com/#Moriafly/SaltUI&Date)
