@@ -39,35 +39,44 @@ dependencies {
 
 ### 主题
 
-由 SaltTheme 和 SaltColors 组成。
+由 SaltTheme 下 SaltColors 和 SaltTextStyles 组成。
 
-| 颜色值 | 说明 |
-| -- | -- |
-| highlight | 软件强调色 |
-| text | 主文本颜色 |
-| subText | 次要文本颜色 |
-| background | 用于整个 App 最底层颜色，默认背景色（底层背景色） |
-| subBackground | 次要背景色（上层背景色） |
+#### SaltColors
+
+| 颜色值           | 说明                          |
+|---------------|-----------------------------|
+| highlight     | 软件强调色                       |
+| text          | 主文本颜色                       |
+| subText       | 次要文本颜色                      |
+| background    | 用于整个 App 最底层颜色，默认背景色（底层背景色） |
+| subBackground | 次要背景色（上层背景色）                |
+
+#### SaltTextStyles
+
+| 颜色值  | 说明     |
+|------|--------|
+| main | 主文本样式  |
+| sub  | 次要文本样式 |
 
 ### 页面
 
-| 名称 | 用途 |
-| -- | -- |
-| ItemSpacer | 默认内部的竖向间隔 |
+| 名称            | 用途                               |
+|---------------|----------------------------------|
+| ItemSpacer    | 默认内部的竖向间隔                        |
 | RoundedColumn | 以 subBackground 为底色构建圆角内容 Column |
 
 ### 文本
 
-| 名称 | 用途 |
-| -- | -- |
+| 名称      | 用途          |
+|---------|-------------|
 | .textDp | 文本单位使用 dp 值 |
 
 ### 点击
 
-| 名称 | 用途 |
-| -- | -- |
-| Modifier.noRippleClickable | 没有涟漪扩散的点击效果 |
-| Modifier.fadeClickable | 减淡点击效果（添加透明度效果） |
+| 名称                         | 用途              |
+|----------------------------|-----------------|
+| Modifier.noRippleClickable | 没有涟漪扩散的点击效果     |
+| Modifier.fadeClickable     | 减淡点击效果（添加透明度效果） |
 
 ## 版权
 
