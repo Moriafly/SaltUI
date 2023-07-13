@@ -62,6 +62,8 @@ dependencies {
 
 | 名称            | 用途                               |
 |---------------|----------------------------------|
+| ItemTitle     | 构建内容界面标题                         |
+| ItemText      | 构建内容界面说明文本                       |
 | ItemSpacer    | 默认内部的竖向间隔                        |
 | RoundedColumn | 以 subBackground 为底色构建圆角内容 Column |
 
