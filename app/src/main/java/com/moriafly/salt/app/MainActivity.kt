@@ -14,6 +14,7 @@ import com.moriafly.salt.ui.ItemText
 import com.moriafly.salt.ui.ItemTitle
 import com.moriafly.salt.ui.RoundedColumn
 import com.moriafly.salt.ui.SaltTheme
+import com.moriafly.salt.ui.TitleBar
 
 class MainActivity : ComponentActivity() {
 
@@ -26,6 +27,11 @@ class MainActivity : ComponentActivity() {
                         .fillMaxSize()
                         .background(color = SaltTheme.colors.background)
                 ) {
+                    TitleBar(
+                        onBack = { /*TODO*/ },
+                        text = "SaltUI"
+                    )
+
                     RoundedColumn {
                         ItemTitle(text = "Hello, SaltUI")
                         ItemText(
