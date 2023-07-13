@@ -90,6 +90,10 @@ dependencies {
 | Modifier.noRippleClickable | 没有涟漪扩散的点击效果     |
 | Modifier.fadeClickable     | 减淡点击效果（添加透明度效果） |
 
+## 贡献
+
+[贡献者行为准则](CODE_OF_CONDUCT.md)
+
 ## 版权
 
 LGPL-2.1 License，详见 [LICENSE](LICENSE) 。
@@ -111,6 +115,6 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 Lesser General Public License for more details.
 ```
 
-## Star History
+## 星星历史
 
 [![Star History Chart](https://api.star-history.com/svg?repos=Moriafly/SaltUI&type=Date)](https://star-history.com/#Moriafly/SaltUI&Date)
