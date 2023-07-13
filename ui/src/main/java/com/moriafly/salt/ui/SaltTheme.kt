@@ -20,17 +20,29 @@ package com.moriafly.salt.ui
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.ReadOnlyComposable
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.staticCompositionLocalOf
 
 private val LocalSaltColors = staticCompositionLocalOf { lightSaltColors() }
 
+private val LocalSaltTextStyles = staticCompositionLocalOf { saltTextStyles() }
+
 @Composable
 fun SaltTheme(
     colors: SaltColors = SaltTheme.colors,
-    content: @Composable() () -> Unit
+    textStyles: SaltTextStyles = SaltTheme.textStyles,
+    content: @Composable () -> Unit
 ) {
+    val applyColorTextStyles = remember(colors.text, colors.subText) {
+        // copy text colors
+        saltTextStyles(
+            main = textStyles.main.copy(color = colors.text),
+            sub = textStyles.sub.copy(color = colors.subText)
+        )
+    }
     CompositionLocalProvider(
         LocalSaltColors provides colors,
+        LocalSaltTextStyles provides applyColorTextStyles
     ) {
         content()
     }
@@ -42,5 +54,10 @@ object SaltTheme {
         @Composable
         @ReadOnlyComposable
         get() = LocalSaltColors.current
+
+    val textStyles: SaltTextStyles
+        @Composable
+        @ReadOnlyComposable
+        get() = LocalSaltTextStyles.current
 
 }
