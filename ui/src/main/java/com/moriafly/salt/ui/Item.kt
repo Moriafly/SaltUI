@@ -19,6 +19,7 @@ package com.moriafly.salt.ui
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -147,5 +148,20 @@ fun Item(
             contentDescription = null,
             tint = SaltTheme.colors.subText
         )
+    }
+}
+
+/**
+ * Build a container with internal margins in the content interface, making it easy to add custom elements such as buttons internally.
+ */
+@Composable
+fun ItemContainer(
+    content: @Composable () -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .padding(horizontal = Dimens.innerHorizontalPadding, vertical = Dimens.innerVerticalPadding)
+    ) {
+        content()
     }
 }
