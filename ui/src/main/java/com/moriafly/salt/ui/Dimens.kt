@@ -29,6 +29,11 @@ internal object Dimens {
 
     val innerVerticalPadding = 12.dp
 
+    /**
+     * The margin inside the element.
+     */
+    val contentPadding = 12.dp
+
     val corner = 8.dp
 
 }
