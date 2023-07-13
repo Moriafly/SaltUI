@@ -6,14 +6,17 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import com.moriafly.salt.ui.Item
+import com.moriafly.salt.ui.ItemContainer
 import com.moriafly.salt.ui.ItemSpacer
 import com.moriafly.salt.ui.ItemText
 import com.moriafly.salt.ui.ItemTitle
 import com.moriafly.salt.ui.RoundedColumn
 import com.moriafly.salt.ui.SaltTheme
+import com.moriafly.salt.ui.TextButton
 import com.moriafly.salt.ui.TitleBar
 
 class MainActivity : ComponentActivity() {
@@ -51,6 +54,16 @@ class MainActivity : ComponentActivity() {
                             text = "标准 Item 控件，带图标（可选），副标题文本（可选）",
                             sub = "Item 控件的副标题"
                         )
+                        ItemContainer {
+                            TextButton(
+                                onClick = {
+
+                                },
+                                modifier = Modifier
+                                    .fillMaxWidth(),
+                                text = "默认按钮 TextButton"
+                            )
+                        }
                     }
                 }
             }
