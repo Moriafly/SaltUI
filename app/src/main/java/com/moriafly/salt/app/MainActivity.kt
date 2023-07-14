@@ -25,6 +25,7 @@ import com.moriafly.salt.ui.ItemSpacer
 import com.moriafly.salt.ui.ItemSwitcher
 import com.moriafly.salt.ui.ItemText
 import com.moriafly.salt.ui.ItemTitle
+import com.moriafly.salt.ui.ItemValue
 import com.moriafly.salt.ui.RoundedColumn
 import com.moriafly.salt.ui.SaltTheme
 import com.moriafly.salt.ui.TextButton
@@ -164,6 +165,13 @@ private fun MainUI() {
                     text = "标准开关控件"
                 )
             }
+
+            RoundedColumn {
+                ItemTitle(text = "Value 组件")
+                ItemValue(text = "Value 标题", sub = "Value 内容")
+                ItemValue(text = "Value 标题标题标题标题标题标题标题标题标题标题标题", sub = "Value 内容内容内容内容")
+            }
+
         }
         BottomBar {
             BottomBarItem(

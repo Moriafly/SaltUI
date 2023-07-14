@@ -32,8 +32,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -48,7 +50,9 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 
 /**
  * Build content interface title text.
@@ -83,17 +87,6 @@ fun ItemText(
             .fillMaxWidth()
             .padding(horizontal = Dimens.innerHorizontalPadding),
         style = SaltTheme.textStyles.sub
-    )
-}
-
-/**
- * Build vertical spacing for the content interface.
- */
-@Composable
-fun ItemSpacer() {
-    Spacer(
-        modifier = Modifier
-            .height(Dimens.innerVerticalPadding)
     )
 }
 
@@ -249,6 +242,55 @@ fun ItemSwitcher(
             )
         }
     }
+}
+
+/**
+ * Value
+ */
+@UnstableSaltApi
+@Composable
+fun ItemValue(
+    text: String,
+    sub: String
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .sizeIn(minHeight = 48.dp)
+            .padding(horizontal = Dimens.innerHorizontalPadding, vertical = Dimens.innerVerticalPadding),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            modifier = Modifier
+                .weight(1f),
+            text = text,
+            style = SaltTheme.textStyles.main
+        )
+        Spacer(modifier = Modifier.width(Dimens.contentPadding))
+        SelectionContainer(
+            modifier = Modifier
+                .weight(1f),
+        ) {
+            Text(
+                text = sub,
+                color = SaltTheme.colors.subText,
+                fontSize = 15.sp,
+                textAlign = TextAlign.End,
+                style = SaltTheme.textStyles.main
+            )
+        }
+    }
+}
+
+/**
+ * Build vertical spacing for the content interface.
+ */
+@Composable
+fun ItemSpacer() {
+    Spacer(
+        modifier = Modifier
+            .height(Dimens.innerVerticalPadding)
+    )
 }
 
 /**
