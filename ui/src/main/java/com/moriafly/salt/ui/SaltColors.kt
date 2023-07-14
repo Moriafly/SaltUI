@@ -64,7 +64,7 @@ fun darkSaltColors(
     text: Color = Color(0xFFEBEEF1),
     subText: Color = Color(0xBFE1E6EB),
     background: Color = Color(0xFF0C0C0C),
-    subBackground: Color = Color(0x592D2D2D)
+    subBackground: Color = Color(0xFF191919)
 ): SaltColors = SaltColors(
     highlight = highlight,
     text = text,
