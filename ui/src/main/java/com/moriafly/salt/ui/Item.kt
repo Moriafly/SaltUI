@@ -245,7 +245,7 @@ fun ItemSwitcher(
                         this.translationX = translationX.toPx()
                     }
                     .size(16.dp)
-                    .border(width = 4.dp, color = SaltTheme.colors.subBackground, shape = CircleShape)
+                    .border(width = 4.dp, color = Color.White, shape = CircleShape)
             )
         }
     }
