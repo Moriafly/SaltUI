@@ -50,7 +50,7 @@ fun lightSaltColors(
     text: Color = Color(0xFF1E1715),
     subText: Color = Color(0xFF8C8C8C),
     background: Color = Color(0xFFF7F9FA),
-    subBackground: Color = Color(0xA6FFFFFF)
+    subBackground: Color = Color(0xFFFFFFFF)
 ): SaltColors = SaltColors(
     highlight = highlight,
     text = text,

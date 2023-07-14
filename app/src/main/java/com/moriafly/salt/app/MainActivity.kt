@@ -7,11 +7,16 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import com.moriafly.salt.ui.Item
 import com.moriafly.salt.ui.ItemContainer
 import com.moriafly.salt.ui.ItemSpacer
+import com.moriafly.salt.ui.ItemSwitcher
 import com.moriafly.salt.ui.ItemText
 import com.moriafly.salt.ui.ItemTitle
 import com.moriafly.salt.ui.RoundedColumn
@@ -48,13 +53,24 @@ class MainActivity : ComponentActivity() {
                     RoundedColumn {
                         ItemTitle(text = "控件")
                         Item(
-                            iconPainter = painterResource(id = R.drawable.ic_qr_code),
-                            iconColor = SaltTheme.colors.highlight,
                             onClick = {
 
                             },
+                            iconPainter = painterResource(id = R.drawable.ic_qr_code),
+                            iconColor = SaltTheme.colors.highlight,
                             text = "标准 Item 控件，带图标（可选），副标题文本（可选）",
                             sub = "Item 控件的副标题"
+                        )
+                        var switch by remember { mutableStateOf(false) }
+                        ItemSwitcher(
+                            state = switch,
+                            onChange = {
+                                switch = it
+                            },
+                            iconPainter = painterResource(id = R.drawable.ic_verified),
+                            iconColor = SaltTheme.colors.highlight,
+                            text = "标准开关控件，带图标（可选），副标题文本（可选）",
+                            sub = "开关控件的副标题"
                         )
                         ItemContainer {
                             TextButton(
