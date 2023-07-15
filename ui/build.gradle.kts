@@ -5,6 +5,8 @@ plugins {
     `maven-publish`
 }
 
+val libraryVersionName = "0.1.0-dev11"
+
 android {
     namespace = "com.moriafly.salt.ui"
     compileSdk = 34
@@ -34,6 +36,7 @@ android {
 
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 
     composeOptions {
@@ -64,7 +67,7 @@ afterEvaluate {
             create<MavenPublication>("release") {
                 groupId = "com.github.Moriafly"
                 artifactId = "SaltUI"
-                version = "0.1.0-dev10"
+                version = libraryVersionName
 
                 from(components["release"])
             }
