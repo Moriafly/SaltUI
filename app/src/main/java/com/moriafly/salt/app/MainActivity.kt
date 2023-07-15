@@ -28,6 +28,7 @@ import com.moriafly.salt.ui.ItemTitle
 import com.moriafly.salt.ui.ItemValue
 import com.moriafly.salt.ui.RoundedColumn
 import com.moriafly.salt.ui.SaltTheme
+import com.moriafly.salt.ui.SaltUILogo
 import com.moriafly.salt.ui.TextButton
 import com.moriafly.salt.ui.TitleBar
 import com.moriafly.salt.ui.UnstableSaltApi
@@ -75,6 +76,8 @@ private fun MainUI() {
                 .background(color = SaltTheme.colors.background)
                 .verticalScroll(rememberScrollState())
         ) {
+            SaltUILogo()
+
             RoundedColumn {
                 ItemTitle(text = "Hello, SaltUI")
                 ItemText(
