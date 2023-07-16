@@ -15,7 +15,7 @@
  * Lesser General Public License for more details.
  */
 
-package com.moriafly.salt.ui
+package com.moriafly.salt.ui.dialog
 
 import android.annotation.SuppressLint
 import android.content.Context
@@ -50,6 +50,7 @@ import androidx.savedstate.findViewTreeSavedStateRegistryOwner
 import androidx.savedstate.setViewTreeSavedStateRegistryOwner
 import com.google.android.material.bottomsheet.BottomSheetBehavior.*
 import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.moriafly.salt.ui.R
 import java.util.*
 
 /**
