@@ -97,6 +97,12 @@ dependencies {
 | Modifier.noRippleClickable | 没有涟漪扩散的点击效果     |
 | Modifier.fadeClickable     | 减淡点击效果（添加透明度效果） |
 
+### 对话框 Dialog
+
+| 名称                     | 用途      |
+|------------------------|---------|
+| BottomSheetDialog      | 默认底部对话框 |
+
 ## 贡献
 
 [贡献者行为准则](CODE_OF_CONDUCT.md)
