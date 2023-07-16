@@ -111,7 +111,7 @@ fun Item(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .heightIn(min = 60.dp)
+            .heightIn(min = 50.dp)
             .clickable {
                 onClick()
             }
@@ -179,7 +179,7 @@ fun ItemSwitcher(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .heightIn(min = 60.dp)
+            .heightIn(min = 50.dp)
             .clickable {
                 onChange(!state)
             }
