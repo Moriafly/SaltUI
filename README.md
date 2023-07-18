@@ -75,6 +75,7 @@ dependencies {
 | Item          | 默认列表项目（可设置图标、标题和副标题）                |
 | ItemSwitcher  | 默认开关项目（可设置图标、标题和副标题）                |
 | ItemValue     | 类似 Key - Value                      |
+| ItemEdit      | 默认文本框                               |
 | ItemSpacer    | 默认内部的竖向间隔                           |
 | ItemContainer | 在内容界面构建拥有内部边距的容器，方便使用在内部添加如按钮等自定义元素 |
 | RoundedColumn | 以 subBackground 为底色构建圆角内容 Column    |

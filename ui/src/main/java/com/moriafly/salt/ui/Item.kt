@@ -21,6 +21,7 @@ import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -36,6 +37,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
@@ -48,6 +51,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
@@ -290,6 +294,52 @@ fun ItemValue(
             )
         }
     }
+}
+
+/**
+ * Edit
+ *
+ * @param text
+ * @param onChange
+ * @param hint
+ * @param readOnly
+ */
+@Composable
+fun ItemEdit(
+    text: String,
+    onChange: (String) -> Unit,
+    hint: String? = null,
+    readOnly: Boolean = false
+) {
+    BasicTextField(
+        value = text,
+        onValueChange = onChange,
+        modifier = Modifier
+            .padding(horizontal = Dimens.innerHorizontalPadding),
+        readOnly = readOnly,
+        textStyle = SaltTheme.textStyles.main,
+        cursorBrush = SolidColor(SaltTheme.colors.highlight),
+        decorationBox = { innerTextField ->
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = Dimens.innerVerticalPadding) // padding in this, beautiful for IME
+                    .clip(RoundedCornerShape(Dimens.corner))
+                    .background(color = SaltTheme.colors.subText.copy(alpha = 0.1f))
+                    .padding(Dimens.contentPadding),
+                contentAlignment = Alignment.CenterStart
+            ) {
+                innerTextField()
+                if (hint != null && text.isEmpty()) {
+                    Text(
+                        text = hint,
+                        color = SaltTheme.colors.subText.copy(alpha = 0.5f),
+                        style = SaltTheme.textStyles.main
+                    )
+                }
+            }
+        }
+    )
 }
 
 /**

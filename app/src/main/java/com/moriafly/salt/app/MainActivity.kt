@@ -21,6 +21,7 @@ import com.moriafly.salt.ui.BottomBar
 import com.moriafly.salt.ui.BottomBarItem
 import com.moriafly.salt.ui.Item
 import com.moriafly.salt.ui.ItemContainer
+import com.moriafly.salt.ui.ItemEdit
 import com.moriafly.salt.ui.ItemSpacer
 import com.moriafly.salt.ui.ItemSwitcher
 import com.moriafly.salt.ui.ItemText
@@ -185,6 +186,18 @@ private fun MainUI() {
                 ItemTitle(text = "Value 组件")
                 ItemValue(text = "Value 标题", sub = "Value 内容")
                 ItemValue(text = "Value 标题标题标题标题标题标题标题标题标题标题标题", sub = "Value 内容内容内容内容")
+            }
+
+            RoundedColumn {
+                ItemTitle(text = "Edit 组件")
+                var text by remember { mutableStateOf("") }
+                ItemEdit(
+                    text = text,
+                    onChange = {
+                        text = it
+                    },
+                    hint = "HINT 这是输入框"
+                )
             }
 
         }
