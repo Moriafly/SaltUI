@@ -304,6 +304,7 @@ fun ItemValue(
  * @param hint
  * @param readOnly
  */
+@UnstableSaltApi
 @Composable
 fun ItemEdit(
     text: String,
