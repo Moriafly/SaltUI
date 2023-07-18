@@ -53,6 +53,24 @@ dependencies {
 | background    | 用于整个 App 最底层颜色，默认背景色（底层背景色） |
 | subBackground | 次要背景色（上层背景色）                |
 
+```kotlin
+@Composable
+fun AppTheme(
+    content: @Composable () -> Unit
+) {
+    val colors = if (isSystemInDarkTheme()) {
+        darkSaltColors()
+    } else {
+        lightSaltColors()
+    }
+    SaltTheme(
+        colors = colors
+    ) {
+        content()
+    }
+}
+```
+
 #### SaltTextStyles
 
 | 颜色值  | 说明     |
@@ -102,9 +120,10 @@ dependencies {
 
 ### 对话框 Dialog
 
-| 名称                     | 用途      |
-|------------------------|---------|
-| BottomSheetDialog      | 默认底部对话框 |
+| 名称                | 用途      |
+|-------------------|---------|
+| BottomSheetDialog | 默认底部对话框 |
+| YesNoDialog       | 请求确认对话框 |
 
 ## 贡献
 
