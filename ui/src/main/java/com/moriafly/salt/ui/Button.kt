@@ -42,17 +42,20 @@ import androidx.compose.ui.text.style.TextOverflow
 fun TextButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    text: String
+    text: String,
+    textColor: Color = Color.White,
+    backgroundColor: Color = SaltTheme.colors.highlight
 ) {
     BasicButton(
         onClick = onClick,
-        modifier = modifier
+        modifier = modifier,
+        backgroundColor = backgroundColor
     ) {
         Text(
             text = text,
             modifier = Modifier
                 .fillMaxWidth(),
-            color = Color.White,
+            color = textColor,
             textAlign = TextAlign.Center,
             overflow = TextOverflow.Ellipsis,
             maxLines = 1,
@@ -68,6 +71,7 @@ fun TextButton(
 fun BasicButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    backgroundColor: Color = SaltTheme.colors.highlight,
     content: @Composable BoxScope.() -> Unit
 ) {
     Box(
@@ -76,7 +80,7 @@ fun BasicButton(
                 role = Role.Button
             }
             .clip(CircleShape)
-            .background(color = SaltTheme.colors.highlight)
+            .background(color = backgroundColor)
             .clickable {
                 onClick()
             }
