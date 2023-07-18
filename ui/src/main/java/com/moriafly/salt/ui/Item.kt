@@ -43,6 +43,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Color
@@ -95,6 +96,7 @@ fun ItemText(
  * Build item for the content interface.
  *
  * @param onClick will be called when user clicks on the element
+ * @param enabled enabled
  * @param iconPainter icon
  * @param iconColor color of [iconPainter], if this value is null, will use the paint original color
  * @param text main text
@@ -103,6 +105,7 @@ fun ItemText(
 @Composable
 fun Item(
     onClick: () -> Unit,
+    enabled: Boolean = true,
     iconPainter: Painter? = null,
     iconColor: Color? = null,
     text: String,
@@ -112,7 +115,8 @@ fun Item(
         modifier = Modifier
             .fillMaxWidth()
             .heightIn(min = 50.dp)
-            .clickable {
+            .alpha(if (enabled) 1f else 0.5f)
+            .clickable(enabled = enabled) {
                 onClick()
             }
             .padding(horizontal = Dimens.innerHorizontalPadding, vertical = Dimens.innerVerticalPadding),
@@ -135,6 +139,7 @@ fun Item(
         ) {
             Text(
                 text = text,
+                color = if (enabled) SaltTheme.colors.text else SaltTheme.colors.subText,
                 style = SaltTheme.textStyles.main
             )
             sub?.let {
@@ -161,6 +166,7 @@ fun Item(
  *
  * @param state the state of the switcher
  * @param onChange called when state changed
+ * @param enabled
  * @param iconPainter icon
  * @param iconColor color of [iconPainter], if this value is null, will use the paint original color
  * @param text main text
@@ -171,6 +177,7 @@ fun Item(
 fun ItemSwitcher(
     state: Boolean,
     onChange: (Boolean) -> Unit,
+    enabled: Boolean = true,
     iconPainter: Painter? = null,
     iconColor: Color? = null,
     text: String,
@@ -180,7 +187,8 @@ fun ItemSwitcher(
         modifier = Modifier
             .fillMaxWidth()
             .heightIn(min = 50.dp)
-            .clickable {
+            .alpha(if (enabled) 1f else 0.5f)
+            .clickable(enabled = enabled) {
                 onChange(!state)
             }
             .padding(horizontal = Dimens.innerHorizontalPadding, vertical = Dimens.innerVerticalPadding),
@@ -203,6 +211,7 @@ fun ItemSwitcher(
         ) {
             Text(
                 text = text,
+                color = if (enabled) SaltTheme.colors.text else SaltTheme.colors.subText,
                 style = SaltTheme.textStyles.main
             )
             sub?.let {

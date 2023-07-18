@@ -141,6 +141,16 @@ private fun MainUI() {
                     onClick = {
 
                     },
+                    enabled = false,
+                    iconPainter = painterResource(id = R.drawable.ic_qr_code),
+                    iconColor = SaltTheme.colors.highlight,
+                    text = "标准 Item 控件",
+                    sub = "已禁用"
+                )
+                Item(
+                    onClick = {
+
+                    },
                     text = "标准 Item 控件"
                 )
                 ItemSwitcher(
@@ -156,9 +166,11 @@ private fun MainUI() {
                     onChange = {
 
                     },
+                    enabled = false,
                     iconPainter = painterResource(id = R.drawable.ic_verified),
                     iconColor = SaltTheme.colors.highlight,
-                    text = "标准开关控件"
+                    text = "标准开关控件（禁用）",
+                    sub = "此开关状态被禁用"
                 )
                 ItemSwitcher(
                     state = true,
