@@ -261,6 +261,55 @@ fun ItemSwitcher(
 }
 
 /**
+ * Build a switcher in the content interface
+ *
+ * @param state the state of the switcher
+ * @param onChange called when state changed
+ * @param enabled
+ * @param text main text
+ */
+@UnstableSaltApi
+@Composable
+fun ItemCheck(
+    state: Boolean,
+    onChange: (Boolean) -> Unit,
+    enabled: Boolean = true,
+    text: String
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .heightIn(min = 50.dp)
+            .alpha(if (enabled) 1f else 0.5f)
+            .clickable(enabled = enabled) {
+                onChange(!state)
+            }
+            .padding(horizontal = Dimens.innerHorizontalPadding, vertical = Dimens.innerVerticalPadding),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(
+            modifier = Modifier
+                .size(24.dp),
+            painter = if (state) painterResource(id = R.drawable.ic_check) else painterResource(id = R.drawable.ic_uncheck),
+            contentDescription = null,
+            tint = SaltTheme.colors.highlight
+        )
+        Spacer(modifier = Modifier.width(Dimens.contentPadding))
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxWidth()
+        ) {
+            Text(
+                text = text,
+                color = if (enabled && state) SaltTheme.colors.text else SaltTheme.colors.subText,
+                style = SaltTheme.textStyles.main
+            )
+        }
+    }
+}
+
+/**
  * Value
  */
 @UnstableSaltApi

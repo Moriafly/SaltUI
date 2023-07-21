@@ -20,6 +20,7 @@ import androidx.compose.ui.res.painterResource
 import com.moriafly.salt.ui.BottomBar
 import com.moriafly.salt.ui.BottomBarItem
 import com.moriafly.salt.ui.Item
+import com.moriafly.salt.ui.ItemCheck
 import com.moriafly.salt.ui.ItemContainer
 import com.moriafly.salt.ui.ItemEdit
 import com.moriafly.salt.ui.ItemSpacer
@@ -86,6 +87,23 @@ private fun MainUI() {
                     text = "SaltUI（UI for Salt Player） 是提取自椒盐音乐的 UI 风格组件，用以快速生成椒盐音乐风格用户界面。本库将会广泛用以椒盐系列 App 开发，以达到快速开发目的"
                 )
                 ItemSpacer()
+            }
+
+            RoundedColumn {
+                ItemCheck(
+                    state = false,
+                    onChange = {
+
+                    },
+                    text = "未选中按钮"
+                )
+                ItemCheck(
+                    state = true,
+                    onChange = {
+
+                    },
+                    text = "选中按钮"
+                )
             }
 
             RoundedColumn {

@@ -92,6 +92,7 @@ fun AppTheme(
 | ItemText      | 构建内容界面说明文本                          |
 | Item          | 默认列表项目（可设置图标、标题和副标题）                |
 | ItemSwitcher  | 默认开关项目（可设置图标、标题和副标题）                |
+| ItemCheck     | 选中项目                                |
 | ItemValue     | 类似 Key - Value                      |
 | ItemEdit      | 默认文本框                               |
 | ItemSpacer    | 默认内部的竖向间隔                           |
