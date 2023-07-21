@@ -39,6 +39,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
@@ -303,6 +305,8 @@ fun ItemValue(
  * @param onChange
  * @param hint
  * @param readOnly
+ * @param keyboardOptions
+ * @param keyboardActions
  */
 @UnstableSaltApi
 @Composable
@@ -310,7 +314,9 @@ fun ItemEdit(
     text: String,
     onChange: (String) -> Unit,
     hint: String? = null,
-    readOnly: Boolean = false
+    readOnly: Boolean = false,
+    keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
+    keyboardActions: KeyboardActions = KeyboardActions.Default
 ) {
     BasicTextField(
         value = text,
@@ -318,6 +324,8 @@ fun ItemEdit(
         modifier = Modifier
             .padding(horizontal = Dimens.innerHorizontalPadding),
         readOnly = readOnly,
+        keyboardOptions = keyboardOptions,
+        keyboardActions = keyboardActions,
         textStyle = SaltTheme.textStyles.main,
         cursorBrush = SolidColor(SaltTheme.colors.highlight),
         decorationBox = { innerTextField ->
