@@ -48,6 +48,8 @@ fun Modifier.noRippleClickable(
 
 /**
  * FadeClickable
+ *
+ * TODO bug, 当手指移除控件外不会取消事件
  */
 @UnstableSaltApi
 @SuppressLint("UnnecessaryComposedModifier")
