@@ -27,6 +27,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -354,6 +355,7 @@ fun ItemValue(
  * @param onChange
  * @param hint
  * @param readOnly
+ * @param contentPaddingValues padding in this, beautiful for IME
  * @param keyboardOptions
  * @param keyboardActions
  */
@@ -364,6 +366,7 @@ fun ItemEdit(
     onChange: (String) -> Unit,
     hint: String? = null,
     readOnly: Boolean = false,
+    contentPaddingValues: PaddingValues = PaddingValues(vertical = Dimens.innerVerticalPadding),
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     keyboardActions: KeyboardActions = KeyboardActions.Default
 ) {
@@ -381,7 +384,7 @@ fun ItemEdit(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = Dimens.innerVerticalPadding) // padding in this, beautiful for IME
+                    .padding(contentPaddingValues)
                     .clip(RoundedCornerShape(Dimens.corner))
                     .background(color = SaltTheme.colors.subText.copy(alpha = 0.1f))
                     .padding(Dimens.contentPadding),
