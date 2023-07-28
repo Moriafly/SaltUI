@@ -107,10 +107,11 @@ fun AppTheme(
 
 ### 按钮
 
-| 名称          | 用途     |
-|-------------|--------|
-| BasicButton | 基本按钮   |
-| TextButton  | 默认文本按钮 |
+| 名称             | 用途               |
+|----------------|------------------|
+| ItemTextButton | 适用于 Item 的外部文本按钮 |
+| BasicButton    | 基本按钮             |
+| TextButton     | 默认文本按钮           |
 
 ### 点击
 

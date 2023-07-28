@@ -36,6 +36,26 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 
 /**
+ * For Item Outer
+ */
+@Composable
+fun ItemTextButton(
+    onClick: () -> Unit,
+    text: String,
+    textColor: Color = Color.White,
+    backgroundColor: Color = SaltTheme.colors.highlight
+) {
+    TextButton(
+        onClick = onClick,
+        modifier = Modifier
+            .padding(horizontal = Dimens.outerHorizontalPadding + Dimens.innerHorizontalPadding, vertical = Dimens.innerVerticalPadding),
+        text = text,
+        textColor = textColor,
+        backgroundColor = backgroundColor
+    )
+}
+
+/**
  * Default text content button.
  */
 @Composable
