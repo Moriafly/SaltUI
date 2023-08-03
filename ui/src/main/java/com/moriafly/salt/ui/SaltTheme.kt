@@ -39,7 +39,8 @@ fun SaltTheme(
         // copy text colors
         saltTextStyles(
             main = textStyles.main.copy(color = colors.text),
-            sub = textStyles.sub.copy(color = colors.subText)
+            sub = textStyles.sub.copy(color = colors.subText),
+            paragraph = textStyles.paragraph.copy(color = colors.text.copy(alpha = 0.85f))
         )
     }
     val rippleIndication = rememberRipple()

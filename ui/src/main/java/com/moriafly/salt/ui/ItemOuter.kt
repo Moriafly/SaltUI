@@ -43,17 +43,17 @@ fun ItemOuterLargeTitle(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = Dimens.outerHorizontalPadding * 2, vertical = Dimens.outerVerticalPadding * 2),
+            .padding(horizontal = Dimens.outerHorizontalPadding * 2, vertical = Dimens.outerVerticalPadding * 6),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
             text = text,
-            fontSize = 22.sp,
+            fontSize = 24.sp,
             fontWeight = FontWeight.Bold,
             textAlign = TextAlign.Center,
             style = SaltTheme.textStyles.main
         )
-        Spacer(modifier = Modifier.height(Dimens.contentPadding))
+        Spacer(modifier = Modifier.height(Dimens.contentPadding * 1.5f))
         Text(
             text = sub,
             textAlign = TextAlign.Center,
