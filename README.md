@@ -39,6 +39,8 @@ dependencies {
 
 组件位于 com.moriafly.salt.ui 包下，下面分为主题、页面、文本、按钮和点击。
 
+演示项目（DEMO）在 app 模块。
+
 ### 主题
 
 由 SaltTheme 下 SaltColors 和 SaltTextStyles 组成。
@@ -78,13 +80,18 @@ fun AppTheme(
 | main | 主文本样式  |
 | sub  | 次要文本样式 |
 
-### 页面
+### 页面（基础）
 
-| 名称            | 用途    |
-|---------------|-------|
-| TitleBar      | 标题栏   |
-| BottomBar     | 底部栏   |
-| BottomBarItem | 底部栏子项 |
+| 名称            | 用途                               |
+|---------------|----------------------------------|
+| TitleBar      | 标题栏                              |
+| BottomBar     | 底部栏                              |
+| BottomBarItem | 底部栏子项                            |
+| RoundedColumn | 以 subBackground 为底色构建圆角内容 Column |
+
+### 页面（内部）
+
+以下的元素要使用在 RoundedColumn 中。
 
 | 名称            | 用途                                  |
 |---------------|-------------------------------------|
@@ -97,7 +104,12 @@ fun AppTheme(
 | ItemEdit      | 默认文本框                               |
 | ItemSpacer    | 默认内部的竖向间隔                           |
 | ItemContainer | 在内容界面构建拥有内部边距的容器，方便使用在内部添加如按钮等自定义元素 |
-| RoundedColumn | 以 subBackground 为底色构建圆角内容 Column    |
+
+### 页面（外部）
+
+| 名称                  | 用途               |
+|---------------------|------------------|
+| ItemOuterTextButton | 适用于 Item 的外部文本按钮 |
 
 ### 文本
 
@@ -109,7 +121,6 @@ fun AppTheme(
 
 | 名称             | 用途               |
 |----------------|------------------|
-| ItemTextButton | 适用于 Item 的外部文本按钮 |
 | BasicButton    | 基本按钮             |
 | TextButton     | 默认文本按钮           |
 
