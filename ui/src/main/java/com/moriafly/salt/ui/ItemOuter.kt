@@ -17,10 +17,50 @@
 
 package com.moriafly.salt.ui
 
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.sp
+
+/**
+ * Can replace ItemTitle
+ */
+@UnstableSaltApi
+@Composable
+fun ItemOuterLargeTitle(
+    text: String,
+    sub: String
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = Dimens.outerHorizontalPadding * 2, vertical = Dimens.outerVerticalPadding * 2),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            text = text,
+            fontSize = 22.sp,
+            fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Center,
+            style = SaltTheme.textStyles.main
+        )
+        Spacer(modifier = Modifier.height(Dimens.contentPadding))
+        Text(
+            text = sub,
+            textAlign = TextAlign.Center,
+            style = SaltTheme.textStyles.paragraph
+        )
+    }
+}
 
 /**
  * For Item Outer

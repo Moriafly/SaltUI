@@ -23,9 +23,8 @@ import com.moriafly.salt.ui.Item
 import com.moriafly.salt.ui.ItemCheck
 import com.moriafly.salt.ui.ItemContainer
 import com.moriafly.salt.ui.ItemEdit
-import com.moriafly.salt.ui.ItemSpacer
+import com.moriafly.salt.ui.ItemOuterLargeTitle
 import com.moriafly.salt.ui.ItemSwitcher
-import com.moriafly.salt.ui.ItemText
 import com.moriafly.salt.ui.ItemTitle
 import com.moriafly.salt.ui.ItemValue
 import com.moriafly.salt.ui.RoundedColumn
@@ -69,7 +68,7 @@ private fun MainUI() {
             onBack = {
 
             },
-            text = "SaltUI"
+            text = ""
         )
 
         Column(
@@ -79,15 +78,12 @@ private fun MainUI() {
                 .background(color = SaltTheme.colors.background)
                 .verticalScroll(rememberScrollState())
         ) {
-            SaltUILogo()
+            ItemOuterLargeTitle(
+                text = "Hello, SaltUI",
+                sub = "SaltUI（UI for Salt Player） 是提取自椒盐音乐的 UI 风格组件，用以快速生成椒盐音乐风格用户界面。本库将会广泛用以椒盐系列 App 开发，以达到快速开发目的"
+            )
 
-            RoundedColumn {
-                ItemTitle(text = "Hello, SaltUI")
-                ItemText(
-                    text = "SaltUI（UI for Salt Player） 是提取自椒盐音乐的 UI 风格组件，用以快速生成椒盐音乐风格用户界面。本库将会广泛用以椒盐系列 App 开发，以达到快速开发目的"
-                )
-                ItemSpacer()
-            }
+            SaltUILogo()
 
             RoundedColumn {
                 ItemCheck(

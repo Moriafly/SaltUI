@@ -57,7 +57,6 @@ fun TitleBar(
         modifier = Modifier
             .fillMaxWidth()
             .height(56.dp)
-            .background(color = SaltTheme.colors.subBackground)
     ) {
         if (showBackBtn) {
             Icon(
