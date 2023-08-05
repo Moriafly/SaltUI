@@ -43,7 +43,7 @@ dependencies {
 
 ### 主题
 
-由 SaltTheme 下 SaltColors 和 SaltTextStyles 组成。
+由 SaltTheme 下 SaltColors、SaltTextStyles 和 SaltDimens 组成。
 
 #### SaltColors
 
@@ -75,7 +75,7 @@ fun AppTheme(
 
 #### SaltTextStyles
 
-| 颜色值       | 说明     |
+| 字体        | 说明     |
 |-----------|--------|
 | main      | 主文本样式  |
 | sub       | 次要文本样式 |
@@ -83,7 +83,7 @@ fun AppTheme(
 
 #### SaltDimens
 
-| 颜色值    | 说明      |
+| 度量     | 说明      |
 |--------|---------|
 | corner | 一些元素的圆角 |
 
