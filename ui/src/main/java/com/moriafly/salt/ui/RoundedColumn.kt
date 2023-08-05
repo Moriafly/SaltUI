@@ -40,7 +40,7 @@ fun RoundedColumn(
         modifier = Modifier
             .fillMaxWidth()
             .padding(Dimens.outerHorizontalPadding, Dimens.outerVerticalPadding)
-            .clip(RoundedCornerShape(Dimens.corner))
+            .clip(RoundedCornerShape(SaltTheme.dimens.corner))
             .background(color)
     ) {
         content()

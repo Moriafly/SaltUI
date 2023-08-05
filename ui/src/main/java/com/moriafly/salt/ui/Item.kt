@@ -385,7 +385,7 @@ fun ItemEdit(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(contentPaddingValues)
-                    .clip(RoundedCornerShape(Dimens.corner))
+                    .clip(RoundedCornerShape(SaltTheme.dimens.corner))
                     .background(color = SaltTheme.colors.subText.copy(alpha = 0.1f))
                     .padding(Dimens.contentPadding),
                 contentAlignment = Alignment.CenterStart

@@ -29,10 +29,13 @@ private val LocalSaltColors = staticCompositionLocalOf { lightSaltColors() }
 
 private val LocalSaltTextStyles = staticCompositionLocalOf { saltTextStyles() }
 
+private val LocalSaltDimens = staticCompositionLocalOf { saltDimens() }
+
 @Composable
 fun SaltTheme(
     colors: SaltColors = SaltTheme.colors,
     textStyles: SaltTextStyles = SaltTheme.textStyles,
+    dimens: SaltDimens = SaltTheme.dimens,
     content: @Composable () -> Unit
 ) {
     val applyColorTextStyles = remember(colors.text, colors.subText) {
@@ -47,7 +50,8 @@ fun SaltTheme(
     CompositionLocalProvider(
         LocalIndication provides rippleIndication,
         LocalSaltColors provides colors,
-        LocalSaltTextStyles provides applyColorTextStyles
+        LocalSaltTextStyles provides applyColorTextStyles,
+        LocalSaltDimens provides dimens
     ) {
         content()
     }
@@ -64,5 +68,10 @@ object SaltTheme {
         @Composable
         @ReadOnlyComposable
         get() = LocalSaltTextStyles.current
+
+    val dimens: SaltDimens
+        @Composable
+        @ReadOnlyComposable
+        get() = LocalSaltDimens.current
 
 }

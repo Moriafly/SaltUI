@@ -17,21 +17,26 @@
 
 package com.moriafly.salt.ui
 
+import androidx.compose.runtime.Stable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.structuralEqualityPolicy
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
-internal object Dimens {
-
-    val outerHorizontalPadding = 16.dp
-
-    val outerVerticalPadding = 8.dp
-
-    val innerHorizontalPadding = 16.dp
-
-    val innerVerticalPadding = 12.dp
-
-    /**
-     * The margin inside the element.
-     */
-    val contentPadding = 12.dp
-
+/**
+ * @param corner corner
+ */
+@Stable
+class SaltDimens(
+    corner: Dp
+) {
+    val corner by mutableStateOf(corner, structuralEqualityPolicy())
 }
+
+fun saltDimens(
+    corner: Dp = 12.dp
+): SaltDimens = SaltDimens(
+    corner = corner
+)
+
