@@ -105,6 +105,7 @@ fun ItemText(
  * @param onClick will be called when user clicks on the element
  * @param enabled enabled
  * @param iconPainter icon
+ * @param iconPaddingValues iconPaddingValues
  * @param iconColor color of [iconPainter], if this value is null, will use the paint original color
  * @param text main text
  * @param sub sub text
@@ -114,6 +115,7 @@ fun Item(
     onClick: () -> Unit,
     enabled: Boolean = true,
     iconPainter: Painter? = null,
+    iconPaddingValues: PaddingValues = PaddingValues(0.dp),
     iconColor: Color? = null,
     text: String,
     sub: String? = null
@@ -121,7 +123,7 @@ fun Item(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .heightIn(min = 50.dp)
+            .heightIn(min = 56.dp)
             .alpha(if (enabled) 1f else 0.5f)
             .clickable(enabled = enabled) {
                 onClick()
@@ -132,7 +134,8 @@ fun Item(
         iconPainter?.let {
             Image(
                 modifier = Modifier
-                    .size(24.dp),
+                    .size(24.dp)
+                    .padding(iconPaddingValues),
                 painter = iconPainter,
                 contentDescription = null,
                 colorFilter = iconColor?.let { ColorFilter.tint(iconColor) }
@@ -175,6 +178,7 @@ fun Item(
  * @param onChange called when state changed
  * @param enabled
  * @param iconPainter icon
+ * @param iconPaddingValues iconPaddingValues
  * @param iconColor color of [iconPainter], if this value is null, will use the paint original color
  * @param text main text
  * @param sub sub text
@@ -186,6 +190,7 @@ fun ItemSwitcher(
     onChange: (Boolean) -> Unit,
     enabled: Boolean = true,
     iconPainter: Painter? = null,
+    iconPaddingValues: PaddingValues = PaddingValues(0.dp),
     iconColor: Color? = null,
     text: String,
     sub: String? = null
@@ -193,7 +198,7 @@ fun ItemSwitcher(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .heightIn(min = 50.dp)
+            .heightIn(min = 56.dp)
             .alpha(if (enabled) 1f else 0.5f)
             .clickable(enabled = enabled) {
                 onChange(!state)
@@ -204,7 +209,8 @@ fun ItemSwitcher(
         iconPainter?.let {
             Image(
                 modifier = Modifier
-                    .size(24.dp),
+                    .size(24.dp)
+                    .padding(iconPaddingValues),
                 painter = iconPainter,
                 contentDescription = null,
                 colorFilter = iconColor?.let { ColorFilter.tint(iconColor) }
