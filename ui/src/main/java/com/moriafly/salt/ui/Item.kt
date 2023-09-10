@@ -183,7 +183,6 @@ fun Item(
  * @param text main text
  * @param sub sub text
  */
-@UnstableSaltApi
 @Composable
 fun ItemSwitcher(
     state: Boolean,
