@@ -17,13 +17,19 @@
 
 package com.moriafly.salt.ui
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.LocalIndication
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material.ripple.rememberRipple
+import androidx.compose.material3.dynamicDarkColorScheme
+import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.ui.platform.LocalContext
 
 private val LocalSaltColors = staticCompositionLocalOf { lightSaltColors() }
 
@@ -55,6 +61,40 @@ fun SaltTheme(
     ) {
         content()
     }
+}
+
+/**
+ * The dynamic color on Android S (12+) Material You
+ * see: https://m3.material.io/styles/color
+ */
+@RequiresApi(Build.VERSION_CODES.S)
+@UnstableSaltApi
+@Composable
+fun DynamicSaltTheme(
+    isDark: Boolean = isSystemInDarkTheme(),
+    textStyles: SaltTextStyles = SaltTheme.textStyles,
+    dimens: SaltDimens = SaltTheme.dimens,
+    content: @Composable () -> Unit
+) {
+    val context = LocalContext.current
+    val colorScheme = if (isDark) {
+        dynamicDarkColorScheme(context)
+    } else {
+        dynamicLightColorScheme(context)
+    }
+    val colors = SaltColors(
+        highlight = colorScheme.primary,
+        text = colorScheme.onSurface,
+        subText = colorScheme.secondary,
+        background = colorScheme.surface,
+        subBackground = colorScheme.primaryContainer
+    )
+    SaltTheme(
+        colors = colors,
+        textStyles = textStyles,
+        dimens = dimens,
+        content = content
+    )
 }
 
 object SaltTheme {

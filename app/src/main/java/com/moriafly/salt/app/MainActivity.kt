@@ -1,5 +1,6 @@
 package com.moriafly.salt.app
 
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -19,6 +20,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import com.moriafly.salt.ui.BottomBar
 import com.moriafly.salt.ui.BottomBarItem
+import com.moriafly.salt.ui.DynamicSaltTheme
 import com.moriafly.salt.ui.Item
 import com.moriafly.salt.ui.ItemCheck
 import com.moriafly.salt.ui.ItemContainer
@@ -39,18 +41,25 @@ import com.moriafly.salt.ui.lightSaltColors
 
 class MainActivity : ComponentActivity() {
 
+    @OptIn(UnstableSaltApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            val colors = if (isSystemInDarkTheme()) {
-                darkSaltColors()
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                DynamicSaltTheme {
+                    MainUI()
+                }
             } else {
-                lightSaltColors()
-            }
-            SaltTheme(
-                colors = colors
-            ) {
-                MainUI()
+                val colors = if (isSystemInDarkTheme()) {
+                    darkSaltColors()
+                } else {
+                    lightSaltColors()
+                }
+                SaltTheme(
+                    colors = colors
+                ) {
+                    MainUI()
+                }
             }
         }
     }
@@ -63,6 +72,7 @@ private fun MainUI() {
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .background(color = SaltTheme.colors.background)
     ) {
         TitleBar(
             onBack = {
