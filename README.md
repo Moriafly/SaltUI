@@ -45,6 +45,12 @@ dependencies {
 
 由 SaltTheme 下 SaltColors、SaltTextStyles 和 SaltDimens 组成。
 
+#### Theme
+
+DynamicSaltTheme - Material You 配色
+
+SaltTheme - 椒盐经典
+
 #### SaltColors
 
 | 颜色值           | 说明                          |
