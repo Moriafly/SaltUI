@@ -109,6 +109,7 @@ fun ItemText(
  * @param iconColor color of [iconPainter], if this value is null, will use the paint original color
  * @param text main text
  * @param sub sub text
+ * @param subColor color of [sub] text
  */
 @Composable
 fun Item(
@@ -118,7 +119,8 @@ fun Item(
     iconPaddingValues: PaddingValues = PaddingValues(0.dp),
     iconColor: Color? = null,
     text: String,
-    sub: String? = null
+    sub: String? = null,
+    subColor: Color = SaltTheme.colors.subText
 ) {
     Row(
         modifier = Modifier
@@ -156,6 +158,7 @@ fun Item(
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(
                     text = sub,
+                    color = subColor,
                     style = SaltTheme.textStyles.sub
                 )
             }
