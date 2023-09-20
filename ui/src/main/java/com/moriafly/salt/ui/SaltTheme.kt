@@ -85,9 +85,9 @@ fun DynamicSaltTheme(
     val colors = SaltColors(
         highlight = colorScheme.primary,
         text = colorScheme.onSurface,
-        subText = colorScheme.secondary,
+        subText = colorScheme.onSurfaceVariant,
         background = colorScheme.surface,
-        subBackground = colorScheme.primaryContainer
+        subBackground = colorScheme.inverseOnSurface
     )
     SaltTheme(
         colors = colors,
