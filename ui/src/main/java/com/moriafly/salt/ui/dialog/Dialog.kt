@@ -82,7 +82,6 @@ fun BottomSheetDialog(
 @Composable
 fun YesDialog(
     onDismissRequest: () -> Unit,
-    onConfirm: () -> Unit,
     title: String,
     content: String
 ) {
@@ -95,7 +94,7 @@ fun YesDialog(
         Spacer(modifier = Modifier.height(Dimens.outerVerticalPadding * 2))
         TextButton(
             onClick = {
-                onConfirm()
+                onDismissRequest()
             },
             modifier = Modifier
                 .padding(horizontal = Dimens.outerHorizontalPadding),
