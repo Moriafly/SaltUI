@@ -24,7 +24,7 @@ import android.content.ContextWrapper
 /**
  * find Activity, do not use in Composable function
  */
-internal fun Context.findActivity(): Activity? {
+fun Context.findActivity(): Activity? {
     var context = this
     while (context is ContextWrapper) {
         if (context is Activity) return context
