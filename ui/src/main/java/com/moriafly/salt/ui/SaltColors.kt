@@ -17,11 +17,16 @@
 
 package com.moriafly.salt.ui
 
+import android.os.Build
+import androidx.annotation.RequiresApi
+import androidx.compose.material3.ColorScheme
+import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.structuralEqualityPolicy
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 
 /**
  * @param highlight highlight color
@@ -71,4 +76,19 @@ fun darkSaltColors(
     subText = subText,
     background = background,
     subBackground = subBackground
+)
+
+/**
+ * Get SaltColors by m3 ColorScheme
+ */
+@RequiresApi(Build.VERSION_CODES.S)
+@UnstableSaltApi
+fun saltColorsByColorScheme(
+    colorScheme: ColorScheme
+): SaltColors = SaltColors(
+    highlight = colorScheme.primary,
+    text = colorScheme.onSurface,
+    subText = colorScheme.onSurfaceVariant,
+    background = colorScheme.surface,
+    subBackground = colorScheme.surfaceColorAtElevation(3.dp)
 )

@@ -24,12 +24,14 @@ import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
+import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
 
 private val LocalSaltColors = staticCompositionLocalOf { lightSaltColors() }
 
@@ -67,6 +69,9 @@ fun SaltTheme(
  * The dynamic color on Android S (12+) Material You
  * see: https://m3.material.io/styles/color
  */
+@Deprecated(
+    message = "Use the saltColorsByColorScheme (this function is under the SaltColors.kt) to replace."
+)
 @RequiresApi(Build.VERSION_CODES.S)
 @UnstableSaltApi
 @Composable
@@ -87,7 +92,7 @@ fun DynamicSaltTheme(
         text = colorScheme.onSurface,
         subText = colorScheme.onSurfaceVariant,
         background = colorScheme.surface,
-        subBackground = colorScheme.inverseOnSurface
+        subBackground = colorScheme.surfaceColorAtElevation(3.dp)
     )
     SaltTheme(
         colors = colors,
