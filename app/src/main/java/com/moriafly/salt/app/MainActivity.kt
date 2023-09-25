@@ -36,6 +36,7 @@ import com.moriafly.salt.ui.TextButton
 import com.moriafly.salt.ui.TitleBar
 import com.moriafly.salt.ui.UnstableSaltApi
 import com.moriafly.salt.ui.darkSaltColors
+import com.moriafly.salt.ui.dialog.YesDialog
 import com.moriafly.salt.ui.dialog.YesNoDialog
 import com.moriafly.salt.ui.lightSaltColors
 
@@ -225,15 +226,10 @@ private fun MainUI() {
                 )
             }
 
-            var yesNoDialog by remember { mutableStateOf(false) }
+
             RoundedColumn {
                 ItemTitle(text = "Dialog 对话框")
-                Item(
-                    onClick = {
-                        yesNoDialog = true
-                    },
-                    text = "YesNoDialog"
-                )
+                var yesNoDialog by remember { mutableStateOf(false) }
                 if (yesNoDialog) {
                     YesNoDialog(
                         onDismissRequest = { yesNoDialog = false },
@@ -242,6 +238,28 @@ private fun MainUI() {
                         content = "这是一个是否确认的对话框"
                     )
                 }
+                Item(
+                    onClick = {
+                        yesNoDialog = true
+                    },
+                    text = "YesNoDialog"
+                )
+
+                var yesDialog by remember { mutableStateOf(false) }
+                if (yesDialog) {
+                    YesDialog(
+                        onDismissRequest = { yesDialog = false },
+                        onConfirm = { yesDialog = false },
+                        title = "YesDialog",
+                        content = "这是一个是否确认的对话框"
+                    )
+                }
+                Item(
+                    onClick = {
+                        yesDialog = true
+                    },
+                    text = "YesDialog"
+                )
             }
 
         }

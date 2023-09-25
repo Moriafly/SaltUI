@@ -147,10 +147,13 @@ fun AppTheme(
 
 ### 对话框 Dialog
 
-| 名称                | 用途      |
-|-------------------|---------|
-| BottomSheetDialog | 默认底部对话框 |
-| YesNoDialog       | 请求确认对话框 |
+YesDialog 和 YesNoDialog 最新版本对各部分边距进行了调优，达到更好的视觉效果
+
+| 名称                | 用途            |
+|-------------------|---------------|
+| BottomSheetDialog | 默认底部对话框       |
+| YesDialog         | 确认对话框（类似默认通知） |
+| YesNoDialog       | 请求确认对话框       |
 
 ## 贡献
 

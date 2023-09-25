@@ -36,10 +36,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import com.moriafly.salt.ui.Dimens
 import com.moriafly.salt.ui.ItemSpacer
 import com.moriafly.salt.ui.ItemText
 import com.moriafly.salt.ui.R
+import com.moriafly.salt.ui.RoundedColumn
 import com.moriafly.salt.ui.SaltTheme
 import com.moriafly.salt.ui.TextButton
 import com.moriafly.salt.ui.UnstableSaltApi
@@ -74,6 +76,35 @@ fun BottomSheetDialog(
 }
 
 /**
+ * YesDialog
+ */
+@UnstableSaltApi
+@Composable
+fun YesDialog(
+    onDismissRequest: () -> Unit,
+    onConfirm: () -> Unit,
+    title: String,
+    content: String
+) {
+    BasicDialog(
+        onDismissRequest = onDismissRequest
+    ) {
+        DialogTitle(text = title)
+        ItemSpacer()
+        ItemText(text = content)
+        Spacer(modifier = Modifier.height(Dimens.outerVerticalPadding * 2))
+        TextButton(
+            onClick = {
+                onConfirm()
+            },
+            modifier = Modifier
+                .padding(horizontal = Dimens.outerHorizontalPadding),
+            text = stringResource(id = R.string.confirm).uppercase()
+        )
+    }
+}
+
+/**
  * YesNoDialog
  */
 @UnstableSaltApi
@@ -84,43 +115,61 @@ fun YesNoDialog(
     title: String,
     content: String
 ) {
-    Dialog(
+    BasicDialog(
         onDismissRequest = onDismissRequest
+    ) {
+        DialogTitle(text = title)
+        ItemSpacer()
+        ItemText(text = content)
+        Spacer(modifier = Modifier.height(Dimens.outerVerticalPadding * 2))
+        Row(
+            modifier = Modifier.padding(horizontal = Dimens.outerHorizontalPadding)
+        ) {
+            TextButton(
+                onClick = {
+                    onDismissRequest()
+                },
+                modifier = Modifier
+                    .weight(1f),
+                text = stringResource(id = R.string.cancel).uppercase(),
+                textColor = SaltTheme.colors.subText,
+                backgroundColor = Color.Transparent
+            )
+            Spacer(modifier = Modifier.width(Dimens.contentPadding))
+            TextButton(
+                onClick = {
+                    onConfirm()
+                },
+                modifier = Modifier
+                    .weight(1f),
+                text = stringResource(id = R.string.confirm).uppercase()
+            )
+        }
+    }
+}
+
+/**
+ * The basic dialog has default corner background and vertical padding
+ */
+@Composable
+private fun BasicDialog(
+    onDismissRequest: () -> Unit,
+    properties: DialogProperties = DialogProperties(),
+    content: @Composable () -> Unit
+) {
+    Dialog(
+        onDismissRequest = onDismissRequest,
+        properties = properties
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(20.dp))
+                .clip(RoundedCornerShape(DialogCorner))
                 .background(color = SaltTheme.colors.background)
+                .padding(vertical = Dimens.outerVerticalPadding * 2)
+            // .background(Color.Blue)
         ) {
-            ItemSpacer()
-            DialogTitle(text = title)
-            ItemText(text = content)
-            ItemSpacer()
-            Row(
-                modifier = Modifier.padding(horizontal = Dimens.outerHorizontalPadding, vertical = Dimens.outerVerticalPadding)
-            ) {
-                TextButton(
-                    onClick = {
-                        onDismissRequest()
-                    },
-                    modifier = Modifier
-                        .weight(1f),
-                    text = stringResource(id = R.string.cancel).uppercase(),
-                    textColor = SaltTheme.colors.subText,
-                    backgroundColor = Color.Transparent
-                )
-                Spacer(modifier = Modifier.width(Dimens.contentPadding))
-                TextButton(
-                    onClick = {
-                        onConfirm()
-                    },
-                    modifier = Modifier
-                        .weight(1f),
-                    text = stringResource(id = R.string.confirm).uppercase()
-                )
-            }
-            ItemSpacer()
+            content()
         }
     }
 }
@@ -131,9 +180,11 @@ private fun DialogTitle(
 ) {
     Text(
         text = text,
-        modifier = Modifier.padding(horizontal = Dimens.outerHorizontalPadding, vertical = Dimens.outerVerticalPadding),
+        modifier = Modifier.padding(horizontal = Dimens.outerHorizontalPadding),
         color = SaltTheme.colors.text,
         fontSize = 18.sp,
         fontWeight = FontWeight.Bold
     )
 }
+
+private val DialogCorner = 20.dp
