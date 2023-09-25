@@ -11,16 +11,18 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.dynamicDarkColorScheme
+import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import com.moriafly.salt.ui.BottomBar
 import com.moriafly.salt.ui.BottomBarItem
-import com.moriafly.salt.ui.DynamicSaltTheme
 import com.moriafly.salt.ui.Item
 import com.moriafly.salt.ui.ItemCheck
 import com.moriafly.salt.ui.ItemContainer
@@ -39,6 +41,7 @@ import com.moriafly.salt.ui.darkSaltColors
 import com.moriafly.salt.ui.dialog.YesDialog
 import com.moriafly.salt.ui.dialog.YesNoDialog
 import com.moriafly.salt.ui.lightSaltColors
+import com.moriafly.salt.ui.saltColorsByColorScheme
 
 class MainActivity : ComponentActivity() {
 
@@ -46,21 +49,28 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                DynamicSaltTheme {
-                    MainUI()
+            val context = LocalContext.current
+            val isSystemInDarkTheme = isSystemInDarkTheme()
+
+            val colors = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                val colorScheme = if (isSystemInDarkTheme) {
+                    dynamicDarkColorScheme(context)
+                } else {
+                    dynamicLightColorScheme(context)
                 }
+                saltColorsByColorScheme(colorScheme)
             } else {
-                val colors = if (isSystemInDarkTheme()) {
+                if (isSystemInDarkTheme) {
                     darkSaltColors()
                 } else {
                     lightSaltColors()
                 }
-                SaltTheme(
-                    colors = colors
-                ) {
-                    MainUI()
-                }
+            }
+
+            SaltTheme(
+                colors = colors
+            ) {
+                MainUI()
             }
         }
     }
@@ -249,7 +259,6 @@ private fun MainUI() {
                 if (yesDialog) {
                     YesDialog(
                         onDismissRequest = { yesDialog = false },
-                        onConfirm = { yesDialog = false },
                         title = "YesDialog",
                         content = "这是一个是否确认的对话框"
                     )

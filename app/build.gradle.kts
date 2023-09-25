@@ -58,6 +58,7 @@ dependencies {
     implementation(libs.material)
     implementation(project(path = ":ui"))
     implementation(libs.compose.material)
+    implementation(libs.compose.material3)
     implementation(libs.compose.animation)
     implementation(libs.compose.ui)
     implementation(libs.compose.ui.util)
