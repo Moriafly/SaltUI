@@ -27,6 +27,7 @@ import androidx.compose.ui.unit.dp
 /**
  * Use .sp, https://issuetracker.google.com/issues/190644747
  */
+@Deprecated("Use .sp")
 @Stable
 val Int.textDp: TextUnit
     @Composable get() = textDp(density = LocalDensity.current)
@@ -34,6 +35,7 @@ val Int.textDp: TextUnit
 /**
  * Use .sp, https://issuetracker.google.com/issues/190644747
  */
+@Deprecated("Use .sp")
 @Stable
 val Float.textDp: TextUnit
     @Composable get() = textDp(density = LocalDensity.current)
@@ -41,6 +43,7 @@ val Float.textDp: TextUnit
 /**
  * Use .sp, https://issuetracker.google.com/issues/190644747
  */
+@Deprecated("Use .sp")
 @Stable
 val Double.textDp: TextUnit
     @Composable get() = textDp(density = LocalDensity.current)
