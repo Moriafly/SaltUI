@@ -41,14 +41,13 @@ import com.moriafly.salt.ui.Dimens
 import com.moriafly.salt.ui.ItemSpacer
 import com.moriafly.salt.ui.ItemText
 import com.moriafly.salt.ui.R
-import com.moriafly.salt.ui.RoundedColumn
 import com.moriafly.salt.ui.SaltTheme
 import com.moriafly.salt.ui.TextButton
 import com.moriafly.salt.ui.UnstableSaltApi
 
 @UnstableSaltApi
 @Composable
-fun BottomSheetDialog(
+fun ColumnBottomSheetDialog(
     onDismissRequest: () -> Unit,
     content: @Composable () -> Unit
 ) {

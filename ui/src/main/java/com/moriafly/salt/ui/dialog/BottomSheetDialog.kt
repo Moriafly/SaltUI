@@ -67,7 +67,7 @@ import java.util.*
  * dialog's window.
  */
 @Immutable
-internal class BottomSheetDialogProperties constructor(
+class BottomSheetDialogProperties constructor(
     val dismissOnBackPress: Boolean = true,
     val dismissOnClickOutside: Boolean = true,
     val dismissWithAnimation: Boolean = false,
@@ -125,7 +125,7 @@ internal class BottomSheetDialogProperties constructor(
  * @see [com.google.android.material.bottomsheet.BottomSheetBehavior]
  */
 @Immutable
-internal class BottomSheetBehaviorProperties(
+class BottomSheetBehaviorProperties(
     val state: State = State.Collapsed,
     val maxWidth: Size = Size.NotSet,
     val maxHeight: Size = Size.NotSet,
@@ -228,7 +228,7 @@ internal class BottomSheetBehaviorProperties(
  */
 
 @Immutable
-internal class NavigationBarProperties(
+class NavigationBarProperties(
     val color: Color = Color.Unspecified,
     val darkIcons: Boolean = color.luminance() > 0.5f,
     val navigationBarContrastEnforced: Boolean = true,
@@ -269,7 +269,7 @@ private val BlackScrimCompositeOver: (Color) -> Color = { original ->
  * @param content The content to be displayed inside the dialog.
  */
 @Composable
-internal fun BottomSheetDialog(
+fun BottomSheetDialog(
     onDismissRequest: () -> Unit,
     properties: BottomSheetDialogProperties = BottomSheetDialogProperties(),
     content: @Composable () -> Unit
@@ -324,7 +324,7 @@ internal fun BottomSheetDialog(
  *
  * Implemented by dialog's root layout.
  */
-internal interface DialogWindowProvider {
+interface DialogWindowProvider {
     val window: Window
 }
 
@@ -497,6 +497,7 @@ private class BottomSheetDialogWrapper(
                     // contrast
                     transformColorForLightContent(color)
                 }
+
                 else -> color
             }.toArgb()
         }
