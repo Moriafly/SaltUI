@@ -5,7 +5,7 @@ plugins {
     `maven-publish`
 }
 
-val libraryVersionName = "0.1.0-dev26"
+val libraryVersionName = "0.1.0-dev27"
 
 android {
     namespace = "com.moriafly.salt.ui"
