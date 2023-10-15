@@ -19,6 +19,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import com.moriafly.salt.ui.BottomBar
@@ -27,7 +28,10 @@ import com.moriafly.salt.ui.Item
 import com.moriafly.salt.ui.ItemCheck
 import com.moriafly.salt.ui.ItemContainer
 import com.moriafly.salt.ui.ItemEdit
+import com.moriafly.salt.ui.ItemOuter
 import com.moriafly.salt.ui.ItemOuterLargeTitle
+import com.moriafly.salt.ui.ItemOuterTitle
+import com.moriafly.salt.ui.ItemSpacer
 import com.moriafly.salt.ui.ItemSwitcher
 import com.moriafly.salt.ui.ItemTitle
 import com.moriafly.salt.ui.ItemValue
@@ -269,6 +273,19 @@ private fun MainUI() {
                     },
                     text = "YesDialog"
                 )
+            }
+
+            RoundedColumn(
+                color = Color.Unspecified
+            ) {
+                ItemOuterTitle(text = "猜你在找")
+                ItemOuter(
+                    onClick = {
+
+                    },
+                    text = "你好呀"
+                )
+                ItemSpacer()
             }
 
         }

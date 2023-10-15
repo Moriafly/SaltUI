@@ -32,6 +32,23 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.sp
 
 /**
+ * Build content interface title text (Out of RoundedColumn)
+ */
+@Composable
+fun ItemOuterTitle(
+    text: String
+) {
+    Text(
+        text = text,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = Dimens.innerHorizontalPadding, vertical = Dimens.innerVerticalPadding),
+        fontWeight = FontWeight.Bold,
+        style = SaltTheme.textStyles.sub
+    )
+}
+
+/**
  * Can replace ItemTitle
  */
 @UnstableSaltApi
@@ -60,6 +77,29 @@ fun ItemOuterLargeTitle(
             style = SaltTheme.textStyles.paragraph
         )
     }
+}
+
+/**
+ * ItemOuter
+ */
+@UnstableSaltApi
+@Composable
+fun ItemOuter(
+    onClick: () -> Unit,
+    text: String
+) {
+    Text(
+        text = text,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = Dimens.outerHorizontalPadding, vertical = Dimens.innerVerticalPadding)
+            .fadeClickable {
+                onClick()
+            },
+        color = SaltTheme.colors.highlight,
+        fontWeight = FontWeight.Bold,
+        style = SaltTheme.textStyles.main
+    )
 }
 
 /**
