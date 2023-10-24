@@ -82,11 +82,13 @@ fun ColumnBottomSheetDialog(
 @Composable
 fun YesDialog(
     onDismissRequest: () -> Unit,
+    properties: DialogProperties = DialogProperties(),
     title: String,
     content: String
 ) {
     BasicDialog(
-        onDismissRequest = onDismissRequest
+        onDismissRequest = onDismissRequest,
+        properties = properties
     ) {
         DialogTitle(text = title)
         ItemSpacer()
@@ -111,11 +113,13 @@ fun YesDialog(
 fun YesNoDialog(
     onDismissRequest: () -> Unit,
     onConfirm: () -> Unit,
+    properties: DialogProperties = DialogProperties(),
     title: String,
     content: String
 ) {
     BasicDialog(
-        onDismissRequest = onDismissRequest
+        onDismissRequest = onDismissRequest,
+        properties = properties
     ) {
         DialogTitle(text = title)
         ItemSpacer()
