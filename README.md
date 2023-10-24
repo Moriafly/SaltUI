@@ -156,6 +156,7 @@ YesDialog 和 YesNoDialog 最新版本对各部分边距进行了调优，达到
 | BottomSheetDialog | 默认底部对话框       |
 | YesDialog         | 确认对话框（类似默认通知） |
 | YesNoDialog       | 请求确认对话框       |
+| InputDialog       | 输入文本对话框       |
 
 ## 贡献
 
