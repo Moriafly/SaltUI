@@ -8,7 +8,7 @@ espresso-core = "3.5.1"
 appcompat = "1.6.1"
 material = "1.8.0"
 material3 = "1.1.1"
-compose = "1.5.1"
+compose = "1.5.4"
 activity-compose = "1.7.0"
 
 [libraries]
