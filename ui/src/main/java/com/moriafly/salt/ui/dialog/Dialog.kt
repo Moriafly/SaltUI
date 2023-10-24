@@ -38,6 +38,7 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.moriafly.salt.ui.Dimens
+import com.moriafly.salt.ui.ItemEdit
 import com.moriafly.salt.ui.ItemSpacer
 import com.moriafly.salt.ui.ItemText
 import com.moriafly.salt.ui.R
@@ -120,6 +121,58 @@ fun YesNoDialog(
         ItemSpacer()
         ItemText(text = content)
         Spacer(modifier = Modifier.height(Dimens.outerVerticalPadding * 2))
+        Row(
+            modifier = Modifier.padding(horizontal = Dimens.outerHorizontalPadding)
+        ) {
+            TextButton(
+                onClick = {
+                    onDismissRequest()
+                },
+                modifier = Modifier
+                    .weight(1f),
+                text = stringResource(id = R.string.cancel).uppercase(),
+                textColor = SaltTheme.colors.subText,
+                backgroundColor = Color.Transparent
+            )
+            Spacer(modifier = Modifier.width(Dimens.contentPadding))
+            TextButton(
+                onClick = {
+                    onConfirm()
+                },
+                modifier = Modifier
+                    .weight(1f),
+                text = stringResource(id = R.string.confirm).uppercase()
+            )
+        }
+    }
+}
+
+/**
+ * Input text dialog
+ */
+@UnstableSaltApi
+@Composable
+fun InputDialog(
+    onDismissRequest: () -> Unit,
+    onConfirm: () -> Unit,
+    properties: DialogProperties = DialogProperties(),
+    title: String,
+    text: String,
+    onChange: (String) -> Unit,
+    hint: String? = null
+) {
+    BasicDialog(
+        onDismissRequest = onDismissRequest,
+        properties = properties
+    ) {
+        DialogTitle(text = title)
+        Spacer(modifier = Modifier.height(4.dp))
+        ItemEdit(
+            text = text,
+            onChange = onChange,
+            hint = hint
+        )
+        Spacer(modifier = Modifier.height(4.dp))
         Row(
             modifier = Modifier.padding(horizontal = Dimens.outerHorizontalPadding)
         ) {

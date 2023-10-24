@@ -42,6 +42,7 @@ import com.moriafly.salt.ui.TextButton
 import com.moriafly.salt.ui.TitleBar
 import com.moriafly.salt.ui.UnstableSaltApi
 import com.moriafly.salt.ui.darkSaltColors
+import com.moriafly.salt.ui.dialog.InputDialog
 import com.moriafly.salt.ui.dialog.YesDialog
 import com.moriafly.salt.ui.dialog.YesNoDialog
 import com.moriafly.salt.ui.lightSaltColors
@@ -272,6 +273,30 @@ private fun MainUI() {
                         yesDialog = true
                     },
                     text = "YesDialog"
+                )
+
+                var inputDialog by remember { mutableStateOf(false) }
+                if (inputDialog) {
+                    var inputText by remember { mutableStateOf("") }
+                    InputDialog(
+                        onDismissRequest = {
+                            inputDialog = false
+                        },
+                        onConfirm = {
+                            inputDialog = false
+                        },
+                        title = "文本输入",
+                        text = inputText,
+                        onChange = {
+                            inputText = it
+                        }
+                    )
+                }
+                Item(
+                    onClick = {
+                        inputDialog = true
+                    },
+                    text = "InputDialog"
                 )
             }
 
