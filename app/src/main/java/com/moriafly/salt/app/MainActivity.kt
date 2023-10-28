@@ -249,20 +249,9 @@ private fun MainUI() {
             }
 
             RoundedColumn {
-                var popup by remember { mutableStateOf(false) }
                 ItemPopup(
-                    onClick = {
-                        popup = true
-                    },
                     text = "Popup Item",
                     sub = "Value"
-                )
-
-                PopupMenu(
-                    expanded = popup,
-                    onDismissRequest = {
-                        popup = false
-                    }
                 ) {
                     PopupMenuItem(
                         onClick = { /*TODO*/ },

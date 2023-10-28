@@ -27,7 +27,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.IntrinsicSize
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -40,7 +39,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalDensity
@@ -66,7 +64,7 @@ fun PopupMenu(
     expanded: Boolean,
     onDismissRequest: () -> Unit,
     modifier: Modifier = Modifier,
-    offset: DpOffset = DpOffset(0.dp, 0.dp),
+    offset: DpOffset = DpOffset(16.dp, 0.dp),
     properties: PopupProperties = PopupProperties(focusable = true),
     content: @Composable ColumnScope.() -> Unit
 ) {
@@ -166,8 +164,8 @@ internal fun DropdownMenuContent(
                 elevation = MenuElevation,
                 shape = RoundedCornerShape(16.dp),
                 clip = true,
-                ambientColor = SaltTheme.colors.subText.copy(alpha = 0.5f),
-                spotColor = SaltTheme.colors.subText.copy(alpha = 0.5f),
+                ambientColor = SaltTheme.colors.subText.copy(alpha = 0.75f),
+                spotColor = SaltTheme.colors.subText.copy(alpha = 0.75f),
             )
             .background(color = SaltTheme.colors.background),
     ) {

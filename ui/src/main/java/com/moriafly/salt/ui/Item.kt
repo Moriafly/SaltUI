@@ -27,6 +27,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -47,6 +48,9 @@ import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -62,6 +66,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.moriafly.salt.ui.popup.PopupMenu
+import com.moriafly.salt.ui.popup.PopupMenuItem
+import com.moriafly.salt.ui.popup.PopupMenuItemPosition
 
 /**
  * Build content interface title text.
@@ -275,60 +282,73 @@ fun ItemSwitcher(
 @UnstableSaltApi
 @Composable
 fun ItemPopup(
-    onClick: () -> Unit,
     enabled: Boolean = true,
     iconPainter: Painter? = null,
     iconPaddingValues: PaddingValues = PaddingValues(0.dp),
     iconColor: Color? = null,
     text: String,
-    sub: String
+    sub: String,
+    content: @Composable ColumnScope.() -> Unit
 ) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .heightIn(min = 56.dp)
-            .alpha(if (enabled) 1f else 0.5f)
-            .clickable(enabled = enabled) {
-                onClick()
-            }
-            .padding(horizontal = Dimens.innerHorizontalPadding, vertical = Dimens.innerVerticalPadding),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        iconPainter?.let {
-            Image(
-                modifier = Modifier
-                    .size(24.dp)
-                    .padding(iconPaddingValues),
-                painter = iconPainter,
-                contentDescription = null,
-                colorFilter = iconColor?.let { ColorFilter.tint(iconColor) }
-            )
-            Spacer(modifier = Modifier.width(Dimens.contentPadding))
-        }
-        Column(
+    var popup by remember { mutableStateOf(false) }
+    Box {
+        Row(
             modifier = Modifier
-                .weight(1f)
                 .fillMaxWidth()
+                .heightIn(min = 56.dp)
+                .alpha(if (enabled) 1f else 0.5f)
+                .clickable(enabled = enabled) {
+                    popup = true
+                }
+                .padding(horizontal = Dimens.innerHorizontalPadding, vertical = Dimens.innerVerticalPadding),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
-                text = text,
-                color = if (enabled) SaltTheme.colors.text else SaltTheme.colors.subText,
-                style = SaltTheme.textStyles.main
+            iconPainter?.let {
+                Image(
+                    modifier = Modifier
+                        .size(24.dp)
+                        .padding(iconPaddingValues),
+                    painter = iconPainter,
+                    contentDescription = null,
+                    colorFilter = iconColor?.let { ColorFilter.tint(iconColor) }
+                )
+                Spacer(modifier = Modifier.width(Dimens.contentPadding))
+            }
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+            ) {
+                Text(
+                    text = text,
+                    color = if (enabled) SaltTheme.colors.text else SaltTheme.colors.subText,
+                    style = SaltTheme.textStyles.main
+                )
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    text = sub,
+                    style = SaltTheme.textStyles.sub
+                )
+            }
+            Spacer(modifier = Modifier.width(Dimens.contentPadding))
+            Icon(
+                modifier = Modifier
+                    .size(20.dp),
+                painter = painterResource(id = R.drawable.ic_arrow_drop_down),
+                contentDescription = null,
+                tint = SaltTheme.colors.subText
             )
-            Spacer(modifier = Modifier.height(2.dp))
-            Text(
-                text = sub,
-                style = SaltTheme.textStyles.sub
-            )
+
+
         }
-        Spacer(modifier = Modifier.width(Dimens.contentPadding))
-        Icon(
-            modifier = Modifier
-                .size(20.dp),
-            painter = painterResource(id = R.drawable.ic_arrow_drop_down),
-            contentDescription = null,
-            tint = SaltTheme.colors.subText
-        )
+        PopupMenu(
+            expanded = popup,
+            onDismissRequest = {
+                popup = false
+            }
+        ) {
+            content()
+        }
     }
 }
 

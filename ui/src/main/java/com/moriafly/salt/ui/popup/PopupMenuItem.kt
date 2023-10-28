@@ -54,7 +54,7 @@ fun PopupMenuItem(
                 maxWidth = DropdownMenuItemDefaultMaxWidth,
                 minHeight = 0.dp
             )
-            .background(if (selected) SaltTheme.colors.subBackground else Color.Unspecified)
+            .background(if (selected) SaltTheme.colors.highlight.copy(alpha = 0.1f) else Color.Unspecified)
             .padding(Dimens.innerHorizontalPadding, Dimens.innerVerticalPadding)
     ) {
         if (position == PopupMenuItemPosition.TOP) {
