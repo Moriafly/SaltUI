@@ -270,6 +270,69 @@ fun ItemSwitcher(
 }
 
 /**
+ * Popup Item
+ */
+@UnstableSaltApi
+@Composable
+fun ItemPopup(
+    onClick: () -> Unit,
+    enabled: Boolean = true,
+    iconPainter: Painter? = null,
+    iconPaddingValues: PaddingValues = PaddingValues(0.dp),
+    iconColor: Color? = null,
+    text: String,
+    sub: String
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .heightIn(min = 56.dp)
+            .alpha(if (enabled) 1f else 0.5f)
+            .clickable(enabled = enabled) {
+                onClick()
+            }
+            .padding(horizontal = Dimens.innerHorizontalPadding, vertical = Dimens.innerVerticalPadding),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        iconPainter?.let {
+            Image(
+                modifier = Modifier
+                    .size(24.dp)
+                    .padding(iconPaddingValues),
+                painter = iconPainter,
+                contentDescription = null,
+                colorFilter = iconColor?.let { ColorFilter.tint(iconColor) }
+            )
+            Spacer(modifier = Modifier.width(Dimens.contentPadding))
+        }
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxWidth()
+        ) {
+            Text(
+                text = text,
+                color = if (enabled) SaltTheme.colors.text else SaltTheme.colors.subText,
+                style = SaltTheme.textStyles.main
+            )
+            Spacer(modifier = Modifier.height(2.dp))
+            Text(
+                text = sub,
+                style = SaltTheme.textStyles.sub
+            )
+        }
+        Spacer(modifier = Modifier.width(Dimens.contentPadding))
+        Icon(
+            modifier = Modifier
+                .size(20.dp),
+            painter = painterResource(id = R.drawable.ic_arrow_drop_down),
+            contentDescription = null,
+            tint = SaltTheme.colors.subText
+        )
+    }
+}
+
+/**
  * Build a switcher in the content interface
  *
  * @param state the state of the switcher

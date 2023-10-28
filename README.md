@@ -158,6 +158,13 @@ YesDialog 和 YesNoDialog 最新版本对各部分边距进行了调优，达到
 | YesNoDialog       | 请求确认对话框       |
 | InputDialog       | 输入文本对话框       |
 
+### Popup
+
+| 名称            | 用途     |
+|---------------|--------|
+| PopupMenu     | 弹出菜单   |
+| PopupMenuItem | 弹出菜单选项 |
+
 ## 贡献
 
 [贡献者行为准则](CODE_OF_CONDUCT.md)
