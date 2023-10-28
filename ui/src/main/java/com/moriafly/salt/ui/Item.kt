@@ -38,6 +38,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
@@ -69,6 +71,7 @@ import androidx.compose.ui.unit.sp
 import com.moriafly.salt.ui.popup.PopupMenu
 import com.moriafly.salt.ui.popup.PopupMenuItem
 import com.moriafly.salt.ui.popup.PopupMenuItemPosition
+import com.moriafly.salt.ui.popup.PopupState
 
 /**
  * Build content interface title text.
@@ -278,10 +281,13 @@ fun ItemSwitcher(
 
 /**
  * Popup Item
+ *
+ * @param state the state of popup
  */
 @UnstableSaltApi
 @Composable
 fun ItemPopup(
+    state: PopupState,
     enabled: Boolean = true,
     iconPainter: Painter? = null,
     iconPaddingValues: PaddingValues = PaddingValues(0.dp),
@@ -290,7 +296,6 @@ fun ItemPopup(
     sub: String,
     content: @Composable ColumnScope.() -> Unit
 ) {
-    var popup by remember { mutableStateOf(false) }
     Box {
         Row(
             modifier = Modifier
@@ -298,7 +303,7 @@ fun ItemPopup(
                 .heightIn(min = 56.dp)
                 .alpha(if (enabled) 1f else 0.5f)
                 .clickable(enabled = enabled) {
-                    popup = true
+                    state.expend()
                 }
                 .padding(horizontal = Dimens.innerHorizontalPadding, vertical = Dimens.innerVerticalPadding),
             verticalAlignment = Alignment.CenterVertically
@@ -342,9 +347,9 @@ fun ItemPopup(
 
         }
         PopupMenu(
-            expanded = popup,
+            expanded = state.expend,
             onDismissRequest = {
-                popup = false
+                state.dismiss()
             }
         ) {
             content()

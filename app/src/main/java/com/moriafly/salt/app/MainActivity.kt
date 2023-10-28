@@ -22,8 +22,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.window.Popup
-import androidx.compose.ui.window.PopupPositionProvider
 import com.moriafly.salt.ui.BottomBar
 import com.moriafly.salt.ui.BottomBarItem
 import com.moriafly.salt.ui.Item
@@ -32,7 +30,6 @@ import com.moriafly.salt.ui.ItemContainer
 import com.moriafly.salt.ui.ItemEdit
 import com.moriafly.salt.ui.ItemOuter
 import com.moriafly.salt.ui.ItemOuterLargeTitle
-import com.moriafly.salt.ui.ItemOuterTextButton
 import com.moriafly.salt.ui.ItemOuterTitle
 import com.moriafly.salt.ui.ItemPopup
 import com.moriafly.salt.ui.ItemSpacer
@@ -50,9 +47,9 @@ import com.moriafly.salt.ui.dialog.InputDialog
 import com.moriafly.salt.ui.dialog.YesDialog
 import com.moriafly.salt.ui.dialog.YesNoDialog
 import com.moriafly.salt.ui.lightSaltColors
-import com.moriafly.salt.ui.popup.PopupMenu
 import com.moriafly.salt.ui.popup.PopupMenuItem
 import com.moriafly.salt.ui.popup.PopupMenuItemPosition
+import com.moriafly.salt.ui.popup.rememberPopupState
 import com.moriafly.salt.ui.saltColorsByColorScheme
 
 class MainActivity : ComponentActivity() {
@@ -249,19 +246,25 @@ private fun MainUI() {
             }
 
             RoundedColumn {
+                val popupState = rememberPopupState()
                 ItemPopup(
+                    state = popupState,
                     text = "Popup Item",
                     sub = "Value"
                 ) {
                     PopupMenuItem(
-                        onClick = { /*TODO*/ },
+                        onClick = {
+                            popupState.dismiss()
+                        },
                         selected = true,
                         position = PopupMenuItemPosition.TOP,
                         text = "选项一",
                         sub = "这是选项一的介绍信息"
                     )
                     PopupMenuItem(
-                        onClick = { /*TODO*/ },
+                        onClick = {
+                            popupState.dismiss()
+                        },
                         selected = false,
                         position = PopupMenuItemPosition.BOTTOM,
                         text = "选项二"
