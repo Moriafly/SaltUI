@@ -63,9 +63,11 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.moriafly.salt.ui.popup.PopupMenu
@@ -262,8 +264,16 @@ fun ItemSwitcher(
                 }
                 .padding(5.dp)
         ) {
+            val layoutDirection = LocalLayoutDirection.current
             val translationX by animateDpAsState(
-                targetValue = if (state) 20.dp else 0.dp,
+                targetValue = if (state) {
+                    when (layoutDirection) {
+                        LayoutDirection.Ltr -> 20.dp
+                        LayoutDirection.Rtl -> (-20).dp
+                    }
+                } else {
+                    0.dp
+                },
                 animationSpec = spring(),
                 label = "startPadding"
             )
