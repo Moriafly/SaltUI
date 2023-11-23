@@ -92,10 +92,11 @@ fun TitleBar(
 @UnstableSaltApi
 @Composable
 fun BottomBar(
+    modifier: Modifier = Modifier,
     content: @Composable RowScope.() -> Unit
 ) {
     Row(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .height(56.dp)
             .background(color = SaltTheme.colors.subBackground)
