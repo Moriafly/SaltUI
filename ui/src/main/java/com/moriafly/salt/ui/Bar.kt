@@ -34,6 +34,7 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -93,13 +94,14 @@ fun TitleBar(
 @Composable
 fun BottomBar(
     modifier: Modifier = Modifier,
+    backgroundColor: Color = SaltTheme.colors.subBackground,
     content: @Composable RowScope.() -> Unit
 ) {
     Row(
         modifier = modifier
             .fillMaxWidth()
             .height(56.dp)
-            .background(color = SaltTheme.colors.subBackground)
+            .background(color = backgroundColor)
     ) {
         content()
     }
