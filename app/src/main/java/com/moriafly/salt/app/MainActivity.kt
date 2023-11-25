@@ -286,19 +286,9 @@ private fun MainUI() {
                         onClick = {
                             popupState.dismiss()
                         },
-                        text = "其他选项"
-                    )
-                    PopupMenuItem(
-                        onClick = {
-                            popupState.dismiss()
-                        },
-                        text = "其他选项"
-                    )
-                    PopupMenuItem(
-                        onClick = {
-                            popupState.dismiss()
-                        },
-                        text = "其他选项"
+                        text = "二维码二维码二维码",
+                        iconPainter = painterResource(id = R.drawable.ic_qr_code),
+                        iconColor = SaltTheme.colors.text
                     )
                     PopupMenuItem(
                         onClick = {

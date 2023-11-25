@@ -17,18 +17,26 @@
 
 package com.moriafly.salt.ui.popup
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.unit.dp
 import com.moriafly.salt.ui.Dimens
 import com.moriafly.salt.ui.SaltTheme
@@ -40,9 +48,12 @@ fun PopupMenuItem(
     onClick: () -> Unit,
     selected: Boolean? = null,
     text: String,
-    sub: String? = null
+    sub: String? = null,
+    iconPainter: Painter? = null,
+    iconPaddingValues: PaddingValues = PaddingValues(0.dp),
+    iconColor: Color? = null
 ) {
-    Column(
+    Row(
         modifier = Modifier
             .clickable {
                 onClick()
@@ -54,19 +65,37 @@ fun PopupMenuItem(
                 minHeight = 0.dp
             )
             .background(if (selected == true) SaltTheme.colors.highlight.copy(alpha = 0.1f) else Color.Unspecified)
-            .padding(Dimens.innerHorizontalPadding, Dimens.innerVerticalPadding)
+            .padding(Dimens.innerHorizontalPadding, Dimens.innerVerticalPadding),
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(
-            text = text,
-            color = if (selected == true) SaltTheme.colors.highlight else SaltTheme.colors.text,
-            style = SaltTheme.textStyles.main
-        )
-        sub?.let {
-            Spacer(modifier = Modifier.height(2.dp))
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxWidth()
+        ) {
             Text(
-                text = sub,
-                color = if (selected == true) SaltTheme.colors.highlight else SaltTheme.colors.subText,
-                style = SaltTheme.textStyles.sub
+                text = text,
+                color = if (selected == true) SaltTheme.colors.highlight else SaltTheme.colors.text,
+                style = SaltTheme.textStyles.main
+            )
+            sub?.let {
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    text = sub,
+                    color = if (selected == true) SaltTheme.colors.highlight else SaltTheme.colors.subText,
+                    style = SaltTheme.textStyles.sub
+                )
+            }
+        }
+        iconPainter?.let {
+            Spacer(modifier = Modifier.width(Dimens.contentPadding * 2))
+            Image(
+                modifier = Modifier
+                    .size(24.dp)
+                    .padding(iconPaddingValues),
+                painter = iconPainter,
+                contentDescription = null,
+                colorFilter = iconColor?.let { ColorFilter.tint(iconColor) }
             )
         }
     }

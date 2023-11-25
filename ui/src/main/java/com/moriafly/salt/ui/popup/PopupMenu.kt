@@ -151,7 +151,7 @@ internal fun DropdownMenuContent(
         }
     }
     val shape = RoundedCornerShape(SaltTheme.dimens.corner)
-    val shadowColor = SaltTheme.colors.subText.copy(alpha = 0.5f)
+    val shadowColor = SaltTheme.colors.subText.copy(alpha = 0.75f)
     Box(
         modifier = modifier
             .graphicsLayer {
