@@ -1,6 +1,6 @@
 # SaltUI
 
-SaltUI（UI for Salt Player） 是提取自[椒盐音乐](https://github.com/Moriafly/SaltPlayerSource)的 UI 风格组件，用以快速生成椒盐音乐风格用户界面。
+SaltUI（UI for Salt Player） 是提取自[椒盐音乐](https://github.com/Moriafly/SaltPlayerSource) UI 风格、适用于 Android Jetpack Compose 的组件，用以快速生成椒盐音乐风格用户界面。
 
 本库将会广泛用以椒盐系列 App 开发，以达到快速开发目的。
 
