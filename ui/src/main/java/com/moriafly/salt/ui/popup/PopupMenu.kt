@@ -17,7 +17,6 @@
 
 package com.moriafly.salt.ui.popup
 
-import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.tween
@@ -38,7 +37,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalDensity
@@ -104,25 +103,23 @@ internal fun DropdownMenuContent(
     content: @Composable ColumnScope.() -> Unit
 ) {
     // Menu open/close animation.
-    val transition = updateTransition(expandedStates, "DropDownMenu")
+    val transition = updateTransition(transitionState = expandedStates, label = "")
 
     val scale by transition.animateFloat(
         transitionSpec = {
             if (false isTransitioningTo true) {
                 // Dismissed to expanded
                 tween(
-                    durationMillis = InTransitionDuration,
-                    easing = LinearOutSlowInEasing
+                    durationMillis = InTransitionDuration
                 )
             } else {
                 // Expanded to dismissed.
                 tween(
-                    durationMillis = 1,
-                    delayMillis = OutTransitionDuration - 1
+                    durationMillis = OutTransitionDuration
                 )
             }
         },
-        label = "scale"
+        label = ""
     ) {
         if (it) {
             // Menu is expanded.
@@ -142,7 +139,8 @@ internal fun DropdownMenuContent(
                 // Expanded to dismissed.
                 tween(durationMillis = OutTransitionDuration)
             }
-        }, label = ""
+        },
+        label = ""
     ) {
         if (it) {
             // Menu is expanded.
@@ -152,27 +150,27 @@ internal fun DropdownMenuContent(
             0f
         }
     }
+    val shape = RoundedCornerShape(SaltTheme.dimens.corner)
+    val shadowColor = SaltTheme.colors.subText.copy(alpha = 0.5f)
     Box(
-        modifier = Modifier
+        modifier = modifier
             .graphicsLayer {
-                scaleX = scale
-                scaleY = scale
+                this.scaleX = scale
+                this.scaleY = scale
                 this.alpha = alpha
-                transformOrigin = transformOriginState.value
-            }
-            .shadow(
-                elevation = MenuElevation,
-                shape = RoundedCornerShape(16.dp),
-                clip = true,
-                ambientColor = SaltTheme.colors.subText.copy(alpha = 0.75f),
-                spotColor = SaltTheme.colors.subText.copy(alpha = 0.75f),
-            )
-            .background(color = SaltTheme.colors.background),
+                this.transformOrigin = transformOriginState.value
+                this.shadowElevation = MenuElevation.toPx()
+                this.shape = shape
+                this.ambientShadowColor = shadowColor
+                this.spotShadowColor = shadowColor
+            },
     ) {
         Column(
-            modifier = modifier
+            modifier = Modifier
                 // .padding(vertical = DropdownMenuVerticalPadding)
                 .width(IntrinsicSize.Max)
+                .clip(shape)
+                .background(color = SaltTheme.colors.subBackground)
                 .verticalScroll(rememberScrollState()),
             content = content
         )
@@ -218,6 +216,7 @@ internal data class DropdownMenuPositionProvider(
     val density: Density,
     val onPositionCalculated: (IntRect, IntRect) -> Unit = { _, _ -> }
 ) : PopupPositionProvider {
+
     override fun calculatePosition(
         anchorBounds: IntRect,
         windowSize: IntSize,
@@ -271,16 +270,15 @@ internal data class DropdownMenuPositionProvider(
         )
         return IntOffset(x, y)
     }
+
 }
 
 // Menu open/close animation.
-internal const val InTransitionDuration = 30
-internal const val OutTransitionDuration = 75
-
+internal const val InTransitionDuration = 300
+internal const val OutTransitionDuration = 200
 
 internal val DropdownMenuVerticalPadding = 8.dp
 
 private val MenuElevation = 8.dp
-
 
 internal val MenuVerticalMargin = 72.dp

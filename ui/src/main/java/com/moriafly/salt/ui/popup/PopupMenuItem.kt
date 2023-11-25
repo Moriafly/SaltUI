@@ -38,8 +38,7 @@ import com.moriafly.salt.ui.UnstableSaltApi
 @Composable
 fun PopupMenuItem(
     onClick: () -> Unit,
-    selected: Boolean,
-    position: PopupMenuItemPosition = PopupMenuItemPosition.CENTER,
+    selected: Boolean? = null,
     text: String,
     sub: String? = null
 ) {
@@ -54,37 +53,25 @@ fun PopupMenuItem(
                 maxWidth = DropdownMenuItemDefaultMaxWidth,
                 minHeight = 0.dp
             )
-            .background(if (selected) SaltTheme.colors.highlight.copy(alpha = 0.1f) else Color.Unspecified)
+            .background(if (selected == true) SaltTheme.colors.highlight.copy(alpha = 0.1f) else Color.Unspecified)
             .padding(Dimens.innerHorizontalPadding, Dimens.innerVerticalPadding)
     ) {
-        if (position == PopupMenuItemPosition.TOP) {
-            Spacer(modifier = Modifier.height(4.dp))
-        }
         Text(
             text = text,
-            color = if (selected) SaltTheme.colors.highlight else SaltTheme.colors.text,
+            color = if (selected == true) SaltTheme.colors.highlight else SaltTheme.colors.text,
             style = SaltTheme.textStyles.main
         )
         sub?.let {
             Spacer(modifier = Modifier.height(2.dp))
             Text(
                 text = sub,
-                color = if (selected) SaltTheme.colors.highlight else SaltTheme.colors.subText,
+                color = if (selected == true) SaltTheme.colors.highlight else SaltTheme.colors.subText,
                 style = SaltTheme.textStyles.sub
             )
-        }
-        if (position == PopupMenuItemPosition.BOTTOM) {
-            Spacer(modifier = Modifier.height(4.dp))
         }
     }
 }
 
-enum class PopupMenuItemPosition {
-    TOP,
-    CENTER,
-    BOTTOM
-}
-
-private val DropdownMenuItemDefaultMinWidth = 112.dp
+private val DropdownMenuItemDefaultMinWidth = 180.dp
 private val DropdownMenuItemDefaultMaxWidth = 280.dp
 private val DropdownMenuItemDefaultMinHeight = 48.dp

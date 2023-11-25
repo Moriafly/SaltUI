@@ -52,7 +52,6 @@ import com.moriafly.salt.ui.dialog.YesDialog
 import com.moriafly.salt.ui.dialog.YesNoDialog
 import com.moriafly.salt.ui.lightSaltColors
 import com.moriafly.salt.ui.popup.PopupMenuItem
-import com.moriafly.salt.ui.popup.PopupMenuItemPosition
 import com.moriafly.salt.ui.popup.rememberPopupState
 import com.moriafly.salt.ui.saltColorsByColorScheme
 
@@ -65,23 +64,29 @@ class MainActivity : ComponentActivity() {
             val context = LocalContext.current
             val isSystemInDarkTheme = isSystemInDarkTheme()
 
-            val colors = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                val colorScheme = if (isSystemInDarkTheme) {
-                    dynamicDarkColorScheme(context)
-                } else {
-                    dynamicLightColorScheme(context)
-                }
-                saltColorsByColorScheme(colorScheme)
+//            val colors = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+//                val colorScheme = if (isSystemInDarkTheme) {
+//                    dynamicDarkColorScheme(context)
+//                } else {
+//                    dynamicLightColorScheme(context)
+//                }
+//                saltColorsByColorScheme(colorScheme)
+//            } else {
+//                if (isSystemInDarkTheme) {
+//                    darkSaltColors()
+//                } else {
+//                    lightSaltColors()
+//                }
+//            }
+
+            val colors = if (isSystemInDarkTheme) {
+                darkSaltColors()
             } else {
-                if (isSystemInDarkTheme) {
-                    darkSaltColors()
-                } else {
-                    lightSaltColors()
-                }
+                lightSaltColors()
             }
 
             CompositionLocalProvider(
-                LocalLayoutDirection provides LayoutDirection.Rtl
+                // LocalLayoutDirection provides LayoutDirection.Rtl
             ) {
                 SaltTheme(
                     colors = colors
@@ -266,7 +271,6 @@ private fun MainUI() {
                             popupState.dismiss()
                         },
                         selected = true,
-                        position = PopupMenuItemPosition.TOP,
                         text = "选项一",
                         sub = "这是选项一的介绍信息"
                     )
@@ -275,8 +279,74 @@ private fun MainUI() {
                             popupState.dismiss()
                         },
                         selected = false,
-                        position = PopupMenuItemPosition.BOTTOM,
                         text = "选项二"
+                    )
+
+                    PopupMenuItem(
+                        onClick = {
+                            popupState.dismiss()
+                        },
+                        text = "其他选项"
+                    )
+                    PopupMenuItem(
+                        onClick = {
+                            popupState.dismiss()
+                        },
+                        text = "其他选项"
+                    )
+                    PopupMenuItem(
+                        onClick = {
+                            popupState.dismiss()
+                        },
+                        text = "其他选项"
+                    )
+                    PopupMenuItem(
+                        onClick = {
+                            popupState.dismiss()
+                        },
+                        text = "其他选项"
+                    )
+                    PopupMenuItem(
+                        onClick = {
+                            popupState.dismiss()
+                        },
+                        text = "其他选项"
+                    )
+                    PopupMenuItem(
+                        onClick = {
+                            popupState.dismiss()
+                        },
+                        text = "其他选项"
+                    )
+                    PopupMenuItem(
+                        onClick = {
+                            popupState.dismiss()
+                        },
+                        text = "其他选项"
+                    )
+                    PopupMenuItem(
+                        onClick = {
+                            popupState.dismiss()
+                        },
+                        text = "其他选项"
+                    )
+                    PopupMenuItem(
+                        onClick = {
+                            popupState.dismiss()
+                        },
+                        text = "其他选项"
+                    )
+                    PopupMenuItem(
+                        onClick = {
+                            popupState.dismiss()
+                        },
+                        text = "其他选项"
+                    )
+                    PopupMenuItem(
+                        onClick = {
+                            popupState.dismiss()
+                        },
+                        text = "其他选项"
                     )
                 }
             }
