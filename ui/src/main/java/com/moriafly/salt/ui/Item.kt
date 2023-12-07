@@ -79,7 +79,7 @@ fun ItemTitle(
         text = text,
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = Dimens.innerHorizontalPadding, vertical = Dimens.innerVerticalPadding),
+            .padding(horizontal = SaltTheme.dimens.innerHorizontalPadding, vertical = Dimens.innerVerticalPadding),
         color = SaltTheme.colors.highlight,
         fontWeight = FontWeight.Bold,
         style = SaltTheme.textStyles.sub
@@ -99,7 +99,7 @@ fun ItemText(
         text = text,
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = Dimens.innerHorizontalPadding),
+            .padding(horizontal = SaltTheme.dimens.innerHorizontalPadding),
         style = SaltTheme.textStyles.sub
     )
 }
@@ -135,7 +135,7 @@ fun Item(
             .clickable(enabled = enabled) {
                 onClick()
             }
-            .padding(horizontal = Dimens.innerHorizontalPadding, vertical = Dimens.innerVerticalPadding),
+            .padding(horizontal = SaltTheme.dimens.innerHorizontalPadding, vertical = Dimens.innerVerticalPadding),
         verticalAlignment = Alignment.CenterVertically
     ) {
         iconPainter?.let {
@@ -210,7 +210,7 @@ fun ItemSwitcher(
             .clickable(enabled = enabled) {
                 onChange(!state)
             }
-            .padding(horizontal = Dimens.innerHorizontalPadding, vertical = Dimens.innerVerticalPadding),
+            .padding(horizontal = SaltTheme.dimens.innerHorizontalPadding, vertical = Dimens.innerVerticalPadding),
         verticalAlignment = Alignment.CenterVertically
     ) {
         iconPainter?.let {
@@ -308,7 +308,7 @@ fun ItemPopup(
                 .clickable(enabled = enabled) {
                     state.expend()
                 }
-                .padding(horizontal = Dimens.innerHorizontalPadding, vertical = Dimens.innerVerticalPadding),
+                .padding(horizontal = SaltTheme.dimens.innerHorizontalPadding, vertical = Dimens.innerVerticalPadding),
             verticalAlignment = Alignment.CenterVertically
         ) {
             iconPainter?.let {
@@ -384,7 +384,7 @@ fun ItemCheck(
             .clickable(enabled = enabled) {
                 onChange(!state)
             }
-            .padding(horizontal = Dimens.innerHorizontalPadding, vertical = Dimens.innerVerticalPadding),
+            .padding(horizontal = SaltTheme.dimens.innerHorizontalPadding, vertical = Dimens.innerVerticalPadding),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Icon(
@@ -422,7 +422,7 @@ fun ItemValue(
         modifier = Modifier
             .fillMaxWidth()
             .sizeIn(minHeight = 48.dp)
-            .padding(horizontal = Dimens.innerHorizontalPadding, vertical = Dimens.innerVerticalPadding),
+            .padding(horizontal = SaltTheme.dimens.innerHorizontalPadding, vertical = Dimens.innerVerticalPadding),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
@@ -473,7 +473,7 @@ fun ItemEdit(
         value = text,
         onValueChange = onChange,
         modifier = Modifier
-            .padding(horizontal = Dimens.innerHorizontalPadding),
+            .padding(horizontal = SaltTheme.dimens.innerHorizontalPadding),
         readOnly = readOnly,
         keyboardOptions = keyboardOptions,
         keyboardActions = keyboardActions,
@@ -522,7 +522,7 @@ fun ItemContainer(
 ) {
     Box(
         modifier = Modifier
-            .padding(horizontal = Dimens.innerHorizontalPadding, vertical = Dimens.innerVerticalPadding)
+            .padding(horizontal = SaltTheme.dimens.innerHorizontalPadding, vertical = Dimens.innerVerticalPadding)
     ) {
         content()
     }

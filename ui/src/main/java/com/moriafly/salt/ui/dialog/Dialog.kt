@@ -99,7 +99,7 @@ fun YesDialog(
                 onDismissRequest()
             },
             modifier = Modifier
-                .padding(horizontal = Dimens.outerHorizontalPadding),
+                .padding(horizontal = SaltTheme.dimens.outerHorizontalPadding),
             text = stringResource(id = R.string.confirm).uppercase()
         )
     }
@@ -126,7 +126,7 @@ fun YesNoDialog(
         ItemText(text = content)
         Spacer(modifier = Modifier.height(Dimens.outerVerticalPadding * 2))
         Row(
-            modifier = Modifier.padding(horizontal = Dimens.outerHorizontalPadding)
+            modifier = Modifier.padding(horizontal = SaltTheme.dimens.outerHorizontalPadding)
         ) {
             TextButton(
                 onClick = {
@@ -178,7 +178,7 @@ fun InputDialog(
         )
         Spacer(modifier = Modifier.height(4.dp))
         Row(
-            modifier = Modifier.padding(horizontal = Dimens.outerHorizontalPadding)
+            modifier = Modifier.padding(horizontal = SaltTheme.dimens.outerHorizontalPadding)
         ) {
             TextButton(
                 onClick = {
@@ -235,7 +235,7 @@ private fun DialogTitle(
 ) {
     Text(
         text = text,
-        modifier = Modifier.padding(horizontal = Dimens.outerHorizontalPadding),
+        modifier = Modifier.padding(horizontal = SaltTheme.dimens.outerHorizontalPadding),
         color = SaltTheme.colors.text,
         fontSize = 18.sp,
         fontWeight = FontWeight.Bold

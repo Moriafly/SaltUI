@@ -65,7 +65,7 @@ fun PopupMenuItem(
                 minHeight = 0.dp
             )
             .background(if (selected == true) SaltTheme.colors.highlight.copy(alpha = 0.1f) else Color.Unspecified)
-            .padding(Dimens.innerHorizontalPadding, Dimens.innerVerticalPadding),
+            .padding(SaltTheme.dimens.innerHorizontalPadding, Dimens.innerVerticalPadding),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Column(
