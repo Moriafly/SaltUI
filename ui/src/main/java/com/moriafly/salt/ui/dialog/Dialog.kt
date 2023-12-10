@@ -207,7 +207,7 @@ fun InputDialog(
  * The basic dialog has default corner background and vertical padding
  */
 @Composable
-private fun BasicDialog(
+fun BasicDialog(
     onDismissRequest: () -> Unit,
     properties: DialogProperties = DialogProperties(),
     content: @Composable () -> Unit
@@ -230,7 +230,7 @@ private fun BasicDialog(
 }
 
 @Composable
-private fun DialogTitle(
+fun DialogTitle(
     text: String
 ) {
     Text(
