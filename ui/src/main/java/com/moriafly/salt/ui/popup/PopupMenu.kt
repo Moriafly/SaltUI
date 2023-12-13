@@ -163,14 +163,14 @@ internal fun DropdownMenuContent(
                 this.shape = shape
                 this.ambientShadowColor = shadowColor
                 this.spotShadowColor = shadowColor
-            },
+            }
     ) {
         Column(
             modifier = Modifier
                 // .padding(vertical = DropdownMenuVerticalPadding)
                 .width(IntrinsicSize.Max)
                 .clip(shape)
-                .background(color = SaltTheme.colors.subBackground)
+                .background(color = SaltTheme.colors.subBackground.copy(alpha = 1f))
                 .verticalScroll(rememberScrollState()),
             content = content
         )
