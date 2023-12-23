@@ -463,6 +463,7 @@ fun ItemValue(
 fun ItemEdit(
     text: String,
     onChange: (String) -> Unit,
+    backgroundColor: Color = SaltTheme.colors.subText.copy(alpha = 0.1f),
     hint: String? = null,
     readOnly: Boolean = false,
     contentPaddingValues: PaddingValues = PaddingValues(vertical = Dimens.innerVerticalPadding),
@@ -485,7 +486,7 @@ fun ItemEdit(
                     .fillMaxWidth()
                     .padding(contentPaddingValues)
                     .clip(RoundedCornerShape(SaltTheme.dimens.corner))
-                    .background(color = SaltTheme.colors.subText.copy(alpha = 0.1f))
+                    .background(color = backgroundColor)
                     .padding(Dimens.contentPadding),
                 contentAlignment = Alignment.CenterStart
             ) {
