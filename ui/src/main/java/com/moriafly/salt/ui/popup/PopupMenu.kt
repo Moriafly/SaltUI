@@ -38,10 +38,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntRect
@@ -56,6 +58,9 @@ import com.moriafly.salt.ui.UnstableSaltApi
 
 /**
  * Build on Google Jetpack Compose Popup
+ *
+ * @param elevation shadow elevation of the popup
+ * @param backgroundColor background color of the popup
  */
 @UnstableSaltApi
 @Composable
@@ -65,6 +70,8 @@ fun PopupMenu(
     modifier: Modifier = Modifier,
     offset: DpOffset = DpOffset(16.dp, 0.dp),
     properties: PopupProperties = PopupProperties(focusable = true),
+    elevation: Dp = MenuElevation,
+    backgroundColor: Color = SaltTheme.colors.subBackground.copy(alpha = 1f),
     content: @Composable ColumnScope.() -> Unit
 ) {
     val expandedStates = remember { MutableTransitionState(false) }
@@ -89,6 +96,8 @@ fun PopupMenu(
                 expandedStates = expandedStates,
                 transformOriginState = transformOriginState,
                 modifier = modifier,
+                elevation = elevation,
+                backgroundColor = backgroundColor,
                 content = content
             )
         }
@@ -100,6 +109,8 @@ internal fun DropdownMenuContent(
     expandedStates: MutableTransitionState<Boolean>,
     transformOriginState: MutableState<TransformOrigin>,
     modifier: Modifier = Modifier,
+    elevation: Dp,
+    backgroundColor: Color,
     content: @Composable ColumnScope.() -> Unit
 ) {
     // Menu open/close animation.
@@ -159,7 +170,7 @@ internal fun DropdownMenuContent(
                 this.scaleY = scale
                 this.alpha = alpha
                 this.transformOrigin = transformOriginState.value
-                this.shadowElevation = MenuElevation.toPx()
+                this.shadowElevation = elevation.toPx()
                 this.shape = shape
                 this.ambientShadowColor = shadowColor
                 this.spotShadowColor = shadowColor
@@ -170,7 +181,7 @@ internal fun DropdownMenuContent(
                 // .padding(vertical = DropdownMenuVerticalPadding)
                 .width(IntrinsicSize.Max)
                 .clip(shape)
-                .background(color = SaltTheme.colors.subBackground.copy(alpha = 1f))
+                .background(color = backgroundColor)
                 .verticalScroll(rememberScrollState()),
             content = content
         )
