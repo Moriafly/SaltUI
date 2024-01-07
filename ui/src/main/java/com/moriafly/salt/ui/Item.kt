@@ -466,7 +466,7 @@ fun ItemEdit(
     backgroundColor: Color = SaltTheme.colors.subText.copy(alpha = 0.1f),
     hint: String? = null,
     readOnly: Boolean = false,
-    contentPaddingValues: PaddingValues = PaddingValues(vertical = Dimens.innerVerticalPadding),
+    contentPaddingValues: PaddingValues = PaddingValues(horizontal = SaltTheme.dimens.innerHorizontalPadding, vertical = Dimens.innerVerticalPadding),
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     keyboardActions: KeyboardActions = KeyboardActions.Default
 ) {
@@ -474,7 +474,7 @@ fun ItemEdit(
         value = text,
         onValueChange = onChange,
         modifier = Modifier
-            .padding(horizontal = SaltTheme.dimens.innerHorizontalPadding),
+            .padding(contentPaddingValues),
         readOnly = readOnly,
         keyboardOptions = keyboardOptions,
         keyboardActions = keyboardActions,
@@ -484,7 +484,6 @@ fun ItemEdit(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(contentPaddingValues)
                     .clip(RoundedCornerShape(SaltTheme.dimens.corner))
                     .background(color = backgroundColor)
                     .padding(Dimens.contentPadding),
