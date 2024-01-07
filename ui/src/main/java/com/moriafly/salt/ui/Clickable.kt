@@ -30,20 +30,26 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInteropFilter
+import androidx.compose.ui.semantics.Role
 
 /**
  * NoRippleClickable
  */
 @SuppressLint("UnnecessaryComposedModifier")
 fun Modifier.noRippleClickable(
+    enabled: Boolean = true,
+    onClickLabel: String? = null,
+    role: Role? = null,
     onClick: () -> Unit
 ): Modifier = this.composed {
     clickable(
         indication = null,
-        interactionSource = remember { MutableInteractionSource() }
-    ) {
-        onClick()
-    }
+        interactionSource = remember { MutableInteractionSource() },
+        enabled = enabled,
+        onClickLabel = onClickLabel,
+        role = role,
+        onClick = onClick
+    )
 }
 
 /**
