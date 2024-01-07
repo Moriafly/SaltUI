@@ -84,7 +84,8 @@ fun YesDialog(
     onDismissRequest: () -> Unit,
     properties: DialogProperties = DialogProperties(),
     title: String,
-    content: String
+    content: String,
+    confirmText: String = stringResource(id = R.string.confirm).uppercase()
 ) {
     BasicDialog(
         onDismissRequest = onDismissRequest,
@@ -100,7 +101,7 @@ fun YesDialog(
             },
             modifier = Modifier
                 .padding(horizontal = SaltTheme.dimens.outerHorizontalPadding),
-            text = stringResource(id = R.string.confirm).uppercase()
+            text = confirmText
         )
     }
 }
@@ -115,7 +116,9 @@ fun YesNoDialog(
     onConfirm: () -> Unit,
     properties: DialogProperties = DialogProperties(),
     title: String,
-    content: String
+    content: String,
+    cancelText: String = stringResource(id = R.string.cancel).uppercase(),
+    confirmText: String = stringResource(id = R.string.confirm).uppercase()
 ) {
     BasicDialog(
         onDismissRequest = onDismissRequest,
@@ -134,7 +137,7 @@ fun YesNoDialog(
                 },
                 modifier = Modifier
                     .weight(1f),
-                text = stringResource(id = R.string.cancel).uppercase(),
+                text = cancelText,
                 textColor = SaltTheme.colors.subText,
                 backgroundColor = Color.Transparent
             )
@@ -145,7 +148,7 @@ fun YesNoDialog(
                 },
                 modifier = Modifier
                     .weight(1f),
-                text = stringResource(id = R.string.confirm).uppercase()
+                text = confirmText
             )
         }
     }
