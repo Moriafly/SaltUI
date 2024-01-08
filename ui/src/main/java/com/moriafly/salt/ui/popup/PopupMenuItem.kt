@@ -37,6 +37,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.toggleableState
+import androidx.compose.ui.state.ToggleableState
 import androidx.compose.ui.unit.dp
 import com.moriafly.salt.ui.Dimens
 import com.moriafly.salt.ui.SaltTheme
@@ -55,6 +60,14 @@ fun PopupMenuItem(
 ) {
     Row(
         modifier = Modifier
+            .semantics {
+                this.role = Role.RadioButton
+                this.toggleableState = when (selected) {
+                    null -> ToggleableState.Indeterminate
+                    true -> ToggleableState.On
+                    false -> ToggleableState.Off
+                }
+            }
             .clickable {
                 onClick()
             }
