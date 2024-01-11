@@ -62,10 +62,12 @@ fun PopupMenuItem(
         modifier = Modifier
             .semantics {
                 this.role = Role.RadioButton
-                this.toggleableState = when (selected) {
-                    null -> ToggleableState.Indeterminate
-                    true -> ToggleableState.On
-                    false -> ToggleableState.Off
+
+                if (selected != null) {
+                    this.toggleableState = when (selected) {
+                        true -> ToggleableState.On
+                        false -> ToggleableState.Off
+                    }
                 }
             }
             .clickable {
