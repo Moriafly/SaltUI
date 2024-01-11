@@ -21,8 +21,8 @@ import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.updateTransition
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.IntrinsicSize
@@ -30,6 +30,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.Card
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.MutableState
@@ -43,7 +44,6 @@ import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Density
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntRect
@@ -59,7 +59,6 @@ import com.moriafly.salt.ui.UnstableSaltApi
 /**
  * Build on Google Jetpack Compose Popup
  *
- * @param elevation shadow elevation of the popup
  * @param backgroundColor background color of the popup
  */
 @UnstableSaltApi
@@ -70,7 +69,6 @@ fun PopupMenu(
     modifier: Modifier = Modifier,
     offset: DpOffset = DpOffset(16.dp, 0.dp),
     properties: PopupProperties = PopupProperties(focusable = true),
-    elevation: Dp = MenuElevation,
     backgroundColor: Color = SaltTheme.colors.subBackground.copy(alpha = 1f),
     content: @Composable ColumnScope.() -> Unit
 ) {
@@ -96,7 +94,6 @@ fun PopupMenu(
                 expandedStates = expandedStates,
                 transformOriginState = transformOriginState,
                 modifier = modifier,
-                elevation = elevation,
                 backgroundColor = backgroundColor,
                 content = content
             )
@@ -109,7 +106,6 @@ internal fun DropdownMenuContent(
     expandedStates: MutableTransitionState<Boolean>,
     transformOriginState: MutableState<TransformOrigin>,
     modifier: Modifier = Modifier,
-    elevation: Dp,
     backgroundColor: Color,
     content: @Composable ColumnScope.() -> Unit
 ) {
@@ -162,19 +158,19 @@ internal fun DropdownMenuContent(
         }
     }
     val shape = RoundedCornerShape(SaltTheme.dimens.corner)
-    val shadowColor = SaltTheme.colors.subText.copy(alpha = 0.75f)
-    Box(
+    Card(
         modifier = modifier
             .graphicsLayer {
                 this.scaleX = scale
                 this.scaleY = scale
                 this.alpha = alpha
                 this.transformOrigin = transformOriginState.value
-                this.shadowElevation = elevation.toPx()
-                this.shape = shape
-                this.ambientShadowColor = shadowColor
-                this.spotShadowColor = shadowColor
-            }
+            },
+        shape = shape,
+        backgroundColor = Color.Unspecified,
+        contentColor = Color.Unspecified,
+        border = BorderStroke(1.dp, SaltTheme.colors.subText.copy(alpha = 0.075f)),
+        elevation = 0.dp
     ) {
         Column(
             modifier = Modifier

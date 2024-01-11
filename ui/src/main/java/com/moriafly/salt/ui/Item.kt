@@ -346,9 +346,8 @@ fun ItemPopup(
                 contentDescription = null,
                 tint = SaltTheme.colors.subText
             )
-
-
         }
+
         PopupMenu(
             expanded = state.expend,
             onDismissRequest = {
