@@ -27,7 +27,7 @@ import androidx.compose.runtime.NonRestartableComposable
 /**
  * WindowInsets.safeDrawing, Exclude ime
  */
-val safeMain: WindowInsets
+val WindowInsets.Companion.safeMain: WindowInsets
     @Composable
     @NonRestartableComposable
     get() = WindowInsets.systemBars.union(WindowInsets.displayCutout)
