@@ -224,11 +224,16 @@ fun WebView(
 
     AndroidView(
         factory = { context ->
-            val frameLayout = FrameLayout(context)
+            val frameLayout = FrameLayout(context).apply {
+                this.layoutParams = layoutParams
+            }
             val view = (factory?.invoke(context) ?: WebView(context)).apply {
                 onCreated(this)
 
-                this.layoutParams = layoutParams
+                this.layoutParams = FrameLayout.LayoutParams(
+                    LayoutParams.MATCH_PARENT,
+                    LayoutParams.MATCH_PARENT
+                )
 
                 state.viewState?.let {
                     this.restoreState(it)
