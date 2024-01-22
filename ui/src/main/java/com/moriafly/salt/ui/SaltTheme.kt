@@ -1,5 +1,3 @@
-@file:Suppress("UNUSED")
-
 /**
  * SaltUI
  * Copyright (C) 2023 Moriafly
@@ -14,6 +12,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  */
+
+@file:Suppress("UNUSED")
 
 package com.moriafly.salt.ui
 
