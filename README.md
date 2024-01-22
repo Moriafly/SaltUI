@@ -173,7 +173,7 @@ YesDialog 和 YesNoDialog 最新版本对各部分边距进行了调优，达到
 
 LGPL-2.1 License，详见 [LICENSE](LICENSE) 。
 
-使用开源库：AndroidX、Kotlin 等。
+使用开源库：AOSP、Kotlin 等，如 Web 来自 Google Accompanist ，详细请见具体文件注释说明。
 
 ```
 SaltUI
