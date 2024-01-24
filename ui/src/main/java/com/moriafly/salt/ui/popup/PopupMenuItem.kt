@@ -43,7 +43,6 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.toggleableState
 import androidx.compose.ui.state.ToggleableState
 import androidx.compose.ui.unit.dp
-import com.moriafly.salt.ui.Dimens
 import com.moriafly.salt.ui.SaltTheme
 import com.moriafly.salt.ui.UnstableSaltApi
 
@@ -80,7 +79,7 @@ fun PopupMenuItem(
                 minHeight = 0.dp
             )
             .background(if (selected == true) SaltTheme.colors.highlight.copy(alpha = 0.1f) else Color.Unspecified)
-            .padding(SaltTheme.dimens.innerHorizontalPadding, Dimens.innerVerticalPadding),
+            .padding(SaltTheme.dimens.innerHorizontalPadding, SaltTheme.dimens.innerVerticalPadding),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Column(
@@ -103,7 +102,7 @@ fun PopupMenuItem(
             }
         }
         iconPainter?.let {
-            Spacer(modifier = Modifier.width(Dimens.contentPadding * 2))
+            Spacer(modifier = Modifier.width(SaltTheme.dimens.contentPadding * 2))
             Image(
                 modifier = Modifier
                     .size(24.dp)

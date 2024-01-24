@@ -37,7 +37,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import com.moriafly.salt.ui.Dimens
 import com.moriafly.salt.ui.ItemEdit
 import com.moriafly.salt.ui.ItemSpacer
 import com.moriafly.salt.ui.ItemText
@@ -94,7 +93,7 @@ fun YesDialog(
         DialogTitle(text = title)
         ItemSpacer()
         ItemText(text = content)
-        Spacer(modifier = Modifier.height(Dimens.outerVerticalPadding * 2))
+        Spacer(modifier = Modifier.height(SaltTheme.dimens.outerVerticalPadding * 2))
         TextButton(
             onClick = {
                 onDismissRequest()
@@ -127,7 +126,7 @@ fun YesNoDialog(
         DialogTitle(text = title)
         ItemSpacer()
         ItemText(text = content)
-        Spacer(modifier = Modifier.height(Dimens.outerVerticalPadding * 2))
+        Spacer(modifier = Modifier.height(SaltTheme.dimens.outerVerticalPadding * 2))
         Row(
             modifier = Modifier.padding(horizontal = SaltTheme.dimens.outerHorizontalPadding)
         ) {
@@ -141,7 +140,7 @@ fun YesNoDialog(
                 textColor = SaltTheme.colors.subText,
                 backgroundColor = Color.Transparent
             )
-            Spacer(modifier = Modifier.width(Dimens.contentPadding))
+            Spacer(modifier = Modifier.width(SaltTheme.dimens.contentPadding))
             TextButton(
                 onClick = {
                     onConfirm()
@@ -193,7 +192,7 @@ fun InputDialog(
                 textColor = SaltTheme.colors.subText,
                 backgroundColor = Color.Transparent
             )
-            Spacer(modifier = Modifier.width(Dimens.contentPadding))
+            Spacer(modifier = Modifier.width(SaltTheme.dimens.contentPadding))
             TextButton(
                 onClick = {
                     onConfirm()
@@ -224,7 +223,7 @@ fun BasicDialog(
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(DialogCorner))
                 .background(color = SaltTheme.colors.background)
-                .padding(vertical = Dimens.outerVerticalPadding * 2)
+                .padding(vertical = SaltTheme.dimens.outerVerticalPadding * 2)
             // .background(Color.Blue)
         ) {
             content()

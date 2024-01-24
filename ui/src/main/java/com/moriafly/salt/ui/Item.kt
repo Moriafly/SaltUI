@@ -79,7 +79,7 @@ fun ItemTitle(
         text = text,
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = SaltTheme.dimens.innerHorizontalPadding, vertical = Dimens.innerVerticalPadding),
+            .padding(horizontal = SaltTheme.dimens.innerHorizontalPadding, vertical = SaltTheme.dimens.innerVerticalPadding),
         color = SaltTheme.colors.highlight,
         fontWeight = FontWeight.Bold,
         style = SaltTheme.textStyles.sub
@@ -135,7 +135,7 @@ fun Item(
             .clickable(enabled = enabled) {
                 onClick()
             }
-            .padding(horizontal = SaltTheme.dimens.innerHorizontalPadding, vertical = Dimens.innerVerticalPadding),
+            .padding(horizontal = SaltTheme.dimens.innerHorizontalPadding, vertical = SaltTheme.dimens.innerVerticalPadding),
         verticalAlignment = Alignment.CenterVertically
     ) {
         iconPainter?.let {
@@ -147,7 +147,7 @@ fun Item(
                 contentDescription = null,
                 colorFilter = iconColor?.let { ColorFilter.tint(iconColor) }
             )
-            Spacer(modifier = Modifier.width(Dimens.contentPadding))
+            Spacer(modifier = Modifier.width(SaltTheme.dimens.contentPadding))
         }
         Column(
             modifier = Modifier
@@ -168,7 +168,7 @@ fun Item(
                 )
             }
         }
-        Spacer(modifier = Modifier.width(Dimens.contentPadding))
+        Spacer(modifier = Modifier.width(SaltTheme.dimens.contentPadding))
         Icon(
             modifier = Modifier
                 .size(20.dp),
@@ -210,7 +210,7 @@ fun ItemSwitcher(
             .clickable(enabled = enabled) {
                 onChange(!state)
             }
-            .padding(horizontal = SaltTheme.dimens.innerHorizontalPadding, vertical = Dimens.innerVerticalPadding),
+            .padding(horizontal = SaltTheme.dimens.innerHorizontalPadding, vertical = SaltTheme.dimens.innerVerticalPadding),
         verticalAlignment = Alignment.CenterVertically
     ) {
         iconPainter?.let {
@@ -222,7 +222,7 @@ fun ItemSwitcher(
                 contentDescription = null,
                 colorFilter = iconColor?.let { ColorFilter.tint(iconColor) }
             )
-            Spacer(modifier = Modifier.width(Dimens.contentPadding))
+            Spacer(modifier = Modifier.width(SaltTheme.dimens.contentPadding))
         }
         Column(
             modifier = Modifier
@@ -242,7 +242,7 @@ fun ItemSwitcher(
                 )
             }
         }
-        Spacer(modifier = Modifier.width(Dimens.contentPadding))
+        Spacer(modifier = Modifier.width(SaltTheme.dimens.contentPadding))
         val backgroundColor by animateColorAsState(
             targetValue = if (state) SaltTheme.colors.highlight else SaltTheme.colors.subText.copy(alpha = 0.1f),
             animationSpec = spring(),
@@ -308,7 +308,7 @@ fun ItemPopup(
                 .clickable(enabled = enabled) {
                     state.expend()
                 }
-                .padding(horizontal = SaltTheme.dimens.innerHorizontalPadding, vertical = Dimens.innerVerticalPadding),
+                .padding(horizontal = SaltTheme.dimens.innerHorizontalPadding, vertical = SaltTheme.dimens.innerVerticalPadding),
             verticalAlignment = Alignment.CenterVertically
         ) {
             iconPainter?.let {
@@ -320,7 +320,7 @@ fun ItemPopup(
                     contentDescription = null,
                     colorFilter = iconColor?.let { ColorFilter.tint(iconColor) }
                 )
-                Spacer(modifier = Modifier.width(Dimens.contentPadding))
+                Spacer(modifier = Modifier.width(SaltTheme.dimens.contentPadding))
             }
             Column(
                 modifier = Modifier
@@ -338,7 +338,7 @@ fun ItemPopup(
                     style = SaltTheme.textStyles.sub
                 )
             }
-            Spacer(modifier = Modifier.width(Dimens.contentPadding))
+            Spacer(modifier = Modifier.width(SaltTheme.dimens.contentPadding))
             Icon(
                 modifier = Modifier
                     .size(20.dp),
@@ -383,7 +383,7 @@ fun ItemCheck(
             .clickable(enabled = enabled) {
                 onChange(!state)
             }
-            .padding(horizontal = SaltTheme.dimens.innerHorizontalPadding, vertical = Dimens.innerVerticalPadding),
+            .padding(horizontal = SaltTheme.dimens.innerHorizontalPadding, vertical = SaltTheme.dimens.innerVerticalPadding),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Icon(
@@ -393,7 +393,7 @@ fun ItemCheck(
             contentDescription = null,
             tint = SaltTheme.colors.highlight
         )
-        Spacer(modifier = Modifier.width(Dimens.contentPadding))
+        Spacer(modifier = Modifier.width(SaltTheme.dimens.contentPadding))
         Column(
             modifier = Modifier
                 .weight(1f)
@@ -421,7 +421,7 @@ fun ItemValue(
         modifier = Modifier
             .fillMaxWidth()
             .sizeIn(minHeight = 48.dp)
-            .padding(horizontal = SaltTheme.dimens.innerHorizontalPadding, vertical = Dimens.innerVerticalPadding),
+            .padding(horizontal = SaltTheme.dimens.innerHorizontalPadding, vertical = SaltTheme.dimens.innerVerticalPadding),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
@@ -430,7 +430,7 @@ fun ItemValue(
             text = text,
             style = SaltTheme.textStyles.main
         )
-        Spacer(modifier = Modifier.width(Dimens.contentPadding))
+        Spacer(modifier = Modifier.width(SaltTheme.dimens.contentPadding))
         SelectionContainer(
             modifier = Modifier
                 .weight(1f),
@@ -465,7 +465,7 @@ fun ItemEdit(
     backgroundColor: Color = SaltTheme.colors.subText.copy(alpha = 0.1f),
     hint: String? = null,
     readOnly: Boolean = false,
-    contentPaddingValues: PaddingValues = PaddingValues(horizontal = SaltTheme.dimens.innerHorizontalPadding, vertical = Dimens.innerVerticalPadding),
+    contentPaddingValues: PaddingValues = PaddingValues(horizontal = SaltTheme.dimens.innerHorizontalPadding, vertical = SaltTheme.dimens.innerVerticalPadding),
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     keyboardActions: KeyboardActions = KeyboardActions.Default
 ) {
@@ -485,7 +485,7 @@ fun ItemEdit(
                     .fillMaxWidth()
                     .clip(RoundedCornerShape(SaltTheme.dimens.corner))
                     .background(color = backgroundColor)
-                    .padding(Dimens.contentPadding),
+                    .padding(SaltTheme.dimens.contentPadding),
                 contentAlignment = Alignment.CenterStart
             ) {
                 innerTextField()
@@ -508,7 +508,7 @@ fun ItemEdit(
 fun ItemSpacer() {
     Spacer(
         modifier = Modifier
-            .height(Dimens.innerVerticalPadding)
+            .height(SaltTheme.dimens.contentPadding)
     )
 }
 
@@ -521,7 +521,7 @@ fun ItemContainer(
 ) {
     Box(
         modifier = Modifier
-            .padding(horizontal = SaltTheme.dimens.innerHorizontalPadding, vertical = Dimens.innerVerticalPadding)
+            .padding(horizontal = SaltTheme.dimens.innerHorizontalPadding, vertical = SaltTheme.dimens.innerVerticalPadding)
     ) {
         content()
     }

@@ -42,7 +42,7 @@ fun ItemOuterTitle(
         text = text,
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = SaltTheme.dimens.innerHorizontalPadding, vertical = Dimens.innerVerticalPadding),
+            .padding(horizontal = SaltTheme.dimens.innerHorizontalPadding, vertical = SaltTheme.dimens.innerVerticalPadding),
         fontWeight = FontWeight.Bold,
         style = SaltTheme.textStyles.sub
     )
@@ -60,7 +60,7 @@ fun ItemOuterLargeTitle(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = SaltTheme.dimens.outerHorizontalPadding * 2, vertical = Dimens.outerVerticalPadding * 6),
+            .padding(horizontal = SaltTheme.dimens.outerHorizontalPadding * 2, vertical = SaltTheme.dimens.outerVerticalPadding * 6),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
@@ -70,7 +70,7 @@ fun ItemOuterLargeTitle(
             textAlign = TextAlign.Center,
             style = SaltTheme.textStyles.main
         )
-        Spacer(modifier = Modifier.height(Dimens.contentPadding * 1.5f))
+        Spacer(modifier = Modifier.height(SaltTheme.dimens.contentPadding * 1.5f))
         Text(
             text = sub,
             textAlign = TextAlign.Center,
@@ -92,7 +92,7 @@ fun ItemOuter(
         text = text,
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = SaltTheme.dimens.outerHorizontalPadding, vertical = Dimens.innerVerticalPadding)
+            .padding(horizontal = SaltTheme.dimens.outerHorizontalPadding, vertical = SaltTheme.dimens.innerVerticalPadding)
             .fadeClickable {
                 onClick()
             },
@@ -115,7 +115,7 @@ fun ItemOuterTextButton(
     TextButton(
         onClick = onClick,
         modifier = Modifier
-            .padding(horizontal = SaltTheme.dimens.outerHorizontalPadding + SaltTheme.dimens.innerHorizontalPadding, vertical = Dimens.innerVerticalPadding),
+            .padding(horizontal = SaltTheme.dimens.outerHorizontalPadding + SaltTheme.dimens.innerHorizontalPadding, vertical = SaltTheme.dimens.innerVerticalPadding),
         text = text,
         textColor = textColor,
         backgroundColor = backgroundColor
