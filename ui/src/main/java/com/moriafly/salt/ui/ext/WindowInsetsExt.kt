@@ -23,10 +23,12 @@ import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.union
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.NonRestartableComposable
+import com.moriafly.salt.ui.UnstableSaltApi
 
 /**
  * WindowInsets.safeDrawing, Exclude ime
  */
+@UnstableSaltApi
 val WindowInsets.Companion.safeMain: WindowInsets
     @Composable
     @NonRestartableComposable
