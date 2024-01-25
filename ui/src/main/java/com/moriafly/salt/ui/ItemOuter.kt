@@ -81,12 +81,15 @@ fun ItemOuterLargeTitle(
 
 /**
  * ItemOuter
+ *
+ * @param color The text color
  */
 @UnstableSaltApi
 @Composable
 fun ItemOuter(
     onClick: () -> Unit,
-    text: String
+    text: String,
+    color: Color = SaltTheme.colors.highlight
 ) {
     Text(
         text = text,
@@ -96,7 +99,7 @@ fun ItemOuter(
             .fadeClickable {
                 onClick()
             },
-        color = SaltTheme.colors.highlight,
+        color = color,
         fontWeight = FontWeight.Bold,
         style = SaltTheme.textStyles.main
     )
