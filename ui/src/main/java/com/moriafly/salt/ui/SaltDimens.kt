@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.dp
 
 /**
  * @param corner corner
+ * @param dialogCorner dialogCorner
  * @param outerHorizontalPadding outerHorizontalPadding
  * @param innerHorizontalPadding innerHorizontalPadding
  * @param outerVerticalPadding outerVerticalPadding
@@ -35,6 +36,7 @@ import androidx.compose.ui.unit.dp
 @Stable
 class SaltDimens(
     corner: Dp,
+    dialogCorner: Dp,
     outerHorizontalPadding: Dp,
     innerHorizontalPadding: Dp,
     outerVerticalPadding: Dp,
@@ -42,6 +44,8 @@ class SaltDimens(
     contentPadding: Dp
 ) {
     val corner by mutableStateOf(corner, structuralEqualityPolicy())
+
+    val dialogCorner by mutableStateOf(dialogCorner, structuralEqualityPolicy())
 
     val outerHorizontalPadding by mutableStateOf(outerHorizontalPadding, structuralEqualityPolicy())
 
@@ -56,6 +60,7 @@ class SaltDimens(
 
 fun saltDimens(
     corner: Dp = 12.dp,
+    dialogCorner: Dp = 20.dp,
     outerHorizontalPadding: Dp = 16.dp,
     innerHorizontalPadding: Dp = 16.dp,
     outerVerticalPadding: Dp = 8.dp,
@@ -63,6 +68,7 @@ fun saltDimens(
     contentPadding: Dp = 12.dp
 ): SaltDimens = SaltDimens(
     corner = corner,
+    dialogCorner = dialogCorner,
     outerHorizontalPadding = outerHorizontalPadding,
     innerHorizontalPadding = innerHorizontalPadding,
     outerVerticalPadding = outerVerticalPadding,

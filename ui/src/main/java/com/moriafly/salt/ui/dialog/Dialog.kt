@@ -38,7 +38,8 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.moriafly.salt.ui.ItemEdit
-import com.moriafly.salt.ui.ItemSpacer
+import com.moriafly.salt.ui.ItemOutHalfSpacer
+import com.moriafly.salt.ui.ItemOutSpacer
 import com.moriafly.salt.ui.ItemText
 import com.moriafly.salt.ui.R
 import com.moriafly.salt.ui.SaltTheme
@@ -90,10 +91,11 @@ fun YesDialog(
         onDismissRequest = onDismissRequest,
         properties = properties
     ) {
+        ItemOutSpacer()
         DialogTitle(text = title)
-        ItemSpacer()
+        ItemOutSpacer()
         ItemText(text = content)
-        Spacer(modifier = Modifier.height(SaltTheme.dimens.outerVerticalPadding * 2))
+        ItemOutSpacer()
         TextButton(
             onClick = {
                 onDismissRequest()
@@ -102,6 +104,7 @@ fun YesDialog(
                 .padding(horizontal = SaltTheme.dimens.outerHorizontalPadding),
             text = confirmText
         )
+        ItemOutSpacer()
     }
 }
 
@@ -116,6 +119,7 @@ fun YesNoDialog(
     properties: DialogProperties = DialogProperties(),
     title: String,
     content: String,
+    drawContent: (@Composable () -> Unit)? = null,
     cancelText: String = stringResource(id = R.string.cancel).uppercase(),
     confirmText: String = stringResource(id = R.string.confirm).uppercase()
 ) {
@@ -123,10 +127,13 @@ fun YesNoDialog(
         onDismissRequest = onDismissRequest,
         properties = properties
     ) {
+        ItemOutSpacer()
         DialogTitle(text = title)
-        ItemSpacer()
+        ItemOutSpacer()
         ItemText(text = content)
-        Spacer(modifier = Modifier.height(SaltTheme.dimens.outerVerticalPadding * 2))
+        ItemOutHalfSpacer()
+        drawContent?.invoke()
+        ItemOutHalfSpacer()
         Row(
             modifier = Modifier.padding(horizontal = SaltTheme.dimens.outerHorizontalPadding)
         ) {
@@ -138,9 +145,9 @@ fun YesNoDialog(
                     .weight(1f),
                 text = cancelText,
                 textColor = SaltTheme.colors.subText,
-                backgroundColor = Color.Transparent
+                backgroundColor = SaltTheme.colors.subBackground
             )
-            Spacer(modifier = Modifier.width(SaltTheme.dimens.contentPadding))
+            Spacer(modifier = Modifier.width(SaltTheme.dimens.outerHorizontalPadding))
             TextButton(
                 onClick = {
                     onConfirm()
@@ -150,6 +157,7 @@ fun YesNoDialog(
                 text = confirmText
             )
         }
+        ItemOutSpacer()
     }
 }
 
@@ -171,6 +179,7 @@ fun InputDialog(
         onDismissRequest = onDismissRequest,
         properties = properties
     ) {
+        ItemOutSpacer()
         DialogTitle(text = title)
         Spacer(modifier = Modifier.height(4.dp))
         ItemEdit(
@@ -190,7 +199,7 @@ fun InputDialog(
                     .weight(1f),
                 text = stringResource(id = R.string.cancel).uppercase(),
                 textColor = SaltTheme.colors.subText,
-                backgroundColor = Color.Transparent
+                backgroundColor = SaltTheme.colors.subBackground
             )
             Spacer(modifier = Modifier.width(SaltTheme.dimens.contentPadding))
             TextButton(
@@ -202,6 +211,7 @@ fun InputDialog(
                 text = stringResource(id = R.string.confirm).uppercase()
             )
         }
+        ItemOutSpacer()
     }
 }
 
@@ -221,10 +231,8 @@ fun BasicDialog(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(DialogCorner))
+                .clip(RoundedCornerShape(SaltTheme.dimens.dialogCorner))
                 .background(color = SaltTheme.colors.background)
-                .padding(vertical = SaltTheme.dimens.outerVerticalPadding * 2)
-            // .background(Color.Blue)
         ) {
             content()
         }
@@ -243,5 +251,3 @@ fun DialogTitle(
         fontWeight = FontWeight.Bold
     )
 }
-
-private val DialogCorner = 20.dp

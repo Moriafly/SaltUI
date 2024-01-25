@@ -92,7 +92,7 @@ fun ItemOuter(
         text = text,
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = SaltTheme.dimens.outerHorizontalPadding, vertical = SaltTheme.dimens.innerVerticalPadding)
+            .padding(horizontal = SaltTheme.dimens.outerHorizontalPadding, vertical = SaltTheme.dimens.outerVerticalPadding)
             .fadeClickable {
                 onClick()
             },
@@ -119,5 +119,27 @@ fun ItemOuterTextButton(
         text = text,
         textColor = textColor,
         backgroundColor = backgroundColor
+    )
+}
+
+/**
+ * Build vertical spacing for the Item Outer
+ */
+@Composable
+fun ItemOutSpacer() {
+    Spacer(
+        modifier = Modifier
+            .height(SaltTheme.dimens.outerVerticalPadding * 2)
+    )
+}
+
+/**
+ * Build half vertical spacing for the Item Outer
+ */
+@Composable
+fun ItemOutHalfSpacer() {
+    Spacer(
+        modifier = Modifier
+            .height(SaltTheme.dimens.outerVerticalPadding)
     )
 }
