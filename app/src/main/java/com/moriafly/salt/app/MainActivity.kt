@@ -32,6 +32,7 @@ import com.moriafly.salt.ui.Item
 import com.moriafly.salt.ui.ItemCheck
 import com.moriafly.salt.ui.ItemContainer
 import com.moriafly.salt.ui.ItemEdit
+import com.moriafly.salt.ui.ItemEditPassword
 import com.moriafly.salt.ui.ItemOuter
 import com.moriafly.salt.ui.ItemOuterLargeTitle
 import com.moriafly.salt.ui.ItemOuterTitle
@@ -256,6 +257,15 @@ private fun MainUI() {
                         text = it
                     },
                     hint = "HINT 这是输入框"
+                )
+
+                var text2 by remember { mutableStateOf("") }
+                ItemEditPassword(
+                    text = text2,
+                    onChange = {
+                        text2 = it
+                    },
+                    hint = "HINT 这是密码输入框"
                 )
             }
 
