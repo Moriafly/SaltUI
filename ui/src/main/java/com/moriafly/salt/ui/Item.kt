@@ -449,13 +449,14 @@ fun ItemValue(
 /**
  * Edit
  *
- * @param text
- * @param onChange
- * @param hint
- * @param readOnly
- * @param contentPaddingValues padding in this, beautiful for IME
- * @param keyboardOptions
- * @param keyboardActions
+ * @param text text
+ * @param onChange called when text changed
+ * @param hint hint
+ * @param hintColor color of [hint] text
+ * @param readOnly readOnly
+ * @param paddingValues padding in this, beautiful for IME
+ * @param keyboardOptions keyboardOptions
+ * @param keyboardActions keyboardActions
  */
 @UnstableSaltApi
 @Composable
@@ -464,8 +465,9 @@ fun ItemEdit(
     onChange: (String) -> Unit,
     backgroundColor: Color = SaltTheme.colors.subText.copy(alpha = 0.1f),
     hint: String? = null,
+    hintColor: Color = SaltTheme.colors.subText,
     readOnly: Boolean = false,
-    contentPaddingValues: PaddingValues = PaddingValues(horizontal = SaltTheme.dimens.innerHorizontalPadding, vertical = SaltTheme.dimens.innerVerticalPadding),
+    paddingValues: PaddingValues = PaddingValues(horizontal = SaltTheme.dimens.innerHorizontalPadding, vertical = SaltTheme.dimens.innerVerticalPadding),
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     keyboardActions: KeyboardActions = KeyboardActions.Default
 ) {
@@ -473,7 +475,7 @@ fun ItemEdit(
         value = text,
         onValueChange = onChange,
         modifier = Modifier
-            .padding(contentPaddingValues),
+            .padding(paddingValues),
         readOnly = readOnly,
         keyboardOptions = keyboardOptions,
         keyboardActions = keyboardActions,
@@ -492,7 +494,7 @@ fun ItemEdit(
                 if (hint != null && text.isEmpty()) {
                     Text(
                         text = hint,
-                        color = SaltTheme.colors.subText.copy(alpha = 0.5f),
+                        color = hintColor,
                         style = SaltTheme.textStyles.main
                     )
                 }
