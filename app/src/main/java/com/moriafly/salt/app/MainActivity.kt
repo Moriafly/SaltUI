@@ -214,10 +214,12 @@ private fun MainUI() {
                     },
                     text = "标准 Item 控件"
                 )
-                ItemSwitcher(
-                    state = true,
-                    onChange = {
 
+                var switch by remember { mutableStateOf(false) }
+                ItemSwitcher(
+                    state = switch,
+                    onChange = {
+                        switch = it
                     },
                     text = "标准开关控件",
                     sub = "开关控件的副标题"
