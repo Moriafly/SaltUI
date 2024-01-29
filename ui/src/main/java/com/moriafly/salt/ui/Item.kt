@@ -407,7 +407,7 @@ fun ItemCheck(
         ) {
             Text(
                 text = text,
-                color = if (enabled && state) SaltTheme.colors.text else SaltTheme.colors.subText,
+                color = if (enabled) SaltTheme.colors.text else SaltTheme.colors.subText,
                 style = SaltTheme.textStyles.main
             )
         }
