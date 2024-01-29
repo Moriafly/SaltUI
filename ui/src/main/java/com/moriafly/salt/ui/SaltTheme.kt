@@ -33,6 +33,8 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 
+private val LocalSaltConfigs = staticCompositionLocalOf { saltConfigs() }
+
 private val LocalSaltColors = staticCompositionLocalOf { lightSaltColors() }
 
 private val LocalSaltTextStyles = staticCompositionLocalOf { saltTextStyles() }
@@ -41,6 +43,7 @@ private val LocalSaltDimens = staticCompositionLocalOf { saltDimens() }
 
 @Composable
 fun SaltTheme(
+    configs: SaltConfigs,
     colors: SaltColors = SaltTheme.colors,
     textStyles: SaltTextStyles = SaltTheme.textStyles,
     dimens: SaltDimens = SaltTheme.dimens,
@@ -57,6 +60,7 @@ fun SaltTheme(
     val rippleIndication = rememberRipple()
     CompositionLocalProvider(
         LocalIndication provides rippleIndication,
+        LocalSaltConfigs provides configs,
         LocalSaltColors provides colors,
         LocalSaltTextStyles provides applyColorTextStyles,
         LocalSaltDimens provides dimens
@@ -81,6 +85,10 @@ fun DynamicSaltTheme(
     dimens: SaltDimens = SaltTheme.dimens,
     content: @Composable () -> Unit
 ) {
+    val configs = saltConfigs(
+        isDarkTheme = isDark
+    )
+
     val context = LocalContext.current
     val colorScheme = if (isDark) {
         dynamicDarkColorScheme(context)
@@ -95,6 +103,7 @@ fun DynamicSaltTheme(
         subBackground = colorScheme.surfaceColorAtElevation(3.dp)
     )
     SaltTheme(
+        configs = configs,
         colors = colors,
         textStyles = textStyles,
         dimens = dimens,
@@ -103,6 +112,11 @@ fun DynamicSaltTheme(
 }
 
 object SaltTheme {
+
+    val configs: SaltConfigs
+        @Composable
+        @ReadOnlyComposable
+        get() = LocalSaltConfigs.current
 
     val colors: SaltColors
         @Composable

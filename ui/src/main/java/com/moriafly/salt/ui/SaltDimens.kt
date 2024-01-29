@@ -44,17 +44,11 @@ class SaltDimens(
     contentPadding: Dp
 ) {
     val corner by mutableStateOf(corner, structuralEqualityPolicy())
-
     val dialogCorner by mutableStateOf(dialogCorner, structuralEqualityPolicy())
-
     val outerHorizontalPadding by mutableStateOf(outerHorizontalPadding, structuralEqualityPolicy())
-
     val innerHorizontalPadding by mutableStateOf(innerHorizontalPadding, structuralEqualityPolicy())
-
     val outerVerticalPadding by mutableStateOf(outerVerticalPadding, structuralEqualityPolicy())
-
     val innerVerticalPadding by mutableStateOf(innerVerticalPadding, structuralEqualityPolicy())
-
     val contentPadding by mutableStateOf(contentPadding, structuralEqualityPolicy())
 }
 
