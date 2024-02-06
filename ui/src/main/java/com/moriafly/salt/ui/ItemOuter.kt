@@ -42,7 +42,7 @@ fun ItemOuterTitle(
         text = text,
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = SaltTheme.dimens.innerHorizontalPadding, vertical = SaltTheme.dimens.innerVerticalPadding),
+            .padding(horizontal = SaltTheme.dimens.outerHorizontalPadding, vertical = SaltTheme.dimens.outerVerticalPadding),
         fontWeight = FontWeight.Bold,
         style = SaltTheme.textStyles.sub
     )
@@ -118,7 +118,7 @@ fun ItemOuterTextButton(
     TextButton(
         onClick = onClick,
         modifier = Modifier
-            .padding(horizontal = SaltTheme.dimens.outerHorizontalPadding + SaltTheme.dimens.innerHorizontalPadding, vertical = SaltTheme.dimens.innerVerticalPadding),
+            .padding(horizontal = SaltTheme.dimens.outerHorizontalPadding, vertical = SaltTheme.dimens.outerVerticalPadding),
         text = text,
         textColor = textColor,
         backgroundColor = backgroundColor
