@@ -795,9 +795,9 @@ private object SliderDefaults {
         enabled: Boolean = true,
     ) {
         val inactiveTrackColor = rememberUpdatedState(SaltTheme.colors.subText.copy(alpha = 0.1f))
-        val activeTrackColor = rememberUpdatedState(SaltTheme.colors.highlight.copy(alpha = 0.9f))
+        val activeTrackColor = rememberUpdatedState(SaltTheme.colors.highlight)
         val inactiveTickColor = rememberUpdatedState(SaltTheme.colors.subText.copy(alpha = 0.1f))
-        val activeTickColor = rememberUpdatedState(SaltTheme.colors.highlight.copy(alpha = 0.9f))
+        val activeTickColor = rememberUpdatedState(SaltTheme.colors.highlight)
         Canvas(
             modifier
                 .fillMaxWidth()
