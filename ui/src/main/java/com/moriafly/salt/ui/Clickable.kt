@@ -54,9 +54,8 @@ fun Modifier.noRippleClickable(
 
 /**
  * FadeClickable
- *
- * TODO bug, 当手指移除控件外不会取消事件
  */
+@Deprecated("Not recommended to use fadeClickable")
 @UnstableSaltApi
 @SuppressLint("UnnecessaryComposedModifier")
 @OptIn(ExperimentalComposeUiApi::class)
