@@ -31,6 +31,7 @@ import com.moriafly.salt.ui.ItemOuter
 import com.moriafly.salt.ui.ItemOuterLargeTitle
 import com.moriafly.salt.ui.ItemOuterTitle
 import com.moriafly.salt.ui.ItemPopup
+import com.moriafly.salt.ui.ItemSlider
 import com.moriafly.salt.ui.ItemSpacer
 import com.moriafly.salt.ui.ItemSwitcher
 import com.moriafly.salt.ui.ItemTitle
@@ -401,6 +402,20 @@ private fun MainUI() {
                         inputDialog = true
                     },
                     text = "InputDialog"
+                )
+            }
+
+            RoundedColumn {
+                var slider by remember { mutableStateOf(0f) }
+                ItemSlider(
+                    value = slider,
+                    onValueChange = {
+                        slider = it
+                    },
+                    iconPainter = painterResource(id = R.drawable.ic_qr_code),
+                    iconColor = SaltTheme.colors.text,
+                    text = "Slider 滑块",
+                    // sub = "滑块介绍"
                 )
             }
 

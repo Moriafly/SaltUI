@@ -24,6 +24,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
@@ -585,6 +586,77 @@ fun ItemEditPassword(
             )
         }
     )
+}
+
+@UnstableSaltApi
+@Composable
+fun ItemSlider(
+    value: Float,
+    onValueChange: (Float) -> Unit,
+    iconPainter: Painter? = null,
+    iconPaddingValues: PaddingValues = PaddingValues(0.dp),
+    iconColor: Color? = null,
+    text: String,
+    sub: String? = null,
+    enabled: Boolean = true,
+    valueRange: ClosedFloatingPointRange<Float> = 0f..1f,
+    /*@IntRange(from = 0)*/
+    // steps: Int = 0,
+    onValueChangeFinished: (() -> Unit)? = null,
+    // interactionSource: MutableInteractionSource = remember { MutableInteractionSource() }
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = SaltTheme.dimens.innerHorizontalPadding, vertical = SaltTheme.dimens.innerVerticalPadding)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .alpha(if (enabled) 1f else 0.5f),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            iconPainter?.let {
+                Image(
+                    modifier = Modifier
+                        .size(24.dp)
+                        .padding(iconPaddingValues),
+                    painter = iconPainter,
+                    contentDescription = null,
+                    colorFilter = iconColor?.let { ColorFilter.tint(iconColor) }
+                )
+                Spacer(modifier = Modifier.width(SaltTheme.dimens.contentPadding))
+            }
+            Text(
+                text = text,
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth(),
+                color = if (enabled) SaltTheme.colors.text else SaltTheme.colors.subText,
+                style = SaltTheme.textStyles.main
+            )
+            Spacer(modifier = Modifier.width(SaltTheme.dimens.contentPadding))
+            sub?.let {
+                Text(
+                    text = sub,
+                    color = if (enabled) SaltTheme.colors.text else SaltTheme.colors.subText,
+                    style = SaltTheme.textStyles.main
+                )
+            }
+        }
+        Spacer(modifier = Modifier.height(12.dp))
+        Slider(
+            value = value,
+            onValueChange = onValueChange,
+            modifier = Modifier
+                .fillMaxWidth(),
+            enabled = enabled,
+            valueRange = valueRange,
+            // steps = steps,
+            onValueChangeFinished = onValueChangeFinished,
+            // interactionSource = interactionSource
+        )
+    }
 }
 
 /**
