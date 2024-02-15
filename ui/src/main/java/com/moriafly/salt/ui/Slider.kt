@@ -185,7 +185,7 @@ internal fun Slider(
  * know when the user has completed selecting a new value by ending a drag or a click.
  */
 @Composable
-private fun RangeSlider(
+internal fun RangeSlider(
     value: ClosedFloatingPointRange<Float>,
     onValueChange: (ClosedFloatingPointRange<Float>) -> Unit,
     modifier: Modifier = Modifier,
@@ -228,112 +228,6 @@ private fun RangeSlider(
                 sliderPositions = sliderPositions
             )
         }
-    )
-}
-
-/**
- * <a href="https://m3.material.io/components/sliders/overview" class="external" target="_blank">Material Design Range slider</a>.
- *
- * Range Sliders expand upon [Slider] using the same concepts but allow the user to select 2 values.
- *
- * The two values are still bounded by the value range but they also cannot cross each other.
- *
- * It uses the provided startThumb for the slider's start thumb and endThumb for the
- * slider's end thumb. It also uses the provided track for the slider's track. If nothing is
- * passed for these parameters, it will use [SliderDefaults.Thumb] and [SliderDefaults.Track]
- * for the thumbs and track.
- *
- * Use continuous Range Sliders to allow users to make meaningful selections that don’t
- * require a specific values:
- *
- * @sample androidx.compose.material3.samples.RangeSliderSample
- *
- * You can allow the user to choose only between predefined set of values by specifying the amount
- * of steps between min and max values:
- *
- * @sample androidx.compose.material3.samples.StepRangeSliderSample
- *
- * A custom start/end thumb and track can be provided:
- *
- * @sample androidx.compose.material3.samples.RangeSliderWithCustomComponents
- *
- * @param value current values of the RangeSlider. If either value is outside of [valueRange]
- * provided, it will be coerced to this range.
- * @param onValueChange lambda in which values should be updated
- * @param modifier modifiers for the Range Slider layout
- * @param enabled whether or not component is enabled and can we interacted with or not
- * @param valueRange range of values that Range Slider values can take. Passed [value] will be
- * coerced to this range
- * @param steps if greater than 0, specifies the amounts of discrete values, evenly distributed
- * between across the whole value range. If 0, range slider will behave as a continuous slider and
- * allow to choose any value from the range specified. Must not be negative.
- * @param onValueChangeFinished lambda to be invoked when value change has ended. This callback
- * shouldn't be used to update the range slider values (use [onValueChange] for that), but rather to
- * know when the user has completed selecting a new value by ending a drag or a click.
- * @param colors [SliderColors] that will be used to determine the color of the Range Slider
- * parts in different state. See [SliderDefaults.colors] to customize.
- * @param startInteractionSource the [MutableInteractionSource] representing the stream of
- * [Interaction]s for the start thumb. You can create and pass in your own
- * `remember`ed instance to observe.
- * @param endInteractionSource the [MutableInteractionSource] representing the stream of
- * [Interaction]s for the end thumb. You can create and pass in your own
- * `remember`ed instance to observe.
- * @param startThumb the start thumb to be displayed on the Range Slider. The lambda receives a
- * [SliderPositions] which is used to obtain the current active track and the tick
- * positions if the range slider is discrete.
- * @param endThumb the end thumb to be displayed on the Range Slider. The lambda receives a
- * [SliderPositions] which is used to obtain the current active track and the tick
- * positions if the range slider is discrete.
- * @param track the track to be displayed on the range slider, it is placed underneath the thumb.
- * The lambda receives a [SliderPositions] which is used to obtain the current active track and the
- * tick positions if the range slider is discrete.
- */
-@Composable
-private fun RangeSlider(
-    value: ClosedFloatingPointRange<Float>,
-    onValueChange: (ClosedFloatingPointRange<Float>) -> Unit,
-    modifier: Modifier = Modifier,
-    enabled: Boolean = true,
-    valueRange: ClosedFloatingPointRange<Float> = 0f..1f,
-    onValueChangeFinished: (() -> Unit)? = null,
-    startInteractionSource: MutableInteractionSource = remember { MutableInteractionSource() },
-    endInteractionSource: MutableInteractionSource = remember { MutableInteractionSource() },
-    startThumb: @Composable (SliderPositions) -> Unit = {
-        SliderDefaults.Thumb(
-            interactionSource = startInteractionSource,
-            enabled = enabled
-        )
-    },
-    endThumb: @Composable (SliderPositions) -> Unit = {
-        SliderDefaults.Thumb(
-            interactionSource = endInteractionSource,
-            enabled = enabled
-        )
-    },
-    track: @Composable (SliderPositions) -> Unit = { sliderPositions ->
-        SliderDefaults.Track(
-            enabled = enabled,
-            sliderPositions = sliderPositions
-        )
-    },
-    /*@IntRange(from = 0)*/
-    steps: Int = 0,
-) {
-    require(steps >= 0) { "steps should be >= 0" }
-
-    RangeSliderImpl(
-        modifier = modifier,
-        value = value,
-        onValueChange = onValueChange,
-        enabled = enabled,
-        valueRange = valueRange,
-        steps = steps,
-        onValueChangeFinished = onValueChangeFinished,
-        startInteractionSource = startInteractionSource,
-        endInteractionSource = endInteractionSource,
-        startThumb = startThumb,
-        endThumb = endThumb,
-        track = track
     )
 }
 
@@ -836,20 +730,20 @@ private object SliderDefaults {
                 trackStrokeWidth,
                 StrokeCap.Round
             )
-            sliderPositions.tickFractions.groupBy {
-                it > sliderPositions.activeRange.endInclusive ||
-                        it < sliderPositions.activeRange.start
-            }.forEach { (outsideFraction, list) ->
-                drawPoints(
-                    list.map {
-                        Offset(lerp(sliderStart, sliderEnd, it).x, center.y)
-                    },
-                    PointMode.Points,
-                    (if (outsideFraction) inactiveTickColor else activeTickColor).value,
-                    tickSize,
-                    StrokeCap.Round
-                )
-            }
+//            sliderPositions.tickFractions.groupBy {
+//                it > sliderPositions.activeRange.endInclusive ||
+//                        it < sliderPositions.activeRange.start
+//            }.forEach { (outsideFraction, list) ->
+//                drawPoints(
+//                    list.map {
+//                        Offset(lerp(sliderStart, sliderEnd, it).x, center.y)
+//                    },
+//                    PointMode.Points,
+//                    (if (outsideFraction) inactiveTickColor else activeTickColor).value,
+//                    tickSize,
+//                    StrokeCap.Round
+//                )
+//            }
         }
     }
 }

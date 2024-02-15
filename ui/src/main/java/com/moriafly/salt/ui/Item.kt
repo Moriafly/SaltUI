@@ -601,9 +601,9 @@ fun ItemSlider(
     enabled: Boolean = true,
     valueRange: ClosedFloatingPointRange<Float> = 0f..1f,
     /*@IntRange(from = 0)*/
-    // steps: Int = 0,
+    steps: Int = 0,
     onValueChangeFinished: (() -> Unit)? = null,
-    // interactionSource: MutableInteractionSource = remember { MutableInteractionSource() }
+    interactionSource: MutableInteractionSource = remember { MutableInteractionSource() }
 ) {
     Column(
         modifier = Modifier
@@ -652,9 +652,9 @@ fun ItemSlider(
                 .fillMaxWidth(),
             enabled = enabled,
             valueRange = valueRange,
-            // steps = steps,
+            steps = steps,
             onValueChangeFinished = onValueChangeFinished,
-            // interactionSource = interactionSource
+            interactionSource = interactionSource
         )
     }
 }

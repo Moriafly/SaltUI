@@ -416,6 +416,7 @@ private fun MainUI() {
                     iconColor = SaltTheme.colors.text,
                     text = "Slider 滑块",
                     // sub = "滑块介绍"
+                    steps = 2
                 )
             }
 
