@@ -458,6 +458,7 @@ fun ItemValue(
  *
  * @param text text
  * @param onChange called when text changed
+ * @param modifier modifier
  * @param hint hint
  * @param hintColor color of [hint] text
  * @param readOnly readOnly
@@ -472,6 +473,7 @@ fun ItemValue(
 fun ItemEdit(
     text: String,
     onChange: (String) -> Unit,
+    modifier: Modifier = Modifier,
     backgroundColor: Color = SaltTheme.colors.subText.copy(alpha = 0.1f),
     hint: String? = null,
     hintColor: Color = SaltTheme.colors.subText,
@@ -485,7 +487,7 @@ fun ItemEdit(
     BasicTextField(
         value = text,
         onValueChange = onChange,
-        modifier = Modifier
+        modifier = modifier
             .padding(paddingValues),
         readOnly = readOnly,
         keyboardOptions = keyboardOptions,
