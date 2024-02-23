@@ -392,6 +392,7 @@ private fun MainUI() {
                         },
                         title = "文本输入",
                         text = inputText,
+                        requestFocus = true,
                         onChange = {
                             inputText = it
                         }

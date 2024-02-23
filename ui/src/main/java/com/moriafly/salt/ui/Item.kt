@@ -57,6 +57,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.SolidColor
@@ -465,6 +467,7 @@ fun ItemValue(
  * @param keyboardOptions keyboardOptions
  * @param keyboardActions keyboardActions
  * @param visualTransformation visualTransformation
+ * @param focusRequester focusRequester
  * @param actionContent actionContent
  */
 @UnstableSaltApi
@@ -480,13 +483,15 @@ fun ItemEdit(
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     keyboardActions: KeyboardActions = KeyboardActions.Default,
     visualTransformation: VisualTransformation = VisualTransformation.None,
+    focusRequester: FocusRequester = remember { FocusRequester() },
     actionContent: (@Composable () -> Unit)? = null
 ) {
     BasicTextField(
         value = text,
         onValueChange = onChange,
         modifier = Modifier
-            .padding(paddingValues),
+            .padding(paddingValues)
+            .focusRequester(focusRequester),
         readOnly = readOnly,
         keyboardOptions = keyboardOptions,
         keyboardActions = keyboardActions,
