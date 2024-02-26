@@ -19,6 +19,7 @@ package com.moriafly.salt.ui.dialog
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -179,23 +180,28 @@ fun InputDialog(
     onChange: (String) -> Unit,
     hint: String? = null
 ) {
-    val focusRequester = remember { FocusRequester() }
-
     BasicDialog(
         onDismissRequest = onDismissRequest,
         properties = properties
     ) {
         ItemOutSpacer()
         DialogTitle(text = title)
-        Spacer(modifier = Modifier.height(4.dp))
+        ItemOutHalfSpacer()
+
+        val focusRequester = remember { FocusRequester() }
         ItemEdit(
             text = text,
             onChange = onChange,
             hint = hint,
             modifier = Modifier
-                .focusRequester(focusRequester)
+                .focusRequester(focusRequester),
+            paddingValues = PaddingValues(horizontal = SaltTheme.dimens.outerHorizontalPadding, vertical = SaltTheme.dimens.outerVerticalPadding)
         )
-        Spacer(modifier = Modifier.height(4.dp))
+        LaunchedEffect(Unit) {
+            focusRequester.requestFocus()
+        }
+
+        ItemOutHalfSpacer()
         Row(
             modifier = Modifier.padding(horizontal = SaltTheme.dimens.outerHorizontalPadding)
         ) {
@@ -220,10 +226,6 @@ fun InputDialog(
             )
         }
         ItemOutSpacer()
-    }
-
-    LaunchedEffect(Unit) {
-        focusRequester.requestFocus()
     }
 }
 
