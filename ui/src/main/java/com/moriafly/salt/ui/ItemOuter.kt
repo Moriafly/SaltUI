@@ -96,7 +96,7 @@ fun ItemOuter(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = SaltTheme.dimens.outerHorizontalPadding, vertical = SaltTheme.dimens.outerVerticalPadding)
-            .fadeClickable {
+            .noRippleClickable {
                 onClick()
             },
         color = color,
