@@ -42,6 +42,7 @@ import androidx.compose.ui.text.style.TextOverflow
 fun TextButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    enabled: Boolean = true,
     text: String,
     textColor: Color = Color.White,
     backgroundColor: Color = SaltTheme.colors.highlight
@@ -49,6 +50,7 @@ fun TextButton(
     BasicButton(
         onClick = onClick,
         modifier = modifier,
+        enabled = enabled,
         backgroundColor = backgroundColor
     ) {
         Text(
@@ -71,6 +73,7 @@ fun TextButton(
 fun BasicButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    enabled: Boolean = true,
     backgroundColor: Color = SaltTheme.colors.highlight,
     content: @Composable BoxScope.() -> Unit
 ) {
@@ -81,9 +84,10 @@ fun BasicButton(
             }
             .clip(RoundedCornerShape(SaltTheme.dimens.corner))
             .background(color = backgroundColor)
-            .clickable {
-                onClick()
-            }
+            .clickable(
+                enabled = enabled,
+                onClick = onClick
+            )
             .padding(SaltTheme.dimens.contentPadding)
     ) {
         content()
