@@ -30,19 +30,23 @@ import androidx.compose.ui.graphics.Color
 
 /**
  * Column with rounded radius
+ *
+ * @param modifier The modifier to be applied to the column.
+ * @param color The background color of the column.
+ * @param content The content of the column.
  */
 @Composable
 fun RoundedColumn(
+    modifier: Modifier = Modifier,
     color: Color = SaltTheme.colors.subBackground,
     content: @Composable ColumnScope.() -> Unit
 ) {
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .padding(SaltTheme.dimens.outerHorizontalPadding, SaltTheme.dimens.outerVerticalPadding)
             .clip(RoundedCornerShape(SaltTheme.dimens.corner))
-            .background(color)
-    ) {
-        content()
-    }
+            .background(color),
+        content = content
+    )
 }
