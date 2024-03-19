@@ -49,35 +49,6 @@ import com.moriafly.salt.ui.SaltTheme
 import com.moriafly.salt.ui.TextButton
 import com.moriafly.salt.ui.UnstableSaltApi
 
-@UnstableSaltApi
-@Composable
-fun ColumnBottomSheetDialog(
-    onDismissRequest: () -> Unit,
-    content: @Composable () -> Unit
-) {
-    BottomSheetDialog(
-        onDismissRequest = onDismissRequest,
-        properties = BottomSheetDialogProperties(
-            enableEdgeToEdge = true,
-            behaviorProperties = BottomSheetBehaviorProperties(
-                state = BottomSheetBehaviorProperties.State.HalfExpanded,
-                skipCollapsed = true,
-                halfExpandedRatio = 0.66f
-            )
-        ),
-        content = {
-            Column(
-                modifier = Modifier
-                    .padding(top = 6.dp)
-                    .clip(RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp))
-                    .background(color = SaltTheme.colors.background)
-            ) {
-                content()
-            }
-        }
-    )
-}
-
 /**
  * YesDialog
  */
@@ -249,6 +220,68 @@ fun BasicDialog(
             content()
         }
     }
+}
+
+/**
+ * The basic bottom sheet dialog has default corner background and vertical padding
+ */
+@UnstableSaltApi
+@Composable
+fun BasicBottomSheetDialog(
+    onDismissRequest: () -> Unit,
+    content: @Composable () -> Unit
+) {
+    BottomSheetDialog(
+        onDismissRequest = onDismissRequest,
+        properties = BottomSheetDialogProperties(
+            enableEdgeToEdge = true,
+            behaviorProperties = BottomSheetBehaviorProperties(
+                state = BottomSheetBehaviorProperties.State.HalfExpanded,
+                skipCollapsed = true,
+                halfExpandedRatio = 0.66f
+            )
+        ),
+        content = {
+            Column(
+                modifier = Modifier
+                    .padding(top = 6.dp)
+                    .clip(RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp))
+                    .background(color = SaltTheme.colors.background)
+            ) {
+                content()
+            }
+        }
+    )
+}
+
+@Deprecated("Use BasicBottomSheetDialog", replaceWith = ReplaceWith("BasicBottomSheetDialog"))
+@UnstableSaltApi
+@Composable
+fun ColumnBottomSheetDialog(
+    onDismissRequest: () -> Unit,
+    content: @Composable () -> Unit
+) {
+    BottomSheetDialog(
+        onDismissRequest = onDismissRequest,
+        properties = BottomSheetDialogProperties(
+            enableEdgeToEdge = true,
+            behaviorProperties = BottomSheetBehaviorProperties(
+                state = BottomSheetBehaviorProperties.State.HalfExpanded,
+                skipCollapsed = true,
+                halfExpandedRatio = 0.66f
+            )
+        ),
+        content = {
+            Column(
+                modifier = Modifier
+                    .padding(top = 6.dp)
+                    .clip(RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp))
+                    .background(color = SaltTheme.colors.background)
+            ) {
+                content()
+            }
+        }
+    )
 }
 
 @Composable
