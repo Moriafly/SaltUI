@@ -4,7 +4,7 @@ SaltUI（UI for Salt Player） 是提取自[椒盐音乐](https://github.com/Mor
 
 本库将会广泛用以椒盐系列 App 开发，以达到快速开发目的。
 
-**详细介绍和文档**请访问（正在改进）：https://github.com/Moriafly/SaltUI/wiki 。
+**详细介绍和文档**请访问（正在改进）：[https://sakawish.github.io/open-source/salt-ui/](https://sakawish.github.io/open-source/salt-ui/) 。
 
 <img src="img/app.jpg" width="200px"/>
 
