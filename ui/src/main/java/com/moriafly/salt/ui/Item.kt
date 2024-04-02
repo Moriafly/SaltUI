@@ -1,16 +1,18 @@
-/**
+/*
  * SaltUI
  * Copyright (C) 2023 Moriafly
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 @file:Suppress("UNUSED")
@@ -46,7 +48,6 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.Icon
-import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -163,8 +164,7 @@ fun Item(
         ) {
             Text(
                 text = text,
-                color = if (enabled) SaltTheme.colors.text else SaltTheme.colors.subText,
-                style = SaltTheme.textStyles.main
+                color = if (enabled) SaltTheme.colors.text else SaltTheme.colors.subText
             )
             sub?.let {
                 Spacer(modifier = Modifier.height(2.dp))
@@ -238,8 +238,7 @@ fun ItemSwitcher(
         ) {
             Text(
                 text = text,
-                color = if (enabled) SaltTheme.colors.text else SaltTheme.colors.subText,
-                style = SaltTheme.textStyles.main
+                color = if (enabled) SaltTheme.colors.text else SaltTheme.colors.subText
             )
             sub?.let {
                 Spacer(modifier = Modifier.height(2.dp))
@@ -336,8 +335,7 @@ fun ItemPopup(
             ) {
                 Text(
                     text = text,
-                    color = if (enabled) SaltTheme.colors.text else SaltTheme.colors.subText,
-                    style = SaltTheme.textStyles.main
+                    color = if (enabled) SaltTheme.colors.text else SaltTheme.colors.subText
                 )
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(
@@ -408,8 +406,7 @@ fun ItemCheck(
         ) {
             Text(
                 text = text,
-                color = if (enabled) SaltTheme.colors.text else SaltTheme.colors.subText,
-                style = SaltTheme.textStyles.main
+                color = if (enabled) SaltTheme.colors.text else SaltTheme.colors.subText
             )
         }
     }
@@ -434,8 +431,7 @@ fun ItemValue(
         Text(
             modifier = Modifier
                 .weight(1f),
-            text = text,
-            style = SaltTheme.textStyles.main
+            text = text
         )
         Spacer(modifier = Modifier.width(SaltTheme.dimens.contentPadding))
         SelectionContainer(
@@ -446,8 +442,7 @@ fun ItemValue(
                 text = sub,
                 color = SaltTheme.colors.subText,
                 fontSize = 15.sp,
-                textAlign = TextAlign.End,
-                style = SaltTheme.textStyles.main
+                textAlign = TextAlign.End
             )
         }
     }
@@ -513,8 +508,7 @@ fun ItemEdit(
                     if (hint != null && text.isEmpty()) {
                         Text(
                             text = hint,
-                            color = hintColor,
-                            style = SaltTheme.textStyles.main
+                            color = hintColor
                         )
                     }
                 }
@@ -634,15 +628,13 @@ fun ItemSlider(
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxWidth(),
-                color = if (enabled) SaltTheme.colors.text else SaltTheme.colors.subText,
-                style = SaltTheme.textStyles.main
+                color = if (enabled) SaltTheme.colors.text else SaltTheme.colors.subText
             )
             Spacer(modifier = Modifier.width(SaltTheme.dimens.contentPadding))
             sub?.let {
                 Text(
                     text = sub,
-                    color = if (enabled) SaltTheme.colors.text else SaltTheme.colors.subText,
-                    style = SaltTheme.textStyles.main
+                    color = if (enabled) SaltTheme.colors.text else SaltTheme.colors.subText
                 )
             }
         }
