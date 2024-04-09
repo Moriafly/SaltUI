@@ -30,7 +30,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.width
-import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -44,6 +43,7 @@ import androidx.compose.ui.semantics.toggleableState
 import androidx.compose.ui.state.ToggleableState
 import androidx.compose.ui.unit.dp
 import com.moriafly.salt.ui.SaltTheme
+import com.moriafly.salt.ui.Text
 import com.moriafly.salt.ui.UnstableSaltApi
 
 @UnstableSaltApi
@@ -89,8 +89,7 @@ fun PopupMenuItem(
         ) {
             Text(
                 text = text,
-                color = if (selected == true) SaltTheme.colors.highlight else SaltTheme.colors.text,
-                style = SaltTheme.textStyles.main
+                color = if (selected == true) SaltTheme.colors.highlight else SaltTheme.colors.text
             )
             sub?.let {
                 Spacer(modifier = Modifier.height(2.dp))

@@ -30,7 +30,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.Icon
-import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -90,8 +89,7 @@ fun TitleBar(
             fontWeight = FontWeight.SemiBold,
             textAlign = TextAlign.Center,
             overflow = TextOverflow.Ellipsis,
-            maxLines = 1,
-            style = SaltTheme.textStyles.main
+            maxLines = 1
         )
     }
 }

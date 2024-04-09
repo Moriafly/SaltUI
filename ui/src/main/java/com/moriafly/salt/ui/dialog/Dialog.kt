@@ -26,7 +26,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
@@ -46,6 +45,7 @@ import com.moriafly.salt.ui.ItemOutSpacer
 import com.moriafly.salt.ui.ItemText
 import com.moriafly.salt.ui.R
 import com.moriafly.salt.ui.SaltTheme
+import com.moriafly.salt.ui.Text
 import com.moriafly.salt.ui.TextButton
 import com.moriafly.salt.ui.UnstableSaltApi
 
@@ -291,7 +291,6 @@ fun DialogTitle(
     Text(
         text = text,
         modifier = Modifier.padding(horizontal = SaltTheme.dimens.outerHorizontalPadding),
-        color = SaltTheme.colors.text,
         fontSize = 18.sp,
         fontWeight = FontWeight.Bold
     )

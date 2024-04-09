@@ -22,7 +22,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -67,8 +66,7 @@ fun ItemOuterLargeTitle(
             text = text,
             fontSize = 24.sp,
             fontWeight = FontWeight.Bold,
-            textAlign = TextAlign.Center,
-            style = SaltTheme.textStyles.main
+            textAlign = TextAlign.Center
         )
         Spacer(modifier = Modifier.height(SaltTheme.dimens.contentPadding * 1.5f))
         Text(
@@ -100,8 +98,7 @@ fun ItemOuter(
                 onClick()
             },
         color = color,
-        fontWeight = FontWeight.Bold,
-        style = SaltTheme.textStyles.main
+        fontWeight = FontWeight.Bold
     )
 }
 
