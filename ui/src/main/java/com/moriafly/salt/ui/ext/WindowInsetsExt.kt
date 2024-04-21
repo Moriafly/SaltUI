@@ -21,8 +21,10 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.union
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.NonRestartableComposable
+import androidx.compose.ui.Modifier
 import com.moriafly.salt.ui.UnstableSaltApi
 
 /**
@@ -33,3 +35,7 @@ val WindowInsets.Companion.safeMain: WindowInsets
     @Composable
     @NonRestartableComposable
     get() = WindowInsets.systemBars.union(WindowInsets.displayCutout)
+
+@OptIn(UnstableSaltApi::class)
+@Composable
+fun Modifier.safeMainPadding() = windowInsetsPadding(WindowInsets.safeMain)
