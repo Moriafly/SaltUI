@@ -17,9 +17,11 @@
 
 package com.moriafly.salt.ui.ext
 
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.systemBarsIgnoringVisibility
 import androidx.compose.foundation.layout.union
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.runtime.Composable
@@ -28,7 +30,7 @@ import androidx.compose.ui.Modifier
 import com.moriafly.salt.ui.UnstableSaltApi
 
 /**
- * WindowInsets.safeDrawing, Exclude ime
+ * All system bars (status bars, caption bar as well as navigation bars) and display cutout. but not ime.
  */
 @UnstableSaltApi
 val WindowInsets.Companion.safeMain: WindowInsets
@@ -36,6 +38,21 @@ val WindowInsets.Companion.safeMain: WindowInsets
     @NonRestartableComposable
     get() = WindowInsets.systemBars.union(WindowInsets.displayCutout)
 
-@OptIn(UnstableSaltApi::class)
+/**
+ * The insets that the [safeMain] will consume if shown. If it cannot be shown then this will be empty.
+ * In other words, regardless of whether the system columns included in [safeMain] are displayed or not, it will have paddings.
+ */
+@OptIn(ExperimentalLayoutApi::class)
+@UnstableSaltApi
+val WindowInsets.Companion.safeMainIgnoringVisibility: WindowInsets
+    @Composable
+    @NonRestartableComposable
+    get() = WindowInsets.systemBarsIgnoringVisibility.union(WindowInsets.displayCutout)
+
+@UnstableSaltApi
 @Composable
 fun Modifier.safeMainPadding() = windowInsetsPadding(WindowInsets.safeMain)
+
+@UnstableSaltApi
+@Composable
+fun Modifier.safeMainIgnoringVisibilityPadding() = windowInsetsPadding(WindowInsets.safeMainIgnoringVisibility)
