@@ -1,6 +1,7 @@
 [versions]
+saltui = "2.0.0-dev01"
 agp = "8.2.1"
-kotlin = "1.8.21"
+kotlin = "1.9.23"
 core-ktx = "1.9.0"
 junit = "4.13.2"
 androidx-test-ext-junit = "1.1.5"
@@ -9,7 +10,9 @@ appcompat = "1.6.1"
 material = "1.8.0"
 material3 = "1.1.1"
 compose = "1.6.3"
+compose-multiplatform = "1.6.10-rc02"
 activity-compose = "1.7.0"
+jetbrains-kotlin-jvm = "1.8.21"
 
 [libraries]
 core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "core-ktx" }
@@ -33,5 +36,8 @@ activity-compose = { group = "androidx.activity", name = "activity-compose", ver
 androidApplication = { id = "com.android.application", version.ref = "agp" }
 kotlinAndroid = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 androidLibrary = { id = "com.android.library", version.ref = "agp" }
+jetbrainsCompose = { id = "org.jetbrains.compose", version.ref = "compose-multiplatform" }
+kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
+jetbrainsKotlinJvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "jetbrains-kotlin-jvm" }
 
 [bundles]
