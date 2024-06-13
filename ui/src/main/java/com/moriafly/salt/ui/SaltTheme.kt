@@ -21,7 +21,7 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.material.ripple.rememberRipple
+import androidx.compose.material.ripple
 import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.surfaceColorAtElevation
@@ -57,7 +57,7 @@ fun SaltTheme(
             paragraph = textStyles.paragraph.copy(color = colors.text.copy(alpha = 0.85f))
         )
     }
-    val rippleIndication = rememberRipple()
+    val rippleIndication = ripple()
     CompositionLocalProvider(
         LocalIndication provides rippleIndication,
         LocalSaltConfigs provides configs,
