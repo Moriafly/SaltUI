@@ -27,6 +27,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
@@ -72,7 +73,6 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.moriafly.salt.ui.popup.PopupMenu
 import com.moriafly.salt.ui.popup.PopupState
 
@@ -425,25 +425,33 @@ fun ItemValue(
         modifier = Modifier
             .fillMaxWidth()
             .sizeIn(minHeight = 48.dp)
-            .padding(horizontal = SaltTheme.dimens.innerHorizontalPadding, vertical = SaltTheme.dimens.innerVerticalPadding),
+            .padding(vertical = SaltTheme.dimens.innerVerticalPadding),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
             modifier = Modifier
-                .weight(1f),
+                .sizeIn(
+                    maxWidth = 80.dp
+                )
+                .weight(1f)
+                .padding(start = SaltTheme.dimens.innerHorizontalPadding),
             text = text
         )
-        Spacer(modifier = Modifier.width(SaltTheme.dimens.contentPadding))
-        SelectionContainer(
+
+        Row(
             modifier = Modifier
-                .weight(1f),
+                .weight(3f)
+                .padding(start = SaltTheme.dimens.contentPadding, end = SaltTheme.dimens.innerHorizontalPadding),
+            horizontalArrangement = Arrangement.End
         ) {
-            Text(
-                text = sub,
-                color = SaltTheme.colors.subText,
-                fontSize = 15.sp,
-                textAlign = TextAlign.End
-            )
+            SelectionContainer {
+                Text(
+                    text = sub,
+                    color = SaltTheme.colors.subText,
+                    textAlign = TextAlign.End,
+                    style = SaltTheme.textStyles.main
+                )
+            }
         }
     }
 }
