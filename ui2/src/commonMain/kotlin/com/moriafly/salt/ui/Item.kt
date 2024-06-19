@@ -46,7 +46,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.Divider
 import androidx.compose.material.Icon
 import androidx.compose.runtime.Composable
@@ -79,7 +78,6 @@ import saltui.ui2.generated.resources.Res
 import saltui.ui2.generated.resources.ic_check
 import saltui.ui2.generated.resources.ic_closed_eye
 import saltui.ui2.generated.resources.ic_eye
-import saltui.ui2.generated.resources.ic_item_expand_arrow
 import saltui.ui2.generated.resources.ic_uncheck
 
 @Composable
@@ -337,6 +335,9 @@ fun ItemSwitcher(
     }
 }
 
+@Composable
+internal expect fun ItemPopupArrow()
+
 /**
  * Popup Item
  *
@@ -393,14 +394,8 @@ fun ItemPopup(
                 )
             }
             Spacer(modifier = Modifier.width(SaltTheme.dimens.contentPadding))
-            Icon(
-                modifier = Modifier
-                    .size(16.dp)
-                    .padding(2.dp),
-                painter = painterResource(Res.drawable.ic_item_expand_arrow),
-                contentDescription = null,
-                tint = SaltTheme.colors.subText
-            )
+
+            ItemPopupArrow()
         }
 
         PopupMenu(
