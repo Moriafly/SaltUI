@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.painterResource
 import saltui.ui2.generated.resources.Res
 import saltui.ui2.generated.resources.ic_chevron_right
+import saltui.ui2.generated.resources.ic_item_link_android
 
 @Composable
 internal actual fun ItemArrow(arrowType: ItemArrowType) {
@@ -27,9 +28,13 @@ internal actual fun ItemArrow(arrowType: ItemArrowType) {
         Icon(
             modifier = Modifier
                 .size(20.dp),
-            painter = painterResource(Res.drawable.ic_chevron_right),
+            painter = when (arrowType) {
+                ItemArrowType.Arrow -> painterResource(Res.drawable.ic_chevron_right)
+                ItemArrowType.Link -> painterResource(Res.drawable.ic_item_link_android)
+                else -> painterResource(Res.drawable.ic_chevron_right)
+            },
             contentDescription = null,
-            tint = if (arrowType == ItemArrowType.Link) SaltTheme.colors.highlight else SaltTheme.colors.subText
+            tint = SaltTheme.colors.subText
         )
     }
 }
