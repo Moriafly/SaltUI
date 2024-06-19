@@ -79,10 +79,13 @@ import saltui.ui2.generated.resources.Res
 import saltui.ui2.generated.resources.ic_check
 import saltui.ui2.generated.resources.ic_closed_eye
 import saltui.ui2.generated.resources.ic_eye
-import saltui.ui2.generated.resources.ic_item_arrow
 import saltui.ui2.generated.resources.ic_item_expand_arrow
-import saltui.ui2.generated.resources.ic_item_link
 import saltui.ui2.generated.resources.ic_uncheck
+
+@Composable
+internal expect fun ItemArrow(
+    arrowType: ItemArrowType
+)
 
 /**
  * Build content interface title text.
@@ -196,27 +199,9 @@ fun Item(
             }
         }
 
-        if (arrowType != ItemArrowType.None) {
-            Spacer(modifier = Modifier.width(SaltTheme.dimens.contentPadding))
-            Icon(
-                modifier = Modifier
-                    .size(16.dp)
-                    .padding(
-                        when (arrowType) {
-                            ItemArrowType.Arrow -> PaddingValues(2.dp)
-                            ItemArrowType.Link -> PaddingValues(0.dp)
-                            else -> PaddingValues(0.dp)
-                        }
-                    ),
-                painter = when (arrowType) {
-                    ItemArrowType.Arrow -> painterResource(Res.drawable.ic_item_arrow)
-                    ItemArrowType.Link -> painterResource(Res.drawable.ic_item_link)
-                    else -> painterResource(Res.drawable.ic_item_arrow)
-                },
-                contentDescription = null,
-                tint = SaltTheme.colors.text
-            )
-        }
+        ItemArrow(
+            arrowType = arrowType
+        )
     }
 }
 
