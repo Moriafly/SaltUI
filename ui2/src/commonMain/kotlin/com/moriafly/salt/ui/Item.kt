@@ -463,46 +463,17 @@ fun ItemCheck(
 }
 
 /**
- * Value
+ * Item Value
+ *
+ * @param text text
+ * @param sub value
  */
 @UnstableSaltApi
 @Composable
-fun ItemValue(
+expect fun ItemValue(
     text: String,
     sub: String
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .heightIn(min = SaltTheme.dimens.item)
-            .padding(vertical = SaltTheme.dimens.innerVerticalPadding),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(
-            modifier = Modifier
-                .sizeIn(
-                    maxWidth = 80.dp
-                )
-                .weight(1f)
-                .padding(start = SaltTheme.dimens.innerHorizontalPadding),
-            text = text
-        )
-
-        Row(
-            modifier = Modifier
-                .weight(3f)
-                .padding(start = SaltTheme.dimens.contentPadding, end = SaltTheme.dimens.innerHorizontalPadding)
-        ) {
-            SelectionContainer {
-                Text(
-                    text = sub,
-                    color = SaltTheme.colors.subText,
-                    style = SaltTheme.textStyles.main
-                )
-            }
-        }
-    }
-}
+)
 
 /**
  * Edit

@@ -1,12 +1,18 @@
 package com.moriafly.salt.ui
 
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.Icon
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.painterResource
@@ -38,5 +44,44 @@ internal actual fun ItemArrow(
             contentDescription = null,
             tint = SaltTheme.colors.text
         )
+    }
+}
+
+@Composable
+@UnstableSaltApi
+actual fun ItemValue(
+    text: String,
+    sub: String
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .heightIn(min = SaltTheme.dimens.item)
+            .padding(vertical = SaltTheme.dimens.innerVerticalPadding),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            modifier = Modifier
+                .sizeIn(
+                    maxWidth = 80.dp
+                )
+                .weight(1f)
+                .padding(start = SaltTheme.dimens.innerHorizontalPadding),
+            text = text
+        )
+
+        Row(
+            modifier = Modifier
+                .weight(3f)
+                .padding(start = SaltTheme.dimens.contentPadding, end = SaltTheme.dimens.innerHorizontalPadding)
+        ) {
+            SelectionContainer {
+                Text(
+                    text = sub,
+                    color = SaltTheme.colors.subText,
+                    style = SaltTheme.textStyles.main
+                )
+            }
+        }
     }
 }
