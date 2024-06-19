@@ -14,6 +14,7 @@ import androidx.compose.ui.graphics.Color
 import com.moriafly.salt.ui.BottomBar
 import com.moriafly.salt.ui.BottomBarItem
 import com.moriafly.salt.ui.Item
+import com.moriafly.salt.ui.ItemArrowType
 import com.moriafly.salt.ui.ItemCheck
 import com.moriafly.salt.ui.ItemContainer
 import com.moriafly.salt.ui.ItemEdit
@@ -307,7 +308,8 @@ fun MainUI() {
                     onClick = {
                         yesNoDialog = true
                     },
-                    text = "YesNoDialog"
+                    text = "YesNoDialog",
+                    arrowType = ItemArrowType.Link
                 )
 
                 var yesDialog by remember { mutableStateOf(false) }

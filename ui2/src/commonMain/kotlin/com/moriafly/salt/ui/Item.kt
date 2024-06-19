@@ -47,6 +47,7 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.selection.SelectionContainer
+import androidx.compose.material.Divider
 import androidx.compose.material.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -68,19 +69,19 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.moriafly.salt.ui.popup.PopupMenu
 import com.moriafly.salt.ui.popup.PopupState
 import org.jetbrains.compose.resources.painterResource
 import saltui.ui2.generated.resources.Res
 import saltui.ui2.generated.resources.ic_arrow_drop_down
 import saltui.ui2.generated.resources.ic_check
-import saltui.ui2.generated.resources.ic_chevron_right
 import saltui.ui2.generated.resources.ic_closed_eye
 import saltui.ui2.generated.resources.ic_eye
+import saltui.ui2.generated.resources.ic_item_arrow
+import saltui.ui2.generated.resources.ic_item_link
 import saltui.ui2.generated.resources.ic_uncheck
 
 /**
@@ -119,6 +120,12 @@ fun ItemText(
     )
 }
 
+enum class ItemArrowType {
+    Arrow,
+    None,
+    Link
+}
+
 /**
  * Build item for the content interface.
  *
@@ -130,6 +137,7 @@ fun ItemText(
  * @param text main text
  * @param sub sub text
  * @param subColor color of [sub] text
+ * @param arrowType type of arrow
  */
 @Composable
 fun Item(
@@ -140,7 +148,12 @@ fun Item(
     iconColor: Color? = null,
     text: String,
     sub: String? = null,
-    subColor: Color = SaltTheme.colors.subText
+    subColor: Color = SaltTheme.colors.subText,
+    paddingValues: PaddingValues = PaddingValues(
+        horizontal = SaltTheme.dimens.innerHorizontalPadding,
+        vertical = SaltTheme.dimens.innerVerticalPadding
+    ),
+    arrowType: ItemArrowType = ItemArrowType.Arrow
 ) {
     Row(
         modifier = Modifier
@@ -150,7 +163,7 @@ fun Item(
             .clickable(enabled = enabled) {
                 onClick()
             }
-            .padding(horizontal = SaltTheme.dimens.innerHorizontalPadding, vertical = SaltTheme.dimens.innerVerticalPadding),
+            .padding(paddingValues = paddingValues),
         verticalAlignment = Alignment.CenterVertically
     ) {
         iconPainter?.let {
@@ -182,15 +195,59 @@ fun Item(
                 )
             }
         }
-        Spacer(modifier = Modifier.width(SaltTheme.dimens.contentPadding))
-        Icon(
-            modifier = Modifier
-                .size(20.dp),
-            painter = painterResource(Res.drawable.ic_chevron_right),
-            contentDescription = null,
-            tint = SaltTheme.colors.subText
-        )
+
+        if (arrowType != ItemArrowType.None) {
+            Spacer(modifier = Modifier.width(SaltTheme.dimens.contentPadding))
+            Icon(
+                modifier = Modifier
+                    .size(16.dp)
+                    .padding(
+                        when (arrowType) {
+                            ItemArrowType.Arrow -> PaddingValues(2.dp)
+                            ItemArrowType.Link -> PaddingValues(0.dp)
+                            else -> PaddingValues(0.dp)
+                        }
+                    ),
+                painter = when (arrowType) {
+                    ItemArrowType.Arrow -> painterResource(Res.drawable.ic_item_arrow)
+                    ItemArrowType.Link -> painterResource(Res.drawable.ic_item_link)
+                    else -> painterResource(Res.drawable.ic_item_arrow)
+                },
+                contentDescription = null,
+                tint = SaltTheme.colors.text
+            )
+        }
     }
+}
+
+/**
+ * Item in popup
+ */
+@UnstableSaltApi
+@Composable
+fun ItemInPopup(
+    onClick: () -> Unit,
+    enabled: Boolean = true,
+    iconPainter: Painter? = null,
+    iconPaddingValues: PaddingValues = PaddingValues(0.dp),
+    iconColor: Color? = SaltTheme.colors.text,
+    text: String,
+    sub: String? = null,
+    subColor: Color = SaltTheme.colors.subText,
+    arrowType: ItemArrowType = ItemArrowType.Arrow
+) {
+    Item(
+        onClick = onClick,
+        enabled = enabled,
+        iconPainter = iconPainter,
+        iconPaddingValues = iconPaddingValues,
+        iconColor = iconColor,
+        text = text,
+        sub = sub,
+        subColor = subColor,
+        paddingValues = PaddingValues(horizontal = SaltTheme.dimens.innerHorizontalPadding, vertical = SaltTheme.dimens.outerVerticalPadding),
+        arrowType = arrowType
+    )
 }
 
 /**
@@ -432,25 +489,31 @@ fun ItemValue(
         modifier = Modifier
             .fillMaxWidth()
             .sizeIn(minHeight = 48.dp)
-            .padding(horizontal = SaltTheme.dimens.innerHorizontalPadding, vertical = SaltTheme.dimens.innerVerticalPadding),
+            .padding(vertical = SaltTheme.dimens.innerVerticalPadding),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
             modifier = Modifier
-                .weight(1f),
+                .sizeIn(
+                    maxWidth = 80.dp
+                )
+                .weight(1f)
+                .padding(start = SaltTheme.dimens.innerHorizontalPadding),
             text = text
         )
-        Spacer(modifier = Modifier.width(SaltTheme.dimens.contentPadding))
-        SelectionContainer(
+
+        Row(
             modifier = Modifier
-                .weight(1f),
+                .weight(3f)
+                .padding(start = SaltTheme.dimens.contentPadding, end = SaltTheme.dimens.innerHorizontalPadding)
         ) {
-            Text(
-                text = sub,
-                color = SaltTheme.colors.subText,
-                fontSize = 15.sp,
-                textAlign = TextAlign.End
-            )
+            SelectionContainer {
+                Text(
+                    text = sub,
+                    color = SaltTheme.colors.subText,
+                    style = SaltTheme.textStyles.main
+                )
+            }
         }
     }
 }
@@ -527,6 +590,57 @@ fun ItemEdit(
             }
         }
     )
+}
+
+@OptIn(UnstableSaltApi::class)
+@Composable
+fun ItemEditWithTitle(
+    title: String,
+    text: String,
+    onChange: (String) -> Unit,
+    hint: String? = null,
+    keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
+    keyboardActions: KeyboardActions = KeyboardActions.Default,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Row(
+            modifier = Modifier
+                .sizeIn(
+                    maxWidth = 80.dp
+                )
+                .weight(1f)
+                .padding(start = SaltTheme.dimens.innerHorizontalPadding)
+        ) {
+            Text(
+                text = title,
+                modifier = Modifier
+                    .padding(vertical = SaltTheme.dimens.contentPadding),
+                style = SaltTheme.textStyles.main
+            )
+        }
+
+        Row(
+            modifier = Modifier
+                .weight(3f)
+        ) {
+            ItemEdit(
+                text = text,
+                onChange = onChange,
+                modifier = Modifier
+                    .weight(3f),
+                backgroundColor = Color.Unspecified,
+                hint = hint,
+                hintColor = SaltTheme.colors.subText.copy(alpha = 0.5f),
+                paddingValues = PaddingValues(0.dp), // SaltTheme.dimens.outerHorizontalPadding - SaltTheme.dimens.contentPadding, 0.dp),
+                keyboardOptions = keyboardOptions,
+                keyboardActions = keyboardActions
+            )
+        }
+    }
 }
 
 /**
@@ -684,4 +798,12 @@ fun ItemContainer(
     ) {
         content()
     }
+}
+
+@Composable
+fun ItemDivider() {
+    Divider(
+        thickness = Dp.Hairline,
+        color = SaltTheme.colors.subText.copy(alpha = 0.25f)
+    )
 }
