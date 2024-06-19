@@ -76,11 +76,11 @@ import com.moriafly.salt.ui.popup.PopupMenu
 import com.moriafly.salt.ui.popup.PopupState
 import org.jetbrains.compose.resources.painterResource
 import saltui.ui2.generated.resources.Res
-import saltui.ui2.generated.resources.ic_arrow_drop_down
 import saltui.ui2.generated.resources.ic_check
 import saltui.ui2.generated.resources.ic_closed_eye
 import saltui.ui2.generated.resources.ic_eye
 import saltui.ui2.generated.resources.ic_item_arrow
+import saltui.ui2.generated.resources.ic_item_expand_arrow
 import saltui.ui2.generated.resources.ic_item_link
 import saltui.ui2.generated.resources.ic_uncheck
 
@@ -410,8 +410,9 @@ fun ItemPopup(
             Spacer(modifier = Modifier.width(SaltTheme.dimens.contentPadding))
             Icon(
                 modifier = Modifier
-                    .size(20.dp),
-                painter = painterResource(Res.drawable.ic_arrow_drop_down),
+                    .size(16.dp)
+                    .padding(2.dp),
+                painter = painterResource(Res.drawable.ic_item_expand_arrow),
                 contentDescription = null,
                 tint = SaltTheme.colors.subText
             )
