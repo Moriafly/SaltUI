@@ -158,7 +158,7 @@ fun Item(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .heightIn(min = 56.dp)
+            .heightIn(min = SaltTheme.dimens.item)
             .alpha(if (enabled) 1f else 0.5f)
             .clickable(enabled = enabled) {
                 onClick()
@@ -276,7 +276,7 @@ fun ItemSwitcher(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .heightIn(min = 56.dp)
+            .heightIn(min = SaltTheme.dimens.item)
             .alpha(if (enabled) 1f else 0.5f)
             .clickable(enabled = enabled) {
                 onChange(!state)
@@ -373,7 +373,7 @@ fun ItemPopup(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .heightIn(min = 56.dp)
+                .heightIn(min = SaltTheme.dimens.item)
                 .alpha(if (enabled) 1f else 0.5f)
                 .clickable(enabled = enabled) {
                     state.expend()
@@ -447,7 +447,7 @@ fun ItemCheck(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .heightIn(min = 50.dp)
+            .heightIn(min = SaltTheme.dimens.item)
             .alpha(if (enabled) 1f else 0.5f)
             .clickable(enabled = enabled) {
                 onChange(!state)
@@ -488,7 +488,7 @@ fun ItemValue(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .sizeIn(minHeight = 48.dp)
+            .heightIn(min = SaltTheme.dimens.item)
             .padding(vertical = SaltTheme.dimens.innerVerticalPadding),
         verticalAlignment = Alignment.CenterVertically
     ) {
