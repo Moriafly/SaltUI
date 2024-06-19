@@ -7,3 +7,4 @@
 /captures
 .externalNativeBuild
 .cxx
+secret_key.gpg
