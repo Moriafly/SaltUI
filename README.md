@@ -34,6 +34,7 @@ dependencies {
     // 即 implementation 'com.github.Moriafly:SaltUI:0.1.0-dev51'
     // 推荐使用上方最新版本或稳定版本（若有）
     implementation 'com.github.Moriafly:SaltUI:<VERSION>'
+    // implementation("io.github.moriafly:salt-ui:2.0.0-dev04")
 }
 ```
 
