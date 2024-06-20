@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.dp
  * Dimens for SaltUI
  *
  * @param item The minimum size of an [Item], [ItemSwitcher], etc
+ * @param itemIcon size of icon in [Item], [ItemSwitcher], etc
  * @param corner corner
  * @param dialogCorner dialogCorner
  * @param outerHorizontalPadding outerHorizontalPadding
@@ -62,8 +63,8 @@ class SaltDimens(
 }
 
 fun saltDimens(
-    item: Dp = 56.dp,
-    itemIcon: Dp = 24.dp,
+    item: Dp = SaltDimensItem,
+    itemIcon: Dp = SaltDimensItemIcon,
     corner: Dp = 12.dp,
     dialogCorner: Dp = 20.dp,
     outerHorizontalPadding: Dp = 16.dp,
@@ -83,3 +84,6 @@ fun saltDimens(
     contentPadding = contentPadding
 )
 
+internal expect val SaltDimensItem: Dp
+
+internal expect val SaltDimensItemIcon: Dp
