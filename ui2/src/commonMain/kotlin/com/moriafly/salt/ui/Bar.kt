@@ -44,10 +44,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.moriafly.salt.ui.internal.stringResourceBack
 import org.jetbrains.compose.resources.painterResource
-import org.jetbrains.compose.resources.stringResource
 import saltui.ui2.generated.resources.Res
-import saltui.ui2.generated.resources.back
 import saltui.ui2.generated.resources.ic_arrow_back
 
 /**
@@ -66,7 +65,7 @@ fun TitleBar(
             .height(56.dp)
     ) {
         if (showBackBtn) {
-            val backButtonContentDescription = stringResource(Res.string.back)
+            val backButtonContentDescription = stringResourceBack()
             Icon(
                 modifier = Modifier
                     .size(56.dp)
@@ -79,7 +78,7 @@ fun TitleBar(
                     }
                     .padding(18.dp),
                 painter = painterResource(Res.drawable.ic_arrow_back),
-                contentDescription = stringResource(Res.string.back),
+                contentDescription = stringResourceBack(),
                 tint = SaltTheme.colors.text
             )
         }

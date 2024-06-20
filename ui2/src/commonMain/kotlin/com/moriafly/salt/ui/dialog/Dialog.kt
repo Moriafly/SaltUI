@@ -45,10 +45,8 @@ import com.moriafly.salt.ui.SaltTheme
 import com.moriafly.salt.ui.Text
 import com.moriafly.salt.ui.TextButton
 import com.moriafly.salt.ui.UnstableSaltApi
-import org.jetbrains.compose.resources.stringResource
-import saltui.ui2.generated.resources.Res
-import saltui.ui2.generated.resources.cancel
-import saltui.ui2.generated.resources.confirm
+import com.moriafly.salt.ui.internal.stringResourceCancel
+import com.moriafly.salt.ui.internal.stringResourceConfirm
 
 /**
  * YesDialog
@@ -60,7 +58,7 @@ fun YesDialog(
     properties: DialogProperties = DialogProperties(),
     title: String,
     content: String,
-    confirmText: String = stringResource(Res.string.confirm).uppercase()
+    confirmText: String = stringResourceConfirm().uppercase()
 ) {
     BasicDialog(
         onDismissRequest = onDismissRequest,
@@ -95,8 +93,8 @@ fun YesNoDialog(
     title: String,
     content: String,
     drawContent: (@Composable () -> Unit)? = null,
-    cancelText: String = stringResource(Res.string.cancel).uppercase(),
-    confirmText: String = stringResource(Res.string.confirm).uppercase()
+    cancelText: String = stringResourceCancel().uppercase(),
+    confirmText: String = stringResourceConfirm().uppercase()
 ) {
     BasicDialog(
         onDismissRequest = onDismissRequest,
@@ -181,7 +179,7 @@ fun InputDialog(
                 },
                 modifier = Modifier
                     .weight(1f),
-                text = stringResource(Res.string.cancel).uppercase(),
+                text = stringResourceCancel().uppercase(),
                 textColor = SaltTheme.colors.subText,
                 backgroundColor = SaltTheme.colors.subBackground
             )
@@ -192,7 +190,7 @@ fun InputDialog(
                 },
                 modifier = Modifier
                     .weight(1f),
-                text = stringResource(Res.string.confirm).uppercase()
+                text = stringResourceConfirm().uppercase()
             )
         }
         ItemOutSpacer()
@@ -222,8 +220,6 @@ fun BasicDialog(
         }
     }
 }
-
-
 
 @Composable
 fun DialogTitle(
