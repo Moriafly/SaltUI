@@ -146,7 +146,7 @@ fun Item(
     enabled: Boolean = true,
     iconPainter: Painter? = null,
     iconPaddingValues: PaddingValues = PaddingValues(0.dp),
-    iconColor: Color? = null,
+    iconColor: Color? = SaltTheme.colors.text,
     text: String,
     sub: String? = null,
     subColor: Color = SaltTheme.colors.subText,
