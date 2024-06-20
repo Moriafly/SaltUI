@@ -170,7 +170,7 @@ fun Item(
         iconPainter?.let {
             Image(
                 modifier = Modifier
-                    .size(24.dp)
+                    .size(SaltTheme.dimens.itemIcon)
                     .padding(iconPaddingValues),
                 painter = iconPainter,
                 contentDescription = null,
@@ -270,7 +270,7 @@ fun ItemSwitcher(
         iconPainter?.let {
             Image(
                 modifier = Modifier
-                    .size(24.dp)
+                    .size(SaltTheme.dimens.itemIcon)
                     .padding(iconPaddingValues),
                 painter = iconPainter,
                 contentDescription = null,
@@ -370,7 +370,7 @@ fun ItemPopup(
             iconPainter?.let {
                 Image(
                     modifier = Modifier
-                        .size(24.dp)
+                        .size(SaltTheme.dimens.itemIcon)
                         .padding(iconPaddingValues),
                     painter = iconPainter,
                     contentDescription = null,
@@ -438,7 +438,7 @@ fun ItemCheck(
     ) {
         Icon(
             modifier = Modifier
-                .size(24.dp),
+                .size(SaltTheme.dimens.itemIcon),
             painter = if (state) painterResource(Res.drawable.ic_check) else painterResource(Res.drawable.ic_uncheck),
             contentDescription = null,
             tint = SaltTheme.colors.highlight
@@ -650,7 +650,7 @@ fun ItemEditPassword(
                         hidden = !hidden
                     }
                     .padding(SaltTheme.dimens.contentPadding)
-                    .size(24.dp),
+                    .size(SaltTheme.dimens.itemIcon),
                 tint = SaltTheme.colors.subText
             )
         }
@@ -688,7 +688,7 @@ fun ItemSlider(
             iconPainter?.let {
                 Image(
                     modifier = Modifier
-                        .size(24.dp)
+                        .size(SaltTheme.dimens.itemIcon)
                         .padding(iconPaddingValues),
                     painter = iconPainter,
                     contentDescription = null,

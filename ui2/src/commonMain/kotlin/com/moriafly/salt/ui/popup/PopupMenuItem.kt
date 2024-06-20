@@ -104,7 +104,7 @@ fun PopupMenuItem(
             Spacer(modifier = Modifier.width(SaltTheme.dimens.contentPadding * 2))
             Image(
                 modifier = Modifier
-                    .size(24.dp)
+                    .size(SaltTheme.dimens.itemIcon)
                     .padding(iconPaddingValues),
                 painter = iconPainter,
                 contentDescription = null,
