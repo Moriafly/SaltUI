@@ -73,7 +73,7 @@ internal actual fun ItemPopupArrow() {
             .padding(2.dp),
         painter = painterResource(Res.drawable.ic_item_expand_arrow),
         contentDescription = null,
-        tint = SaltTheme.colors.subText
+        tint = SaltTheme.colors.text
     )
 }
 
