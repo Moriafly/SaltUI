@@ -15,41 +15,12 @@
  * limitations under the License.
  */
 
-@file:Suppress("UNUSED")
-
 package com.moriafly.salt.ui
 
-import androidx.compose.runtime.Immutable
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 
-@Immutable
-class SaltTextStyles (
-    val main: TextStyle,
-    val sub: TextStyle,
-    val paragraph: TextStyle
-)
-
-fun saltTextStyles(
-    main: TextStyle = DefaultTextStyle,
-    sub: TextStyle = SubTextStyle,
-    paragraph: TextStyle = ParagraphTextStyle
-): SaltTextStyles = SaltTextStyles(
-    main = main,
-    sub = sub,
-    paragraph = paragraph
-)
-
-internal expect val DefaultTextStyle: TextStyle
-
-private val SubTextStyle: TextStyle
+internal actual val DefaultTextStyle: TextStyle
     get() = TextStyle(
-        fontSize = 12.sp
-    )
-
-private val ParagraphTextStyle: TextStyle
-    get() = TextStyle(
-        fontSize = 16.sp,
-        lineHeight = 1.5f.em
+        fontSize = 14.sp
     )
