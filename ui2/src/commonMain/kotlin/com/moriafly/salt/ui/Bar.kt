@@ -57,7 +57,7 @@ import saltui.ui2.generated.resources.ic_arrow_back
 fun TitleBar(
     onBack: () -> Unit,
     text: String,
-    showBackBtn: Boolean = true,
+    showBackBtn: Boolean = true
 ) {
     Box(
         modifier = Modifier
