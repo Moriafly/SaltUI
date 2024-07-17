@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">SaltUI</string>
+    <string name="confirm">确认（字符串替换测试）</string>
+</resources>

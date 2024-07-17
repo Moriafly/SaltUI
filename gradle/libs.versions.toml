@@ -8,7 +8,8 @@ espresso-core = "3.5.1"
 appcompat = "1.6.1"
 material = "1.8.0"
 material3 = "1.1.1"
-compose = "1.7.0-beta03"
+compose = "1.6.3"
+compose-multiplatform = "1.6.10-rc02"
 activity-compose = "1.7.0"
 
 [libraries]
@@ -33,5 +34,8 @@ activity-compose = { group = "androidx.activity", name = "activity-compose", ver
 androidApplication = { id = "com.android.application", version.ref = "agp" }
 kotlinAndroid = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 androidLibrary = { id = "com.android.library", version.ref = "agp" }
+jetbrainsCompose = { id = "org.jetbrains.compose", version.ref = "compose-multiplatform" }
+kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
+jetbrainsKotlinJvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 
 [bundles]

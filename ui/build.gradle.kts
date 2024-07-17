@@ -5,7 +5,7 @@ plugins {
     `maven-publish`
 }
 
-val libraryVersionName = "0.1.0-dev56"
+val libraryVersionName = "0.1.0-dev54"
 
 android {
     namespace = "com.moriafly.salt.ui"
@@ -40,7 +40,7 @@ android {
     }
 
     composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.13"
+        kotlinCompilerExtensionVersion = "1.4.7"
     }
 }
 

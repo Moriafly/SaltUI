@@ -7,6 +7,4 @@
 /captures
 .externalNativeBuild
 .cxx
-/composeApp/build/
-/ui2/build/
 secret_key.gpg
