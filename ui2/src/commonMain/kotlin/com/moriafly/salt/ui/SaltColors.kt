@@ -1,16 +1,18 @@
-/**
+/*
  * SaltUI
  * Copyright (C) 2023 Moriafly
  *
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
  *
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 @file:Suppress("UNUSED")
@@ -22,13 +24,18 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.structuralEqualityPolicy
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.compositeOver
 
 /**
- * @param highlight highlight color
- * @param text main text color
- * @param subText sub text color
- * @param background main background color
- * @param subBackground sub background color
+ * Colors for SaltUI
+ *
+ * @param highlight Highlight color
+ * @param text Main text color
+ * @param subText Sub text color
+ * @param background Main background color
+ * @param subBackground Sub background color
+ * @param popup Background color for UI elements like [com.moriafly.salt.ui.popup.PopupMenu]
+ * @param stroke Stroke color
  */
 @Stable
 class SaltColors(
@@ -36,13 +43,17 @@ class SaltColors(
     text: Color,
     subText: Color,
     background: Color,
-    subBackground: Color
+    subBackground: Color,
+    popup: Color,
+    stroke: Color
 ) {
     val highlight by mutableStateOf(highlight, structuralEqualityPolicy())
     val text by mutableStateOf(text, structuralEqualityPolicy())
     val subText by mutableStateOf(subText, structuralEqualityPolicy())
     val background by mutableStateOf(background, structuralEqualityPolicy())
     val subBackground by mutableStateOf(subBackground, structuralEqualityPolicy())
+    val popup by mutableStateOf(popup, structuralEqualityPolicy())
+    val stroke by mutableStateOf(stroke, structuralEqualityPolicy())
 }
 
 fun lightSaltColors(
@@ -50,13 +61,17 @@ fun lightSaltColors(
     text: Color = Color(0xFF1E1715),
     subText: Color = Color(0xFF8C8C8C),
     background: Color = Color(0xFFF7F9FA),
-    subBackground: Color = Color(0xFFFFFFFF)
+    subBackground: Color = Color(0xFFFFFFFF),
+    popup: Color = subBackground.compositeOver(background),
+    stroke: Color = subText.copy(alpha = 0.1f)
 ): SaltColors = SaltColors(
     highlight = highlight,
     text = text,
     subText = subText,
     background = background,
-    subBackground = subBackground
+    subBackground = subBackground,
+    popup = popup,
+    stroke = stroke
 )
 
 fun darkSaltColors(
@@ -64,11 +79,15 @@ fun darkSaltColors(
     text: Color = Color(0xFFEBEEF1),
     subText: Color = Color(0xBFE1E6EB),
     background: Color = Color(0xFF0C0C0C),
-    subBackground: Color = Color(0xFF191919)
+    subBackground: Color = Color(0xFF191919),
+    popup: Color = subBackground.compositeOver(background),
+    stroke: Color = subText.copy(alpha = 0.1f)
 ): SaltColors = SaltColors(
     highlight = highlight,
     text = text,
     subText = subText,
     background = background,
-    subBackground = subBackground
+    subBackground = subBackground,
+    popup = popup,
+    stroke = stroke
 )

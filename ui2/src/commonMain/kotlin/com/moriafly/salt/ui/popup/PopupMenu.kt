@@ -69,7 +69,7 @@ fun PopupMenu(
     modifier: Modifier = Modifier,
     offset: DpOffset = DpOffset(16.dp, 0.dp),
     properties: PopupProperties = PopupProperties(focusable = true),
-    backgroundColor: Color = SaltTheme.colors.subBackground.copy(alpha = 1f),
+    backgroundColor: Color = SaltTheme.colors.popup,
     content: @Composable ColumnScope.() -> Unit
 ) {
     val expandedStates = remember { MutableTransitionState(false) }
