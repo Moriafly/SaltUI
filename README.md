@@ -2,6 +2,12 @@
 
 # SaltUI
 
+```
+// Replace <TAG> with the latest version
+// e.g. implementation("io.github.moriafly:salt-ui:2.0.0")
+implementation("io.github.moriafly:salt-ui:<TAG>")
+```
+
 - [Docs](https://sakawish.github.io/open-source/salt-ui/)
 
 ## Others
