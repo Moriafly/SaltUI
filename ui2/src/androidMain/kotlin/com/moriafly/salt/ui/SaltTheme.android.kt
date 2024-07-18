@@ -23,6 +23,7 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.surfaceColorAtElevation
+import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.unit.dp
 
 /**
@@ -39,5 +40,7 @@ fun saltColorsByColorScheme(
     text = colorScheme.onSurface,
     subText = colorScheme.onSurfaceVariant,
     background = colorScheme.surface,
-    subBackground = colorScheme.surfaceColorAtElevation(3.dp)
+    subBackground = colorScheme.surfaceColorAtElevation(3.dp),
+    popup = colorScheme.surfaceColorAtElevation(3.dp).compositeOver(colorScheme.surface),
+    stroke = colorScheme.onSurfaceVariant.copy(alpha = 0.1f)
 )
