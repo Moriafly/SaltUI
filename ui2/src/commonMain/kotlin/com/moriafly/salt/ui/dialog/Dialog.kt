@@ -51,7 +51,6 @@ import com.moriafly.salt.ui.internal.stringResourceConfirm
 /**
  * YesDialog
  */
-@UnstableSaltApi
 @Composable
 fun YesDialog(
     onDismissRequest: () -> Unit,
@@ -84,7 +83,6 @@ fun YesDialog(
 /**
  * YesNoDialog
  */
-@UnstableSaltApi
 @Composable
 fun YesNoDialog(
     onDismissRequest: () -> Unit,
