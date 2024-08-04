@@ -131,11 +131,11 @@ enum class ItemArrowType {
  * Build item for the content interface.
  *
  * @param onClick will be called when user clicks on the element
+ * @param text main text
  * @param enabled enabled
  * @param iconPainter icon
  * @param iconPaddingValues iconPaddingValues
  * @param iconColor color of [iconPainter], if this value is null, will use the paint original color
- * @param text main text
  * @param textColor color of [text] text, you can set highlight to replace ItemTextButton
  * @param sub sub text
  * @param subColor color of [sub] text
@@ -144,11 +144,11 @@ enum class ItemArrowType {
 @Composable
 fun Item(
     onClick: () -> Unit,
+    text: String,
     enabled: Boolean = true,
     iconPainter: Painter? = null,
     iconPaddingValues: PaddingValues = PaddingValues(0.dp),
     iconColor: Color? = SaltTheme.colors.text,
-    text: String,
     textColor: Color = SaltTheme.colors.text,
     sub: String? = null,
     subColor: Color = SaltTheme.colors.subText,
@@ -212,11 +212,11 @@ fun Item(
 @Composable
 fun ItemInPopup(
     onClick: () -> Unit,
+    text: String,
     enabled: Boolean = true,
     iconPainter: Painter? = null,
     iconPaddingValues: PaddingValues = PaddingValues(0.dp),
     iconColor: Color? = SaltTheme.colors.text,
-    text: String,
     sub: String? = null,
     subColor: Color = SaltTheme.colors.subText,
     arrowType: ItemArrowType = ItemArrowType.Arrow
@@ -240,22 +240,22 @@ fun ItemInPopup(
  *
  * @param state the state of the switcher
  * @param onChange called when state changed
+ * @param text main text
  * @param enabled
  * @param iconPainter icon
  * @param iconPaddingValues iconPaddingValues
  * @param iconColor color of [iconPainter], if this value is null, will use the paint original color
- * @param text main text
  * @param sub sub text
  */
 @Composable
 fun ItemSwitcher(
     state: Boolean,
     onChange: (Boolean) -> Unit,
+    text: String,
     enabled: Boolean = true,
     iconPainter: Painter? = null,
     iconPaddingValues: PaddingValues = PaddingValues(0.dp),
     iconColor: Color? = SaltTheme.colors.text,
-    text: String,
     sub: String? = null
 ) {
     Row(
@@ -349,12 +349,12 @@ internal expect fun ItemPopupArrow()
 @Composable
 fun ItemPopup(
     state: PopupState,
+    text: String,
+    sub: String,
     enabled: Boolean = true,
     iconPainter: Painter? = null,
     iconPaddingValues: PaddingValues = PaddingValues(0.dp),
     iconColor: Color? = SaltTheme.colors.text,
-    text: String,
-    sub: String,
     content: @Composable ColumnScope.() -> Unit
 ) {
     Box {
@@ -424,8 +424,8 @@ fun ItemPopup(
 fun ItemCheck(
     state: Boolean,
     onChange: (Boolean) -> Unit,
-    enabled: Boolean = true,
-    text: String
+    text: String,
+    enabled: Boolean = true
 ) {
     Row(
         modifier = Modifier
@@ -664,10 +664,10 @@ fun ItemEditPassword(
 fun ItemSlider(
     value: Float,
     onValueChange: (Float) -> Unit,
+    text: String,
     iconPainter: Painter? = null,
     iconPaddingValues: PaddingValues = PaddingValues(0.dp),
     iconColor: Color? = null,
-    text: String,
     sub: String? = null,
     enabled: Boolean = true,
     valueRange: ClosedFloatingPointRange<Float> = 0f..1f,
