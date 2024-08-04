@@ -469,7 +469,8 @@ fun ItemCheck(
 @Composable
 expect fun ItemValue(
     text: String,
-    sub: String
+    sub: String,
+    modifier: Modifier = Modifier
 )
 
 /**

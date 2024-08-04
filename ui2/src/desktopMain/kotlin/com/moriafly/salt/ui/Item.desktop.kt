@@ -81,10 +81,11 @@ internal actual fun ItemPopupArrow() {
 @UnstableSaltApi
 actual fun ItemValue(
     text: String,
-    sub: String
+    sub: String,
+    modifier: Modifier
 ) {
     Row(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .heightIn(min = SaltTheme.dimens.item)
             .padding(vertical = SaltTheme.dimens.innerVerticalPadding),
