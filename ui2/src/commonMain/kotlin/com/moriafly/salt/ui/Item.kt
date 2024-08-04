@@ -136,6 +136,7 @@ enum class ItemArrowType {
  * @param iconPaddingValues iconPaddingValues
  * @param iconColor color of [iconPainter], if this value is null, will use the paint original color
  * @param text main text
+ * @param textColor color of [text] text, you can set highlight to replace ItemTextButton
  * @param sub sub text
  * @param subColor color of [sub] text
  * @param arrowType type of arrow
@@ -148,6 +149,7 @@ fun Item(
     iconPaddingValues: PaddingValues = PaddingValues(0.dp),
     iconColor: Color? = SaltTheme.colors.text,
     text: String,
+    textColor: Color = SaltTheme.colors.text,
     sub: String? = null,
     subColor: Color = SaltTheme.colors.subText,
     paddingValues: PaddingValues = PaddingValues(
@@ -185,7 +187,7 @@ fun Item(
         ) {
             Text(
                 text = text,
-                color = if (enabled) SaltTheme.colors.text else SaltTheme.colors.subText
+                color = if (enabled) textColor else SaltTheme.colors.subText
             )
             sub?.let {
                 Spacer(modifier = Modifier.height(2.dp))
