@@ -128,7 +128,7 @@ enum class ItemArrowType {
 }
 
 /**
- * Build item for the content interface.
+ * Build item for the content interface
  *
  * @param onClick will be called when user clicks on the element
  * @param text main text
@@ -158,50 +158,71 @@ fun Item(
     ),
     arrowType: ItemArrowType = ItemArrowType.Arrow
 ) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .heightIn(min = SaltTheme.dimens.item)
-            .alpha(if (enabled) 1f else 0.5f)
-            .clickable(enabled = enabled) {
-                onClick()
-            }
-            .padding(paddingValues = paddingValues),
-        verticalAlignment = Alignment.CenterVertically
+    BasicItem(
+        onClick = onClick,
+        text = text,
+        enabled = enabled,
+        iconPainter = iconPainter,
+        iconPaddingValues = iconPaddingValues,
+        iconColor = iconColor,
+        textColor = textColor,
+        paddingValues = paddingValues,
+        arrowType = arrowType
     ) {
-        iconPainter?.let {
-            Image(
-                modifier = Modifier
-                    .size(SaltTheme.dimens.itemIcon)
-                    .padding(iconPaddingValues),
-                painter = iconPainter,
-                contentDescription = null,
-                colorFilter = iconColor?.let { ColorFilter.tint(iconColor) }
-            )
-            Spacer(modifier = Modifier.width(SaltTheme.dimens.contentPadding))
-        }
-        Column(
-            modifier = Modifier
-                .weight(1f)
-                .fillMaxWidth()
-        ) {
+        sub?.let {
+            Spacer(modifier = Modifier.height(2.dp))
             Text(
-                text = text,
-                color = if (enabled) textColor else SaltTheme.colors.subText
+                text = sub,
+                color = subColor,
+                style = SaltTheme.textStyles.sub
             )
-            sub?.let {
-                Spacer(modifier = Modifier.height(2.dp))
-                Text(
-                    text = sub,
-                    color = subColor,
-                    style = SaltTheme.textStyles.sub
-                )
-            }
         }
+    }
+}
 
-        ItemArrow(
-            arrowType = arrowType
-        )
+/**
+ * Build item for the content interface
+ *
+ * @param onClick will be called when user clicks on the element
+ * @param text main text
+ * @param enabled enabled
+ * @param iconPainter icon
+ * @param iconPaddingValues iconPaddingValues
+ * @param iconColor color of [iconPainter], if this value is null, will use the paint original color
+ * @param textColor color of [text] text, you can set highlight to replace ItemTextButton
+ * @param arrowType type of arrow
+ * @param content Allow customizing the region of existing sub text, note that this will have a default margin from the main [text]
+ */
+@UnstableSaltApi
+@Composable
+fun Item(
+    onClick: () -> Unit,
+    text: String,
+    enabled: Boolean = true,
+    iconPainter: Painter? = null,
+    iconPaddingValues: PaddingValues = PaddingValues(0.dp),
+    iconColor: Color? = SaltTheme.colors.text,
+    textColor: Color = SaltTheme.colors.text,
+    paddingValues: PaddingValues = PaddingValues(
+        horizontal = SaltTheme.dimens.innerHorizontalPadding,
+        vertical = SaltTheme.dimens.innerVerticalPadding
+    ),
+    arrowType: ItemArrowType = ItemArrowType.Arrow,
+    content: @Composable () -> Unit
+) {
+    BasicItem(
+        onClick = onClick,
+        text = text,
+        enabled = enabled,
+        iconPainter = iconPainter,
+        iconPaddingValues = iconPaddingValues,
+        iconColor = iconColor,
+        textColor = textColor,
+        paddingValues = paddingValues,
+        arrowType = arrowType
+    ) {
+        Spacer(modifier = Modifier.height(2.dp))
+        content()
     }
 }
 
