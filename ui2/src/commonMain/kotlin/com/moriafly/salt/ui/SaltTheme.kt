@@ -18,7 +18,7 @@
 package com.moriafly.salt.ui
 
 import androidx.compose.foundation.LocalIndication
-import androidx.compose.material.ripple.rememberRipple
+import androidx.compose.material.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.ReadOnlyComposable
@@ -49,7 +49,7 @@ fun SaltTheme(
             paragraph = textStyles.paragraph.copy(color = colors.text.copy(alpha = 0.85f))
         )
     }
-    val rippleIndication = rememberRipple()
+    val rippleIndication = ripple()
     CompositionLocalProvider(
         LocalIndication provides rippleIndication,
         LocalSaltConfigs provides configs,
