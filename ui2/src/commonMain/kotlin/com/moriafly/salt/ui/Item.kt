@@ -139,6 +139,7 @@ enum class ItemArrowType {
  * @param textColor color of [text] text, you can set highlight to replace ItemTextButton
  * @param sub sub text
  * @param subColor color of [sub] text
+ * @param paddingValues padding values
  * @param arrowType type of arrow
  */
 @Composable
@@ -190,8 +191,9 @@ fun Item(
  * @param iconPaddingValues iconPaddingValues
  * @param iconColor color of [iconPainter], if this value is null, will use the paint original color
  * @param textColor color of [text] text, you can set highlight to replace ItemTextButton
+ * @param subContent Allow customizing the region of existing sub text, note that this will have a default margin from the main [text]
+ * @param paddingValues padding values
  * @param arrowType type of arrow
- * @param content Allow customizing the region of existing sub text, note that this will have a default margin from the main [text]
  */
 @UnstableSaltApi
 @Composable
@@ -203,12 +205,12 @@ fun Item(
     iconPaddingValues: PaddingValues = PaddingValues(0.dp),
     iconColor: Color? = SaltTheme.colors.text,
     textColor: Color = SaltTheme.colors.text,
+    subContent: (@Composable () -> Unit)? = null,
     paddingValues: PaddingValues = PaddingValues(
         horizontal = SaltTheme.dimens.innerHorizontalPadding,
         vertical = SaltTheme.dimens.innerVerticalPadding
     ),
-    arrowType: ItemArrowType = ItemArrowType.Arrow,
-    content: @Composable () -> Unit
+    arrowType: ItemArrowType = ItemArrowType.Arrow
 ) {
     BasicItem(
         onClick = onClick,
@@ -221,8 +223,10 @@ fun Item(
         paddingValues = paddingValues,
         arrowType = arrowType
     ) {
-        Spacer(modifier = Modifier.height(2.dp))
-        content()
+        if (subContent != null) {
+            Spacer(modifier = Modifier.height(2.dp))
+            subContent()
+        }
     }
 }
 
