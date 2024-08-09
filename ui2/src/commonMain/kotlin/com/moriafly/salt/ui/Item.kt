@@ -139,6 +139,7 @@ enum class ItemArrowType {
  * @param textColor color of [text] text, you can set highlight to replace ItemTextButton
  * @param sub sub text
  * @param subColor color of [sub] text
+ * @param subContent Allow customizing the region of existing sub text
  * @param paddingValues padding values
  * @param arrowType type of arrow
  */
@@ -153,6 +154,7 @@ fun Item(
     textColor: Color = SaltTheme.colors.text,
     sub: String? = null,
     subColor: Color = SaltTheme.colors.subText,
+    subContent: (@Composable () -> Unit)? = null,
     paddingValues: PaddingValues = PaddingValues(
         horizontal = SaltTheme.dimens.innerHorizontalPadding,
         vertical = SaltTheme.dimens.innerVerticalPadding
@@ -178,52 +180,8 @@ fun Item(
                 style = SaltTheme.textStyles.sub
             )
         }
-    }
-}
 
-/**
- * Build item for the content interface
- *
- * @param onClick will be called when user clicks on the element
- * @param text main text
- * @param enabled enabled
- * @param iconPainter icon
- * @param iconPaddingValues iconPaddingValues
- * @param iconColor color of [iconPainter], if this value is null, will use the paint original color
- * @param textColor color of [text] text, you can set highlight to replace ItemTextButton
- * @param subContent Allow customizing the region of existing sub text, note that this will have a default margin from the main [text]
- * @param paddingValues padding values
- * @param arrowType type of arrow
- */
-@UnstableSaltApi
-@Composable
-fun Item(
-    onClick: () -> Unit,
-    text: String,
-    enabled: Boolean = true,
-    iconPainter: Painter? = null,
-    iconPaddingValues: PaddingValues = PaddingValues(0.dp),
-    iconColor: Color? = SaltTheme.colors.text,
-    textColor: Color = SaltTheme.colors.text,
-    subContent: (@Composable () -> Unit)? = null,
-    paddingValues: PaddingValues = PaddingValues(
-        horizontal = SaltTheme.dimens.innerHorizontalPadding,
-        vertical = SaltTheme.dimens.innerVerticalPadding
-    ),
-    arrowType: ItemArrowType = ItemArrowType.Arrow
-) {
-    BasicItem(
-        onClick = onClick,
-        text = text,
-        enabled = enabled,
-        iconPainter = iconPainter,
-        iconPaddingValues = iconPaddingValues,
-        iconColor = iconColor,
-        textColor = textColor,
-        paddingValues = paddingValues,
-        arrowType = arrowType
-    ) {
-        if (subContent != null) {
+        subContent?.let {
             Spacer(modifier = Modifier.height(2.dp))
             subContent()
         }
