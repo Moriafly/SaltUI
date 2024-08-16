@@ -104,10 +104,37 @@ fun ItemTitle(
 }
 
 /**
- * Build content interface instruction text.
+ * Build content interface tip text
  *
  * @param text text
  */
+@Composable
+fun ItemTip(
+    text: String
+) {
+    Text(
+        text = text,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = SaltTheme.dimens.innerHorizontalPadding, vertical = SaltTheme.dimens.innerVerticalPadding),
+        style = SaltTheme.textStyles.sub
+    )
+}
+
+/**
+ * Build content interface instruction text
+ *
+ * @param text text
+ */
+@Deprecated(
+    message = "Use ItemTip instead. In actual development, an ItemSpacer is almost always needed above and below the ItemText, so this padding is more suitable to be included within the component. " +
+            "Note that after the replacement, remove the ItemSpacer above and below",
+    replaceWith = ReplaceWith(
+        expression = "ItemTip(text = text)",
+        imports = arrayOf("com.moriafly.salt.ui.ItemText")
+    ),
+    level = DeprecationLevel.WARNING
+)
 @Composable
 fun ItemText(
     text: String

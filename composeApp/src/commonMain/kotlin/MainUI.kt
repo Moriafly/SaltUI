@@ -26,6 +26,7 @@ import com.moriafly.salt.ui.ItemPopup
 import com.moriafly.salt.ui.ItemSlider
 import com.moriafly.salt.ui.ItemSpacer
 import com.moriafly.salt.ui.ItemSwitcher
+import com.moriafly.salt.ui.ItemTip
 import com.moriafly.salt.ui.ItemTitle
 import com.moriafly.salt.ui.ItemValue
 import com.moriafly.salt.ui.RoundedColumn
@@ -123,6 +124,7 @@ fun MainUI() {
 
             RoundedColumn {
                 ItemTitle(text = "其他样式测试")
+                ItemTip(text = "测试")
                 Item(
                     onClick = {
 
