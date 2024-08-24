@@ -765,10 +765,17 @@ fun ItemContainer(
     }
 }
 
+/**
+ * Build a divider in the content interface
+ *
+ * @param color color of divider
+ */
 @Composable
-fun ItemDivider() {
+fun ItemDivider(
+    color: Color = SaltTheme.colors.stroke
+) {
     Divider(
         thickness = Dp.Hairline,
-        color = SaltTheme.colors.subText.copy(alpha = 0.25f)
+        color = color
     )
 }
