@@ -22,9 +22,22 @@ implementation("io.github.moriafly:salt-ui:<TAG>")
 
 See also [Docs](https://sakawish.github.io/open-source/salt-ui/)
 
+### Simple Start
+
+```kotlin
+@Composable
+fun App() {
+    SaltTheme(
+        configs = saltConfigs()
+    ) {
+        // ...
+    }
+}
+```
+
 ### Utils
 
-#### WindowUtil (Android, Unstable)
+#### WindowUtils (Android, Unstable)
 
 Use `setStatusBarForegroundColor` to change foreground color of status bar
 
