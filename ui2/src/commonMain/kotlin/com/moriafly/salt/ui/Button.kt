@@ -35,14 +35,14 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 
 /**
- * Default text content button.
+ * Default text content button
  */
 @Composable
 fun TextButton(
     onClick: () -> Unit,
+    text: String,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
-    text: String,
     textColor: Color = Color.White,
     backgroundColor: Color = SaltTheme.colors.highlight
 ) {
@@ -65,7 +65,7 @@ fun TextButton(
 }
 
 /**
- * Basic button.
+ * Basic button
  */
 @Composable
 fun BasicButton(
