@@ -26,9 +26,9 @@ See also [Docs](https://sakawish.github.io/open-source/salt-ui/)
 
 #### WindowUtil (Android, Unstable)
 
-Use `setStatusBarForegroundColor` to change foreground the color of the status bar
+Use `setStatusBarForegroundColor` to change foreground color of status bar
 
-Use `setNavigationBarForegroundColor` to change foreground the color of the navigation bar
+Use `setNavigationBarForegroundColor` to change foreground color of navigation bar
 
 ```kotlin
 import com.moriafly.salt.ui.util.WindowUtils
