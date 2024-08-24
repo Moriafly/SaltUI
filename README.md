@@ -10,8 +10,6 @@ Salt UI is UI components based on [Compose Multiplatform](https://github.com/Jet
 implementation("io.github.moriafly:salt-ui:<TAG>")
 ```
 
-- [Docs](https://sakawish.github.io/open-source/salt-ui/)
-
 ## Compatibility
 
 | Compose Multiplatform | Salt UI |
@@ -19,6 +17,25 @@ implementation("io.github.moriafly:salt-ui:<TAG>")
 | 1.7.0-alpha03         | 2.0.7   |
 | 1.7.0-alpha02         | 2.0.4   |
 | 1.6.11                | < 2.0.4 |
+
+## Docs
+
+See also [Docs](https://sakawish.github.io/open-source/salt-ui/)
+
+### Utils
+
+#### WindowUtil (Android, Unstable)
+
+Use `setStatusBarForegroundColor` to change foreground the color of the status bar
+
+Use `setNavigationBarForegroundColor` to change foreground the color of the navigation bar
+
+```kotlin
+import com.moriafly.salt.ui.util.WindowUtils
+import com.moriafly.salt.ui.util.WindowUtils.BarColor
+
+WindowUtils.setStatusBarForegroundColor(activity.window, BarColor.Black)
+```
 
 ## Others
 
