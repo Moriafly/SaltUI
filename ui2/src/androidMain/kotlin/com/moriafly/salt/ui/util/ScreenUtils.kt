@@ -24,10 +24,8 @@ import android.content.Context
 import android.content.res.Resources
 import com.moriafly.salt.ui.UnstableSaltApi
 
-/**
- * Screen util
- */
-object Screen {
+@UnstableSaltApi
+object ScreenUtils {
 
     /**
      * Get the rounded corner radius for the top corners of the screen.
@@ -43,7 +41,6 @@ object Screen {
      * @throws Resources.NotFoundException This attribute needs to be defined by the OEM manufacturer,
      *      and there may be situations where it cannot be obtained.
      */
-    @UnstableSaltApi
     @SuppressLint("DiscouragedApi")
     fun getRoundedCornerRadiusTop(context: Context): Int {
         val resourceId = context.resources.getIdentifier("rounded_corner_radius_top", "dimen", "android")
