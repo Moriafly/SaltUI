@@ -108,17 +108,17 @@ fun ItemOuter(
 @Composable
 fun ItemOuterTextButton(
     onClick: () -> Unit,
-    enabled: Boolean = true,
     text: String,
+    enabled: Boolean = true,
     textColor: Color = Color.White,
     backgroundColor: Color = SaltTheme.colors.highlight
 ) {
     TextButton(
         onClick = onClick,
+        text = text,
         modifier = Modifier
             .padding(horizontal = SaltTheme.dimens.outerHorizontalPadding, vertical = SaltTheme.dimens.outerVerticalPadding),
         enabled = enabled,
-        text = text,
         textColor = textColor,
         backgroundColor = backgroundColor
     )
