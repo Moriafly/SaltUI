@@ -38,8 +38,8 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.moriafly.salt.ui.ItemEdit
-import com.moriafly.salt.ui.ItemOutHalfSpacer
-import com.moriafly.salt.ui.ItemOutSpacer
+import com.moriafly.salt.ui.ItemOuterHalfSpacer
+import com.moriafly.salt.ui.ItemOuterSpacer
 import com.moriafly.salt.ui.ItemText
 import com.moriafly.salt.ui.SaltTheme
 import com.moriafly.salt.ui.Text
@@ -63,11 +63,11 @@ fun YesDialog(
         onDismissRequest = onDismissRequest,
         properties = properties
     ) {
-        ItemOutSpacer()
+        ItemOuterSpacer()
         DialogTitle(text = title)
-        ItemOutSpacer()
+        ItemOuterSpacer()
         ItemText(text = content)
-        ItemOutSpacer()
+        ItemOuterSpacer()
         TextButton(
             onClick = {
                 onDismissRequest()
@@ -76,7 +76,7 @@ fun YesDialog(
                 .padding(horizontal = SaltTheme.dimens.outerHorizontalPadding),
             text = confirmText
         )
-        ItemOutSpacer()
+        ItemOuterSpacer()
     }
 }
 
@@ -98,13 +98,13 @@ fun YesNoDialog(
         onDismissRequest = onDismissRequest,
         properties = properties
     ) {
-        ItemOutSpacer()
+        ItemOuterSpacer()
         DialogTitle(text = title)
-        ItemOutSpacer()
+        ItemOuterSpacer()
         ItemText(text = content)
-        ItemOutHalfSpacer()
+        ItemOuterHalfSpacer()
         drawContent?.invoke()
-        ItemOutHalfSpacer()
+        ItemOuterHalfSpacer()
         Row(
             modifier = Modifier.padding(horizontal = SaltTheme.dimens.outerHorizontalPadding)
         ) {
@@ -128,7 +128,7 @@ fun YesNoDialog(
                 text = confirmText
             )
         }
-        ItemOutSpacer()
+        ItemOuterSpacer()
     }
 }
 
@@ -150,9 +150,9 @@ fun InputDialog(
         onDismissRequest = onDismissRequest,
         properties = properties
     ) {
-        ItemOutSpacer()
+        ItemOuterSpacer()
         DialogTitle(text = title)
-        ItemOutHalfSpacer()
+        ItemOuterHalfSpacer()
 
         val focusRequester = remember { FocusRequester() }
         ItemEdit(
@@ -167,7 +167,7 @@ fun InputDialog(
             focusRequester.requestFocus()
         }
 
-        ItemOutHalfSpacer()
+        ItemOuterHalfSpacer()
         Row(
             modifier = Modifier.padding(horizontal = SaltTheme.dimens.outerHorizontalPadding)
         ) {
@@ -191,7 +191,7 @@ fun InputDialog(
                 text = stringResourceConfirm().uppercase()
             )
         }
-        ItemOutSpacer()
+        ItemOuterSpacer()
     }
 }
 

@@ -128,7 +128,7 @@ fun ItemOuterTextButton(
  * Build vertical spacing for the Item Outer
  */
 @Composable
-fun ItemOutSpacer() {
+fun ItemOuterSpacer() {
     Spacer(
         modifier = Modifier
             .height(SaltTheme.dimens.outerVerticalPadding * 2)
@@ -139,7 +139,7 @@ fun ItemOutSpacer() {
  * Build half vertical spacing for the Item Outer
  */
 @Composable
-fun ItemOutHalfSpacer() {
+fun ItemOuterHalfSpacer() {
     Spacer(
         modifier = Modifier
             .height(SaltTheme.dimens.outerVerticalPadding)
