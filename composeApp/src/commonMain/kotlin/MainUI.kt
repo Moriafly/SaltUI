@@ -15,6 +15,7 @@ import com.moriafly.salt.ui.BottomBar
 import com.moriafly.salt.ui.BottomBarItem
 import com.moriafly.salt.ui.Item
 import com.moriafly.salt.ui.ItemArrowType
+import com.moriafly.salt.ui.ItemButton
 import com.moriafly.salt.ui.ItemCheck
 import com.moriafly.salt.ui.ItemContainer
 import com.moriafly.salt.ui.ItemEdit
@@ -26,9 +27,6 @@ import com.moriafly.salt.ui.ItemPopup
 import com.moriafly.salt.ui.ItemSlider
 import com.moriafly.salt.ui.ItemSpacer
 import com.moriafly.salt.ui.ItemSwitcher
-import com.moriafly.salt.ui.ItemTextButton
-import com.moriafly.salt.ui.ItemTextButtonContainer
-import com.moriafly.salt.ui.ItemTextButtonDivider
 import com.moriafly.salt.ui.ItemTip
 import com.moriafly.salt.ui.ItemTitle
 import com.moriafly.salt.ui.ItemValue
@@ -89,29 +87,25 @@ fun MainUI() {
                     },
                     text = "选中按钮"
                 )
-                ItemTextButtonContainer {
-                    ItemTextButton(
-                        onClick = {
+                ItemButton(
+                    onClick = {
 
-                        },
-                        text = "强调默认按钮 TextButton"
-                    )
-                    ItemTextButtonDivider()
-                    ItemTextButton(
-                        onClick = {
+                    },
+                    text = "强调默认按钮 TextButton"
+                )
+                ItemButton(
+                    onClick = {
 
-                        },
-                        text = "强调默认按钮 TextButton 强调默认按钮 TextButton 强调默认按钮 TextButton 强调默认按钮 TextButton"
-                    )
-                    ItemTextButtonDivider()
-                    ItemTextButton(
-                        onClick = {
+                    },
+                    text = "强调默认按钮 TextButton 强调默认按钮 TextButton 强调默认按钮 TextButton 强调默认按钮 TextButton"
+                )
+                ItemButton(
+                    onClick = {
 
-                        },
-                        text = "默认按钮 TextButton 默认按钮 TextButton 默认按钮 TextButton",
-                        primary = false
-                    )
-                }
+                    },
+                    text = "默认按钮 TextButton 默认按钮 TextButton 默认按钮 TextButton",
+                    primary = false
+                )
             }
 
             RoundedColumn {
