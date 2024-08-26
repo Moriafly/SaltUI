@@ -26,7 +26,6 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -48,19 +47,17 @@ internal fun BasicItem(
     iconPaddingValues: PaddingValues = PaddingValues(0.dp),
     iconColor: Color? = SaltTheme.colors.text,
     textColor: Color = SaltTheme.colors.text,
-    paddingValues: PaddingValues = PaddingValues(SaltTheme.dimens.padding),
     arrowType: ItemArrowType = ItemArrowType.Arrow,
     content: @Composable () -> Unit
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .heightIn(min = SaltTheme.dimens.item)
             .alpha(if (enabled) 1f else 0.5f)
             .clickable(enabled = enabled) {
                 onClick()
             }
-            .padding(paddingValues = paddingValues),
+            .padding(horizontal = SaltTheme.dimens.padding),
         verticalAlignment = Alignment.CenterVertically
     ) {
         iconPainter?.let {
@@ -78,6 +75,7 @@ internal fun BasicItem(
             modifier = Modifier
                 .weight(1f)
                 .fillMaxWidth()
+                .padding(vertical = SaltTheme.dimens.padding)
         ) {
             Text(
                 text = text,

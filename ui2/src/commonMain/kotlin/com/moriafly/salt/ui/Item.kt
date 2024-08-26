@@ -36,7 +36,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
@@ -176,7 +175,6 @@ enum class ItemArrowType {
  * @param sub sub text
  * @param subColor color of [sub] text
  * @param subContent Allow customizing the region of existing sub text
- * @param paddingValues padding values
  * @param arrowType type of arrow
  */
 @Composable
@@ -191,7 +189,6 @@ fun Item(
     sub: String? = null,
     subColor: Color = SaltTheme.colors.subText,
     subContent: (@Composable () -> Unit)? = null,
-    paddingValues: PaddingValues = PaddingValues(SaltTheme.dimens.padding),
     arrowType: ItemArrowType = ItemArrowType.Arrow
 ) {
     BasicItem(
@@ -202,7 +199,6 @@ fun Item(
         iconPaddingValues = iconPaddingValues,
         iconColor = iconColor,
         textColor = textColor,
-        paddingValues = paddingValues,
         arrowType = arrowType
     ) {
         sub?.let {
@@ -219,36 +215,6 @@ fun Item(
             subContent()
         }
     }
-}
-
-/**
- * Item in popup
- */
-@UnstableSaltApi
-@Composable
-fun ItemInPopup(
-    onClick: () -> Unit,
-    text: String,
-    enabled: Boolean = true,
-    iconPainter: Painter? = null,
-    iconPaddingValues: PaddingValues = PaddingValues(0.dp),
-    iconColor: Color? = SaltTheme.colors.text,
-    sub: String? = null,
-    subColor: Color = SaltTheme.colors.subText,
-    arrowType: ItemArrowType = ItemArrowType.Arrow
-) {
-    Item(
-        onClick = onClick,
-        enabled = enabled,
-        iconPainter = iconPainter,
-        iconPaddingValues = iconPaddingValues,
-        iconColor = iconColor,
-        text = text,
-        sub = sub,
-        subColor = subColor,
-        paddingValues = PaddingValues(SaltTheme.dimens.padding),
-        arrowType = arrowType
-    )
 }
 
 /**
@@ -277,12 +243,11 @@ fun ItemSwitcher(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .heightIn(min = SaltTheme.dimens.item)
             .alpha(if (enabled) 1f else 0.5f)
             .clickable(enabled = enabled) {
                 onChange(!state)
             }
-            .padding(SaltTheme.dimens.padding),
+            .padding(horizontal = SaltTheme.dimens.padding),
         verticalAlignment = Alignment.CenterVertically
     ) {
         iconPainter?.let {
@@ -300,6 +265,7 @@ fun ItemSwitcher(
             modifier = Modifier
                 .weight(1f)
                 .fillMaxWidth()
+                .padding(vertical = SaltTheme.dimens.padding)
         ) {
             Text(
                 text = text,
@@ -377,12 +343,11 @@ fun ItemPopup(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .heightIn(min = SaltTheme.dimens.item)
                 .alpha(if (enabled) 1f else 0.5f)
                 .clickable(enabled = enabled) {
                     state.expend()
                 }
-                .padding(SaltTheme.dimens.padding),
+                .padding(horizontal = SaltTheme.dimens.padding),
             verticalAlignment = Alignment.CenterVertically
         ) {
             iconPainter?.let {
@@ -400,6 +365,7 @@ fun ItemPopup(
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxWidth()
+                    .padding(vertical = SaltTheme.dimens.padding)
             ) {
                 Text(
                     text = text,
@@ -446,12 +412,11 @@ fun ItemCheck(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .heightIn(min = SaltTheme.dimens.item)
             .alpha(if (enabled) 1f else 0.5f)
             .clickable(enabled = enabled) {
                 onChange(!state)
             }
-            .padding(SaltTheme.dimens.padding),
+            .padding(horizontal = SaltTheme.dimens.padding),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Icon(
@@ -466,6 +431,7 @@ fun ItemCheck(
             modifier = Modifier
                 .weight(1f)
                 .fillMaxWidth()
+                .padding(vertical = SaltTheme.dimens.padding)
         ) {
             Text(
                 text = text,
@@ -764,7 +730,6 @@ fun ItemButton(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .heightIn(min = SaltTheme.dimens.item)
             .alpha(if (enabled) 1f else 0.5f)
             .clickable(
                 enabled = enabled,
@@ -773,7 +738,7 @@ fun ItemButton(
             ) {
                 onClick()
             }
-            .padding(SaltTheme.dimens.padding),
+            .padding(horizontal = SaltTheme.dimens.padding),
         verticalAlignment = Alignment.CenterVertically
     ) {
         iconPainter?.let {
@@ -791,7 +756,8 @@ fun ItemButton(
             text = text,
             modifier = Modifier
                 .weight(1f)
-                .fillMaxWidth(),
+                .fillMaxWidth()
+                .padding(vertical = SaltTheme.dimens.padding),
             color = if (enabled && primary) SaltTheme.colors.highlight else SaltTheme.colors.subText,
             fontWeight = FontWeight.Bold
         )

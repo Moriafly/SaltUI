@@ -1,7 +1,6 @@
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
@@ -17,7 +16,6 @@ import com.moriafly.salt.ui.Item
 import com.moriafly.salt.ui.ItemArrowType
 import com.moriafly.salt.ui.ItemButton
 import com.moriafly.salt.ui.ItemCheck
-import com.moriafly.salt.ui.ItemContainer
 import com.moriafly.salt.ui.ItemEdit
 import com.moriafly.salt.ui.ItemEditPassword
 import com.moriafly.salt.ui.ItemOuter
@@ -31,7 +29,6 @@ import com.moriafly.salt.ui.ItemTip
 import com.moriafly.salt.ui.ItemValue
 import com.moriafly.salt.ui.RoundedColumn
 import com.moriafly.salt.ui.SaltTheme
-import com.moriafly.salt.ui.TextButton
 import com.moriafly.salt.ui.TitleBar
 import com.moriafly.salt.ui.UnstableSaltApi
 import com.moriafly.salt.ui.dialog.InputDialog
@@ -129,16 +126,6 @@ fun MainUI() {
                     text = "标准开关控件，带图标（可选），副标题文本（可选）",
                     sub = "开关控件的副标题"
                 )
-                ItemContainer {
-                    TextButton(
-                        onClick = {
-
-                        },
-                        modifier = Modifier
-                            .fillMaxWidth(),
-                        text = "默认按钮 TextButton"
-                    )
-                }
             }
 
             ItemOuterTitle(text = "其他样式测试")
