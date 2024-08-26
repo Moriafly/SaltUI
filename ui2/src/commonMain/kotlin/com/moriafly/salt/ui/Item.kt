@@ -760,10 +760,19 @@ fun ItemTextButtonContainer(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = SaltTheme.dimens.innerVerticalPadding / 2)
     ) {
         ItemTextButtonScopeInstance.content()
     }
+}
+
+@Suppress("UnusedReceiverParameter")
+@UnstableSaltApi
+@Composable
+fun ItemTextButtonScope.ItemTextButtonDivider() {
+    ItemDivider(
+        modifier = Modifier
+            .padding(horizontal = SaltTheme.dimens.innerHorizontalPadding)
+    )
 }
 
 /**
@@ -796,7 +805,7 @@ fun ItemTextButtonScope.ItemTextButton(
                 indication = AlphaIndication,
                 interactionSource = null
             )
-            .padding(horizontal = SaltTheme.dimens.innerHorizontalPadding, vertical = SaltTheme.dimens.innerVerticalPadding / 2),
+            .padding(horizontal = SaltTheme.dimens.innerHorizontalPadding, vertical = SaltTheme.dimens.innerVerticalPadding),
         contentAlignment = Alignment.Center
     ) {
         Text(
@@ -841,9 +850,11 @@ fun ItemContainer(
  */
 @Composable
 fun ItemDivider(
+    modifier: Modifier = Modifier,
     color: Color = SaltTheme.colors.stroke
 ) {
     Divider(
+        modifier = modifier,
         thickness = Dp.Hairline,
         color = color
     )

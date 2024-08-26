@@ -63,7 +63,7 @@ fun lightSaltColors(
     background: Color = Color(0xFFF7F9FA),
     subBackground: Color = Color(0xFFFFFFFF),
     popup: Color = subBackground.compositeOver(background),
-    stroke: Color = subText.copy(alpha = 0.1f)
+    stroke: Color = subText.copy(alpha = 0.15f)
 ): SaltColors = SaltColors(
     highlight = highlight,
     text = text,

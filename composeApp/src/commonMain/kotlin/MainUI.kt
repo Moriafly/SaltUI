@@ -28,6 +28,7 @@ import com.moriafly.salt.ui.ItemSpacer
 import com.moriafly.salt.ui.ItemSwitcher
 import com.moriafly.salt.ui.ItemTextButton
 import com.moriafly.salt.ui.ItemTextButtonContainer
+import com.moriafly.salt.ui.ItemTextButtonDivider
 import com.moriafly.salt.ui.ItemTip
 import com.moriafly.salt.ui.ItemTitle
 import com.moriafly.salt.ui.ItemValue
@@ -95,12 +96,14 @@ fun MainUI() {
                         },
                         text = "强调默认按钮 TextButton"
                     )
+                    ItemTextButtonDivider()
                     ItemTextButton(
                         onClick = {
 
                         },
                         text = "强调默认按钮 TextButton 强调默认按钮 TextButton 强调默认按钮 TextButton 强调默认按钮 TextButton"
                     )
+                    ItemTextButtonDivider()
                     ItemTextButton(
                         onClick = {
 
