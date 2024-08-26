@@ -33,11 +33,7 @@ import androidx.compose.ui.unit.dp
  * @param itemIcon size of icon in [Item], [ItemSwitcher], etc
  * @param corner corner
  * @param dialogCorner dialogCorner
- * @param outerHorizontalPadding outerHorizontalPadding
- * @param innerHorizontalPadding innerHorizontalPadding
- * @param outerVerticalPadding outerVerticalPadding
- * @param innerVerticalPadding innerVerticalPadding
- * @param contentPadding contentPadding
+ * @param padding padding
  */
 @Stable
 class SaltDimens(
@@ -45,21 +41,13 @@ class SaltDimens(
     itemIcon: Dp,
     corner: Dp,
     dialogCorner: Dp,
-    outerHorizontalPadding: Dp,
-    innerHorizontalPadding: Dp,
-    outerVerticalPadding: Dp,
-    innerVerticalPadding: Dp,
-    contentPadding: Dp
+    padding: Dp
 ) {
     val item by mutableStateOf(item, structuralEqualityPolicy())
     val itemIcon by mutableStateOf(itemIcon, structuralEqualityPolicy())
     val corner by mutableStateOf(corner, structuralEqualityPolicy())
     val dialogCorner by mutableStateOf(dialogCorner, structuralEqualityPolicy())
-    val outerHorizontalPadding by mutableStateOf(outerHorizontalPadding, structuralEqualityPolicy())
-    val innerHorizontalPadding by mutableStateOf(innerHorizontalPadding, structuralEqualityPolicy())
-    val outerVerticalPadding by mutableStateOf(outerVerticalPadding, structuralEqualityPolicy())
-    val innerVerticalPadding by mutableStateOf(innerVerticalPadding, structuralEqualityPolicy())
-    val contentPadding by mutableStateOf(contentPadding, structuralEqualityPolicy())
+    val padding by mutableStateOf(padding, structuralEqualityPolicy())
 }
 
 fun saltDimens(
@@ -67,21 +55,13 @@ fun saltDimens(
     itemIcon: Dp = SaltDimensItemIcon,
     corner: Dp = 12.dp,
     dialogCorner: Dp = 20.dp,
-    outerHorizontalPadding: Dp = 16.dp,
-    innerHorizontalPadding: Dp = 16.dp,
-    outerVerticalPadding: Dp = 8.dp,
-    innerVerticalPadding: Dp = 12.dp,
-    contentPadding: Dp = 12.dp
+    padding: Dp = 16.dp
 ): SaltDimens = SaltDimens(
     item = item,
     itemIcon = itemIcon,
     corner = corner,
     dialogCorner = dialogCorner,
-    outerHorizontalPadding = outerHorizontalPadding,
-    innerHorizontalPadding = innerHorizontalPadding,
-    outerVerticalPadding = outerVerticalPadding,
-    innerVerticalPadding = innerVerticalPadding,
-    contentPadding = contentPadding
+    padding = padding
 )
 
 internal expect val SaltDimensItem: Dp

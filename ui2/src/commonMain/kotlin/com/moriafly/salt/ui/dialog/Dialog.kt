@@ -73,7 +73,7 @@ fun YesDialog(
                 onDismissRequest()
             },
             modifier = Modifier
-                .padding(horizontal = SaltTheme.dimens.outerHorizontalPadding),
+                .padding(horizontal = SaltTheme.dimens.padding),
             text = confirmText
         )
         ItemOuterSpacer()
@@ -106,7 +106,7 @@ fun YesNoDialog(
         drawContent?.invoke()
         ItemOuterHalfSpacer()
         Row(
-            modifier = Modifier.padding(horizontal = SaltTheme.dimens.outerHorizontalPadding)
+            modifier = Modifier.padding(horizontal = SaltTheme.dimens.padding)
         ) {
             TextButton(
                 onClick = {
@@ -118,7 +118,7 @@ fun YesNoDialog(
                 textColor = SaltTheme.colors.subText,
                 backgroundColor = SaltTheme.colors.subBackground
             )
-            Spacer(modifier = Modifier.width(SaltTheme.dimens.outerHorizontalPadding))
+            Spacer(modifier = Modifier.width(SaltTheme.dimens.padding))
             TextButton(
                 onClick = {
                     onConfirm()
@@ -161,7 +161,7 @@ fun InputDialog(
             hint = hint,
             modifier = Modifier
                 .focusRequester(focusRequester),
-            paddingValues = PaddingValues(horizontal = SaltTheme.dimens.outerHorizontalPadding, vertical = SaltTheme.dimens.outerVerticalPadding)
+            paddingValues = PaddingValues(SaltTheme.dimens.padding)
         )
         LaunchedEffect(Unit) {
             focusRequester.requestFocus()
@@ -169,7 +169,7 @@ fun InputDialog(
 
         ItemOuterHalfSpacer()
         Row(
-            modifier = Modifier.padding(horizontal = SaltTheme.dimens.outerHorizontalPadding)
+            modifier = Modifier.padding(horizontal = SaltTheme.dimens.padding)
         ) {
             TextButton(
                 onClick = {
@@ -181,7 +181,7 @@ fun InputDialog(
                 textColor = SaltTheme.colors.subText,
                 backgroundColor = SaltTheme.colors.subBackground
             )
-            Spacer(modifier = Modifier.width(SaltTheme.dimens.contentPadding))
+            Spacer(modifier = Modifier.width(SaltTheme.dimens.padding))
             TextButton(
                 onClick = {
                     onConfirm()
@@ -225,7 +225,7 @@ fun DialogTitle(
 ) {
     Text(
         text = text,
-        modifier = Modifier.padding(horizontal = SaltTheme.dimens.outerHorizontalPadding),
+        modifier = Modifier.padding(horizontal = SaltTheme.dimens.padding),
         fontSize = 18.sp,
         fontWeight = FontWeight.Bold
     )

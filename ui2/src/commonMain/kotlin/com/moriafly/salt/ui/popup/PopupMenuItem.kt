@@ -106,7 +106,7 @@ fun PopupMenuItem(
             }
         }
         iconPainter?.let {
-            Spacer(modifier = Modifier.width(SaltTheme.dimens.contentPadding * 2))
+            Spacer(modifier = Modifier.width(SaltTheme.dimens.padding * 2))
             Image(
                 modifier = Modifier
                     .size(SaltTheme.dimens.itemIcon)

@@ -43,7 +43,7 @@ internal actual fun ItemArrow(
     arrowType: ItemArrowType
 ) {
     if (arrowType != ItemArrowType.None) {
-        Spacer(modifier = Modifier.width(SaltTheme.dimens.contentPadding))
+        Spacer(modifier = Modifier.width(SaltTheme.dimens.padding))
         Icon(
             modifier = Modifier
                 .size(16.dp)
@@ -88,7 +88,7 @@ actual fun ItemValue(
         modifier = modifier
             .fillMaxWidth()
             .heightIn(min = SaltTheme.dimens.item)
-            .padding(vertical = SaltTheme.dimens.innerVerticalPadding),
+            .padding(vertical = SaltTheme.dimens.padding),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
@@ -97,14 +97,14 @@ actual fun ItemValue(
                     maxWidth = 80.dp
                 )
                 .weight(1f)
-                .padding(start = SaltTheme.dimens.innerHorizontalPadding),
+                .padding(start = SaltTheme.dimens.padding),
             text = text
         )
 
         Row(
             modifier = Modifier
                 .weight(3f)
-                .padding(start = SaltTheme.dimens.contentPadding, end = SaltTheme.dimens.innerHorizontalPadding)
+                .padding(start = SaltTheme.dimens.padding, end = SaltTheme.dimens.padding)
         ) {
             SelectionContainer {
                 Text(

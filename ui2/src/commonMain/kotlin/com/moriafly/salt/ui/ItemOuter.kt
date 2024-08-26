@@ -41,8 +41,11 @@ fun ItemOuterTitle(
         text = text,
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = SaltTheme.dimens.outerHorizontalPadding, vertical = SaltTheme.dimens.outerVerticalPadding),
-        fontWeight = FontWeight.Bold,
+            .padding(
+                start = SaltTheme.dimens.padding * 2,
+                top = SaltTheme.dimens.padding,
+                end = SaltTheme.dimens.padding * 2
+            ),
         style = SaltTheme.textStyles.sub
     )
 }
@@ -59,7 +62,7 @@ fun ItemOuterLargeTitle(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = SaltTheme.dimens.outerHorizontalPadding * 2, vertical = SaltTheme.dimens.outerVerticalPadding * 6),
+            .padding(horizontal = SaltTheme.dimens.padding * 2, vertical = SaltTheme.dimens.padding * 3),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
@@ -68,7 +71,7 @@ fun ItemOuterLargeTitle(
             fontWeight = FontWeight.Bold,
             textAlign = TextAlign.Center
         )
-        Spacer(modifier = Modifier.height(SaltTheme.dimens.contentPadding * 1.5f))
+        Spacer(modifier = Modifier.height(SaltTheme.dimens.padding * 1.5f))
         Text(
             text = sub,
             textAlign = TextAlign.Center,
@@ -93,7 +96,7 @@ fun ItemOuter(
         text = text,
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = SaltTheme.dimens.outerHorizontalPadding, vertical = SaltTheme.dimens.outerVerticalPadding)
+            .padding(SaltTheme.dimens.padding)
             .noRippleClickable {
                 onClick()
             },
@@ -117,7 +120,7 @@ fun ItemOuterTextButton(
         onClick = onClick,
         text = text,
         modifier = Modifier
-            .padding(horizontal = SaltTheme.dimens.outerHorizontalPadding, vertical = SaltTheme.dimens.outerVerticalPadding),
+            .padding(SaltTheme.dimens.padding),
         enabled = enabled,
         textColor = textColor,
         backgroundColor = backgroundColor
@@ -131,7 +134,7 @@ fun ItemOuterTextButton(
 fun ItemOuterSpacer() {
     Spacer(
         modifier = Modifier
-            .height(SaltTheme.dimens.outerVerticalPadding * 2)
+            .height(SaltTheme.dimens.padding)
     )
 }
 
@@ -142,6 +145,6 @@ fun ItemOuterSpacer() {
 fun ItemOuterHalfSpacer() {
     Spacer(
         modifier = Modifier
-            .height(SaltTheme.dimens.outerVerticalPadding)
+            .height(SaltTheme.dimens.padding / 2)
     )
 }

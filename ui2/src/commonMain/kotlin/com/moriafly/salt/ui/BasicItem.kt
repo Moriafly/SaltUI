@@ -48,10 +48,7 @@ internal fun BasicItem(
     iconPaddingValues: PaddingValues = PaddingValues(0.dp),
     iconColor: Color? = SaltTheme.colors.text,
     textColor: Color = SaltTheme.colors.text,
-    paddingValues: PaddingValues = PaddingValues(
-        horizontal = SaltTheme.dimens.innerHorizontalPadding,
-        vertical = SaltTheme.dimens.innerVerticalPadding
-    ),
+    paddingValues: PaddingValues = PaddingValues(SaltTheme.dimens.padding),
     arrowType: ItemArrowType = ItemArrowType.Arrow,
     content: @Composable () -> Unit
 ) {
@@ -75,7 +72,7 @@ internal fun BasicItem(
                 contentDescription = null,
                 colorFilter = iconColor?.let { ColorFilter.tint(iconColor) }
             )
-            Spacer(modifier = Modifier.width(SaltTheme.dimens.contentPadding))
+            Spacer(modifier = Modifier.width(SaltTheme.dimens.padding))
         }
         Column(
             modifier = Modifier

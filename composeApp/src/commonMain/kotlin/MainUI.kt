@@ -28,7 +28,6 @@ import com.moriafly.salt.ui.ItemSlider
 import com.moriafly.salt.ui.ItemSpacer
 import com.moriafly.salt.ui.ItemSwitcher
 import com.moriafly.salt.ui.ItemTip
-import com.moriafly.salt.ui.ItemTitle
 import com.moriafly.salt.ui.ItemValue
 import com.moriafly.salt.ui.RoundedColumn
 import com.moriafly.salt.ui.SaltTheme
@@ -108,8 +107,8 @@ fun MainUI() {
                 )
             }
 
+            ItemOuterTitle(text = "控件")
             RoundedColumn {
-                ItemTitle(text = "控件")
                 Item(
                     onClick = {
 
@@ -142,8 +141,8 @@ fun MainUI() {
                 }
             }
 
+            ItemOuterTitle(text = "其他样式测试")
             RoundedColumn {
-                ItemTitle(text = "其他样式测试")
                 ItemTip(text = "测试")
                 Item(
                     onClick = {
@@ -206,14 +205,14 @@ fun MainUI() {
                 )
             }
 
+            ItemOuterTitle(text = "Value 组件")
             RoundedColumn {
-                ItemTitle(text = "Value 组件")
                 ItemValue(text = "Value 标题", sub = "Value 内容")
                 ItemValue(text = "Value 标题标题标题标题标题标题标题标题标题标题标题", sub = "Value 内容内容内容内容")
             }
 
+            ItemOuterTitle(text = "Edit 组件")
             RoundedColumn {
-                ItemTitle(text = "Edit 组件")
                 var text by remember { mutableStateOf("") }
                 ItemEdit(
                     text = text,
@@ -315,8 +314,8 @@ fun MainUI() {
                 }
             }
 
+            ItemOuterTitle(text = "Dialog 对话框")
             RoundedColumn {
-                ItemTitle(text = "Dialog 对话框")
                 var yesNoDialog by remember { mutableStateOf(false) }
                 if (yesNoDialog) {
                     YesNoDialog(

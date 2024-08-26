@@ -38,7 +38,7 @@ import saltui.ui2.generated.resources.ic_item_link_android
 @Composable
 internal actual fun ItemArrow(arrowType: ItemArrowType) {
     if (arrowType != ItemArrowType.None) {
-        Spacer(modifier = Modifier.width(SaltTheme.dimens.contentPadding))
+        Spacer(modifier = Modifier.width(SaltTheme.dimens.padding))
         Icon(
             modifier = Modifier
                 .size(20.dp),
@@ -74,7 +74,7 @@ actual fun ItemValue(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = SaltTheme.dimens.innerHorizontalPadding, vertical = SaltTheme.dimens.innerVerticalPadding)
+            .padding(SaltTheme.dimens.padding)
     ) {
         Text(
             text = text,
