@@ -26,6 +26,8 @@ import com.moriafly.salt.ui.ItemPopup
 import com.moriafly.salt.ui.ItemSlider
 import com.moriafly.salt.ui.ItemSpacer
 import com.moriafly.salt.ui.ItemSwitcher
+import com.moriafly.salt.ui.ItemTextButton
+import com.moriafly.salt.ui.ItemTextButtonContainer
 import com.moriafly.salt.ui.ItemTip
 import com.moriafly.salt.ui.ItemTitle
 import com.moriafly.salt.ui.ItemValue
@@ -86,6 +88,27 @@ fun MainUI() {
                     },
                     text = "选中按钮"
                 )
+                ItemTextButtonContainer {
+                    ItemTextButton(
+                        onClick = {
+
+                        },
+                        text = "强调默认按钮 TextButton"
+                    )
+                    ItemTextButton(
+                        onClick = {
+
+                        },
+                        text = "强调默认按钮 TextButton 强调默认按钮 TextButton 强调默认按钮 TextButton 强调默认按钮 TextButton"
+                    )
+                    ItemTextButton(
+                        onClick = {
+
+                        },
+                        text = "默认按钮 TextButton 默认按钮 TextButton 默认按钮 TextButton",
+                        primary = false
+                    )
+                }
             }
 
             RoundedColumn {

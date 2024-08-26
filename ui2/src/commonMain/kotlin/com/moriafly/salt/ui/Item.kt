@@ -31,6 +31,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.LayoutScopeMarker
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -49,6 +50,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.Divider
 import androidx.compose.material.Icon
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -60,14 +62,17 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
@@ -735,6 +740,70 @@ fun ItemSlider(
             steps = steps,
             onValueChangeFinished = onValueChangeFinished,
             interactionSource = interactionSource
+        )
+    }
+}
+
+@UnstableSaltApi
+@LayoutScopeMarker
+@Immutable
+interface ItemTextButtonScope
+
+@UnstableSaltApi
+private object ItemTextButtonScopeInstance : ItemTextButtonScope
+
+@UnstableSaltApi
+@Composable
+fun ItemTextButtonContainer(
+    content: @Composable ItemTextButtonScope.() -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = SaltTheme.dimens.innerVerticalPadding / 2)
+    ) {
+        ItemTextButtonScopeInstance.content()
+    }
+}
+
+/**
+ * Text Button
+ *
+ * @param primary Indicates whether the button is primary and prominent, emphasized with a highlight color
+ */
+@Suppress("UnusedReceiverParameter")
+@UnstableSaltApi
+@Composable
+fun ItemTextButtonScope.ItemTextButton(
+    onClick: () -> Unit,
+    text: String,
+    enabled: Boolean = true,
+    primary: Boolean = true
+) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .heightIn(min = SaltTheme.dimens.item)
+            .alpha(if (enabled) 1f else 0.5f)
+            .graphicsLayer {
+                compositingStrategy = CompositingStrategy.Offscreen
+            }
+            .clickable(
+                enabled = enabled,
+                onClickLabel = text,
+                role = Role.Button,
+                onClick = onClick,
+                indication = AlphaIndication,
+                interactionSource = null
+            )
+            .padding(horizontal = SaltTheme.dimens.innerHorizontalPadding, vertical = SaltTheme.dimens.innerVerticalPadding / 2),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = text,
+            color = if (enabled && primary) SaltTheme.colors.highlight else SaltTheme.colors.subText,
+            fontWeight = FontWeight.Bold,
+            textAlign = TextAlign.Center
         )
     }
 }
