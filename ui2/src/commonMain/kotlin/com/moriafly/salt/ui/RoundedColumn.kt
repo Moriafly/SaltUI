@@ -46,7 +46,7 @@ fun RoundedColumn(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .padding(SaltTheme.dimens.padding)
+            .padding(horizontal = SaltTheme.dimens.padding, vertical = SaltTheme.dimens.padding * 0.5f)
             .clip(RoundedCornerShape(SaltTheme.dimens.corner))
             .background(color)
             .border(
