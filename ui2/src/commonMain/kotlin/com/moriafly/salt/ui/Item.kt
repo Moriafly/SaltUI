@@ -725,7 +725,7 @@ fun ItemButton(
     primary: Boolean = true,
     iconPainter: Painter? = null,
     iconPaddingValues: PaddingValues = PaddingValues(0.dp),
-    iconColor: Color? = SaltTheme.colors.text,
+    iconColor: Color? = SaltTheme.colors.highlight
 ) {
     Row(
         modifier = Modifier
