@@ -1,6 +1,7 @@
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
@@ -16,6 +17,7 @@ import com.moriafly.salt.ui.Item
 import com.moriafly.salt.ui.ItemArrowType
 import com.moriafly.salt.ui.ItemButton
 import com.moriafly.salt.ui.ItemCheck
+import com.moriafly.salt.ui.ItemDivider
 import com.moriafly.salt.ui.ItemEdit
 import com.moriafly.salt.ui.ItemEditPassword
 import com.moriafly.salt.ui.ItemOuter
@@ -26,6 +28,7 @@ import com.moriafly.salt.ui.ItemSlider
 import com.moriafly.salt.ui.ItemSpacer
 import com.moriafly.salt.ui.ItemSwitcher
 import com.moriafly.salt.ui.ItemTip
+import com.moriafly.salt.ui.ItemTitle
 import com.moriafly.salt.ui.ItemValue
 import com.moriafly.salt.ui.RoundedColumn
 import com.moriafly.salt.ui.SaltTheme
@@ -104,8 +107,9 @@ fun MainUI() {
                 )
             }
 
-            ItemOuterTitle(text = "控件")
+
             RoundedColumn {
+                ItemTitle(text = "控件")
                 Item(
                     onClick = {
 
@@ -115,6 +119,7 @@ fun MainUI() {
                     text = "标准 Item 控件，带图标（可选），副标题文本（可选）",
                     sub = "Item 控件的副标题"
                 )
+
                 var switch by remember { mutableStateOf(false) }
                 ItemSwitcher(
                     state = switch,

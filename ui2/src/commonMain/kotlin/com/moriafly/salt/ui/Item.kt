@@ -86,7 +86,7 @@ internal expect fun ItemArrow(
 )
 
 /**
- * Build content interface title text.
+ * Build content interface title text
  */
 @Deprecated(
     message = "Use ItemOuterTitle instead",
@@ -798,11 +798,13 @@ fun ItemContainer(
 @Composable
 fun ItemDivider(
     modifier: Modifier = Modifier,
-    color: Color = SaltTheme.colors.stroke
+    color: Color = SaltTheme.colors.stroke,
+    startIndent: Dp = SaltTheme.dimens.padding
 ) {
     Divider(
         modifier = modifier,
+        color = color,
         thickness = Dp.Hairline,
-        color = color
+        startIndent = startIndent
     )
 }

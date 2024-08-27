@@ -87,13 +87,13 @@ internal object AlphaIndication : IndicationNodeFactory {
             drawContent()
             if (isPressed) {
                 drawRect(
-                    color = Color.Unspecified.copy(alpha = 0.5f),
+                    color = Color.Unspecified.copy(alpha = 0.25f),
                     size = size,
                     blendMode = BlendMode.DstIn
                 )
             } else if (isHovered || isFocused) {
                 drawRect(
-                    color = Color.Unspecified.copy(alpha = 0.75f),
+                    color = Color.Unspecified.copy(alpha = 0.5f),
                     size = size,
                     blendMode = BlendMode.DstIn
                 )
