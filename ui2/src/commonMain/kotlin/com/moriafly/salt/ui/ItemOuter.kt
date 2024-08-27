@@ -46,8 +46,6 @@ fun ItemOuterTitle(
                 top = SaltTheme.dimens.padding,
                 end = SaltTheme.dimens.padding * 2
             ),
-        color = SaltTheme.colors.text,
-        fontWeight = FontWeight.Bold,
         style = SaltTheme.textStyles.sub
     )
 }
