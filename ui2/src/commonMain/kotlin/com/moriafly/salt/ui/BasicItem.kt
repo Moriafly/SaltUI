@@ -69,13 +69,13 @@ internal fun BasicItem(
                 contentDescription = null,
                 colorFilter = iconColor?.let { ColorFilter.tint(iconColor) }
             )
-            Spacer(modifier = Modifier.width(SaltTheme.dimens.padding))
+            Spacer(modifier = Modifier.width(SaltTheme.dimens.subPadding))
         }
         Column(
             modifier = Modifier
                 .weight(1f)
                 .fillMaxWidth()
-                .padding(vertical = SaltTheme.dimens.padding)
+                .padding(vertical = SaltTheme.dimens.subPadding)
         ) {
             Text(
                 text = text,

@@ -17,21 +17,12 @@
 
 package com.moriafly.salt.ui
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.Icon
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.painterResource
 import saltui.ui2.generated.resources.Res
@@ -42,7 +33,7 @@ import saltui.ui2.generated.resources.ic_item_link_android
 @Composable
 internal actual fun ItemArrow(arrowType: ItemArrowType) {
     if (arrowType != ItemArrowType.None) {
-        Spacer(modifier = Modifier.width(SaltTheme.dimens.padding))
+        Spacer(modifier = Modifier.width(SaltTheme.dimens.subPadding))
         Icon(
             modifier = Modifier
                 .size(20.dp),
@@ -66,46 +57,4 @@ internal actual fun ItemPopupArrow() {
         contentDescription = null,
         tint = SaltTheme.colors.subText
     )
-}
-
-@Composable
-@UnstableSaltApi
-actual fun ItemValue(
-    text: String,
-    sub: String,
-    modifier: Modifier
-) {
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .heightIn(min = SaltTheme.dimens.item)
-            .padding(vertical = SaltTheme.dimens.padding),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(
-            modifier = Modifier
-                .sizeIn(
-                    maxWidth = 80.dp
-                )
-                .weight(1f)
-                .padding(start = SaltTheme.dimens.padding),
-            text = text
-        )
-
-        Row(
-            modifier = Modifier
-                .weight(3f)
-                .padding(start = SaltTheme.dimens.padding, end = SaltTheme.dimens.padding),
-            horizontalArrangement = Arrangement.End
-        ) {
-            SelectionContainer {
-                Text(
-                    text = sub,
-                    color = SaltTheme.colors.subText,
-                    textAlign = TextAlign.End,
-                    style = SaltTheme.textStyles.main
-                )
-            }
-        }
-    }
 }

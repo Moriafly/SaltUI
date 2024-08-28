@@ -160,8 +160,7 @@ fun InputDialog(
             onChange = onChange,
             hint = hint,
             modifier = Modifier
-                .focusRequester(focusRequester),
-            paddingValues = PaddingValues(SaltTheme.dimens.padding)
+                .focusRequester(focusRequester)
         )
         LaunchedEffect(Unit) {
             focusRequester.requestFocus()

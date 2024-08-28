@@ -45,6 +45,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.Divider
 import androidx.compose.material.Icon
 import androidx.compose.runtime.Composable
@@ -104,7 +105,7 @@ fun ItemTitle(
         text = text,
         modifier = Modifier
             .fillMaxWidth()
-            .padding(SaltTheme.dimens.padding),
+            .padding(horizontal = SaltTheme.dimens.padding, vertical = SaltTheme.dimens.subPadding),
         color = SaltTheme.colors.highlight,
         fontWeight = FontWeight.Bold,
         style = SaltTheme.textStyles.sub
@@ -124,7 +125,7 @@ fun ItemTip(
         text = text,
         modifier = Modifier
             .fillMaxWidth()
-            .padding(SaltTheme.dimens.padding),
+            .padding(horizontal = SaltTheme.dimens.padding, vertical = SaltTheme.dimens.subPadding),
         style = SaltTheme.textStyles.sub
     )
 }
@@ -259,13 +260,13 @@ fun ItemSwitcher(
                 contentDescription = null,
                 colorFilter = iconColor?.let { ColorFilter.tint(iconColor) }
             )
-            Spacer(modifier = Modifier.width(SaltTheme.dimens.padding))
+            Spacer(modifier = Modifier.width(SaltTheme.dimens.subPadding))
         }
         Column(
             modifier = Modifier
                 .weight(1f)
                 .fillMaxWidth()
-                .padding(vertical = SaltTheme.dimens.padding)
+                .padding(vertical = SaltTheme.dimens.subPadding)
         ) {
             Text(
                 text = text,
@@ -279,7 +280,7 @@ fun ItemSwitcher(
                 )
             }
         }
-        Spacer(modifier = Modifier.width(SaltTheme.dimens.padding))
+        Spacer(modifier = Modifier.width(SaltTheme.dimens.subPadding))
         val backgroundColor by animateColorAsState(
             targetValue = if (state) SaltTheme.colors.highlight else SaltTheme.colors.subText.copy(alpha = 0.1f),
             animationSpec = spring(),
@@ -359,13 +360,13 @@ fun ItemPopup(
                     contentDescription = null,
                     colorFilter = iconColor?.let { ColorFilter.tint(iconColor) }
                 )
-                Spacer(modifier = Modifier.width(SaltTheme.dimens.padding))
+                Spacer(modifier = Modifier.width(SaltTheme.dimens.subPadding))
             }
             Column(
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxWidth()
-                    .padding(vertical = SaltTheme.dimens.padding)
+                    .padding(vertical = SaltTheme.dimens.subPadding)
             ) {
                 Text(
                     text = text,
@@ -377,7 +378,7 @@ fun ItemPopup(
                     style = SaltTheme.textStyles.sub
                 )
             }
-            Spacer(modifier = Modifier.width(SaltTheme.dimens.padding))
+            Spacer(modifier = Modifier.width(SaltTheme.dimens.subPadding))
 
             ItemPopupArrow()
         }
@@ -426,12 +427,12 @@ fun ItemCheck(
             contentDescription = null,
             tint = SaltTheme.colors.highlight
         )
-        Spacer(modifier = Modifier.width(SaltTheme.dimens.padding))
+        Spacer(modifier = Modifier.width(SaltTheme.dimens.subPadding))
         Column(
             modifier = Modifier
                 .weight(1f)
                 .fillMaxWidth()
-                .padding(vertical = SaltTheme.dimens.padding)
+                .padding(vertical = SaltTheme.dimens.subPadding)
         ) {
             Text(
                 text = text,
@@ -449,11 +450,28 @@ fun ItemCheck(
  */
 @UnstableSaltApi
 @Composable
-expect fun ItemValue(
+fun ItemValue(
     text: String,
     sub: String,
     modifier: Modifier = Modifier
-)
+) {
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = SaltTheme.dimens.padding, vertical = SaltTheme.dimens.subPadding)
+    ) {
+        Text(
+            text = text,
+            style = SaltTheme.textStyles.sub
+        )
+        Spacer(modifier = Modifier.height(2.dp))
+        SelectionContainer {
+            Text(
+                text = sub
+            )
+        }
+    }
+}
 
 /**
  * Edit
@@ -464,7 +482,6 @@ expect fun ItemValue(
  * @param hint hint
  * @param hintColor color of [hint] text
  * @param readOnly readOnly
- * @param paddingValues padding in this, beautiful for IME
  * @param keyboardOptions keyboardOptions
  * @param keyboardActions keyboardActions
  * @param visualTransformation visualTransformation
@@ -476,11 +493,9 @@ fun ItemEdit(
     text: String,
     onChange: (String) -> Unit,
     modifier: Modifier = Modifier,
-    backgroundColor: Color = SaltTheme.colors.subText.copy(alpha = 0.1f),
     hint: String? = null,
     hintColor: Color = SaltTheme.colors.subText,
     readOnly: Boolean = false,
-    paddingValues: PaddingValues = PaddingValues(SaltTheme.dimens.padding),
     keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
     keyboardActions: KeyboardActions = KeyboardActions.Default,
     visualTransformation: VisualTransformation = VisualTransformation.None,
@@ -490,7 +505,7 @@ fun ItemEdit(
         value = text,
         onValueChange = onChange,
         modifier = modifier
-            .padding(paddingValues),
+            .padding(start = SaltTheme.dimens.padding),
         readOnly = readOnly,
         keyboardOptions = keyboardOptions,
         keyboardActions = keyboardActions,
@@ -500,16 +515,13 @@ fun ItemEdit(
         decorationBox = { innerTextField ->
             Row(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(SaltTheme.dimens.corner))
-                    .background(color = backgroundColor),
+                    .fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Spacer(modifier = Modifier.width(SaltTheme.dimens.padding))
                 Box(
                     modifier = Modifier
                         .weight(1f)
-                        .padding(vertical = SaltTheme.dimens.padding)
+                        .padding(vertical = SaltTheme.dimens.subPadding)
                 ) {
                     innerTextField()
                     if (hint != null && text.isEmpty()) {
@@ -529,57 +541,6 @@ fun ItemEdit(
     )
 }
 
-@OptIn(UnstableSaltApi::class)
-@Composable
-fun ItemEditWithTitle(
-    title: String,
-    text: String,
-    onChange: (String) -> Unit,
-    hint: String? = null,
-    keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
-    keyboardActions: KeyboardActions = KeyboardActions.Default,
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Row(
-            modifier = Modifier
-                .sizeIn(
-                    maxWidth = 80.dp
-                )
-                .weight(1f)
-                .padding(start = SaltTheme.dimens.padding)
-        ) {
-            Text(
-                text = title,
-                modifier = Modifier
-                    .padding(vertical = SaltTheme.dimens.padding),
-                style = SaltTheme.textStyles.main
-            )
-        }
-
-        Row(
-            modifier = Modifier
-                .weight(3f)
-        ) {
-            ItemEdit(
-                text = text,
-                onChange = onChange,
-                modifier = Modifier
-                    .weight(3f),
-                backgroundColor = Color.Unspecified,
-                hint = hint,
-                hintColor = SaltTheme.colors.subText.copy(alpha = 0.5f),
-                paddingValues = PaddingValues(0.dp), // SaltTheme.dimens.outerHorizontalPadding - SaltTheme.dimens.contentPadding, 0.dp),
-                keyboardOptions = keyboardOptions,
-                keyboardActions = keyboardActions
-            )
-        }
-    }
-}
-
 /**
  * Password Edit
  *
@@ -588,7 +549,6 @@ fun ItemEditWithTitle(
  * @param hint hint
  * @param hintColor color of [hint] text
  * @param readOnly readOnly
- * @param paddingValues padding in this, beautiful for IME
  * @param keyboardOptions keyboardOptions
  * @param keyboardActions keyboardActions
  */
@@ -597,11 +557,9 @@ fun ItemEditWithTitle(
 fun ItemEditPassword(
     text: String,
     onChange: (String) -> Unit,
-    backgroundColor: Color = SaltTheme.colors.subText.copy(alpha = 0.1f),
     hint: String? = null,
     hintColor: Color = SaltTheme.colors.subText,
     readOnly: Boolean = false,
-    paddingValues: PaddingValues = PaddingValues(SaltTheme.dimens.padding),
     keyboardOptions: KeyboardOptions = KeyboardOptions(
         keyboardType = KeyboardType.Password
     ),
@@ -612,11 +570,9 @@ fun ItemEditPassword(
     ItemEdit(
         text = text,
         onChange = onChange,
-        backgroundColor = backgroundColor,
         hint = hint,
         hintColor = hintColor,
         readOnly = readOnly,
-        paddingValues = paddingValues,
         keyboardOptions = keyboardOptions,
         keyboardActions = keyboardActions,
         visualTransformation = if (hidden) PasswordVisualTransformation() else VisualTransformation.None,
@@ -634,7 +590,12 @@ fun ItemEditPassword(
                     .noRippleClickable {
                         hidden = !hidden
                     }
-                    .padding(SaltTheme.dimens.padding)
+                    .padding(
+                        start = SaltTheme.dimens.subPadding,
+                        top = SaltTheme.dimens.subPadding,
+                        end = SaltTheme.dimens.padding,
+                        bottom = SaltTheme.dimens.subPadding
+                    )
                     .size(SaltTheme.dimens.itemIcon),
                 tint = SaltTheme.colors.subText
             )
@@ -662,7 +623,7 @@ fun ItemSlider(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(SaltTheme.dimens.padding)
+            .padding(horizontal = SaltTheme.dimens.padding)
     ) {
         Row(
             modifier = Modifier
@@ -679,16 +640,17 @@ fun ItemSlider(
                     contentDescription = null,
                     colorFilter = iconColor?.let { ColorFilter.tint(iconColor) }
                 )
-                Spacer(modifier = Modifier.width(SaltTheme.dimens.padding))
+                Spacer(modifier = Modifier.width(SaltTheme.dimens.subPadding))
             }
             Text(
                 text = text,
                 modifier = Modifier
                     .weight(1f)
-                    .fillMaxWidth(),
+                    .fillMaxWidth()
+                    .padding(vertical = SaltTheme.dimens.subPadding),
                 color = if (enabled) SaltTheme.colors.text else SaltTheme.colors.subText
             )
-            Spacer(modifier = Modifier.width(SaltTheme.dimens.padding))
+            Spacer(modifier = Modifier.width(SaltTheme.dimens.subPadding))
             sub?.let {
                 Text(
                     text = sub,
@@ -696,7 +658,6 @@ fun ItemSlider(
                 )
             }
         }
-        Spacer(modifier = Modifier.height(12.dp))
         Slider(
             value = value,
             onValueChange = onValueChange,
@@ -708,6 +669,7 @@ fun ItemSlider(
             onValueChangeFinished = onValueChangeFinished,
             interactionSource = interactionSource
         )
+        ItemSpacer()
     }
 }
 
@@ -750,14 +712,14 @@ fun ItemButton(
                 contentDescription = null,
                 colorFilter = iconColor?.let { ColorFilter.tint(iconColor) }
             )
-            Spacer(modifier = Modifier.width(SaltTheme.dimens.padding))
+            Spacer(modifier = Modifier.width(SaltTheme.dimens.subPadding))
         }
         Text(
             text = text,
             modifier = Modifier
                 .weight(1f)
                 .fillMaxWidth()
-                .padding(vertical = SaltTheme.dimens.padding),
+                .padding(vertical = SaltTheme.dimens.subPadding),
             color = if (enabled && primary) SaltTheme.colors.highlight else SaltTheme.colors.subText,
             fontWeight = FontWeight.Bold
         )
@@ -765,18 +727,18 @@ fun ItemButton(
 }
 
 /**
- * Build vertical spacing for the content interface.
+ * Build vertical spacing [SaltDimens.subPadding] for the content interface
  */
 @Composable
 fun ItemSpacer() {
     Spacer(
         modifier = Modifier
-            .height(SaltTheme.dimens.padding)
+            .height(SaltTheme.dimens.subPadding)
     )
 }
 
 /**
- * Build a container with internal margins in the content interface, making it easy to add custom elements such as buttons internally.
+ * Build a container with internal margins in the content interface, making it easy to add custom elements such as buttons internally
  */
 @Composable
 fun ItemContainer(
@@ -784,7 +746,7 @@ fun ItemContainer(
 ) {
     Box(
         modifier = Modifier
-            .padding(SaltTheme.dimens.padding)
+            .padding(horizontal = SaltTheme.dimens.padding, vertical = SaltTheme.dimens.subPadding)
     ) {
         content()
     }

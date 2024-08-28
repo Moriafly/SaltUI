@@ -28,6 +28,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 /**
@@ -43,8 +44,9 @@ fun ItemOuterTitle(
             .fillMaxWidth()
             .padding(
                 start = SaltTheme.dimens.padding * 2,
-                top = SaltTheme.dimens.padding,
-                end = SaltTheme.dimens.padding * 2
+                top = SaltTheme.dimens.padding * 0.5f + SaltTheme.dimens.subPadding,
+                end = SaltTheme.dimens.padding * 2,
+                bottom = (SaltTheme.dimens.subPadding - SaltTheme.dimens.padding * 0.5f).coerceAtLeast(0.dp)
             ),
         style = SaltTheme.textStyles.sub
     )
@@ -128,7 +130,7 @@ fun ItemOuterTextButton(
 }
 
 /**
- * Build vertical spacing for the Item Outer
+ * Build vertical spacing [SaltDimens.padding] for the Item Outer
  */
 @Composable
 fun ItemOuterSpacer() {
@@ -145,6 +147,6 @@ fun ItemOuterSpacer() {
 fun ItemOuterHalfSpacer() {
     Spacer(
         modifier = Modifier
-            .height(SaltTheme.dimens.padding / 2)
+            .height(SaltTheme.dimens.padding * 0.5f)
     )
 }

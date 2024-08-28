@@ -18,7 +18,7 @@
 package com.moriafly.salt.ui
 
 @RequiresOptIn(
-    message = "This SaltUI API is experimental and is likely to change or be removed in the future.",
+    message = "This SaltUI API is experimental and is likely to change or be removed in the future",
     level = RequiresOptIn.Level.ERROR
 )
 @Retention(AnnotationRetention.BINARY)

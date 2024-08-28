@@ -38,7 +38,7 @@ import saltui.ui2.generated.resources.ic_item_link_android
 @Composable
 internal actual fun ItemArrow(arrowType: ItemArrowType) {
     if (arrowType != ItemArrowType.None) {
-        Spacer(modifier = Modifier.width(SaltTheme.dimens.padding))
+        Spacer(modifier = Modifier.width(SaltTheme.dimens.subPadding))
         Icon(
             modifier = Modifier
                 .size(20.dp),
@@ -62,29 +62,4 @@ internal actual fun ItemPopupArrow() {
         contentDescription = null,
         tint = SaltTheme.colors.subText
     )
-}
-
-@Composable
-@UnstableSaltApi
-actual fun ItemValue(
-    text: String,
-    sub: String,
-    modifier: Modifier
-) {
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(SaltTheme.dimens.padding)
-    ) {
-        Text(
-            text = text,
-            style = SaltTheme.textStyles.sub
-        )
-        Spacer(modifier = Modifier.height(2.dp))
-        SelectionContainer {
-            Text(
-                text = sub
-            )
-        }
-    }
 }
