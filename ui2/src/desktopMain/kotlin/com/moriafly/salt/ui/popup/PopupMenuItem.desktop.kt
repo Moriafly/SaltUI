@@ -24,4 +24,4 @@ import androidx.compose.runtime.Composable
 import com.moriafly.salt.ui.SaltTheme
 
 internal actual val popupMenuItemPadding: PaddingValues
-    @Composable get() = PaddingValues(SaltTheme.dimens.padding)
+    @Composable get() = PaddingValues(horizontal = SaltTheme.dimens.padding, vertical = SaltTheme.dimens.subPadding)
