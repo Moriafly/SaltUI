@@ -25,7 +25,7 @@ import android.content.res.Resources
 import com.moriafly.salt.ui.UnstableSaltApi
 
 @UnstableSaltApi
-object ScreenUtils {
+object ScreenUtil {
 
     /**
      * Get the rounded corner radius for the top corners of the screen.
