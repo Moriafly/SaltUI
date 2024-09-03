@@ -22,11 +22,14 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -48,6 +51,18 @@ fun ItemOuterTitle(
                 end = SaltTheme.dimens.padding * 2,
                 bottom = (SaltTheme.dimens.subPadding - SaltTheme.dimens.padding * 0.5f).coerceAtLeast(0.dp)
             ),
+        style = SaltTheme.textStyles.sub
+    )
+}
+
+@Composable
+fun ItemOuterTip(
+    text: String
+) {
+    Text(
+        text = text,
+        modifier = Modifier
+            .outerPadding(),
         style = SaltTheme.textStyles.sub
     )
 }
@@ -83,27 +98,45 @@ fun ItemOuterLargeTitle(
 }
 
 /**
- * ItemOuter
+ * ItemOuterEdit
  *
- * @param color The text color
+ * @param text text
+ * @param onChange called when text changed
+ * @param modifier modifier
+ * @param hint hint
+ * @param hintColor color of [hint] text
+ * @param readOnly readOnly
+ * @param keyboardOptions keyboardOptions
+ * @param keyboardActions keyboardActions
+ * @param visualTransformation visualTransformation
+ * @param actionContent actionContent
  */
 @UnstableSaltApi
 @Composable
-fun ItemOuter(
-    onClick: () -> Unit,
+fun ItemOuterEdit(
     text: String,
-    color: Color = SaltTheme.colors.highlight
+    onChange: (String) -> Unit,
+    modifier: Modifier = Modifier,
+    hint: String? = null,
+    hintColor: Color = SaltTheme.colors.subText,
+    readOnly: Boolean = false,
+    keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
+    keyboardActions: KeyboardActions = KeyboardActions.Default,
+    visualTransformation: VisualTransformation = VisualTransformation.None,
+    actionContent: (@Composable () -> Unit)? = null
 ) {
-    Text(
+    BasicItemEdit(
         text = text,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(SaltTheme.dimens.padding)
-            .noRippleClickable {
-                onClick()
-            },
-        color = color,
-        fontWeight = FontWeight.Bold
+        onChange = onChange,
+        modifier = modifier,
+        paddingValues = SaltTheme.dimens.outerPaddingValues,
+        hint = hint,
+        hintColor = hintColor,
+        readOnly = readOnly,
+        keyboardOptions = keyboardOptions,
+        keyboardActions = keyboardActions,
+        visualTransformation = visualTransformation,
+        actionContent = actionContent
     )
 }
 
@@ -122,7 +155,7 @@ fun ItemOuterTextButton(
         onClick = onClick,
         text = text,
         modifier = Modifier
-            .padding(SaltTheme.dimens.padding),
+            .outerPadding(),
         enabled = enabled,
         textColor = textColor,
         backgroundColor = backgroundColor

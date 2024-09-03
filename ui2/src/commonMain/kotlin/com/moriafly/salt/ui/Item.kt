@@ -40,7 +40,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.selection.SelectionContainer
@@ -58,7 +57,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -123,7 +121,7 @@ fun ItemTip(
         text = text,
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = SaltTheme.dimens.padding, vertical = SaltTheme.dimens.subPadding),
+            .innerPadding(),
         style = SaltTheme.textStyles.sub
     )
 }
@@ -502,43 +500,18 @@ fun ItemEdit(
     visualTransformation: VisualTransformation = VisualTransformation.None,
     actionContent: (@Composable () -> Unit)? = null
 ) {
-    BasicTextField(
-        value = text,
-        onValueChange = onChange,
-        modifier = modifier
-            .padding(start = SaltTheme.dimens.padding),
+    BasicItemEdit(
+        text = text,
+        onChange = onChange,
+        modifier = modifier,
+        paddingValues = SaltTheme.dimens.innerPaddingValues,
+        hint = hint,
+        hintColor = hintColor,
         readOnly = readOnly,
         keyboardOptions = keyboardOptions,
         keyboardActions = keyboardActions,
-        textStyle = SaltTheme.textStyles.main,
         visualTransformation = visualTransformation,
-        cursorBrush = SolidColor(SaltTheme.colors.highlight),
-        decorationBox = { innerTextField ->
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(vertical = SaltTheme.dimens.subPadding)
-                ) {
-                    innerTextField()
-                    if (hint != null && text.isEmpty()) {
-                        Text(
-                            text = hint,
-                            color = hintColor
-                        )
-                    }
-                }
-                if (actionContent != null) {
-                    actionContent()
-                } else {
-                    Spacer(modifier = Modifier.width(SaltTheme.dimens.padding))
-                }
-            }
-        }
+        actionContent = actionContent
     )
 }
 
@@ -597,8 +570,8 @@ fun ItemEditPassword(
                         end = SaltTheme.dimens.padding,
                         bottom = SaltTheme.dimens.subPadding
                     )
-                    .size(SaltTheme.dimens.itemIcon),
-                tint = SaltTheme.colors.subText
+                    .size(20.dp),
+                tint = SaltTheme.colors.highlight
             )
         }
     )

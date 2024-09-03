@@ -86,7 +86,7 @@ fun BasicButton(
                 enabled = enabled,
                 onClick = onClick
             )
-            .padding(SaltTheme.dimens.padding)
+            .innerPadding()
     ) {
         content()
     }

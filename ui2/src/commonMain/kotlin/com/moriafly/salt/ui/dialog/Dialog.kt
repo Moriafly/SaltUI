@@ -19,11 +19,9 @@ package com.moriafly.salt.ui.dialog
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
@@ -37,16 +35,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
-import com.moriafly.salt.ui.ItemEdit
-import com.moriafly.salt.ui.ItemOuterHalfSpacer
-import com.moriafly.salt.ui.ItemOuterSpacer
-import com.moriafly.salt.ui.ItemText
+import com.moriafly.salt.ui.ItemOuterEdit
+import com.moriafly.salt.ui.ItemOuterTip
 import com.moriafly.salt.ui.SaltTheme
 import com.moriafly.salt.ui.Text
 import com.moriafly.salt.ui.TextButton
 import com.moriafly.salt.ui.UnstableSaltApi
 import com.moriafly.salt.ui.internal.stringResourceCancel
 import com.moriafly.salt.ui.internal.stringResourceConfirm
+import com.moriafly.salt.ui.outerPadding
 
 /**
  * YesDialog
@@ -63,20 +60,16 @@ fun YesDialog(
         onDismissRequest = onDismissRequest,
         properties = properties
     ) {
-        ItemOuterSpacer()
         DialogTitle(text = title)
-        ItemOuterSpacer()
-        ItemText(text = content)
-        ItemOuterSpacer()
+        ItemOuterTip(text = content)
         TextButton(
             onClick = {
                 onDismissRequest()
             },
             modifier = Modifier
-                .padding(horizontal = SaltTheme.dimens.padding),
+                .outerPadding(),
             text = confirmText
         )
-        ItemOuterSpacer()
     }
 }
 
@@ -98,15 +91,11 @@ fun YesNoDialog(
         onDismissRequest = onDismissRequest,
         properties = properties
     ) {
-        ItemOuterSpacer()
         DialogTitle(text = title)
-        ItemOuterSpacer()
-        ItemText(text = content)
-        ItemOuterHalfSpacer()
+        ItemOuterTip(text = content)
         drawContent?.invoke()
-        ItemOuterHalfSpacer()
         Row(
-            modifier = Modifier.padding(horizontal = SaltTheme.dimens.padding)
+            modifier = Modifier.outerPadding()
         ) {
             TextButton(
                 onClick = {
@@ -128,7 +117,6 @@ fun YesNoDialog(
                 text = confirmText
             )
         }
-        ItemOuterSpacer()
     }
 }
 
@@ -150,12 +138,10 @@ fun InputDialog(
         onDismissRequest = onDismissRequest,
         properties = properties
     ) {
-        ItemOuterSpacer()
         DialogTitle(text = title)
-        ItemOuterHalfSpacer()
 
         val focusRequester = remember { FocusRequester() }
-        ItemEdit(
+        ItemOuterEdit(
             text = text,
             onChange = onChange,
             hint = hint,
@@ -166,9 +152,8 @@ fun InputDialog(
             focusRequester.requestFocus()
         }
 
-        ItemOuterHalfSpacer()
         Row(
-            modifier = Modifier.padding(horizontal = SaltTheme.dimens.padding)
+            modifier = Modifier.outerPadding()
         ) {
             TextButton(
                 onClick = {
@@ -190,7 +175,6 @@ fun InputDialog(
                 text = stringResourceConfirm().uppercase()
             )
         }
-        ItemOuterSpacer()
     }
 }
 
@@ -212,6 +196,7 @@ fun BasicDialog(
                 .fillMaxWidth()
                 .clip(RoundedCornerShape(SaltTheme.dimens.dialogCorner))
                 .background(color = SaltTheme.colors.background)
+                .outerPadding(horizontal = false)
         ) {
             content()
         }
@@ -224,7 +209,8 @@ fun DialogTitle(
 ) {
     Text(
         text = text,
-        modifier = Modifier.padding(horizontal = SaltTheme.dimens.padding),
+        modifier = Modifier
+            .outerPadding(),
         fontSize = 18.sp,
         fontWeight = FontWeight.Bold
     )

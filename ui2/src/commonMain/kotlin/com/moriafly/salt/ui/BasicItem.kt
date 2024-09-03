@@ -20,23 +20,33 @@
 package com.moriafly.salt.ui
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 
 @Composable
@@ -88,6 +98,77 @@ internal fun BasicItem(
 
         ItemArrow(
             arrowType = arrowType
+        )
+    }
+}
+
+@UnstableSaltApi
+@Composable
+internal fun BasicItemEdit(
+    text: String,
+    onChange: (String) -> Unit,
+    modifier: Modifier = Modifier,
+    paddingValues: SaltPaddingValues,
+    hint: String? = null,
+    hintColor: Color = SaltTheme.colors.subText,
+    readOnly: Boolean = false,
+    keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
+    keyboardActions: KeyboardActions = KeyboardActions.Default,
+    visualTransformation: VisualTransformation = VisualTransformation.None,
+    actionContent: (@Composable () -> Unit)? = null
+) {
+    Box {
+        BasicTextField(
+            value = text,
+            onValueChange = onChange,
+            modifier = modifier
+                .padding(start = paddingValues.start),
+            readOnly = readOnly,
+            keyboardOptions = keyboardOptions,
+            keyboardActions = keyboardActions,
+            textStyle = SaltTheme.textStyles.main,
+            visualTransformation = visualTransformation,
+            cursorBrush = SolidColor(SaltTheme.colors.highlight),
+            decorationBox = { innerTextField ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .padding(top = paddingValues.top, bottom = paddingValues.end)
+                    ) {
+                        innerTextField()
+                        if (hint != null && text.isEmpty()) {
+                            Text(
+                                text = hint,
+                                color = hintColor
+                            )
+                        }
+                    }
+                    if (actionContent != null) {
+                        actionContent()
+                    } else {
+                        Spacer(modifier = Modifier.width(paddingValues.end))
+                    }
+                }
+            }
+        )
+
+        Spacer(
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(
+                    start = paddingValues.start,
+                    end = paddingValues.end,
+                    bottom = paddingValues.bottom * 0.75f
+                )
+                .fillMaxWidth()
+                .height(2.dp)
+                .clip(RoundedCornerShape(bottomStartPercent = 100, bottomEndPercent = 100))
+                .background(SaltTheme.colors.highlight)
         )
     }
 }

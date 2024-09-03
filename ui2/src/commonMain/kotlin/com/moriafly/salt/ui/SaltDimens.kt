@@ -20,6 +20,7 @@
 package com.moriafly.salt.ui
 
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.structuralEqualityPolicy
@@ -66,6 +67,8 @@ class SaltDimens(
     val dialogCorner by mutableStateOf(dialogCorner, structuralEqualityPolicy())
     val padding by mutableStateOf(padding, structuralEqualityPolicy())
     val subPadding by mutableStateOf(subPadding, structuralEqualityPolicy())
+    internal val innerPaddingValues by derivedStateOf { SaltPaddingValues(horizontal = padding, vertical = subPadding) }
+    internal val outerPaddingValues by derivedStateOf { SaltPaddingValues(horizontal = padding, vertical = padding * 0.5f) }
 }
 
 fun saltDimens(

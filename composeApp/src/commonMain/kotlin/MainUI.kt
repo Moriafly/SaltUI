@@ -20,7 +20,6 @@ import com.moriafly.salt.ui.ItemCheck
 import com.moriafly.salt.ui.ItemDivider
 import com.moriafly.salt.ui.ItemEdit
 import com.moriafly.salt.ui.ItemEditPassword
-import com.moriafly.salt.ui.ItemOuter
 import com.moriafly.salt.ui.ItemOuterLargeTitle
 import com.moriafly.salt.ui.ItemOuterTitle
 import com.moriafly.salt.ui.ItemPopup
@@ -379,21 +378,8 @@ fun MainUI() {
                     steps = 2
                 )
             }
-
-            RoundedColumn(
-                color = Color.Unspecified
-            ) {
-                ItemOuterTitle(text = "猜你在找")
-                ItemOuter(
-                    onClick = {
-
-                    },
-                    text = "你好呀"
-                )
-                ItemSpacer()
-            }
-
         }
+
         BottomBar {
             BottomBarItem(
                 state = true,
