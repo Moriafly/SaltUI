@@ -166,7 +166,7 @@ internal fun BasicItemEdit(
                     bottom = paddingValues.bottom * 0.75f
                 )
                 .fillMaxWidth()
-                .height(2.dp)
+                .height(1.dp)
                 .clip(RoundedCornerShape(bottomStartPercent = 100, bottomEndPercent = 100))
                 .background(SaltTheme.colors.highlight)
         )
