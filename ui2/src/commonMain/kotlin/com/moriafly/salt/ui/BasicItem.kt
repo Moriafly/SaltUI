@@ -131,7 +131,8 @@ internal fun BasicItemEdit(
         decorationBox = { innerTextField ->
             Row(
                 modifier = Modifier
-                    .fillMaxWidth(),
+                    .fillMaxWidth()
+                    .heightIn(min = SaltTheme.dimens.item),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Box(
