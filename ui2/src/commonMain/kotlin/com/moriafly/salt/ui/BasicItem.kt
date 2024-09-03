@@ -117,58 +117,42 @@ internal fun BasicItemEdit(
     visualTransformation: VisualTransformation = VisualTransformation.None,
     actionContent: (@Composable () -> Unit)? = null
 ) {
-    Box {
-        BasicTextField(
-            value = text,
-            onValueChange = onChange,
-            modifier = modifier
-                .padding(start = paddingValues.start),
-            readOnly = readOnly,
-            keyboardOptions = keyboardOptions,
-            keyboardActions = keyboardActions,
-            textStyle = SaltTheme.textStyles.main,
-            visualTransformation = visualTransformation,
-            cursorBrush = SolidColor(SaltTheme.colors.highlight),
-            decorationBox = { innerTextField ->
-                Row(
+    BasicTextField(
+        value = text,
+        onValueChange = onChange,
+        modifier = modifier
+            .padding(start = paddingValues.start),
+        readOnly = readOnly,
+        keyboardOptions = keyboardOptions,
+        keyboardActions = keyboardActions,
+        textStyle = SaltTheme.textStyles.main,
+        visualTransformation = visualTransformation,
+        cursorBrush = SolidColor(SaltTheme.colors.highlight),
+        decorationBox = { innerTextField ->
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(
                     modifier = Modifier
-                        .fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
+                        .weight(1f)
+                        .padding(top = paddingValues.top, bottom = paddingValues.bottom)
                 ) {
-                    Box(
-                        modifier = Modifier
-                            .weight(1f)
-                            .padding(top = paddingValues.top, bottom = paddingValues.end)
-                    ) {
-                        innerTextField()
-                        if (hint != null && text.isEmpty()) {
-                            Text(
-                                text = hint,
-                                color = hintColor
-                            )
-                        }
-                    }
-                    if (actionContent != null) {
-                        actionContent()
-                    } else {
-                        Spacer(modifier = Modifier.width(paddingValues.end))
+                    innerTextField()
+                    if (hint != null && text.isEmpty()) {
+                        Text(
+                            text = hint,
+                            color = hintColor
+                        )
                     }
                 }
+                if (actionContent != null) {
+                    actionContent()
+                } else {
+                    Spacer(modifier = Modifier.width(paddingValues.end))
+                }
             }
-        )
-
-        Spacer(
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .padding(
-                    start = paddingValues.start,
-                    end = paddingValues.end,
-                    bottom = paddingValues.bottom * 0.75f
-                )
-                .fillMaxWidth()
-                .height(1.dp)
-                .clip(RoundedCornerShape(bottomStartPercent = 100, bottomEndPercent = 100))
-                .background(SaltTheme.colors.highlight)
-        )
-    }
+        }
+    )
 }

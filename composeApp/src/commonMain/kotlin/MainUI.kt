@@ -213,6 +213,8 @@ fun MainUI() {
                     hint = "HINT 这是输入框"
                 )
 
+                ItemDivider()
+
                 var text2 by remember { mutableStateOf("") }
                 ItemEditPassword(
                     text = text2,

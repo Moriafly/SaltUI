@@ -125,19 +125,20 @@ fun ItemOuterEdit(
     visualTransformation: VisualTransformation = VisualTransformation.None,
     actionContent: (@Composable () -> Unit)? = null
 ) {
-    BasicItemEdit(
-        text = text,
-        onChange = onChange,
-        modifier = modifier,
-        paddingValues = SaltTheme.dimens.outerPaddingValues,
-        hint = hint,
-        hintColor = hintColor,
-        readOnly = readOnly,
-        keyboardOptions = keyboardOptions,
-        keyboardActions = keyboardActions,
-        visualTransformation = visualTransformation,
-        actionContent = actionContent
-    )
+    RoundedColumn {
+        ItemEdit(
+            text = text,
+            onChange = onChange,
+            modifier = modifier,
+            hint = hint,
+            hintColor = hintColor,
+            readOnly = readOnly,
+            keyboardOptions = keyboardOptions,
+            keyboardActions = keyboardActions,
+            visualTransformation = visualTransformation,
+            actionContent = actionContent
+        )
+    }
 }
 
 /**

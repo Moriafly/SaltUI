@@ -571,7 +571,7 @@ fun ItemEditPassword(
                         bottom = SaltTheme.dimens.subPadding
                     )
                     .size(20.dp),
-                tint = SaltTheme.colors.highlight
+                tint = SaltTheme.colors.subText
             )
         }
     )
