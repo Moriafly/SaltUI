@@ -1,7 +1,6 @@
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
@@ -10,7 +9,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import com.moriafly.salt.ui.BottomBar
 import com.moriafly.salt.ui.BottomBarItem
 import com.moriafly.salt.ui.Item
@@ -20,11 +18,12 @@ import com.moriafly.salt.ui.ItemCheck
 import com.moriafly.salt.ui.ItemDivider
 import com.moriafly.salt.ui.ItemEdit
 import com.moriafly.salt.ui.ItemEditPassword
+import com.moriafly.salt.ui.ItemInfo
+import com.moriafly.salt.ui.ItemInfoType
 import com.moriafly.salt.ui.ItemOuterLargeTitle
 import com.moriafly.salt.ui.ItemOuterTitle
 import com.moriafly.salt.ui.ItemPopup
 import com.moriafly.salt.ui.ItemSlider
-import com.moriafly.salt.ui.ItemSpacer
 import com.moriafly.salt.ui.ItemSwitcher
 import com.moriafly.salt.ui.ItemTip
 import com.moriafly.salt.ui.ItemTitle
@@ -193,6 +192,20 @@ fun MainUI() {
 
                     },
                     text = "标准开关控件"
+                )
+            }
+
+            RoundedColumn {
+                ItemInfo(
+                    text = "警告信息",
+                    infoType = ItemInfoType.Warning
+                )
+            }
+
+            RoundedColumn {
+                ItemInfo(
+                    text = "错误信息",
+                    infoType = ItemInfoType.Error
                 )
             }
 

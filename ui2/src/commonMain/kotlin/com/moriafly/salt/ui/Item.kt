@@ -23,6 +23,7 @@ import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -74,8 +75,10 @@ import org.jetbrains.compose.resources.painterResource
 import saltui.ui2.generated.resources.Res
 import saltui.ui2.generated.resources.ic_check
 import saltui.ui2.generated.resources.ic_closed_eye
+import saltui.ui2.generated.resources.ic_error
 import saltui.ui2.generated.resources.ic_eye
 import saltui.ui2.generated.resources.ic_uncheck
+import saltui.ui2.generated.resources.ic_warning
 
 @Composable
 internal expect fun ItemArrow(
@@ -744,4 +747,64 @@ fun ItemDivider(
         thickness = Dp.Hairline,
         startIndent = startIndent
     )
+}
+
+private val WarningLightIcon = Color(0xFF9D5D00)
+private val WarningDarkIcon = Color(0xFFFCE100)
+private val WarningLightBackground = Color(0xFFFFF4CE)
+private val WarningDarkBackground = Color(0xFF433519)
+private val ErrorLightIcon = Color(0xFFC42B1C)
+private val ErrorDarkIcon = Color(0xFFFF99A4)
+private val ErrorLightBackground = Color(0xFFFDE7E9)
+private val ErrorDarkBackground = Color(0xFF442726)
+
+@UnstableSaltApi
+enum class ItemInfoType {
+    Warning,
+    Error
+}
+
+@UnstableSaltApi
+@Composable
+fun ItemInfo(
+    text: String,
+    infoType: ItemInfoType
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(
+                when (infoType) {
+                    ItemInfoType.Warning -> if (SaltTheme.configs.isDarkTheme) WarningDarkBackground else WarningLightBackground
+                    ItemInfoType.Error -> if (SaltTheme.configs.isDarkTheme) ErrorDarkBackground else ErrorLightBackground
+                }
+            )
+            .outerPadding(vertical = false),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Image(
+            modifier = Modifier
+                .size(SaltTheme.dimens.itemIcon),
+            painter = painterResource(
+                when (infoType) {
+                    ItemInfoType.Warning -> Res.drawable.ic_warning
+                    ItemInfoType.Error -> Res.drawable.ic_error
+                }
+            ),
+            contentDescription = null,
+            colorFilter = ColorFilter.tint(
+                when (infoType) {
+                    ItemInfoType.Warning -> if (SaltTheme.configs.isDarkTheme) WarningDarkIcon else WarningLightIcon
+                    ItemInfoType.Error -> if (SaltTheme.configs.isDarkTheme) ErrorDarkIcon else ErrorLightIcon
+                }
+            )
+        )
+        Spacer(modifier = Modifier.width(SaltTheme.dimens.subPadding))
+        Text(
+            text = text,
+            modifier = Modifier
+                .innerPadding(horizontal = false),
+            color = SaltTheme.colors.text
+        )
+    }
 }
