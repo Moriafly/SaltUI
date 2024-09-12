@@ -9,7 +9,7 @@ appcompat = "1.6.1"
 material = "1.10.0"
 material3 = "1.2.1"
 compose = "1.6.3"
-compose-multiplatform = "1.7.0-alpha03"
+compose-multiplatform = "1.7.0-beta02"
 activity-compose = "1.7.0"
 
 [libraries]
