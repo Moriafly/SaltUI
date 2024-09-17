@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="Theme.SaltUI" parent="@android:style/Theme.Holo">
+        <item name="android:windowBackground">@null</item>
+    </style>
+
+</resources>

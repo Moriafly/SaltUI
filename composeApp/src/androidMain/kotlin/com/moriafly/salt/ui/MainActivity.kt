@@ -4,12 +4,14 @@ import UiCore
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-
+import com.moriafly.salt.ui.ext.edgeToEdge
 
 class MainActivity : ComponentActivity() {
 
+    @OptIn(UnstableSaltApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        edgeToEdge()
         setContent {
             UiCore()
         }

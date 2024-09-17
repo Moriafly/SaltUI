@@ -35,6 +35,7 @@ import com.moriafly.salt.ui.UnstableSaltApi
 import com.moriafly.salt.ui.dialog.InputDialog
 import com.moriafly.salt.ui.dialog.YesDialog
 import com.moriafly.salt.ui.dialog.YesNoDialog
+import com.moriafly.salt.ui.ext.safeMainPadding
 import com.moriafly.salt.ui.popup.PopupMenuItem
 import com.moriafly.salt.ui.popup.rememberPopupState
 import org.jetbrains.compose.resources.painterResource
@@ -49,6 +50,7 @@ fun MainUI() {
         modifier = Modifier
             .fillMaxSize()
             .background(color = SaltTheme.colors.background)
+            .safeMainPadding()
     ) {
         TitleBar(
             onBack = {
@@ -61,7 +63,6 @@ fun MainUI() {
             modifier = Modifier
                 .weight(1f)
                 .fillMaxSize()
-                .background(color = SaltTheme.colors.background)
                 .verticalScroll(rememberScrollState())
         ) {
             ItemOuterLargeTitle(
