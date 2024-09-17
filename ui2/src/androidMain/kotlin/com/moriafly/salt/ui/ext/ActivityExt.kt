@@ -29,6 +29,16 @@ import com.moriafly.salt.ui.UnstableSaltApi
 /**
  * Call this method in the [Activity.onCreate]
  *
+ * ```kotlin
+ * override fun onCreate(savedInstanceState: Bundle?) {
+ *     edgeToEdge()
+ *     // Others before super.onCreate
+ *     super.onCreate(savedInstanceState)
+ * }
+ * ```
+ *
+ * Sample of themes.xml
+ *
  * ```xml
  * <style name="Theme.SaltUI" parent="@android:style/Theme.Holo">
  *     <item name="android:windowBackground">@null</item>
