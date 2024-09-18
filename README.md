@@ -19,10 +19,6 @@ implementation("io.github.moriafly:salt-ui:<TAG>")
 | 1.7.0-alpha02         | 2.0.4         |
 | 1.6.11                | < 2.0.4       |
 
-## Docs
-
-See also [Docs](https://sakawish.github.io/open-source/salt-ui/)
-
 ### Simple Start
 
 ```kotlin
@@ -34,21 +30,6 @@ fun App() {
         // ...
     }
 }
-```
-
-### Utils
-
-#### WindowUtils (Android, Unstable)
-
-Use `setStatusBarForegroundColor` to change foreground color of status bar
-
-Use `setNavigationBarForegroundColor` to change foreground color of navigation bar
-
-```kotlin
-import com.moriafly.salt.ui.util.WindowUtils
-import com.moriafly.salt.ui.util.WindowUtils.BarColor
-
-WindowUtils.setStatusBarForegroundColor(activity.window, BarColor.Black)
 ```
 
 ## Others
