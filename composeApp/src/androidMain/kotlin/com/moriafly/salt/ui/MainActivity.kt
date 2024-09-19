@@ -10,8 +10,9 @@ class MainActivity : ComponentActivity() {
 
     @OptIn(UnstableSaltApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
         edgeToEdge()
+        super.onCreate(savedInstanceState)
+
         setContent {
             UiCore()
         }

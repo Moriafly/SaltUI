@@ -20,6 +20,7 @@
 package com.moriafly.salt.ui.ext
 
 import android.app.Activity
+import android.graphics.Color
 import android.os.Build
 import android.view.Window
 import android.view.WindowManager
@@ -53,8 +54,14 @@ fun Activity.edgeToEdge() {
 
     requestWindowFeature(Window.FEATURE_NO_TITLE)
 
-    window.addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
-    window.addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION)
+    // On some Android OEM devices, the FLAG_TRANSLUCENT_STATUS and FLAG_TRANSLUCENT_NAVIGATION flags
+    // do not work effectively with isStatusBarContrastEnforced and isNavigationBarContrastEnforced
+    // Instead, use FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS along with an active setting approach
+    window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
+    window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION)
+    window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
+    window.statusBarColor = Color.TRANSPARENT
+    window.navigationBarColor = Color.TRANSPARENT
 
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
         // In the XML, it only requires O_MR1 API 27, I don't know why
