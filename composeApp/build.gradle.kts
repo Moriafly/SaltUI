@@ -10,6 +10,7 @@ plugins {
 kotlin {
     androidTarget {
         compilations.all {
+            @Suppress("DEPRECATION")
             kotlinOptions {
                 jvmTarget = "17"
             }
