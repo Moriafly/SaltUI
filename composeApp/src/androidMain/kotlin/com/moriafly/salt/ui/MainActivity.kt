@@ -1,6 +1,6 @@
 package com.moriafly.salt.ui
 
-import UiCore
+import MainActivityContent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -14,7 +14,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         setContent {
-            UiCore()
+            MainActivityContent()
         }
     }
 

@@ -45,7 +45,7 @@ import saltui.composeapp.generated.resources.ic_verified
 
 @OptIn(UnstableSaltApi::class)
 @Composable
-fun MainUI() {
+fun MainScreen() {
     Column(
         modifier = Modifier
             .fillMaxSize()

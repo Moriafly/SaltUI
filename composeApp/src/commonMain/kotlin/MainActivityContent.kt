@@ -4,13 +4,13 @@ import com.moriafly.salt.ui.darkSaltColors
 import com.moriafly.salt.ui.saltConfigs
 
 @Composable
-fun UiCore() {
+fun MainActivityContent() {
     SaltTheme(
         configs = saltConfigs(
             isDarkTheme = true
         ),
         colors = darkSaltColors()
     ) {
-        MainUI()
+        MainScreen()
     }
 }
