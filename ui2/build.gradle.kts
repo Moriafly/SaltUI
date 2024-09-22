@@ -89,6 +89,7 @@ kotlin {
             implementation(libs.material)
             implementation(libs.compose.material3)
             implementation(libs.activity.compose)
+            implementation("org.lsposed.hiddenapibypass:hiddenapibypass:4.3")
         }
 
         commonMain.dependencies {
