@@ -36,7 +36,7 @@ import com.moriafly.salt.ui.UnstableSaltApi
 val WindowInsets.Companion.safeMain: WindowInsets
     @Composable
     @NonRestartableComposable
-    get() = WindowInsets.systemBars.union(WindowInsets.displayCutout)
+    get() = systemBars.union(displayCutout)
 
 /**
  * The insets that the [safeMain] will consume if shown. If it cannot be shown then this will be empty
@@ -46,9 +46,16 @@ val WindowInsets.Companion.safeMain: WindowInsets
 expect val WindowInsets.Companion.safeMainIgnoringVisibility: WindowInsets
 
 @UnstableSaltApi
+expect val WindowInsets.Companion.safeMainCompat: WindowInsets
+
+@UnstableSaltApi
 @Composable
 fun Modifier.safeMainPadding() = windowInsetsPadding(WindowInsets.safeMain)
 
 @UnstableSaltApi
 @Composable
 fun Modifier.safeMainIgnoringVisibilityPadding() = windowInsetsPadding(WindowInsets.safeMainIgnoringVisibility)
+
+@UnstableSaltApi
+@Composable
+fun Modifier.safeMainCompatPadding() = windowInsetsPadding(WindowInsets.safeMainCompat)

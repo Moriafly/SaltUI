@@ -27,6 +27,7 @@ import androidx.compose.foundation.layout.union
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.NonRestartableComposable
 import com.moriafly.salt.ui.UnstableSaltApi
+import com.moriafly.salt.ui.util.RomUtil
 
 /**
  * The insets that the [safeMain] will consume if shown. If it cannot be shown then this will be empty
@@ -37,4 +38,20 @@ import com.moriafly.salt.ui.UnstableSaltApi
 actual val WindowInsets.Companion.safeMainIgnoringVisibility: WindowInsets
     @Composable
     @NonRestartableComposable
-    get() = WindowInsets.systemBarsIgnoringVisibility.union(WindowInsets.displayCutout)
+    get() = systemBarsIgnoringVisibility.union(displayCutout)
+
+/**
+ * This is the recommended alternative to [safeMainIgnoringVisibility]
+ * On Xiaomi's HyperOS, adjusting the size of the small window may cause the navigation bar to hide and show intermittently
+ * I don't understand why Xiaomi's HyperOS behaves this way, but there are cases where users hide the navigation bar on some car systems
+ * So this parameter is added
+ */
+@UnstableSaltApi
+actual val WindowInsets.Companion.safeMainCompat: WindowInsets
+    @Composable
+    @NonRestartableComposable
+    get() = if (RomUtil.isXiaomiHyperOS) {
+        safeMainIgnoringVisibility
+    } else {
+        safeMain
+    }

@@ -32,4 +32,13 @@ import com.moriafly.salt.ui.UnstableSaltApi
 actual val WindowInsets.Companion.safeMainIgnoringVisibility: WindowInsets
     @Composable
     @NonRestartableComposable
-    get() = WindowInsets.systemBars.union(WindowInsets.displayCutout)
+    get() = systemBars.union(displayCutout)
+
+/**
+ * Same as [safeMainIgnoringVisibility]
+ */
+@UnstableSaltApi
+actual val WindowInsets.Companion.safeMainCompat: WindowInsets
+    @Composable
+    @NonRestartableComposable
+    get() = safeMainIgnoringVisibility
