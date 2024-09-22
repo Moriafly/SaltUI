@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * SaltUI
+ * Salt UI
  * Copyright (C) 2024 Moriafly
  *
  * This library is free software; you can redistribute it and/or

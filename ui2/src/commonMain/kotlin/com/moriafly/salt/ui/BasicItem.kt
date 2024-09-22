@@ -1,5 +1,5 @@
 /*
- * SaltUI
+ * Salt UI
  * Copyright (C) 2024 Moriafly
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
