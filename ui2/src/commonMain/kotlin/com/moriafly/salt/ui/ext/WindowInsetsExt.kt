@@ -38,6 +38,17 @@ val WindowInsets.Companion.safeMain: WindowInsets
     @NonRestartableComposable
     get() = WindowInsets.systemBars.union(WindowInsets.displayCutout)
 
+/**
+ * The insets that the [safeMain] will consume if shown. If it cannot be shown then this will be empty
+ * In other words, regardless of whether the system columns included in [safeMain] are displayed or not, it will have paddings
+ */
+@UnstableSaltApi
+expect val WindowInsets.Companion.safeMainIgnoringVisibility: WindowInsets
+
 @UnstableSaltApi
 @Composable
 fun Modifier.safeMainPadding() = windowInsetsPadding(WindowInsets.safeMain)
+
+@UnstableSaltApi
+@Composable
+fun Modifier.safeMainIgnoringVisibilityPadding() = windowInsetsPadding(WindowInsets.safeMainIgnoringVisibility)

@@ -24,23 +24,17 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.systemBarsIgnoringVisibility
 import androidx.compose.foundation.layout.union
-import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.NonRestartableComposable
-import androidx.compose.ui.Modifier
 import com.moriafly.salt.ui.UnstableSaltApi
 
 /**
- * The insets that the [safeMain] will consume if shown. If it cannot be shown then this will be empty.
- * In other words, regardless of whether the system columns included in [safeMain] are displayed or not, it will have paddings.
+ * The insets that the [safeMain] will consume if shown. If it cannot be shown then this will be empty
+ * In other words, regardless of whether the system columns included in [safeMain] are displayed or not, it will have paddings
  */
 @OptIn(ExperimentalLayoutApi::class)
 @UnstableSaltApi
-val WindowInsets.Companion.safeMainIgnoringVisibility: WindowInsets
+actual val WindowInsets.Companion.safeMainIgnoringVisibility: WindowInsets
     @Composable
     @NonRestartableComposable
     get() = WindowInsets.systemBarsIgnoringVisibility.union(WindowInsets.displayCutout)
-
-@UnstableSaltApi
-@Composable
-fun Modifier.safeMainIgnoringVisibilityPadding() = windowInsetsPadding(WindowInsets.safeMainIgnoringVisibility)
