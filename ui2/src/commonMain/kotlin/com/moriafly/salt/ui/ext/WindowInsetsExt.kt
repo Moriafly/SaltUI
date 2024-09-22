@@ -32,7 +32,6 @@ import com.moriafly.salt.ui.UnstableSaltApi
 /**
  * All system bars (status bars, caption bar as well as navigation bars) and display cutout. but not ime.
  */
-@UnstableSaltApi
 val WindowInsets.Companion.safeMain: WindowInsets
     @Composable
     @NonRestartableComposable
@@ -48,7 +47,6 @@ expect val WindowInsets.Companion.safeMainIgnoringVisibility: WindowInsets
 @UnstableSaltApi
 expect val WindowInsets.Companion.safeMainCompat: WindowInsets
 
-@UnstableSaltApi
 @Composable
 fun Modifier.safeMainPadding() = windowInsetsPadding(WindowInsets.safeMain)
 
