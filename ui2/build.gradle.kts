@@ -82,8 +82,6 @@ kotlin {
     }
     
     sourceSets {
-        val desktopMain by getting
-        
         androidMain.dependencies {
             implementation(libs.core.ktx)
             implementation(libs.material)
@@ -92,6 +90,7 @@ kotlin {
             implementation("org.lsposed.hiddenapibypass:hiddenapibypass:4.3")
         }
 
+        val commonMain by getting
         commonMain.dependencies {
             implementation(compose.runtime)
             implementation(compose.foundation)
@@ -101,8 +100,19 @@ kotlin {
             implementation(compose.components.uiToolingPreview)
         }
 
+        val desktopMain by getting
         desktopMain.dependencies {
             implementation(compose.desktop.currentOs)
+        }
+
+        val iosX64Main by getting
+        val iosArm64Main by getting
+        val iosSimulatorArm64Main by getting
+        val iosMain by creating {
+            dependsOn(commonMain)
+            iosX64Main.dependsOn(this)
+            iosArm64Main.dependsOn(this)
+            iosSimulatorArm64Main.dependsOn(this)
         }
     }
 }
