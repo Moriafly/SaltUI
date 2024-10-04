@@ -167,6 +167,7 @@ enum class ItemArrowType {
  *
  * @param onClick will be called when user clicks on the element
  * @param text main text
+ * @param modifier [Modifier] to apply to this layout node
  * @param enabled enabled
  * @param iconPainter icon
  * @param iconPaddingValues iconPaddingValues
@@ -181,6 +182,7 @@ enum class ItemArrowType {
 fun Item(
     onClick: () -> Unit,
     text: String,
+    modifier: Modifier = Modifier,
     enabled: Boolean = true,
     iconPainter: Painter? = null,
     iconPaddingValues: PaddingValues = PaddingValues(0.dp),
@@ -194,6 +196,7 @@ fun Item(
     BasicItem(
         onClick = onClick,
         text = text,
+        modifier = modifier,
         enabled = enabled,
         iconPainter = iconPainter,
         iconPaddingValues = iconPaddingValues,
