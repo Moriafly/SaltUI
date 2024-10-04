@@ -57,4 +57,25 @@ object RomUtil {
         getSystemProperty("ro.build.user").contains("flyme")
     }
 
+    /**
+     * Abandoned by Microsoft, recommended for compatibility only
+     */
+    val isWindowsSubsystemForAndroid: Boolean by lazy {
+        Build.MODEL.toString() == "Subsystem for Android(TM)"
+    }
+
+    /**
+     * OnePlus Hydrogen OS
+     */
+    val isOnePlusHydrogenOS: Boolean by lazy {
+        getSystemProperty("ro.rom.version").contains("Hydrogen OS")
+    }
+
+    /**
+     * Vivo OriginOS
+     */
+    val isVivoOriginOS: Boolean by lazy {
+        getSystemProperty("ro.vivo.os.build.display.id").contains("OriginOS")
+    }
+
 }
