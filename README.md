@@ -12,12 +12,13 @@ implementation("io.github.moriafly:salt-ui:<TAG>")
 
 ## Compatibility
 
-| Compose Multiplatform | Salt UI       |
-|-----------------------|---------------|
-| 1.7.0-beta02          | 2.2.0-alpha01 |
-| 1.7.0-alpha03         | 2.0.7         |
-| 1.7.0-alpha02         | 2.0.4         |
-| 1.6.11                | < 2.0.4       |
+| Salt UI        | Compose Multiplatform | Compose |
+|----------------|-----------------------|---------|
+| 2.2.0-beta01+  | 1.7.0-rc01            | 1.7.0   |
+| 2.2.0-alpha01+ | 1.7.0-beta02          |         |
+| 2.0.7+         | 1.7.0-alpha03         |         |
+| 2.0.4+         | 1.7.0-alpha02         |         |
+| < 2.0.4        | 1.6.11                |         |
 
 ### Simple Start
 
