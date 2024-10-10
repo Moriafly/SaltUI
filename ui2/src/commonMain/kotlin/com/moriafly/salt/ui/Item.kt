@@ -453,7 +453,6 @@ fun ItemCheck(
  * @param text text
  * @param sub value
  */
-@UnstableSaltApi
 @Composable
 fun ItemValue(
     text: String,
