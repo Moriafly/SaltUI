@@ -30,6 +30,13 @@ class SaltConfigs(
     isDarkTheme: Boolean,
 ) {
     val isDarkTheme by mutableStateOf(isDarkTheme, structuralEqualityPolicy())
+
+    fun copy(
+        isDarkTheme: Boolean = this.isDarkTheme,
+    ): SaltConfigs = SaltConfigs(
+        isDarkTheme = isDarkTheme
+    )
+
 }
 
 fun saltConfigs(

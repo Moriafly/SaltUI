@@ -54,6 +54,25 @@ class SaltColors(
     val subBackground by mutableStateOf(subBackground, structuralEqualityPolicy())
     val popup by mutableStateOf(popup, structuralEqualityPolicy())
     val stroke by mutableStateOf(stroke, structuralEqualityPolicy())
+
+    fun copy(
+        highlight: Color = this.highlight,
+        text: Color = this.text,
+        subText: Color = this.subText,
+        background: Color = this.background,
+        subBackground: Color = this.subBackground,
+        popup: Color = this.popup,
+        stroke: Color = this.stroke
+    ): SaltColors = SaltColors(
+        highlight = highlight,
+        text = text,
+        subText = subText,
+        background = background,
+        subBackground = subBackground,
+        popup = popup,
+        stroke = stroke
+    )
+
 }
 
 fun lightSaltColors(

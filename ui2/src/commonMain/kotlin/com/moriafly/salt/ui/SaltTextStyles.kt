@@ -29,7 +29,19 @@ class SaltTextStyles (
     val main: TextStyle,
     val sub: TextStyle,
     val paragraph: TextStyle
-)
+) {
+
+    fun copy(
+        main: TextStyle = this.main,
+        sub: TextStyle = this.sub,
+        paragraph: TextStyle = this.paragraph
+    ): SaltTextStyles = SaltTextStyles(
+        main = main,
+        sub = sub,
+        paragraph = paragraph
+    )
+
+}
 
 fun saltTextStyles(
     main: TextStyle = DefaultTextStyle,

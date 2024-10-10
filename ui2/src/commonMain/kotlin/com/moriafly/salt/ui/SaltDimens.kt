@@ -69,6 +69,23 @@ class SaltDimens(
     val subPadding by mutableStateOf(subPadding, structuralEqualityPolicy())
     internal val innerPaddingValues by derivedStateOf { SaltPaddingValues(horizontal = padding, vertical = subPadding) }
     internal val outerPaddingValues by derivedStateOf { SaltPaddingValues(horizontal = padding, vertical = padding * 0.5f) }
+
+    fun copy(
+        item: Dp = this.item,
+        itemIcon: Dp = this.itemIcon,
+        corner: Dp = this.corner,
+        dialogCorner: Dp = this.dialogCorner,
+        padding: Dp = this.padding,
+        subPadding: Dp = this.subPadding
+    ): SaltDimens = SaltDimens(
+        item = item,
+        itemIcon = itemIcon,
+        corner = corner,
+        dialogCorner = dialogCorner,
+        padding = padding,
+       subPadding = subPadding
+    )
+
 }
 
 fun saltDimens(
