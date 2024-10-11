@@ -19,12 +19,8 @@
 
 package com.moriafly.salt.ui
 
-import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.animation.core.spring
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
@@ -40,7 +36,6 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.selection.SelectionContainer
@@ -54,20 +49,15 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.painter.Painter
-import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import com.moriafly.salt.ui.popup.PopupMenu
 import com.moriafly.salt.ui.popup.PopupState
@@ -251,7 +241,7 @@ fun ItemSwitcher(
             .clickable(enabled = enabled) {
                 onChange(!state)
             }
-            .padding(horizontal = SaltTheme.dimens.padding),
+            .outerPadding(vertical = false),
         verticalAlignment = Alignment.CenterVertically
     ) {
         iconPainter?.let {
@@ -269,7 +259,7 @@ fun ItemSwitcher(
             modifier = Modifier
                 .weight(1f)
                 .fillMaxWidth()
-                .padding(vertical = SaltTheme.dimens.subPadding)
+                .innerPadding(horizontal = false)
         ) {
             Text(
                 text = text,
@@ -284,42 +274,9 @@ fun ItemSwitcher(
             }
         }
         Spacer(modifier = Modifier.width(SaltTheme.dimens.subPadding))
-        val backgroundColor by animateColorAsState(
-            targetValue = if (state) SaltTheme.colors.highlight else SaltTheme.colors.subText.copy(alpha = 0.1f),
-            animationSpec = spring(),
-            label = "backgroundColor"
+        Switcher(
+            state = state
         )
-        Box(
-            modifier = Modifier
-                .size(46.dp, 26.dp)
-                .clip(CircleShape)
-                .drawBehind {
-                    drawRect(color = backgroundColor)
-                }
-                .padding(5.dp)
-        ) {
-            val layoutDirection = LocalLayoutDirection.current
-            val translationX by animateDpAsState(
-                targetValue = if (state) {
-                    when (layoutDirection) {
-                        LayoutDirection.Ltr -> 20.dp
-                        LayoutDirection.Rtl -> (-20).dp
-                    }
-                } else {
-                    0.dp
-                },
-                animationSpec = spring(),
-                label = "startPadding"
-            )
-            Box(
-                modifier = Modifier
-                    .graphicsLayer {
-                        this.translationX = translationX.toPx()
-                    }
-                    .size(16.dp)
-                    .border(width = 4.dp, color = Color.White, shape = CircleShape)
-            )
-        }
     }
 }
 
