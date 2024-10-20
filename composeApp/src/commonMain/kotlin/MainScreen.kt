@@ -394,6 +394,8 @@ fun MainScreen() {
                     steps = 2
                 )
             }
+
+            RomUtilColumn()
         }
 
         BottomBar {
@@ -416,3 +418,6 @@ fun MainScreen() {
         }
     }
 }
+
+@Composable
+expect fun RomUtilColumn()

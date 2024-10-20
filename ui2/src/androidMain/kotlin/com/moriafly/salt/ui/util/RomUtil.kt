@@ -62,7 +62,7 @@ object RomUtil {
      * Xiaomi MIUI or HyperOS
      */
     val isXiaomi: Boolean by lazy {
-        getSystemProperty("rom.i.name") == "xiaomi"
+        getSystemProperty("ro.product.system.manufacturer") == "Xiaomi"
     }
 
     /**
