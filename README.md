@@ -14,6 +14,7 @@ implementation("io.github.moriafly:salt-ui:<TAG>")
 
 | Salt UI        | Compose Multiplatform | Compose |
 |----------------|-----------------------|---------|
+| 2.2.0+         | 1.7.0                 | 1.7.1   |
 | 2.2.0-beta01+  | 1.7.0-rc01            | 1.7.0   |
 | 2.2.0-alpha01+ | 1.7.0-beta02          |         |
 | 2.0.7+         | 1.7.0-alpha03         |         |
