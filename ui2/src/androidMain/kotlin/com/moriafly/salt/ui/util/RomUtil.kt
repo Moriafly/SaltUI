@@ -24,24 +24,11 @@ import android.os.Build
 import com.moriafly.salt.ui.UnstableSaltApi
 import org.lsposed.hiddenapibypass.HiddenApiBypass
 
+/**
+ * Utility class for getting information about the current ROM
+ */
 @UnstableSaltApi
 object RomUtil {
-
-    @SuppressLint("PrivateApi")
-    private fun getSystemProperty(property: String): String {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-            HiddenApiBypass.invoke(Build::class.java, null, "getString", property) as String
-        } else {
-            try {
-                val clazz = Class.forName("android.os.Build")
-                val method = clazz.getDeclaredMethod("getString", String::class.java)
-                method.isAccessible = true
-                method.invoke(null, property) as String
-            } catch (e: Exception) {
-                Build.UNKNOWN
-            }
-        }
-    }
 
     /**
      * [Meizu FlymeOS](https://www.flyme.com)
@@ -83,6 +70,28 @@ object RomUtil {
      */
     val isXiaomiHyperOS: Boolean by lazy {
         getSystemProperty("ro.mi.os.version.name") != Build.UNKNOWN
+    }
+
+    /**
+     * Get system property from class [Build]
+     *
+     * @param property The property name
+     * @return The property value, or [Build.UNKNOWN] if failed
+     */
+    @SuppressLint("PrivateApi")
+    fun getSystemProperty(property: String): String {
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            HiddenApiBypass.invoke(Build::class.java, null, "getString", property) as String
+        } else {
+            try {
+                val clazz = Class.forName("android.os.Build")
+                val method = clazz.getDeclaredMethod("getString", String::class.java)
+                method.isAccessible = true
+                method.invoke(null, property) as String
+            } catch (e: Exception) {
+                Build.UNKNOWN
+            }
+        }
     }
 
 }
