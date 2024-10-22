@@ -47,10 +47,12 @@ import androidx.compose.ui.unit.dp
  *   │                   [padding] * 0.5f               │
  *   ╰──────────────────────────────────────────────────╯
  *
- * @param item The minimum size of an [Item], [ItemSwitcher], etc
- * @param itemIcon size of icon in [Item], [ItemSwitcher], etc
- * @param corner corner
- * @param dialogCorner dialogCorner
+ * @param item Minimum size of an [Item], [ItemSwitcher], etc
+ * @param itemIcon Size of icon in [Item], [ItemSwitcher], etc
+ * @param corner Corner radius
+ * @param dialogCorner Dialog corner radius
+ * @param padding Padding
+ * @param subPadding Sub padding
  */
 @Stable
 class SaltDimens(
@@ -67,7 +69,15 @@ class SaltDimens(
     val dialogCorner by mutableStateOf(dialogCorner, structuralEqualityPolicy())
     val padding by mutableStateOf(padding, structuralEqualityPolicy())
     val subPadding by mutableStateOf(subPadding, structuralEqualityPolicy())
+
+    /**
+     * Padding inside [RoundedColumn]
+     */
     internal val innerPaddingValues by derivedStateOf { SaltPaddingValues(horizontal = padding, vertical = subPadding) }
+
+    /**
+     * Padding outside [RoundedColumn]
+     */
     internal val outerPaddingValues by derivedStateOf { SaltPaddingValues(horizontal = padding, vertical = padding * 0.5f) }
 
     fun copy(
