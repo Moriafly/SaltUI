@@ -66,7 +66,7 @@ internal fun BasicItem(
             .clickable(enabled = enabled) {
                 onClick()
             }
-            .padding(horizontal = SaltTheme.dimens.padding),
+            .innerPadding(vertical = false),
         verticalAlignment = Alignment.CenterVertically
     ) {
         iconPainter?.let {
@@ -84,7 +84,7 @@ internal fun BasicItem(
             modifier = Modifier
                 .weight(1f)
                 .fillMaxWidth()
-                .padding(vertical = SaltTheme.dimens.subPadding)
+                .innerPadding(horizontal = false)
         ) {
             Text(
                 text = text,
