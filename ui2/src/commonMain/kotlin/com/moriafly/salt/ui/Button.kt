@@ -76,7 +76,7 @@ fun BasicButton(
 ) {
     Box(
         modifier = modifier
-            .semantics(true) {
+            .semantics {
                 role = Role.Button
             }
             .clip(RoundedCornerShape(SaltTheme.dimens.corner))
