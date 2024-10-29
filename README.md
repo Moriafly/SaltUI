@@ -21,6 +21,8 @@ implementation("io.github.moriafly:salt-ui:<TAG>")
 | 2.0.4+         | 1.7.0-alpha02         |         |
 | < 2.0.4        | 1.6.11                |         |
 
+## Usage
+
 ### Simple Start
 
 ```kotlin
@@ -33,6 +35,10 @@ fun App() {
     }
 }
 ```
+
+### Demo
+
+[composeApp](https://github.com/Moriafly/SaltUI/tree/main/composeApp)
 
 ## Others
 
