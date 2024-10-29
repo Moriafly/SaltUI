@@ -156,6 +156,7 @@ fun ItemOuterTextButton(
         onClick = onClick,
         text = text,
         modifier = Modifier
+            .fillMaxWidth()
             .outerPadding(),
         enabled = enabled,
         textColor = textColor,

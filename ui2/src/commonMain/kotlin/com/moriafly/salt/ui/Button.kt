@@ -54,8 +54,6 @@ fun TextButton(
     ) {
         Text(
             text = text,
-            modifier = Modifier
-                .fillMaxWidth(),
             color = textColor,
             textAlign = TextAlign.Center,
             overflow = TextOverflow.Ellipsis,

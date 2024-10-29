@@ -67,6 +67,7 @@ fun YesDialog(
                 onDismissRequest()
             },
             modifier = Modifier
+                .fillMaxWidth()
                 .outerPadding(),
             text = confirmText
         )
