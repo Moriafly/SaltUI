@@ -93,7 +93,7 @@ class SaltDimens(
         corner = corner,
         dialogCorner = dialogCorner,
         padding = padding,
-       subPadding = subPadding
+        subPadding = subPadding
     )
 
 }
