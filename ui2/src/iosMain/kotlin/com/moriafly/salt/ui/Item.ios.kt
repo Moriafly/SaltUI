@@ -31,7 +31,9 @@ import saltui.ui2.generated.resources.ic_chevron_right
 import saltui.ui2.generated.resources.ic_item_link_android
 
 @Composable
-internal actual fun ItemArrow(arrowType: ItemArrowType) {
+actual fun ItemArrow(
+    arrowType: ItemArrowType
+) {
     if (arrowType != ItemArrowType.None) {
         Spacer(modifier = Modifier.width(SaltTheme.dimens.subPadding))
         Icon(

@@ -33,7 +33,7 @@ import saltui.ui2.generated.resources.ic_item_expand_arrow
 import saltui.ui2.generated.resources.ic_item_link
 
 @Composable
-internal actual fun ItemArrow(
+actual fun ItemArrow(
     arrowType: ItemArrowType
 ) {
     if (arrowType != ItemArrowType.None) {

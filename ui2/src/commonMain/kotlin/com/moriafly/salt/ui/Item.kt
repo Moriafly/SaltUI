@@ -70,8 +70,15 @@ import saltui.ui2.generated.resources.ic_eye
 import saltui.ui2.generated.resources.ic_uncheck
 import saltui.ui2.generated.resources.ic_warning
 
+/**
+ * Draw an arrow icon in [Item]
+ *
+ * This can facilitate the implementation of fully customizable [Item]
+ *
+ * @param arrowType [ItemArrowType]
+ */
 @Composable
-internal expect fun ItemArrow(
+expect fun ItemArrow(
     arrowType: ItemArrowType
 )
 
