@@ -296,6 +296,44 @@ fun ItemSwitcher(
 expect fun ItemPopupArrow()
 
 /**
+ * Popup a [PopupMenu] where many selectable or common items can be added
+ *
+ * TODO Replace [ItemPopup]
+ *
+ * @param state [PopupMenu]
+ * @param text Text
+ * @param value Text of value
+ * @param enabled Enabled
+ * @param iconPainter Icon
+ * @param iconPaddingValues Padding values of [iconPainter]
+ * @param iconColor Color of [iconPainter], if this value is null, will use the paint original color
+ * @param content Composable content
+ */
+@UnstableSaltApi
+@Composable
+fun ItemSelect(
+    state: PopupState,
+    text: String,
+    value: String,
+    enabled: Boolean = true,
+    iconPainter: Painter? = null,
+    iconPaddingValues: PaddingValues = PaddingValues(0.dp),
+    iconColor: Color? = SaltTheme.colors.text,
+    content: @Composable ColumnScope.() -> Unit
+) {
+    ItemPopup(
+        state = state,
+        text = text,
+        sub = value,
+        enabled = enabled,
+        iconPainter = iconPainter,
+        iconPaddingValues = iconPaddingValues,
+        iconColor = iconColor,
+        content = content
+    )
+}
+
+/**
  * Popup Item
  *
  * @param state the state of popup
