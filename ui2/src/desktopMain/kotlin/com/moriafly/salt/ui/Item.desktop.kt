@@ -60,7 +60,7 @@ actual fun ItemArrow(
 }
 
 @Composable
-internal actual fun ItemPopupArrow() {
+actual fun ItemPopupArrow() {
     Icon(
         modifier = Modifier
             .size(16.dp)

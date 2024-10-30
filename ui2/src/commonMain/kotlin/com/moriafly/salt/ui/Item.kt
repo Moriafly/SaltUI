@@ -287,8 +287,13 @@ fun ItemSwitcher(
     }
 }
 
+/**
+ * Draw an arrow icon in [ItemPopup]
+ *
+ * This can facilitate the implementation of fully customizable [ItemPopup]
+ */
 @Composable
-internal expect fun ItemPopupArrow()
+expect fun ItemPopupArrow()
 
 /**
  * Popup Item
