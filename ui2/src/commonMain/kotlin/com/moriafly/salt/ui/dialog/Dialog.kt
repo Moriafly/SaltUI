@@ -46,7 +46,7 @@ import com.moriafly.salt.ui.internal.stringResourceConfirm
 import com.moriafly.salt.ui.outerPadding
 
 /**
- * YesDialog
+ * Yes Dialog
  */
 @Composable
 fun YesDialog(
@@ -75,7 +75,7 @@ fun YesDialog(
 }
 
 /**
- * YesNoDialog
+ * Yes or No Dialog
  */
 @Composable
 fun YesNoDialog(
