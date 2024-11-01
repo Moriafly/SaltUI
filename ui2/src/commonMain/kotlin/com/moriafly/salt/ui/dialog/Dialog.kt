@@ -122,7 +122,7 @@ fun YesNoDialog(
 }
 
 /**
- * Input text dialog
+ * Input Dialog
  */
 @UnstableSaltApi
 @Composable
@@ -133,7 +133,9 @@ fun InputDialog(
     title: String,
     text: String,
     onChange: (String) -> Unit,
-    hint: String? = null
+    hint: String? = null,
+    cancelText: String = stringResourceCancel().uppercase(),
+    confirmText: String = stringResourceConfirm().uppercase()
 ) {
     BasicDialog(
         onDismissRequest = onDismissRequest,
@@ -162,7 +164,7 @@ fun InputDialog(
                 },
                 modifier = Modifier
                     .weight(1f),
-                text = stringResourceCancel().uppercase(),
+                text = cancelText,
                 textColor = SaltTheme.colors.subText,
                 backgroundColor = SaltTheme.colors.subBackground
             )
@@ -173,7 +175,7 @@ fun InputDialog(
                 },
                 modifier = Modifier
                     .weight(1f),
-                text = stringResourceConfirm().uppercase()
+                text = confirmText
             )
         }
     }
