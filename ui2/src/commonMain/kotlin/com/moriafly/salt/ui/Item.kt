@@ -36,6 +36,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.selection.SelectionContainer
@@ -53,6 +54,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
@@ -245,7 +247,11 @@ fun ItemSwitcher(
             .fillMaxWidth()
             .heightIn(SaltTheme.dimens.item)
             .alpha(if (enabled) 1f else 0.5f)
-            .clickable(enabled = enabled) {
+            .toggleable(
+                value = state,
+                enabled = enabled,
+                role = Role.Switch
+            ) {
                 onChange(!state)
             }
             .innerPadding(vertical = false),
@@ -388,7 +394,11 @@ fun ItemCheck(
             .fillMaxWidth()
             .heightIn(SaltTheme.dimens.item)
             .alpha(if (enabled) 1f else 0.5f)
-            .clickable(enabled = enabled) {
+            .toggleable(
+                value = state,
+                enabled = enabled,
+                role = Role.Checkbox
+            ) {
                 onChange(!state)
             }
             .innerPadding(vertical = false),
@@ -431,6 +441,7 @@ fun ItemValue(
     Column(
         modifier = modifier
             .fillMaxWidth()
+            .semantics(true) { }
             .innerPadding()
     ) {
         Text(
@@ -535,7 +546,10 @@ fun ItemEditPassword(
                 ),
                 contentDescription = null,
                 modifier = Modifier
-                    .noRippleClickable {
+                    .toggleable(
+                        value = hidden,
+                        role = Role.Switch
+                    ) {
                         hidden = !hidden
                     }
                     .padding(
@@ -571,6 +585,7 @@ fun ItemSlider(
     Column(
         modifier = Modifier
             .fillMaxWidth()
+            .semantics(true) { }
             .innerPadding(vertical = false)
     ) {
         Row(
@@ -750,6 +765,9 @@ fun ItemInfo(
                     ItemInfoType.Error -> if (SaltTheme.configs.isDarkTheme) ErrorDarkBackground else ErrorLightBackground
                 }
             )
+            .semantics(true) {
+
+            }
             .innerPadding(vertical = false),
         verticalAlignment = Alignment.CenterVertically
     ) {

@@ -117,8 +117,7 @@ internal fun BasicItemEdit(
     BasicTextField(
         value = text,
         onValueChange = onChange,
-        modifier = modifier
-            .padding(start = paddingValues.start),
+        modifier = modifier,
         readOnly = readOnly,
         keyboardOptions = keyboardOptions,
         keyboardActions = keyboardActions,
@@ -129,7 +128,8 @@ internal fun BasicItemEdit(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .heightIn(min = SaltTheme.dimens.item),
+                    .heightIn(min = SaltTheme.dimens.item)
+                    .padding(start = paddingValues.start),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Box(
