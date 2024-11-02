@@ -20,7 +20,6 @@
 package com.moriafly.salt.ui
 
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
@@ -34,7 +33,7 @@ import androidx.compose.ui.semantics.semantics
 @Composable
 fun Surface(
     modifier: Modifier = Modifier,
-    content: @Composable BoxScope.() -> Unit
+    content: @Composable () -> Unit
 ) {
     Box(
         modifier = modifier
