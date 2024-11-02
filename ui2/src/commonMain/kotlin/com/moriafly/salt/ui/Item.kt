@@ -803,9 +803,7 @@ fun ItemInfo(
                     ItemInfoType.Error -> if (SaltTheme.configs.isDarkTheme) ErrorDarkBackground else ErrorLightBackground
                 }
             )
-            .semantics(true) {
-
-            }
+            .semantics(true) { }
             .innerPadding(vertical = false),
         verticalAlignment = Alignment.CenterVertically
     ) {
