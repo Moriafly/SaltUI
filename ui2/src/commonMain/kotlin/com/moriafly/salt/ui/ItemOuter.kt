@@ -28,6 +28,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
@@ -45,6 +46,7 @@ fun ItemOuterTitle(
         text = text,
         modifier = Modifier
             .fillMaxWidth()
+            .semantics(true) { }
             .padding(
                 start = SaltTheme.dimens.padding * 2,
                 top = SaltTheme.dimens.padding * 0.5f + SaltTheme.dimens.subPadding,
