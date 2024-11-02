@@ -20,10 +20,11 @@
 package com.moriafly.salt.ui
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.semantics.isContainer
+import androidx.compose.ui.semantics.isTraversalGroup
 import androidx.compose.ui.semantics.semantics
 
 /**
@@ -33,15 +34,14 @@ import androidx.compose.ui.semantics.semantics
 @Composable
 fun Surface(
     modifier: Modifier = Modifier,
-    content: @Composable () -> Unit
+    content: @Composable BoxScope.() -> Unit
 ) {
     Box(
         modifier = modifier
             .semantics(mergeDescendants = false) {
-                @Suppress("DEPRECATION")
-                isContainer = true
+                isTraversalGroup = true
             }
-            .pointerInput(Unit) {},
+            .pointerInput(Unit) { },
         propagateMinConstraints = true
     ) {
         content()
