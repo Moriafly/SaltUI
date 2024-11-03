@@ -14,7 +14,7 @@ mavenPublishing {
     coordinates(
         groupId = "io.github.moriafly",
         artifactId = "salt-ui",
-        version = "2.2.1"
+        version = "2.3.0-alpha01"
     )
 
     // Configure POM metadata for the published artifact
