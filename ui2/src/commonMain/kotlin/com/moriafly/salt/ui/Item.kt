@@ -773,15 +773,6 @@ fun ItemDivider(
     )
 }
 
-private val WarningLightIcon = Color(0xFF9D5D00)
-private val WarningDarkIcon = Color(0xFFFCE100)
-private val WarningLightBackground = Color(0xFFFFF4CE)
-private val WarningDarkBackground = Color(0xFF433519)
-private val ErrorLightIcon = Color(0xFFC42B1C)
-private val ErrorDarkIcon = Color(0xFFFF99A4)
-private val ErrorLightBackground = Color(0xFFFDE7E9)
-private val ErrorDarkBackground = Color(0xFF442726)
-
 @UnstableSaltApi
 enum class ItemInfoType {
     Warning,
@@ -799,8 +790,8 @@ fun ItemInfo(
             .fillMaxWidth()
             .background(
                 when (infoType) {
-                    ItemInfoType.Warning -> if (SaltTheme.configs.isDarkTheme) WarningDarkBackground else WarningLightBackground
-                    ItemInfoType.Error -> if (SaltTheme.configs.isDarkTheme) ErrorDarkBackground else ErrorLightBackground
+                    ItemInfoType.Warning -> if (SaltTheme.configs.isDarkTheme) SaltPalette.WarningDarkBackground else SaltPalette.WarningLightBackground
+                    ItemInfoType.Error -> if (SaltTheme.configs.isDarkTheme) SaltPalette.ErrorDarkBackground else SaltPalette.ErrorLightBackground
                 }
             )
             .semantics(true) { }
@@ -819,8 +810,8 @@ fun ItemInfo(
             contentDescription = null,
             colorFilter = ColorFilter.tint(
                 when (infoType) {
-                    ItemInfoType.Warning -> if (SaltTheme.configs.isDarkTheme) WarningDarkIcon else WarningLightIcon
-                    ItemInfoType.Error -> if (SaltTheme.configs.isDarkTheme) ErrorDarkIcon else ErrorLightIcon
+                    ItemInfoType.Warning -> if (SaltTheme.configs.isDarkTheme) SaltPalette.WarningDarkIcon else SaltPalette.WarningLightIcon
+                    ItemInfoType.Error -> if (SaltTheme.configs.isDarkTheme) SaltPalette.ErrorDarkIcon else SaltPalette.ErrorLightIcon
                 }
             )
         )
