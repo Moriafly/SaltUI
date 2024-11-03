@@ -29,7 +29,6 @@ import androidx.compose.ui.semantics.semantics
 /**
  * The Salt UI Surface is a component marked as a Container that prevents touch events from being passed down
  */
-@UnstableSaltApi
 @Composable
 fun Surface(
     modifier: Modifier = Modifier,
