@@ -64,12 +64,8 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.lerp
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.PointMode
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.input.pointer.AwaitPointerEventScope
 import androidx.compose.ui.input.pointer.PointerId
@@ -150,13 +146,11 @@ internal fun Slider(
         valueRange = valueRange,
         thumb = {
             SliderDefaults.Thumb(
-                interactionSource = interactionSource,
-                enabled = enabled
+                interactionSource = interactionSource
             )
         },
         track = { sliderPositions ->
             SliderDefaults.Track(
-                enabled = enabled,
                 sliderPositions = sliderPositions
             )
         }
@@ -212,19 +206,16 @@ internal fun RangeSlider(
         endInteractionSource = endInteractionSource,
         startThumb = {
             SliderDefaults.Thumb(
-                interactionSource = startInteractionSource,
-                enabled = enabled
+                interactionSource = startInteractionSource
             )
         },
         endThumb = {
             SliderDefaults.Thumb(
-                interactionSource = endInteractionSource,
-                enabled = enabled
+                interactionSource = endInteractionSource
             )
         },
         track = { sliderPositions ->
             SliderDefaults.Track(
-                enabled = enabled,
                 sliderPositions = sliderPositions
             )
         }
@@ -316,8 +307,8 @@ private fun SliderImpl(
 
     Layout(
         content = {
-            Box(modifier = Modifier.layoutId(SliderComponents.THUMB)) { thumb(sliderPositions) }
-            Box(modifier = Modifier.layoutId(SliderComponents.TRACK)) { track(sliderPositions) }
+            Box(modifier = Modifier.layoutId(SliderComponents.Thumb)) { thumb(sliderPositions) }
+            Box(modifier = Modifier.layoutId(SliderComponents.Track)) { track(sliderPositions) }
         },
         modifier = modifier
             // .minimumInteractiveComponentSize()
@@ -339,11 +330,11 @@ private fun SliderImpl(
     ) { measurables, constraints ->
 
         val thumbPlaceable = measurables.first {
-            it.layoutId == SliderComponents.THUMB
+            it.layoutId == SliderComponents.Thumb
         }.measure(constraints)
 
         val trackPlaceable = measurables.first {
-            it.layoutId == SliderComponents.TRACK
+            it.layoutId == SliderComponents.Track
         }.measure(
             constraints.offset(
                 horizontal = -thumbPlaceable.width
@@ -416,7 +407,7 @@ private fun RangeSliderImpl(
     fun scaleToOffset(minPx: Float, maxPx: Float, userValue: Float) =
         scale(valueRange.start, valueRange.endInclusive, userValue, minPx, maxPx)
 
-    var obtainedMeasurements = remember { mutableStateOf(false) }
+    val obtainedMeasurements = remember { mutableStateOf(false) }
     val rawOffsetStart = remember { mutableStateOf(0f) }
     val rawOffsetEnd = remember { mutableStateOf(0f) }
 
@@ -504,7 +495,7 @@ private fun RangeSliderImpl(
     Layout(
         {
             Box(modifier = Modifier
-                .layoutId(RangeSliderComponents.STARTTHUMB)
+                .layoutId(RangeSliderComponents.StartThumb)
                 .semantics(mergeDescendants = true) {
                     contentDescription = startContentDescription
                 }
@@ -512,14 +503,14 @@ private fun RangeSliderImpl(
                 .then(startThumbSemantics)
             ) { startThumb(sliderPositions) }
             Box(modifier = Modifier
-                .layoutId(RangeSliderComponents.ENDTHUMB)
+                .layoutId(RangeSliderComponents.EndThumb)
                 .semantics(mergeDescendants = true) {
                     contentDescription = endContentDescription
                 }
                 .focusable(enabled, endInteractionSource)
                 .then(endThumbSemantics)
             ) { endThumb(sliderPositions) }
-            Box(modifier = Modifier.layoutId(RangeSliderComponents.TRACK)) {
+            Box(modifier = Modifier.layoutId(RangeSliderComponents.Track)) {
                 track(sliderPositions)
             }
         },
@@ -532,19 +523,19 @@ private fun RangeSliderImpl(
             .then(pressDrag)
     ) { measurables, constraints ->
         val startThumbPlaceable = measurables.first {
-            it.layoutId == RangeSliderComponents.STARTTHUMB
+            it.layoutId == RangeSliderComponents.StartThumb
         }.measure(
             constraints
         )
 
         val endThumbPlaceable = measurables.first {
-            it.layoutId == RangeSliderComponents.ENDTHUMB
+            it.layoutId == RangeSliderComponents.EndThumb
         }.measure(
             constraints
         )
 
         val trackPlaceable = measurables.first {
-            it.layoutId == RangeSliderComponents.TRACK
+            it.layoutId == RangeSliderComponents.Track
         }.measure(
             constraints.offset(
                 horizontal = -(startThumbPlaceable.width + endThumbPlaceable.width) / 2
@@ -625,18 +616,12 @@ private object SliderDefaults {
      * @param interactionSource the [MutableInteractionSource] representing the stream of
      * [Interaction]s for this thumb. You can create and pass in your own `remember`ed
      * instance to observe
-     * @param modifier the [Modifier] to be applied to the thumb.
-     * @param colors [SliderColors] that will be used to resolve the colors used for this thumb in
-     * different states. See [SliderDefaults.colors].
-     * @param enabled controls the enabled state of this slider. When `false`, this component will
-     * not respond to user input, and it will appear visually disabled and disabled to
-     * accessibility services.
+     * @param modifier the [Modifier] to be applied to the thumb
      */
     @Composable
     fun Thumb(
         interactionSource: MutableInteractionSource,
         modifier: Modifier = Modifier,
-        enabled: Boolean = true,
         thumbSize: DpSize = ThumbSize
     ) {
         val interactions = remember { mutableStateListOf<Interaction>() }
@@ -653,11 +638,6 @@ private object SliderDefaults {
             }
         }
 
-        val elevation = if (interactions.isNotEmpty()) {
-            ThumbPressedElevation
-        } else {
-            ThumbDefaultElevation
-        }
         val shape = CircleShape
 
         Spacer(
@@ -674,24 +654,16 @@ private object SliderDefaults {
      * The Default track for [Slider] and [RangeSlider]
      *
      * @param sliderPositions [SliderPositions] which is used to obtain the current active track
-     * and the tick positions if the slider is discrete.
-     * @param modifier the [Modifier] to be applied to the track.
-     * @param colors [SliderColors] that will be used to resolve the colors used for this track in
-     * different states. See [SliderDefaults.colors].
-     * @param enabled controls the enabled state of this slider. When `false`, this component will
-     * not respond to user input, and it will appear visually disabled and disabled to
-     * accessibility services.
+     * and the tick positions if the slider is discrete
+     * @param modifier the [Modifier] to be applied to the track
      */
     @Composable
     fun Track(
         sliderPositions: SliderPositions,
-        modifier: Modifier = Modifier,
-        enabled: Boolean = true,
+        modifier: Modifier = Modifier
     ) {
         val inactiveTrackColor = rememberUpdatedState(SaltTheme.colors.subText.copy(alpha = 0.1f))
         val activeTrackColor = rememberUpdatedState(SaltTheme.colors.highlight)
-        val inactiveTickColor = rememberUpdatedState(SaltTheme.colors.subText.copy(alpha = 0.1f))
-        val activeTickColor = rememberUpdatedState(SaltTheme.colors.highlight)
         Canvas(
             modifier
                 .fillMaxWidth()
@@ -702,7 +674,6 @@ private object SliderDefaults {
             val sliderRight = Offset(size.width, center.y)
             val sliderStart = if (isRtl) sliderRight else sliderLeft
             val sliderEnd = if (isRtl) sliderLeft else sliderRight
-            val tickSize = TickSize.toPx()
             val trackStrokeWidth = TrackHeight.toPx()
             drawLine(
                 inactiveTrackColor.value,
@@ -730,20 +701,6 @@ private object SliderDefaults {
                 trackStrokeWidth,
                 StrokeCap.Round
             )
-//            sliderPositions.tickFractions.groupBy {
-//                it > sliderPositions.activeRange.endInclusive ||
-//                        it < sliderPositions.activeRange.start
-//            }.forEach { (outsideFraction, list) ->
-//                drawPoints(
-//                    list.map {
-//                        Offset(lerp(sliderStart, sliderEnd, it).x, center.y)
-//                    },
-//                    PointMode.Points,
-//                    (if (outsideFraction) inactiveTickColor else activeTickColor).value,
-//                    tickSize,
-//                    StrokeCap.Round
-//                )
-//            }
         }
     }
 }
@@ -1060,14 +1017,14 @@ private class SliderDraggableState(
 }
 
 private enum class SliderComponents {
-    THUMB,
-    TRACK
+    Thumb,
+    Track
 }
 
 private enum class RangeSliderComponents {
-    ENDTHUMB,
-    STARTTHUMB,
-    TRACK
+    EndThumb,
+    StartThumb,
+    Track
 }
 
 /**
