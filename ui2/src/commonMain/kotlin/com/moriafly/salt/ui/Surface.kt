@@ -27,7 +27,7 @@ import androidx.compose.ui.semantics.isTraversalGroup
 import androidx.compose.ui.semantics.semantics
 
 /**
- * The Salt UI Surface is a component marked as a Container that prevents touch events from being passed down
+ * A component marked as a Container that prevents touch events from being passed down
  */
 @Composable
 fun Surface(
