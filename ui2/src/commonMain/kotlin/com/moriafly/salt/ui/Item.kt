@@ -40,7 +40,6 @@ import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.selection.SelectionContainer
-import androidx.compose.material.Divider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -52,6 +51,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
@@ -764,11 +764,14 @@ fun ItemDivider(
     color: Color = SaltTheme.colors.stroke,
     startIndent: Dp = SaltTheme.dimens.padding
 ) {
-    Divider(
-        modifier = modifier,
-        color = color,
-        thickness = Dp.Hairline,
-        startIndent = startIndent
+    // Dp.Hairline
+    val thickness = (1f / LocalDensity.current.density).dp
+    Box(
+        modifier = modifier
+            .padding(start = startIndent)
+            .fillMaxWidth()
+            .height(thickness)
+            .background(color = color)
     )
 }
 
