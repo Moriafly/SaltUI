@@ -49,7 +49,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.progressSemantics
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableState
@@ -307,7 +306,6 @@ private fun SliderImpl(
             Box(modifier = Modifier.layoutId(SliderComponents.Track)) { track(sliderPositions) }
         },
         modifier = modifier
-            // .minimumInteractiveComponentSize()
             .requiredSizeIn(
                 minWidth = 20.0.dp,
                 minHeight = 20.0.dp,
@@ -519,7 +517,6 @@ private fun RangeSliderImpl(
             }
         },
         modifier = modifier
-            .minimumInteractiveComponentSize()
             .requiredSizeIn(
                 minWidth = 20.0.dp,
                 minHeight = 20.0.dp,
