@@ -25,7 +25,6 @@ import androidx.compose.foundation.interaction.HoverInteraction
 import androidx.compose.foundation.interaction.InteractionSource
 import androidx.compose.foundation.interaction.PressInteraction
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.ContentDrawScope
 import androidx.compose.ui.node.DelegatableNode
@@ -33,7 +32,7 @@ import androidx.compose.ui.node.DrawModifierNode
 import androidx.compose.ui.node.invalidateDraw
 import kotlinx.coroutines.launch
 
-internal object AlphaIndication : IndicationNodeFactory {
+object AlphaIndication : IndicationNodeFactory {
 
     override fun create(interactionSource: InteractionSource): DelegatableNode = AlphaIndicationInstance(interactionSource)
 
@@ -85,18 +84,11 @@ internal object AlphaIndication : IndicationNodeFactory {
 
         override fun ContentDrawScope.draw() {
             drawContent()
+
             if (isPressed) {
-                drawRect(
-                    color = Color.Unspecified.copy(alpha = 0.25f),
-                    size = size,
-                    blendMode = BlendMode.DstIn
-                )
+                drawRect(color = Color.Black.copy(alpha = 0.3f), size = size)
             } else if (isHovered || isFocused) {
-                drawRect(
-                    color = Color.Unspecified.copy(alpha = 0.5f),
-                    size = size,
-                    blendMode = BlendMode.DstIn
-                )
+                drawRect(color = Color.Black.copy(alpha = 0.1f), size = size)
             }
         }
 

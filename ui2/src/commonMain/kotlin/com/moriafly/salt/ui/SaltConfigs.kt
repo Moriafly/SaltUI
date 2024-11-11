@@ -17,30 +17,40 @@
 
 package com.moriafly.salt.ui
 
+import androidx.compose.foundation.Indication
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.structuralEqualityPolicy
 
 /**
- * @param isDarkTheme isDarkTheme
+ * @param isDarkTheme whether the theme is dark
+ * @param indication the indication
  */
 @Stable
 class SaltConfigs(
     isDarkTheme: Boolean,
+    indication: Indication
 ) {
+
     val isDarkTheme by mutableStateOf(isDarkTheme, structuralEqualityPolicy())
+
+    val indication by mutableStateOf(indication, structuralEqualityPolicy())
 
     fun copy(
         isDarkTheme: Boolean = this.isDarkTheme,
+        indication: Indication = this.indication
     ): SaltConfigs = SaltConfigs(
-        isDarkTheme = isDarkTheme
+        isDarkTheme = isDarkTheme,
+        indication = indication
     )
 
 }
 
 fun saltConfigs(
-    isDarkTheme: Boolean = false
+    isDarkTheme: Boolean = false,
+    indication: Indication = AlphaIndication
 ): SaltConfigs = SaltConfigs(
     isDarkTheme = isDarkTheme,
+    indication = indication
 )
