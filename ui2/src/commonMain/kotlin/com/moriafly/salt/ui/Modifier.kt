@@ -21,13 +21,24 @@ package com.moriafly.salt.ui
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 
 /**
  * Conditionally applies additional [Modifier]
+ *
+ * TODO [Contract to specify that a function parameter is always true inside lambda](https://youtrack.jetbrains.com/issue/KT-32993)
  *
  * @param condition The boolean condition
  * @param block The block to apply if the condition is true
  * @return The modified [Modifier] or the original one
  */
+@OptIn(ExperimentalContracts::class)
 @Composable
-fun Modifier.thenIf(condition: Boolean, block: @Composable Modifier.() -> Modifier): Modifier = if (condition) block() else this
+inline fun Modifier.thenIf(condition: Boolean, crossinline block: Modifier.() -> Modifier): Modifier {
+    contract {
+        callsInPlace(block, InvocationKind.EXACTLY_ONCE)
+    }
+    return if (condition) block() else this
+}
