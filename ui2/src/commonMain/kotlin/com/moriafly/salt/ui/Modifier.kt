@@ -36,7 +36,7 @@ import kotlin.contracts.contract
  */
 @OptIn(ExperimentalContracts::class)
 @Composable
-inline fun Modifier.thenIf(condition: Boolean, crossinline block: Modifier.() -> Modifier): Modifier {
+inline fun Modifier.thenIf(condition: Boolean, block: Modifier.() -> Modifier): Modifier {
     contract {
         callsInPlace(block, InvocationKind.EXACTLY_ONCE)
     }
