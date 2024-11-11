@@ -19,7 +19,6 @@
 
 package com.moriafly.salt.ui
 
-import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
@@ -35,7 +34,6 @@ import kotlin.contracts.contract
  * @return The modified [Modifier] or the original one
  */
 @OptIn(ExperimentalContracts::class)
-@Composable
 inline fun Modifier.thenIf(condition: Boolean, block: Modifier.() -> Modifier): Modifier {
     contract {
         callsInPlace(block, InvocationKind.EXACTLY_ONCE)
