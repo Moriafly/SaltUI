@@ -19,10 +19,10 @@ package com.moriafly.salt.ui.popup
 
 import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.rememberTransition
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.core.updateTransition
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.IntrinsicSize
@@ -30,7 +30,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Card
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.MutableState
@@ -109,8 +108,8 @@ internal fun DropdownMenuContent(
     backgroundColor: Color,
     content: @Composable ColumnScope.() -> Unit
 ) {
-    // Menu open/close animation.
-    val transition = updateTransition(transitionState = expandedStates, label = "")
+    // Menu open/close animation
+    val transition = rememberTransition(transitionState = expandedStates, label = "")
 
     val scale by transition.animateFloat(
         transitionSpec = {
@@ -157,31 +156,22 @@ internal fun DropdownMenuContent(
             0f
         }
     }
-    val shape = RoundedCornerShape(SaltTheme.dimens.corner)
-    Card(
+
+    Column(
         modifier = modifier
             .graphicsLayer {
                 this.scaleX = scale
                 this.scaleY = scale
                 this.alpha = alpha
                 this.transformOrigin = transformOriginState.value
-            },
-        shape = shape,
-        backgroundColor = Color.Unspecified,
-        contentColor = Color.Unspecified,
-        border = BorderStroke(1.dp, SaltTheme.colors.subText.copy(alpha = 0.075f)),
-        elevation = 0.dp
-    ) {
-        Column(
-            modifier = Modifier
-                // .padding(vertical = DropdownMenuVerticalPadding)
-                .width(IntrinsicSize.Max)
-                .clip(shape)
-                .background(color = backgroundColor)
-                .verticalScroll(rememberScrollState()),
-            content = content
-        )
-    }
+            }
+            .width(IntrinsicSize.Max)
+            .clip(RoundedCornerShape(SaltTheme.dimens.corner))
+            .border(1.dp, SaltTheme.colors.stroke, RoundedCornerShape(SaltTheme.dimens.corner))
+            .background(color = backgroundColor)
+            .verticalScroll(rememberScrollState()),
+        content = content
+    )
 }
 
 internal fun calculateTransformOrigin(

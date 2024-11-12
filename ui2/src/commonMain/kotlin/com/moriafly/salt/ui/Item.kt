@@ -40,8 +40,6 @@ import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.text.selection.SelectionContainer
-import androidx.compose.material.Divider
-import androidx.compose.material.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -53,6 +51,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
@@ -300,6 +299,44 @@ fun ItemSwitcher(
  */
 @Composable
 expect fun ItemPopupArrow()
+
+/**
+ * Popup a [PopupMenu] where many selectable or common items can be added
+ *
+ * TODO Replace [ItemPopup]
+ *
+ * @param state [PopupMenu]
+ * @param text Text
+ * @param value Text of value
+ * @param enabled Enabled
+ * @param iconPainter Icon
+ * @param iconPaddingValues Padding values of [iconPainter]
+ * @param iconColor Color of [iconPainter], if this value is null, will use the paint original color
+ * @param content Composable content
+ */
+@UnstableSaltApi
+@Composable
+fun ItemSelect(
+    state: PopupState,
+    text: String,
+    value: String,
+    enabled: Boolean = true,
+    iconPainter: Painter? = null,
+    iconPaddingValues: PaddingValues = PaddingValues(0.dp),
+    iconColor: Color? = SaltTheme.colors.text,
+    content: @Composable ColumnScope.() -> Unit
+) {
+    ItemPopup(
+        state = state,
+        text = text,
+        sub = value,
+        enabled = enabled,
+        iconPainter = iconPainter,
+        iconPaddingValues = iconPaddingValues,
+        iconColor = iconColor,
+        content = content
+    )
+}
 
 /**
  * Popup Item
@@ -727,22 +764,16 @@ fun ItemDivider(
     color: Color = SaltTheme.colors.stroke,
     startIndent: Dp = SaltTheme.dimens.padding
 ) {
-    Divider(
-        modifier = modifier,
-        color = color,
-        thickness = Dp.Hairline,
-        startIndent = startIndent
+    // Dp.Hairline
+    val thickness = (1f / LocalDensity.current.density).dp
+    Box(
+        modifier = modifier
+            .padding(start = startIndent)
+            .fillMaxWidth()
+            .height(thickness)
+            .background(color = color)
     )
 }
-
-private val WarningLightIcon = Color(0xFF9D5D00)
-private val WarningDarkIcon = Color(0xFFFCE100)
-private val WarningLightBackground = Color(0xFFFFF4CE)
-private val WarningDarkBackground = Color(0xFF433519)
-private val ErrorLightIcon = Color(0xFFC42B1C)
-private val ErrorDarkIcon = Color(0xFFFF99A4)
-private val ErrorLightBackground = Color(0xFFFDE7E9)
-private val ErrorDarkBackground = Color(0xFF442726)
 
 @UnstableSaltApi
 enum class ItemInfoType {
@@ -761,8 +792,8 @@ fun ItemInfo(
             .fillMaxWidth()
             .background(
                 when (infoType) {
-                    ItemInfoType.Warning -> if (SaltTheme.configs.isDarkTheme) WarningDarkBackground else WarningLightBackground
-                    ItemInfoType.Error -> if (SaltTheme.configs.isDarkTheme) ErrorDarkBackground else ErrorLightBackground
+                    ItemInfoType.Warning -> if (SaltTheme.configs.isDarkTheme) SaltPalette.WarningDarkBackground else SaltPalette.WarningLightBackground
+                    ItemInfoType.Error -> if (SaltTheme.configs.isDarkTheme) SaltPalette.ErrorDarkBackground else SaltPalette.ErrorLightBackground
                 }
             )
             .semantics(true) { }
@@ -781,8 +812,8 @@ fun ItemInfo(
             contentDescription = null,
             colorFilter = ColorFilter.tint(
                 when (infoType) {
-                    ItemInfoType.Warning -> if (SaltTheme.configs.isDarkTheme) WarningDarkIcon else WarningLightIcon
-                    ItemInfoType.Error -> if (SaltTheme.configs.isDarkTheme) ErrorDarkIcon else ErrorLightIcon
+                    ItemInfoType.Warning -> if (SaltTheme.configs.isDarkTheme) SaltPalette.WarningDarkIcon else SaltPalette.WarningLightIcon
+                    ItemInfoType.Error -> if (SaltTheme.configs.isDarkTheme) SaltPalette.ErrorDarkIcon else SaltPalette.ErrorLightIcon
                 }
             )
         )

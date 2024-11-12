@@ -19,29 +19,24 @@
 
 package com.moriafly.salt.ui
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.semantics.isTraversalGroup
-import androidx.compose.ui.semantics.semantics
+import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.InvocationKind
+import kotlin.contracts.contract
 
 /**
- * A component marked as a Container that prevents touch events from being passed down
+ * Conditionally applies additional [Modifier]
+ *
+ * TODO [Contract to specify that a function parameter is always true inside lambda](https://youtrack.jetbrains.com/issue/KT-32993)
+ *
+ * @param condition The boolean condition
+ * @param block The block to apply if the condition is true
+ * @return The modified [Modifier] or the original one
  */
-@Composable
-fun Surface(
-    modifier: Modifier = Modifier,
-    content: @Composable () -> Unit
-) {
-    Box(
-        modifier = modifier
-            .semantics(mergeDescendants = false) {
-                isTraversalGroup = true
-            }
-            .pointerInput(Unit) { },
-        propagateMinConstraints = true
-    ) {
-        content()
+@OptIn(ExperimentalContracts::class)
+inline fun Modifier.thenIf(condition: Boolean, block: Modifier.() -> Modifier): Modifier {
+    contract {
+        callsInPlace(block, InvocationKind.EXACTLY_ONCE)
     }
+    return if (condition) block() else this
 }
