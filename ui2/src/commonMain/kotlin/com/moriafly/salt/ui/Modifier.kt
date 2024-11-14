@@ -36,7 +36,7 @@ import kotlin.contracts.contract
 @OptIn(ExperimentalContracts::class)
 inline fun Modifier.thenIf(condition: Boolean, block: Modifier.() -> Modifier): Modifier {
     contract {
-        callsInPlace(block, InvocationKind.EXACTLY_ONCE)
+        callsInPlace(block, InvocationKind.AT_MOST_ONCE)
     }
     return if (condition) block() else this
 }
