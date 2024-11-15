@@ -102,6 +102,8 @@ kotlin {
         val desktopMain by getting
         desktopMain.dependencies {
             implementation(compose.desktop.currentOs)
+            implementation(libs.jna)
+            implementation(libs.jna.platform)
         }
 
         val iosX64Main by getting
