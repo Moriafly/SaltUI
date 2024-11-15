@@ -4,7 +4,6 @@ kotlin = "2.0.0"
 core-ktx = "1.9.0"
 material = "1.10.0"
 material3 = "1.2.1"
-compose = "1.7.0"
 compose-multiplatform = "1.7.0"
 activity-compose = "1.7.0"
 hiddenapibypass = "4.3"
@@ -14,7 +13,6 @@ jna = "5.14.0"
 core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "core-ktx" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 compose-material3 = { group = "androidx.compose.material3", name = "material3", version.ref = "material3" }
-compose-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling", version.ref = "compose" }
 activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activity-compose" }
 hiddenapibypass = { group = "org.lsposed.hiddenapibypass", name = "hiddenapibypass", version.ref = "hiddenapibypass" }
 jna = { group = "net.java.dev.jna", name = "jna", version.ref = "jna" }
