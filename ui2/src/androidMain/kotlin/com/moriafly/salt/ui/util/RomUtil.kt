@@ -25,55 +25,54 @@ import com.moriafly.salt.ui.UnstableSaltApi
 import org.lsposed.hiddenapibypass.HiddenApiBypass
 
 /**
- * Utility class for getting information about the current ROM
+ * Utility class for getting information about the current ROM.
  */
 @UnstableSaltApi
 object RomUtil {
-
     /**
-     * [Meizu FlymeOS](https://www.flyme.com)
+     * [Meizu FlymeOS](https://www.flyme.com).
      */
     val isMeizuFlymeOS: Boolean by lazy {
         getSystemProperty("ro.build.user").contains("flyme")
     }
 
     /**
-     * OnePlus Hydrogen OS
+     * OnePlus Hydrogen OS.
      */
     val isOnePlusHydrogenOS: Boolean by lazy {
         getSystemProperty("ro.rom.version").contains("Hydrogen OS")
     }
 
     /**
-     * Vivo OriginOS
+     * Vivo OriginOS.
      */
     val isVivoOriginOS: Boolean by lazy {
         getSystemProperty("ro.vivo.os.build.display.id").contains("OriginOS")
     }
 
     /**
-     * Abandoned by Microsoft, recommended for compatibility only
+     * Abandoned by Microsoft, recommended for compatibility only.
      */
     val isWindowsSubsystemForAndroid: Boolean by lazy {
         Build.MODEL.toString() == "Subsystem for Android(TM)"
     }
 
     /**
-     * Xiaomi MIUI or HyperOS
+     * Xiaomi MIUI or HyperOS.
      */
     val isXiaomi: Boolean by lazy {
         getSystemProperty("ro.product.system.manufacturer") == "Xiaomi"
     }
 
     /**
-     * [Xiaomi HyperOS](https://hyperos.mi.com)
+     * [Xiaomi HyperOS](https://hyperos.mi.com).
      */
     val isXiaomiHyperOS: Boolean by lazy {
         getSystemProperty("ro.mi.os.version.name") != Build.UNKNOWN
     }
 
     /**
-     * Get system property from class [Build]
+     * Get system property from class [Build].
      *
      * @param property The property name
      * @return The property value, or [Build.UNKNOWN] if failed
@@ -93,5 +92,4 @@ object RomUtil {
             }
         }
     }
-
 }
