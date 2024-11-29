@@ -13,7 +13,7 @@
  * Lesser General Public License for more details.
  */
 
-@file:Suppress("UNUSED")
+@file:Suppress("unused")
 
 package com.moriafly.salt.ui.popup
 

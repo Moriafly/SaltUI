@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-@file:Suppress("UNUSED")
+@file:Suppress("unused")
 
 package com.moriafly.salt.ui
 
