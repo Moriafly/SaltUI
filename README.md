@@ -2,13 +2,7 @@
 
 # Salt UI
 
-Salt UI is UI components based on [Compose Multiplatform](https://github.com/JetBrains/compose-multiplatform). The 1.0 version is derived from some UI components of [Salt Player](https://github.com/Moriafly/SaltPlayerSource). Currently, Salt UI is used in Salt Player, Emo Scroll, Qinalt and other App to serve hundreds of thousands of users
-
-```kotlin
-// Replace <TAG> with the latest version
-// e.g. implementation("io.github.moriafly:salt-ui:2.0.0")
-implementation("io.github.moriafly:salt-ui:<TAG>")
-```
+Salt UI is UI components based on [Compose Multiplatform](https://github.com/JetBrains/compose-multiplatform). The 1.0 version is derived from some UI components of [Salt Player](https://github.com/Moriafly/SaltPlayerSource). Currently, Salt UI is used in Salt Player, Emo Scroll, Qinalt and other App to serve hundreds of thousands of users.
 
 ## Compatibility
 
@@ -22,9 +16,17 @@ implementation("io.github.moriafly:salt-ui:<TAG>")
 | 2.0.4+         | 1.7.0-alpha02         |         |
 | < 2.0.4        | 1.6.11                |         |
 
-## Usage
+## Get started
 
-### Simple Start
+Add dependency:
+
+```kotlin
+// Replace <TAG> with the latest version
+// e.g. implementation("io.github.moriafly:salt-ui:2.0.0")
+implementation("io.github.moriafly:salt-ui:<TAG>")
+```
+
+Simple start:
 
 ```kotlin
 @Composable
@@ -37,9 +39,7 @@ fun App() {
 }
 ```
 
-### Demo
-
-[composeApp](https://github.com/Moriafly/SaltUI/tree/main/composeApp)
+See demo: [composeApp](https://github.com/Moriafly/SaltUI/tree/main/composeApp).
 
 ## Others
 
