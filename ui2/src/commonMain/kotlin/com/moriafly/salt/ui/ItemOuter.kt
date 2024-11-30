@@ -36,7 +36,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
 /**
- * Build content interface title text (Out of RoundedColumn)
+ * Build content interface title text, out of [RoundedColumn].
  */
 @Composable
 fun ItemOuterTitle(
@@ -70,7 +70,7 @@ fun ItemOuterTip(
 }
 
 /**
- * Can replace ItemTitle
+ * Can replace [ItemTitle].
  */
 @UnstableSaltApi
 @Composable
@@ -100,18 +100,18 @@ fun ItemOuterLargeTitle(
 }
 
 /**
- * ItemOuterEdit
+ * The outer edit item.
  *
- * @param text text
- * @param onChange called when text changed
- * @param modifier modifier
- * @param hint hint
- * @param hintColor color of [hint] text
- * @param readOnly readOnly
- * @param keyboardOptions keyboardOptions
- * @param keyboardActions keyboardActions
- * @param visualTransformation visualTransformation
- * @param actionContent actionContent
+ * @param text text.
+ * @param onChange called when text changed.
+ * @param modifier modifier.
+ * @param hint hint.
+ * @param hintColor color of [hint] text.
+ * @param readOnly readOnly.
+ * @param keyboardOptions keyboardOptions.
+ * @param keyboardActions keyboardActions.
+ * @param visualTransformation visualTransformation.
+ * @param actionContent actionContent.
  */
 @UnstableSaltApi
 @Composable
@@ -144,7 +144,7 @@ fun ItemOuterEdit(
 }
 
 /**
- * For Item Outer
+ * For Item Outer.
  */
 @Composable
 fun ItemOuterTextButton(
@@ -167,7 +167,7 @@ fun ItemOuterTextButton(
 }
 
 /**
- * Build vertical spacing [SaltDimens.padding] for the Item Outer
+ * Build vertical spacing [SaltDimens.padding] for the Item Outer.
  */
 @Composable
 fun ItemOuterSpacer() {
@@ -178,7 +178,7 @@ fun ItemOuterSpacer() {
 }
 
 /**
- * Build half vertical spacing for the Item Outer
+ * Build half vertical spacing for the Item Outer.
  */
 @Composable
 fun ItemOuterHalfSpacer() {

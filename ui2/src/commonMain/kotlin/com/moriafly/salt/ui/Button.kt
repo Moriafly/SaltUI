@@ -34,7 +34,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 
 /**
- * Default text content button
+ * Default text content button.
  */
 @Composable
 fun TextButton(
@@ -62,9 +62,9 @@ fun TextButton(
 }
 
 /**
- * Basic button
+ * Basic button.
  *
- * No min [SaltDimens.item] height limit
+ * No min [SaltDimens.item] height limit.
  */
 @Composable
 fun BasicButton(

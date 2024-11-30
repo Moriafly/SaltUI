@@ -24,7 +24,7 @@ import android.os.Looper
 import com.moriafly.salt.ui.UnstableSaltApi
 
 /**
- * Run on main thread
+ * Run on main thread.
  */
 @UnstableSaltApi
 fun runOnMainThread(runnable: Runnable) {

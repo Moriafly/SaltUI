@@ -28,7 +28,7 @@ import androidx.core.view.WindowCompat
 import com.moriafly.salt.ui.UnstableSaltApi
 
 /**
- * Call this method in the [Activity.onCreate]
+ * Call this method in the [Activity.onCreate]:
  *
  * ```kotlin
  * override fun onCreate(savedInstanceState: Bundle?) {
@@ -38,7 +38,7 @@ import com.moriafly.salt.ui.UnstableSaltApi
  * }
  * ```
  *
- * Sample of themes.xml
+ * Sample of themes.xml:
  *
  * ```xml
  * <style name="Theme.SaltUI" parent="@android:style/Theme.Holo">
@@ -49,14 +49,16 @@ import com.moriafly.salt.ui.UnstableSaltApi
 @UnstableSaltApi
 @Suppress("DEPRECATION")
 fun Activity.edgeToEdge() {
-    // The decor view should not fit root-level content views for WindowInsets
+    // The decor view should not fit root-level content views for WindowInsets.
     WindowCompat.setDecorFitsSystemWindows(window, false)
 
     requestWindowFeature(Window.FEATURE_NO_TITLE)
 
-    // On some Android OEM devices, the FLAG_TRANSLUCENT_STATUS and FLAG_TRANSLUCENT_NAVIGATION flags
-    // do not work effectively with isStatusBarContrastEnforced and isNavigationBarContrastEnforced
-    // Instead, use FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS along with an active setting approach
+    // On some Android OEM devices, the FLAG_TRANSLUCENT_STATUS and FLAG_TRANSLUCENT_NAVIGATION
+    // flags do not work effectively with isStatusBarContrastEnforced and
+    // isNavigationBarContrastEnforced.
+    //
+    // Instead, use FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS along with an active setting approach.
     window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
     window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION)
     window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
@@ -64,15 +66,16 @@ fun Activity.edgeToEdge() {
     window.navigationBarColor = Color.TRANSPARENT
 
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-        // In the XML, it only requires O_MR1 API 27, I don't know why
-        window.attributes.layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
+        // In the XML, it only requires O_MR1 API 27, I don't know why.
+        window.attributes.layoutInDisplayCutoutMode =
+            WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
     }
 
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
         window.isStatusBarContrastEnforced = false
         window.isNavigationBarContrastEnforced = false
 
-        // Disable Force Dark
+        // Disable force dark.
         window.decorView.isForceDarkAllowed = false
     }
 }

@@ -58,13 +58,13 @@ import java.util.*
  *
  * Properties used to customize [BottomSheetDialog].
  *
- * @property dismissOnBackPress whether the dialog can be dismissed by pressing the back button.
- * If true, pressing the back button will call onDismissRequest.
+ * @property dismissOnBackPress whether the dialog can be dismissed by pressing the back button. If
+ *   true, pressing the back button will call onDismissRequest.
  * @property dismissOnClickOutside whether the dialog can be dismissed by clicking outside the
- * dialog's bounds. If true, clicking outside the dialog will call onDismissRequest.
+ *   dialog's bounds. If true, clicking outside the dialog will call onDismissRequest.
  * @property dismissWithAnimation [BottomSheetDialog.setDismissWithAnimation]
  * @property securePolicy Policy for setting [WindowManager.LayoutParams.FLAG_SECURE] on the
- * dialog's window.
+ *   dialog's window.
  */
 @Immutable
 class BottomSheetDialogProperties(
@@ -76,7 +76,6 @@ class BottomSheetDialogProperties(
     val navigationBarProperties: NavigationBarProperties = NavigationBarProperties(),
     val behaviorProperties: BottomSheetBehaviorProperties = BottomSheetBehaviorProperties()
 ) {
-
     @Deprecated("Use NavigationBarProperties(color = navigationBarColor) instead")
     constructor(
         dismissOnBackPress: Boolean = true,
@@ -116,7 +115,6 @@ class BottomSheetDialogProperties(
         result = 31 * result + behaviorProperties.hashCode()
         return result
     }
-
 }
 
 /**
@@ -140,7 +138,6 @@ class BottomSheetBehaviorProperties(
     val skipCollapsed: Boolean = false,
     val isGestureInsetBottomIgnored: Boolean = false
 ) {
-
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (other !is BottomSheetBehaviorProperties) return false
@@ -175,7 +172,6 @@ class BottomSheetBehaviorProperties(
 
     @Immutable
     enum class State {
-
         @Stable
         Expanded,
 
@@ -184,49 +180,42 @@ class BottomSheetBehaviorProperties(
 
         @Stable
         Collapsed
-
     }
 
     @JvmInline
     @Immutable
     value class Size(@Px val value: Int) {
-
         companion object {
             @Stable
             val NotSet = Size(-1)
         }
-
     }
 
     @JvmInline
     @Stable
     value class PeekHeight(val value: Int) {
-
         companion object {
             @Stable
             val Auto = PeekHeight(PEEK_HEIGHT_AUTO)
         }
-
     }
-
 }
 
 /**
  * Properties used to customize navigationBar.
- * @param color The **desired** [Color] to set. This may require modification if running on an
- * API level that only supports white navigation bar icons. Additionally this will be ignored
- * and [Color.Transparent] will be used on API 29+ where gesture navigation is preferred or the
- * system UI automatically applies background protection in other navigation modes.
+ *
+ * @param color The **desired** [Color] to set. This may require modification if running on an API
+ *   level that only supports white navigation bar icons. Additionally this will be ignored and
+ *   [Color.Transparent] will be used on API 29+ where gesture navigation is preferred or the
+ *   system UI automatically applies background protection in other navigation modes.
  * @param darkIcons Whether dark navigation bar icons would be preferable.
- * @param navigationBarContrastEnforced Whether the system should ensure that the navigation
- * bar has enough contrast when a fully transparent background is requested. Only supported on
- * API 29+.
- * @param transformColorForLightContent A lambda which will be invoked to transform [color] if
- * dark icons were requested but are not available. Defaults to applying a black scrim.
+ * @param navigationBarContrastEnforced Whether the system should ensure that the navigation bar has
+ *   enough contrast when a fully transparent background is requested. Only supported on API 29+.
+ * @param transformColorForLightContent A lambda which will be invoked to transform [color] if dark
+ *   icons were requested but are not available. Defaults to applying a black scrim.
  *
  * Inspired by [Accompanist SystemUiController](https://github.com/google/accompanist/blob/main/systemuicontroller/src/main/java/com/google/accompanist/systemuicontroller/SystemUiController.kt)
  */
-
 @Immutable
 class NavigationBarProperties(
     val color: Color = Color.Unspecified,
@@ -260,12 +249,13 @@ private val BlackScrimCompositeOver: (Color) -> Color = { original ->
 /**
  * Opens a BottomSheet dialog with the given content.
  *
- * The dialog is visible as long as it is part of the composition hierarchy.
- * In order to let the user dismiss the BottomSheetDialog, the implementation of [onDismissRequest] should
- * contain a way to remove to remove the dialog from the composition hierarchy.
+ * The dialog is visible as long as it is part of the composition hierarchy. In order to let the
+ * user dismiss the BottomSheetDialog, the implementation of [onDismissRequest] should contain a way
+ * to remove to remove the dialog from the composition hierarchy.
  *
  * @param onDismissRequest Executes when the user tries to dismiss the dialog.
- * @param properties [BottomSheetDialogProperties] for further customization of this dialog's behavior.
+ * @param properties [BottomSheetDialogProperties] for further customization of this dialog's
+ *   behavior.
  * @param content The content to be displayed inside the dialog.
  */
 @Composable
@@ -367,20 +357,20 @@ private class BottomSheetDialogWrapper(
             R.style.TransparentEdgeToEdgeDisabledBottomSheetTheme
         }
     )
-),
-    ViewRootForInspector {
+), ViewRootForInspector {
     private val bottomSheetDialogLayout: BottomSheetDialogLayout
 
-    private val bottomSheetCallbackForAnimation: BottomSheetCallback = object : BottomSheetCallback() {
-        override fun onSlide(bottomSheet: View, slideOffset: Float) {
-        }
+    private val bottomSheetCallbackForAnimation: BottomSheetCallback =
+        object : BottomSheetCallback() {
+            override fun onSlide(bottomSheet: View, slideOffset: Float) {
+            }
 
-        override fun onStateChanged(bottomSheet: View, newState: Int) {
-            if (newState == STATE_HIDDEN) {
-                onDismissRequest()
+            override fun onStateChanged(bottomSheet: View, newState: Int) {
+                if (newState == STATE_HIDDEN) {
+                    onDismissRequest()
+                }
             }
         }
-    }
 
     private val maxSupportedElevation = 30.dp
 
@@ -406,20 +396,22 @@ private class BottomSheetDialogWrapper(
 
     init {
         val window = window ?: error("Dialog has no window")
-        // TODO Dialog Android 6 android.util.AndroidRuntimeException: requestFeature() must be called before adding content
+        // TODO: Dialog Android 6 android.util.AndroidRuntimeException: requestFeature() must be
+        //   called before adding content.
         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.M) {
             window.requestFeature(Window.FEATURE_NO_TITLE)
         }
         window.setBackgroundDrawableResource(android.R.color.transparent)
         bottomSheetDialogLayout = BottomSheetDialogLayout(context, window).apply {
             // Set unique id for AbstractComposeView. This allows state restoration for the state
-            // defined inside the Dialog via rememberSaveable()
+            // defined inside the Dialog via rememberSaveable().
             setTag(androidx.compose.ui.R.id.compose_view_saveable_id_tag, "Dialog:$dialogId")
-            // Enable children to draw their shadow by not clipping them
+            // Enable children to draw their shadow by not clipping them.
             clipChildren = false
-            // Allocate space for elevation
+            // Allocate space for elevation.
             with(density) { elevation = maxSupportedElevation.toPx() }
             // Simple outline to force window manager to allocate space for shadow.
+            //
             // Note that the outline affects clickable area for the dismiss listener. In case of
             // shapes like circle the area for dismiss might be to small (rectangular outline
             // consuming clicks outside of the circle).
@@ -446,7 +438,7 @@ private class BottomSheetDialogWrapper(
             }
         }
 
-        // Turn of all clipping so shadows can be drawn outside the window
+        // Turn of all clipping so shadows can be drawn outside the window.
         (window.decorView as? ViewGroup)?.disableClipping()
         setContentView(bottomSheetDialogLayout)
         bottomSheetDialogLayout.setViewTreeLifecycleOwner(composeView.findViewTreeLifecycleOwner())
@@ -455,7 +447,7 @@ private class BottomSheetDialogWrapper(
             composeView.findViewTreeSavedStateRegistryOwner()
         )
 
-        // Initial setup
+        // Initial setup.
         updateParameters(onDismissRequest, properties, layoutDirection)
     }
 
@@ -466,8 +458,7 @@ private class BottomSheetDialogWrapper(
         }
     }
 
-    // TODO(b/159900354): Make the Android Dialog full screen and the scrim fully transparent
-
+    // TODO: (b/159900354) Make the Android Dialog full screen and the scrim fully transparent.
     fun setContent(parentComposition: CompositionContext, children: @Composable () -> Unit) {
         bottomSheetDialogLayout.setContent(parentComposition, children)
     }

@@ -27,15 +27,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.compositeOver
 
 /**
- * Colors for SaltUI
+ * Colors for SaltUI.
  *
- * @param highlight Highlight color
- * @param text Main text color
- * @param subText Sub text color
- * @param background Main background color
- * @param subBackground Sub background color
- * @param popup Background color for UI elements like [com.moriafly.salt.ui.popup.PopupMenu]
- * @param stroke Stroke color
+ * @param highlight highlight color.
+ * @param text main text color.
+ * @param subText sub text color.
+ * @param background main background color.
+ * @param subBackground sub background color.
+ * @param popup background color for UI elements like [com.moriafly.salt.ui.popup.PopupMenu].
+ * @param stroke stroke color.
  */
 @Stable
 class SaltColors(
@@ -72,7 +72,6 @@ class SaltColors(
         popup = popup,
         stroke = stroke
     )
-
 }
 
 fun lightSaltColors(

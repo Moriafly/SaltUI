@@ -39,15 +39,15 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 
 /**
- * Toggle Switch Component
+ * Toggle Switch Component.
  *
  * This component is used to toggle between two states, indicating the current state by changing
- * the background color and the position of an internal ball
+ * the background color and the position of an internal ball.
  *
- * It uses animations to enhance the visual experience and supports layout direction switching
+ * It uses animations to enhance the visual experience and supports layout direction switching.
  *
- * @param state The current state of the component
- * @param modifier A modifier used to customize the layout of the component
+ * @param state the current state of the component.
+ * @param modifier a modifier used to customize the layout of the component.
  */
 @Composable
 fun Switcher(
@@ -55,7 +55,11 @@ fun Switcher(
     modifier: Modifier = Modifier
 ) {
     val backgroundColor by animateColorAsState(
-        targetValue = if (state) SaltTheme.colors.highlight else SaltTheme.colors.subText.copy(alpha = 0.1f),
+        targetValue = if (state) {
+            SaltTheme.colors.highlight
+        } else {
+            SaltTheme.colors.subText.copy(alpha = 0.1f)
+        },
         animationSpec = tween(300)
     )
 

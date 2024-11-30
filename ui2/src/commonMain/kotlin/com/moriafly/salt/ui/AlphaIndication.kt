@@ -33,15 +33,16 @@ import androidx.compose.ui.node.invalidateDraw
 import kotlinx.coroutines.launch
 
 object AlphaIndication : IndicationNodeFactory {
-
-    override fun create(interactionSource: InteractionSource): DelegatableNode = AlphaIndicationInstance(interactionSource)
+    override fun create(interactionSource: InteractionSource): DelegatableNode
+        = AlphaIndicationInstance(interactionSource)
 
     override fun hashCode(): Int = -1
 
     override fun equals(other: Any?) = other === this
 
-    private class AlphaIndicationInstance(private val interactionSource: InteractionSource) : Modifier.Node(), DrawModifierNode {
-
+    private class AlphaIndicationInstance(
+        private val interactionSource: InteractionSource
+    ) : Modifier.Node(), DrawModifierNode {
         private var isPressed = false
         private var isHovered = false
         private var isFocused = false
@@ -91,7 +92,5 @@ object AlphaIndication : IndicationNodeFactory {
                 drawRect(color = Color.Black.copy(alpha = 0.1f), size = size)
             }
         }
-
     }
-
 }

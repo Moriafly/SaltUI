@@ -25,13 +25,13 @@ import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 
 /**
- * Conditionally applies additional [Modifier]
+ * Conditionally applies additional [Modifier].
  *
- * TODO [Contract to specify that a function parameter is always true inside lambda](https://youtrack.jetbrains.com/issue/KT-32993)
+ * TODO: [Contract to specify that a function parameter is always true inside lambda](https://youtrack.jetbrains.com/issue/KT-32993)
  *
- * @param condition The boolean condition
- * @param block The block to apply if the condition is true
- * @return The modified [Modifier] or the original one
+ * @param condition the boolean condition.
+ * @param block the block to apply if the condition is true.
+ * @return the modified [Modifier] or the original one.
  */
 @OptIn(ExperimentalContracts::class)
 inline fun Modifier.thenIf(condition: Boolean, block: Modifier.() -> Modifier): Modifier {

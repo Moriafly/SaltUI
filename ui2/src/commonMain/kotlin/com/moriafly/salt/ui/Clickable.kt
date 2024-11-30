@@ -25,7 +25,7 @@ import androidx.compose.ui.composed
 import androidx.compose.ui.semantics.Role
 
 /**
- * NoRippleClickable
+ * the clickable without ripple effect.
  */
 fun Modifier.noRippleClickable(
     enabled: Boolean = true,

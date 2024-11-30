@@ -56,9 +56,9 @@ import com.moriafly.salt.ui.SaltTheme
 import com.moriafly.salt.ui.UnstableSaltApi
 
 /**
- * Build on Google Jetpack Compose Popup
+ * Build on Google Jetpack Compose Popup.
  *
- * @param backgroundColor background color of the popup
+ * @param backgroundColor background color of the popup.
  */
 @UnstableSaltApi
 @Composable
@@ -108,13 +108,13 @@ internal fun DropdownMenuContent(
     backgroundColor: Color,
     content: @Composable ColumnScope.() -> Unit
 ) {
-    // Menu open/close animation
+    // Menu open/close animation.
     val transition = rememberTransition(transitionState = expandedStates, label = "")
 
     val scale by transition.animateFloat(
         transitionSpec = {
             if (false isTransitioningTo true) {
-                // Dismissed to expanded
+                // Dismissed to expanded.
                 tween(
                     durationMillis = InTransitionDuration
                 )
@@ -139,7 +139,7 @@ internal fun DropdownMenuContent(
     val alpha by transition.animateFloat(
         transitionSpec = {
             if (false isTransitioningTo true) {
-                // Dismissed to expanded
+                // Dismissed to expanded.
                 tween(durationMillis = InTransitionDuration)
             } else {
                 // Expanded to dismissed.
@@ -213,7 +213,6 @@ internal data class DropdownMenuPositionProvider(
     val density: Density,
     val onPositionCalculated: (IntRect, IntRect) -> Unit = { _, _ -> }
 ) : PopupPositionProvider {
-
     override fun calculatePosition(
         anchorBounds: IntRect,
         windowSize: IntSize,
@@ -267,7 +266,6 @@ internal data class DropdownMenuPositionProvider(
         )
         return IntOffset(x, y)
     }
-
 }
 
 // Menu open/close animation.

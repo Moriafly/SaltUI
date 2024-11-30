@@ -37,15 +37,14 @@ fun rememberPopupState(
 }
 
 /**
- * The state of PopupMenu
+ * The state of PopupMenu.
  *
- * @param initialExpend initial expend state
+ * @param initialExpend initial expend state.
  */
 @Stable
 class PopupState(
     initialExpend: Boolean
 ) {
-
     var expend by mutableStateOf(initialExpend)
         private set
 
@@ -58,12 +57,9 @@ class PopupState(
     }
 
     companion object {
-
         val Saver: Saver<PopupState, *> = Saver(
             save = { it.expend },
             restore = { PopupState(it) }
         )
-
     }
-
 }

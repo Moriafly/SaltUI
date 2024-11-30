@@ -27,9 +27,8 @@ import com.moriafly.salt.ui.UnstableSaltApi
 
 @UnstableSaltApi
 object WindowUtil {
-
     /**
-     * Set the status bar foreground color
+     * Set the status bar foreground color.
      */
     fun setStatusBarForegroundColor(window: Window, color: BarColor) {
         val decorView = window.decorView
@@ -42,7 +41,7 @@ object WindowUtil {
     }
 
     /**
-     * Set the navigation bar foreground color
+     * Set the navigation bar foreground color.
      */
     @RequiresApi(Build.VERSION_CODES.O)
     fun setNavigationBarForegroundColor(window: Window, color: BarColor) {
@@ -56,11 +55,10 @@ object WindowUtil {
     }
 
     /**
-     * In development practice, the terms white and black are clearer than light and dark
+     * In development practice, the terms white and black are clearer than light and dark.
      */
     enum class BarColor {
         White,
         Black
     }
-
 }

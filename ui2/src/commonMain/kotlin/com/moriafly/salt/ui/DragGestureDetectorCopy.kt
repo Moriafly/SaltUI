@@ -77,8 +77,8 @@ internal suspend fun AwaitPointerEventScope.awaitHorizontalPointerSlopOrCancella
  * or vertical dragging is done, but not both.
  *
  * @return The [PointerInputChange] of the event that was consumed in [onPointerSlopReached] or
- * `null` if all pointers are raised or the position change was consumed by another gesture
- * detector.
+ *   `null` if all pointers are raised or the position change was consumed by another gesture
+ *   detector.
  */
 private suspend inline fun AwaitPointerEventScope.awaitPointerSlopOrCancellation(
     pointerId: PointerId,
@@ -87,7 +87,8 @@ private suspend inline fun AwaitPointerEventScope.awaitPointerSlopOrCancellation
     getDragDirectionValue: (Offset) -> Float
 ): PointerInputChange? {
     if (currentEvent.isPointerUp(pointerId)) {
-        return null // The pointer has already been lifted, so the gesture is canceled
+        // The pointer has already been lifted, so the gesture is canceled.
+        return null
     }
     val touchSlop = viewConfiguration.pointerSlop(pointerType)
     var pointer: PointerId = pointerId
@@ -101,7 +102,7 @@ private suspend inline fun AwaitPointerEventScope.awaitPointerSlopOrCancellation
         } else if (dragEvent.changedToUpIgnoreConsumed()) {
             val otherDown = event.changes.fastFirstOrNull { it.pressed }
             if (otherDown == null) {
-                // This is the last "up"
+                // This is the last "up".
                 return null
             } else {
                 pointer = otherDown.id
@@ -115,7 +116,7 @@ private suspend inline fun AwaitPointerEventScope.awaitPointerSlopOrCancellation
 
             val inDirection = abs(totalPositionChange)
             if (inDirection < touchSlop) {
-                // verify that nothing else consumed the drag event
+                // verify that nothing else consumed the drag event.
                 awaitPointerEvent(PointerEventPass.Final)
                 if (dragEvent.isConsumed) {
                     return null
@@ -139,7 +140,8 @@ private fun PointerEvent.isPointerUp(pointerId: PointerId): Boolean =
     changes.fastFirstOrNull { it.id == pointerId }?.pressed != true
 
 private val mouseSlop = 0.125.dp
-private val defaultTouchSlop = 18.dp // The default touch slop on Android devices
+// The default touch slop on Android devices.
+private val defaultTouchSlop = 18.dp
 private val mouseToTouchSlopRatio = mouseSlop / defaultTouchSlop
 
 internal fun ViewConfiguration.pointerSlop(pointerType: PointerType): Float {

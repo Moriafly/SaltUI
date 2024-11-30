@@ -30,7 +30,8 @@ import androidx.compose.ui.Modifier
 import com.moriafly.salt.ui.UnstableSaltApi
 
 /**
- * All system bars (status bars, caption bar as well as navigation bars) and display cutout. but not ime.
+ * All system bars (status bars, caption bar as well as navigation bars) and display cutout. but not
+ * ime.
  */
 val WindowInsets.Companion.safeMain: WindowInsets
     @Composable
@@ -38,8 +39,9 @@ val WindowInsets.Companion.safeMain: WindowInsets
     get() = systemBars.union(displayCutout)
 
 /**
- * The insets that the [safeMain] will consume if shown. If it cannot be shown then this will be empty
- * In other words, regardless of whether the system columns included in [safeMain] are displayed or not, it will have paddings
+ * The insets that the [safeMain] will consume if shown. If it cannot be shown then this will be
+ * empty. In other words, regardless of whether the system columns included in [safeMain] are
+ * displayed or not, it will have paddings.
  */
 @UnstableSaltApi
 expect val WindowInsets.Companion.safeMainIgnoringVisibility: WindowInsets
@@ -52,7 +54,8 @@ fun Modifier.safeMainPadding() = windowInsetsPadding(WindowInsets.safeMain)
 
 @UnstableSaltApi
 @Composable
-fun Modifier.safeMainIgnoringVisibilityPadding() = windowInsetsPadding(WindowInsets.safeMainIgnoringVisibility)
+fun Modifier.safeMainIgnoringVisibilityPadding()
+    = windowInsetsPadding(WindowInsets.safeMainIgnoringVisibility)
 
 @UnstableSaltApi
 @Composable

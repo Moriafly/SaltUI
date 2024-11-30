@@ -30,7 +30,6 @@ class SaltTextStyles (
     val sub: TextStyle,
     val paragraph: TextStyle
 ) {
-
     fun copy(
         main: TextStyle = this.main,
         sub: TextStyle = this.sub,
@@ -40,7 +39,6 @@ class SaltTextStyles (
         sub = sub,
         paragraph = paragraph
     )
-
 }
 
 fun saltTextStyles(

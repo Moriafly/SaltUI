@@ -49,7 +49,7 @@ import saltui.ui2.generated.resources.Res
 import saltui.ui2.generated.resources.ic_arrow_back
 
 /**
- * TitleBar
+ * the title bar.
  */
 @UnstableSaltApi
 @Composable
@@ -96,7 +96,7 @@ fun TitleBar(
 }
 
 /**
- * BottomBar
+ * the bottom bar.
  */
 @UnstableSaltApi
 @Composable
@@ -116,7 +116,7 @@ fun BottomBar(
 }
 
 /**
- * BottomBarItem
+ * the item in [BottomBar].
  */
 @UnstableSaltApi
 @Composable

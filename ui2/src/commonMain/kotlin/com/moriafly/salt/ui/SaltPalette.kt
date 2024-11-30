@@ -22,24 +22,15 @@ package com.moriafly.salt.ui
 import androidx.compose.ui.graphics.Color
 
 /**
- * Some colors of Salt UI
+ * Some colors of Salt UI.
  */
 object SaltPalette {
-
     val WarningLightIcon = Color(0xFF9D5D00)
-
     val WarningDarkIcon = Color(0xFFFCE100)
-
     val WarningLightBackground = Color(0xFFFFF4CE)
-
     val WarningDarkBackground = Color(0xFF433519)
-
     val ErrorLightIcon = Color(0xFFC42B1C)
-
     val ErrorDarkIcon = Color(0xFFFF99A4)
-
     val ErrorLightBackground = Color(0xFFFDE7E9)
-
     val ErrorDarkBackground = Color(0xFF442726)
-
 }

@@ -72,11 +72,11 @@ import saltui.ui2.generated.resources.ic_uncheck
 import saltui.ui2.generated.resources.ic_warning
 
 /**
- * Draw an arrow icon in [Item]
+ * Draw an arrow icon in [Item].
  *
- * This can facilitate the implementation of fully customizable [Item]
+ * This can facilitate the implementation of fully customizable [Item].
  *
- * @param arrowType [ItemArrowType]
+ * @param arrowType [ItemArrowType].
  */
 @Composable
 expect fun ItemArrow(
@@ -84,7 +84,7 @@ expect fun ItemArrow(
 )
 
 /**
- * Build content interface title text
+ * Build content interface title text.
  */
 @Deprecated(
     message = "Use ItemOuterTitle instead",
@@ -110,9 +110,9 @@ fun ItemTitle(
 }
 
 /**
- * Build content interface tip text
+ * Build content interface tip text.
  *
- * @param text text
+ * @param text text.
  */
 @Composable
 fun ItemTip(
@@ -128,9 +128,9 @@ fun ItemTip(
 }
 
 /**
- * Build content interface instruction text
+ * Build content interface instruction text.
  *
- * @param text text
+ * @param text text.
  */
 @Deprecated(
     message = "Use ItemTip instead. In actual development, an ItemSpacer is almost always needed above and below the ItemText, so this padding is more suitable to be included within the component. " +
@@ -161,20 +161,21 @@ enum class ItemArrowType {
 }
 
 /**
- * Build item for the content interface
+ * Build item for the content interface.
  *
- * @param onClick will be called when user clicks on the element
- * @param text main text
- * @param modifier [Modifier] to apply to this layout node
- * @param enabled enabled
- * @param iconPainter icon
- * @param iconPaddingValues iconPaddingValues
- * @param iconColor color of [iconPainter], if this value is null, will use the paint original color
- * @param textColor color of [text] text, you can set highlight to replace ItemTextButton
- * @param sub sub text
- * @param subColor color of [sub] text
- * @param subContent Allow customizing the region of existing sub text
- * @param arrowType type of arrow
+ * @param onClick will be called when user clicks on the element.
+ * @param text main text.
+ * @param modifier [Modifier] to apply to this layout node.
+ * @param enabled enabled.
+ * @param iconPainter icon.
+ * @param iconPaddingValues iconPaddingValues.
+ * @param iconColor color of [iconPainter], if this value is null, will use the paint original
+ *   color.
+ * @param textColor color of [text] text, you can set highlight to replace ItemTextButton.
+ * @param sub sub text.
+ * @param subColor color of [sub] text.
+ * @param subContent Allow customizing the region of existing sub text.
+ * @param arrowType type of arrow.
  */
 @Composable
 fun Item(
@@ -219,16 +220,17 @@ fun Item(
 }
 
 /**
- * Build a switcher in the content interface
+ * Build a switcher in the content interface.
  *
- * @param state the state of the switcher
- * @param onChange called when state changed
- * @param text main text
- * @param enabled
- * @param iconPainter icon
- * @param iconPaddingValues iconPaddingValues
- * @param iconColor color of [iconPainter], if this value is null, will use the paint original color
- * @param sub sub text
+ * @param state the state of the switcher.
+ * @param onChange called when state changed.
+ * @param text main text.
+ * @param enabled enabled.
+ * @param iconPainter icon.
+ * @param iconPaddingValues iconPaddingValues.
+ * @param iconColor color of [iconPainter], if this value is null, will use the paint original
+ *   color.
+ * @param sub sub text.
  */
 @Composable
 fun ItemSwitcher(
@@ -293,26 +295,27 @@ fun ItemSwitcher(
 }
 
 /**
- * Draw an arrow icon in [ItemPopup]
+ * Draw an arrow icon in [ItemPopup].
  *
- * This can facilitate the implementation of fully customizable [ItemPopup]
+ * This can facilitate the implementation of fully customizable [ItemPopup].
  */
 @Composable
 expect fun ItemPopupArrow()
 
 /**
- * Popup a [PopupMenu] where many selectable or common items can be added
+ * Popup a [PopupMenu] where many selectable or common items can be added.
  *
- * TODO Replace [ItemPopup]
+ * TODO: Replace [ItemPopup].
  *
- * @param state [PopupMenu]
- * @param text Text
- * @param value Text of value
- * @param enabled Enabled
- * @param iconPainter Icon
- * @param iconPaddingValues Padding values of [iconPainter]
- * @param iconColor Color of [iconPainter], if this value is null, will use the paint original color
- * @param content Composable content
+ * @param state [PopupMenu].
+ * @param text text.
+ * @param value text of value.
+ * @param enabled enabled.
+ * @param iconPainter icon.
+ * @param iconPaddingValues padding values of [iconPainter].
+ * @param iconColor color of [iconPainter], if this value is null, will use the paint original
+ *   color.
+ * @param content composable content.
  */
 @UnstableSaltApi
 @Composable
@@ -339,9 +342,9 @@ fun ItemSelect(
 }
 
 /**
- * Popup Item
+ * the popup item.
  *
- * @param state the state of popup
+ * @param state the state of popup.
  */
 @UnstableSaltApi
 @Composable
@@ -411,12 +414,12 @@ fun ItemPopup(
 }
 
 /**
- * Build a switcher in the content interface
+ * Build a switcher in the content interface.
  *
- * @param state the state of the switcher
- * @param onChange called when state changed
- * @param enabled
- * @param text main text
+ * @param state the state of the switcher.
+ * @param onChange called when state changed.
+ * @param enabled enabled.
+ * @param text main text.
  */
 @UnstableSaltApi
 @Composable
@@ -464,10 +467,10 @@ fun ItemCheck(
 }
 
 /**
- * Item Value
+ * the value item.
  *
- * @param text text
- * @param sub value
+ * @param text text.
+ * @param sub value.
  */
 @Composable
 fun ItemValue(
@@ -495,18 +498,18 @@ fun ItemValue(
 }
 
 /**
- * Edit
+ * the edit item.
  *
- * @param text text
- * @param onChange called when text changed
- * @param modifier modifier
- * @param hint hint
- * @param hintColor color of [hint] text
- * @param readOnly readOnly
- * @param keyboardOptions keyboardOptions
- * @param keyboardActions keyboardActions
- * @param visualTransformation visualTransformation
- * @param actionContent actionContent
+ * @param text text.
+ * @param onChange called when text changed.
+ * @param modifier modifier.
+ * @param hint hint.
+ * @param hintColor color of [hint] text.
+ * @param readOnly readOnly.
+ * @param keyboardOptions keyboardOptions.
+ * @param keyboardActions keyboardActions.
+ * @param visualTransformation visualTransformation.
+ * @param actionContent actionContent.
  */
 @UnstableSaltApi
 @Composable
@@ -538,15 +541,15 @@ fun ItemEdit(
 }
 
 /**
- * Password Edit
+ * the password edit item.
  *
- * @param text text
- * @param onChange called when text changed
- * @param hint hint
- * @param hintColor color of [hint] text
- * @param readOnly readOnly
- * @param keyboardOptions keyboardOptions
- * @param keyboardActions keyboardActions
+ * @param text text.
+ * @param onChange called when text changed.
+ * @param hint hint.
+ * @param hintColor color of [hint] text.
+ * @param readOnly readOnly.
+ * @param keyboardOptions keyboardOptions.
+ * @param keyboardActions keyboardActions.
  */
 @UnstableSaltApi
 @Composable
@@ -614,7 +617,6 @@ fun ItemSlider(
     sub: String? = null,
     enabled: Boolean = true,
     valueRange: ClosedFloatingPointRange<Float> = 0f..1f,
-    /*@IntRange(from = 0)*/
     steps: Int = 0,
     onValueChangeFinished: (() -> Unit)? = null,
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() }
@@ -674,9 +676,10 @@ fun ItemSlider(
 }
 
 /**
- * Item Button
+ * the button item.
  *
- * @param primary Indicates whether the button is primary and prominent, emphasized with a highlight color
+ * @param primary Indicates whether the button is primary and prominent, emphasized with a highlight
+ *   color.
  */
 @UnstableSaltApi
 @Composable
@@ -728,7 +731,7 @@ fun ItemButton(
 }
 
 /**
- * Build vertical spacing [SaltDimens.subPadding] for the content interface
+ * Build vertical spacing [SaltDimens.subPadding] for the content interface.
  */
 @Composable
 fun ItemSpacer() {
@@ -739,7 +742,8 @@ fun ItemSpacer() {
 }
 
 /**
- * Build a container with internal margins in the content interface, making it easy to add custom elements such as buttons internally
+ * Build a container with internal margins in the content interface, making it easy to add custom
+ * elements such as buttons internally.
  */
 @Composable
 fun ItemContainer(
@@ -754,9 +758,9 @@ fun ItemContainer(
 }
 
 /**
- * Build a divider in the content interface
+ * Build a divider in the content interface.
  *
- * @param color color of divider
+ * @param color color of divider.
  */
 @Composable
 fun ItemDivider(
@@ -764,7 +768,7 @@ fun ItemDivider(
     color: Color = SaltTheme.colors.stroke,
     startIndent: Dp = SaltTheme.dimens.padding
 ) {
-    // Dp.Hairline
+    // Dp.Hairline.
     val thickness = (1f / LocalDensity.current.density).dp
     Box(
         modifier = modifier

@@ -31,11 +31,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 
 /**
- * Column with rounded radius
+ * Column with rounded radius.
  *
- * @param modifier The modifier to be applied to the column
- * @param color The background color of the column
- * @param content The content of the column
+ * @param modifier the modifier to be applied to the column.
+ * @param color the background color of the column.
+ * @param content the content of the column.
  */
 @Composable
 fun RoundedColumn(

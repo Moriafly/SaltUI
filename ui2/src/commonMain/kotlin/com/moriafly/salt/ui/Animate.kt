@@ -32,12 +32,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 
 /**
- * Infinite rotation animation loop
+ * Infinite rotation animation loop.
  *
- * @param key Determines whether to restart the animation based on the key's value
- * @param rotating Controls whether the rotation is in progress
- * @param resetDuration Duration for resetting the position back to the starting point
- * @param repeatDuration Duration for completing one full rotation cycle
+ * @param key Determines whether to restart the animation based on the key's value.
+ * @param rotating Controls whether the rotation is in progress.
+ * @param resetDuration Duration for resetting the position back to the starting point.
+ * @param repeatDuration Duration for completing one full rotation cycle.
  */
 @UnstableSaltApi
 @Composable
@@ -61,7 +61,7 @@ fun animateInfiniteRotationState(
 
     LaunchedEffect(rotating) {
         if (rotating) {
-            // From the last paused angle -> execute animation -> to target angle (+360)
+            // From the last paused angle -> execute animation -> to target angle (+360).
             rotation.animateTo(
                 targetValue = (rotation.value % 360f) + 360f,
                 animationSpec = infiniteRepeatable(
@@ -73,7 +73,8 @@ fun animateInfiniteRotationState(
             )
         } else {
             rotation.stop()
-            // Taking the modulus of the initial angle ensures the target angle doesn't infinitely increase after each pause
+            // Taking the modulus of the initial angle ensures the target angle doesn't infinitely
+            // increase after each pause.
             rotation = Animatable(rotation.value % 360f)
         }
     }

@@ -28,7 +28,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
 /**
- * Dimens for Salt UI
+ * Dimens for Salt UI.
  *
  *   ╭──────────────────────────────────────────────────╮
  *   │                   [padding] * 0.5f               │
@@ -47,12 +47,12 @@ import androidx.compose.ui.unit.dp
  *   │                   [padding] * 0.5f               │
  *   ╰──────────────────────────────────────────────────╯
  *
- * @param item Minimum size of an [Item], [ItemSwitcher], etc
- * @param itemIcon Size of icon in [Item], [ItemSwitcher], etc
- * @param corner Corner radius
- * @param dialogCorner Dialog corner radius
- * @param padding Padding
- * @param subPadding Sub padding
+ * @param item Minimum size of an [Item], [ItemSwitcher], etc.
+ * @param itemIcon Size of icon in [Item], [ItemSwitcher], etc.
+ * @param corner Corner radius.
+ * @param dialogCorner Dialog corner radius.
+ * @param padding Padding.
+ * @param subPadding Sub padding.
  */
 @Stable
 class SaltDimens(
@@ -71,14 +71,18 @@ class SaltDimens(
     val subPadding by mutableStateOf(subPadding, structuralEqualityPolicy())
 
     /**
-     * Padding inside [RoundedColumn]
+     * Padding inside [RoundedColumn].
      */
-    internal val innerPaddingValues by derivedStateOf { SaltPaddingValues(horizontal = padding, vertical = subPadding) }
+    internal val innerPaddingValues by derivedStateOf {
+        SaltPaddingValues(horizontal = padding, vertical = subPadding)
+    }
 
     /**
-     * Padding outside [RoundedColumn]
+     * Padding outside [RoundedColumn].
      */
-    internal val outerPaddingValues by derivedStateOf { SaltPaddingValues(horizontal = padding, vertical = padding * 0.5f) }
+    internal val outerPaddingValues by derivedStateOf {
+        SaltPaddingValues(horizontal = padding, vertical = padding * 0.5f)
+    }
 
     fun copy(
         item: Dp = this.item,
@@ -95,7 +99,6 @@ class SaltDimens(
         padding = padding,
         subPadding = subPadding
     )
-
 }
 
 fun saltDimens(

@@ -24,17 +24,15 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.structuralEqualityPolicy
 
 /**
- * @param isDarkTheme whether the theme is dark
- * @param indication the indication
+ * @param isDarkTheme whether the theme is dark.
+ * @param indication the indication.
  */
 @Stable
 class SaltConfigs(
     isDarkTheme: Boolean,
     indication: Indication
 ) {
-
     val isDarkTheme by mutableStateOf(isDarkTheme, structuralEqualityPolicy())
-
     val indication by mutableStateOf(indication, structuralEqualityPolicy())
 
     fun copy(
@@ -44,7 +42,6 @@ class SaltConfigs(
         isDarkTheme = isDarkTheme,
         indication = indication
     )
-
 }
 
 fun saltConfigs(

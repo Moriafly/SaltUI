@@ -40,15 +40,14 @@ internal class SaltPaddingValues(
     @Stable
     val bottom: Dp = 0.dp
 ): PaddingValues {
-
     constructor(all: Dp) : this(all, all, all, all)
     constructor(horizontal: Dp, vertical: Dp) : this(horizontal, vertical, horizontal, vertical)
 
     init {
-        require(start.value >= 0) { "Start padding must be non-negative" }
-        require(top.value >= 0) { "Top padding must be non-negative" }
-        require(end.value >= 0) { "End padding must be non-negative" }
-        require(bottom.value >= 0) { "Bottom padding must be non-negative" }
+        require(start.value >= 0) { "Start padding must be non-negative." }
+        require(top.value >= 0) { "Top padding must be non-negative." }
+        require(end.value >= 0) { "End padding must be non-negative." }
+        require(bottom.value >= 0) { "Bottom padding must be non-negative." }
     }
 
     override fun calculateLeftPadding(layoutDirection: LayoutDirection) =
@@ -73,7 +72,6 @@ internal class SaltPaddingValues(
         ((start.hashCode() * 31 + top.hashCode()) * 31 + end.hashCode()) * 31 + bottom.hashCode()
 
     override fun toString() = "PaddingValues(start=$start, top=$top, end=$end, bottom=$bottom)"
-
 }
 
 @Stable

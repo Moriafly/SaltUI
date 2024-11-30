@@ -41,7 +41,7 @@ fun SaltTheme(
     content: @Composable () -> Unit
 ) {
     val applyColorTextStyles = remember(colors.text, colors.subText) {
-        // copy text colors
+        // copy text colors.
         saltTextStyles(
             main = textStyles.main.copy(color = colors.text),
             sub = textStyles.sub.copy(color = colors.subText),
@@ -60,7 +60,6 @@ fun SaltTheme(
 }
 
 object SaltTheme {
-
     val configs: SaltConfigs
         @Composable
         @ReadOnlyComposable
@@ -80,5 +79,4 @@ object SaltTheme {
         @Composable
         @ReadOnlyComposable
         get() = LocalSaltDimens.current
-
 }

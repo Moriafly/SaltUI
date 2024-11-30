@@ -46,7 +46,7 @@ import com.moriafly.salt.ui.internal.stringResourceConfirm
 import com.moriafly.salt.ui.outerPadding
 
 /**
- * Yes Dialog
+ * Yes Dialog.
  */
 @Composable
 fun YesDialog(
@@ -75,7 +75,7 @@ fun YesDialog(
 }
 
 /**
- * Yes or No Dialog
+ * Yes or No Dialog.
  */
 @Composable
 fun YesNoDialog(
@@ -122,7 +122,7 @@ fun YesNoDialog(
 }
 
 /**
- * Input Dialog
+ * Input Dialog.
  */
 @UnstableSaltApi
 @Composable
@@ -182,7 +182,7 @@ fun InputDialog(
 }
 
 /**
- * The basic dialog has default corner background and vertical padding
+ * The basic dialog has default corner background and vertical padding.
  */
 @Composable
 fun BasicDialog(

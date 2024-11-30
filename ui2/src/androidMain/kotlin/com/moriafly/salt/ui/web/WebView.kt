@@ -66,20 +66,20 @@ import kotlinx.coroutines.withContext
  * The WebView attempts to set the layoutParams based on the Compose modifier passed in. If it
  * is incorrectly sizing, use the layoutParams composable function instead.
  *
- * @param state The webview state holder where the Uri to load is defined.
- * @param modifier A compose modifier
+ * @param state the WebView state holder where the Uri to load is defined.
+ * @param modifier a compose modifier.
  * @param captureBackPresses Set to true to have this Composable capture back presses and navigate
- * the WebView back.
- * @param navigator An optional navigator object that can be used to control the WebView's
- * navigation from outside the composable.
- * @param onCreated Called when the WebView is first created, this can be used to set additional
- * settings on the WebView. WebChromeClient and WebViewClient should not be set here as they will be
- * subsequently overwritten after this lambda is called.
- * @param onDispose Called when the WebView is destroyed. Provides a bundle which can be saved
- * if you need to save and restore state in this WebView.
- * @param client Provides access to WebViewClient via subclassing
- * @param chromeClient Provides access to WebChromeClient via subclassing
- * @param factory An optional WebView factory for using a custom subclass of WebView
+ *   the WebView back.
+ * @param navigator an optional navigator object that can be used to control the WebView's
+ *   navigation from outside the composable.
+ * @param onCreated called when the WebView is first created, this can be used to set additional
+ *   settings on the WebView. WebChromeClient and WebViewClient should not be set here as they will
+ *   be subsequently overwritten after this lambda is called.
+ * @param onDispose called when the WebView is destroyed. Provides a bundle which can be saved if
+ *   you need to save and restore state in this WebView.
+ * @param client provides access to WebViewClient via subclassing.
+ * @param chromeClient provides access to WebChromeClient via subclassing.
+ * @param factory an optional WebView factory for using a custom subclass of WebView.
  */
 @UnstableSaltApi
 @Composable
@@ -95,9 +95,8 @@ fun WebView(
     factory: ((Context) -> WebView)? = null,
 ) {
     BoxWithConstraints(modifier) {
-        // WebView changes it's layout strategy based on
-        // it's layoutParams. We convert from Compose Modifier to
-        // layout params here.
+        // WebView changes it's layout strategy based on it's layoutParams. We convert from Compose
+        // Modifier to layout params here.
         val width =
             if (constraints.hasFixedWidth)
                 LayoutParams.MATCH_PARENT
@@ -140,21 +139,21 @@ fun WebView(
  * The WebView attempts to set the layoutParams based on the Compose modifier passed in. If it
  * is incorrectly sizing, use the layoutParams composable function instead.
  *
- * @param state The webview state holder where the Uri to load is defined.
- * @param layoutParams A FrameLayout.LayoutParams object to custom size the underlying WebView.
- * @param modifier A compose modifier
- * @param captureBackPresses Set to true to have this Composable capture back presses and navigate
- * the WebView back.
- * @param navigator An optional navigator object that can be used to control the WebView's
- * navigation from outside the composable.
- * @param onCreated Called when the WebView is first created, this can be used to set additional
- * settings on the WebView. WebChromeClient and WebViewClient should not be set here as they will be
- * subsequently overwritten after this lambda is called.
- * @param onDispose Called when the WebView is destroyed. Provides a bundle which can be saved
+ * @param state the WebView state holder where the Uri to load is defined.
+ * @param layoutParams a FrameLayout.LayoutParams object to custom size the underlying WebView.
+ * @param modifier a compose modifier
+ * @param captureBackPresses set to true to have this Composable capture back presses and navigate
+ *   the WebView back.
+ * @param navigator an optional navigator object that can be used to control the WebView's
+ *   navigation from outside the composable.
+ * @param onCreated called when the WebView is first created, this can be used to set additional
+ *   settings on the WebView. WebChromeClient and WebViewClient should not be set here as they will
+ *   be subsequently overwritten after this lambda is called.
+ * @param onDispose called when the WebView is destroyed. Provides a bundle which can be saved
  * if you need to save and restore state in this WebView.
- * @param client Provides access to WebViewClient via subclassing
- * @param chromeClient Provides access to WebChromeClient via subclassing
- * @param factory An optional WebView factory for using a custom subclass of WebView
+ * @param client provides access to WebViewClient via subclassing.
+ * @param chromeClient provides access to WebChromeClient via subclassing.
+ * @param factory an optional WebView factory for using a custom subclass of WebView.
  */
 @UnstableSaltApi
 @Composable
@@ -215,9 +214,8 @@ fun WebView(
         }
     }
 
-    // Set the state of the client and chrome client
-    // This is done internally to ensure they always are the same instance as the
-    // parent Web composable
+    // Set the state of the client and chrome client. This is done internally to ensure they always
+    // are the same instance as the parent Web composable.
     client.state = state
     client.navigator = navigator
     chromeClient.state = state
@@ -253,7 +251,7 @@ fun WebView(
 }
 
 /**
- * AccompanistWebViewClient
+ * AccompanistWebViewClient.
  *
  * A parent class implementation of WebViewClient that can be subclassed to add custom behaviour.
  *
@@ -374,8 +372,7 @@ internal fun WebContent.withUrl(url: String) = when (this) {
 }
 
 /**
- * Sealed class for constraining possible loading states.
- * See [Loading] and [Finished].
+ * Sealed class for constraining possible loading states. See [Loading] and [Finished].
  */
 sealed class LoadingState {
     /**
@@ -384,13 +381,13 @@ sealed class LoadingState {
     object Initializing : LoadingState()
 
     /**
-     * Describes a webview between `onPageStarted` and `onPageFinished` events, contains a
-     * [progress] property which is updated by the webview.
+     * Describes a WebView between `onPageStarted` and `onPageFinished` events, contains a
+     * [progress] property which is updated by the WebView.
      */
     data class Loading(val progress: Float) : LoadingState()
 
     /**
-     * Describes a webview that has finished loading content.
+     * Describes a WebView that has finished loading content.
      */
     object Finished : LoadingState()
 }
@@ -405,31 +402,31 @@ class WebViewState(webContent: WebContent) {
         internal set
 
     /**
-     *  The content being loaded by the WebView
+     *  The content being loaded by the WebView.
      */
     var content: WebContent by mutableStateOf(webContent)
 
     /**
      * Whether the WebView is currently [LoadingState.Loading] data in its main frame (along with
-     * progress) or the data loading has [LoadingState.Finished]. See [LoadingState]
+     * progress) or the data loading has [LoadingState.Finished]. See [LoadingState].
      */
     var loadingState: LoadingState by mutableStateOf(LoadingState.Initializing)
         internal set
 
     /**
-     * Whether the webview is currently loading data in its main frame
+     * Whether the WebView is currently loading data in its main frame.
      */
     val isLoading: Boolean
         get() = loadingState !is LoadingState.Finished
 
     /**
-     * The title received from the loaded content of the current page
+     * The title received from the loaded content of the current page.
      */
     var pageTitle: String? by mutableStateOf(null)
         internal set
 
     /**
-     * the favicon received from the loaded content of the current page
+     * the favicon received from the loaded content of the current page.
      */
     var pageIcon: Bitmap? by mutableStateOf(null)
         internal set
@@ -655,7 +652,7 @@ fun rememberWebViewState(
     additionalHttpHeaders: Map<String, String> = emptyMap()
 ): WebViewState =
     // Rather than using .apply {} here we will recreate the state, this prevents
-    // a recomposition loop when the webview updates the url itself.
+    // a recomposition loop when the WebView updates the url itself.
     remember {
         WebViewState(
             WebContent.Url(
@@ -673,7 +670,7 @@ fun rememberWebViewState(
 /**
  * Creates a WebView state that is remembered across Compositions.
  *
- * @param data The uri to load in the WebView
+ * @param data The uri to load in the WebView.
  */
 @Composable
 fun rememberWebViewStateWithHTMLData(
@@ -694,8 +691,8 @@ fun rememberWebViewStateWithHTMLData(
 /**
  * Creates a WebView state that is remembered across Compositions.
  *
- * @param url The url to load in the WebView
- * @param postData The data to be posted to the WebView with the url
+ * @param url The url to load in the WebView.
+ * @param postData The data to be posted to the WebView with the url.
  */
 @Composable
 fun rememberWebViewState(
@@ -703,7 +700,7 @@ fun rememberWebViewState(
     postData: ByteArray
 ): WebViewState =
     // Rather than using .apply {} here we will recreate the state, this prevents
-    // a recomposition loop when the webview updates the url itself.
+    // a recomposition loop when the WebView updates the url itself.
     remember {
         WebViewState(
             WebContent.Post(
@@ -719,10 +716,11 @@ fun rememberWebViewState(
     }
 
 /**
- * Creates a WebView state that is remembered across Compositions and saved
- * across activity recreation.
- * When using saved state, you cannot change the URL via recomposition. The only way to load
- * a URL is via a WebViewNavigator.
+ * Creates a WebView state that is remembered across Compositions and saved across activity
+ * recreation.
+ *
+ * When using saved state, you cannot change the URL via recomposition. The only way to load a URL
+ * is via a WebViewNavigator.
  */
 @Composable
 fun rememberSaveableWebViewState(): WebViewState =
