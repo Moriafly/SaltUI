@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-@file:Suppress("unused")
+@file:Suppress("unused", "MemberVisibilityCanBePrivate")
 
 package com.moriafly.salt.ui.util
 
@@ -58,10 +58,10 @@ object RomUtil {
     }
 
     /**
-     * Xiaomi MIUI or HyperOS.
+     * Xiaomi MIUI.
      */
-    val isXiaomi: Boolean by lazy {
-        getSystemProperty("ro.product.system.manufacturer") == "Xiaomi"
+    val isXiaomiMiui: Boolean by lazy {
+        getSystemProperty("ro.miui.ui.version.name") != Build.UNKNOWN
     }
 
     /**
@@ -69,6 +69,13 @@ object RomUtil {
      */
     val isXiaomiHyperOS: Boolean by lazy {
         getSystemProperty("ro.mi.os.version.name") != Build.UNKNOWN
+    }
+
+    /**
+     * Xiaomi MIUI or HyperOS.
+     */
+    val isXiaomi: Boolean by lazy {
+        isXiaomiMiui || isXiaomiHyperOS
     }
 
     /**
