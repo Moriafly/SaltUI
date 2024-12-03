@@ -19,6 +19,8 @@
 
 package com.moriafly.salt.ui.util
 
+import com.moriafly.salt.ui.UnstableSaltApi
+
 object SystemUtil {
     const val ANDROID_6 = 23
     const val ANDROID_7 = 24
@@ -54,16 +56,75 @@ object SystemUtil {
     const val WINDOWS_11_23H2 = 22631
     const val WINDOWS_11_24H2 = 26100
 
+    @UnstableSaltApi
     val os: OS by lazy { os() }
 
+    /**
+     * android.os.Build.VERSION.SDK_INT.
+     */
+    @UnstableSaltApi
     val androidVersionSdk: Int by lazy { androidVersionSdk() }
 
     /**
-     * [Build number](https://learn.microsoft.com/en-us/windows-hardware/drivers/install/inf-manufacturer-section)
+     * [Build number](https://learn.microsoft.com/en-us/windows-hardware/drivers/install/inf-manufacturer-section).
      */
+    @UnstableSaltApi
     val windowsBuild: Int by lazy { windowsBuild() }
 
+    /**
+     * macOS product version.
+     */
+    @UnstableSaltApi
     val macOSVersion: String by lazy { macOSVersion() }
+
+    /**
+     * Get the version code of the current system.
+     *
+     * - Android: android.os.Build.VERSION.SDK_INT.
+     * - Windows: [Build number](https://learn.microsoft.com/en-us/windows-hardware/drivers/install/inf-manufacturer-section).
+     *
+     * @see [androidVersionSdk]
+     * @see [windowsBuild]
+     */
+    @Deprecated(
+        message = "Use androidVersionSdk or windowsBuild."
+    )
+    @UnstableSaltApi
+    val versionCode by lazy {
+        when (os) {
+            OS.Android -> androidVersionSdk
+            OS.Windows -> windowsBuild
+            else -> throw UnsupportedOperationException()
+        }
+    }
+
+    /**
+     * Sample:
+     *
+     * ```kotlin
+     * if (SystemUtil.isAndroidAndVersionSdk { it >= SystemUtil.ANDROID_10 }) {
+     *     // code.
+     * }
+     * ```
+     */
+    @UnstableSaltApi
+    fun isAndroidAndVersionSdk(value: (Int) -> Boolean): Boolean {
+        return if (os == OS.Android) value(androidVersionSdk) else false
+    }
+
+    /**
+     * Sample:
+     *
+     * ```kotlin
+     * if (SystemUtil.isWindowsAndBuild { it >= SystemUtil.WINDOWS_11_21H2 }) {
+     *     // code.
+     * }
+     * ```
+     */
+    @UnstableSaltApi
+    fun isWindowsAndBuild(value: (Int) -> Boolean): Boolean {
+        return if (os == OS.Windows) value(windowsBuild) else false
+    }
 
     enum class OS {
         Android,
