@@ -19,9 +19,6 @@
 
 package com.moriafly.salt.ui.util
 
-import com.moriafly.salt.ui.UnstableSaltApi
-
-@UnstableSaltApi
 object SystemUtil {
     const val ANDROID_6 = 23
     const val ANDROID_7 = 24
@@ -57,17 +54,31 @@ object SystemUtil {
     const val WINDOWS_11_23H2 = 22631
     const val WINDOWS_11_24H2 = 26100
 
+    val os: OS by lazy { os() }
+
+    val androidVersionSdk: Int by lazy { androidVersionSdk() }
+
     /**
-     * Get the version code of the current system.
-     *
-     * - Android: android.os.Build.VERSION.SDK_INT.
-     * - Desktop:
-     *   - Windows: [Build number](https://learn.microsoft.com/en-us/windows-hardware/drivers/install/inf-manufacturer-section)
-     *   - macOS: TODO
-     *   - Linux: TODO
-     * - iOS: TODO
+     * [Build number](https://learn.microsoft.com/en-us/windows-hardware/drivers/install/inf-manufacturer-section)
      */
-    val versionCode = versionCode()
+    val windowsBuild: Int by lazy { windowsBuild() }
+
+    val macOSVersion: String by lazy { macOSVersion() }
+
+    enum class OS {
+        Android,
+        Windows,
+        MacOS,
+        Linux,
+        IOS,
+        Unknown
+    }
 }
 
-internal expect fun versionCode(): Int
+internal expect fun os(): SystemUtil.OS
+
+internal expect fun androidVersionSdk(): Int
+
+internal expect fun windowsBuild(): Int
+
+internal expect fun macOSVersion(): String

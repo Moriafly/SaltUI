@@ -38,7 +38,6 @@ import com.moriafly.salt.ui.dialog.YesNoDialog
 import com.moriafly.salt.ui.ext.safeMainPadding
 import com.moriafly.salt.ui.popup.PopupMenuItem
 import com.moriafly.salt.ui.popup.rememberPopupState
-import com.moriafly.salt.ui.util.SystemUtil
 import org.jetbrains.compose.resources.painterResource
 import saltui.composeapp.generated.resources.Res
 import saltui.composeapp.generated.resources.ic_qr_code
@@ -397,11 +396,6 @@ fun MainScreen() {
             }
 
             RomUtilColumn()
-
-            ItemOuterTitle(text = "System")
-            RoundedColumn {
-                ItemValue(text = "Version Code", sub = SystemUtil.versionCode.toString())
-            }
         }
 
         BottomBar {

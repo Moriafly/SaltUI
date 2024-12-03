@@ -15,10 +15,20 @@
  * limitations under the License.
  */
 
+@file:Suppress("unused")
+
 package com.moriafly.salt.ui.util
 
 import android.os.Build
 
-internal actual fun versionCode(): Int {
-    return Build.VERSION.SDK_INT
+internal actual fun os() = SystemUtil.OS.Android
+
+internal actual fun androidVersionSdk() = Build.VERSION.SDK_INT
+
+internal actual fun windowsBuild(): Int {
+    throw UnsupportedOperationException()
+}
+
+internal actual fun macOSVersion(): String {
+    throw UnsupportedOperationException()
 }

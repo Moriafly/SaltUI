@@ -15,6 +15,8 @@
  * limitations under the License.
  */
 
+@file:Suppress("unused")
+
 package com.moriafly.salt.ui.util
 
 import com.sun.jna.platform.win32.Kernel32
@@ -22,13 +24,29 @@ import com.sun.jna.platform.win32.WinNT
 import org.jetbrains.skiko.OS
 import org.jetbrains.skiko.hostOs
 
-internal actual fun versionCode(): Int {
+internal actual fun os(): SystemUtil.OS {
     return when (hostOs) {
-        OS.Windows -> {
-            val osVersionInfoEx = WinNT.OSVERSIONINFOEX()
-            Kernel32.INSTANCE.GetVersionEx(osVersionInfoEx)
-            osVersionInfoEx.buildNumber
-        }
-        else -> throw NotImplementedError()
+        OS.Android -> SystemUtil.OS.Android
+        OS.Windows -> SystemUtil.OS.Windows
+        OS.MacOS -> SystemUtil.OS.MacOS
+        OS.Linux -> SystemUtil.OS.Linux
+        OS.Ios -> SystemUtil.OS.IOS
+        else -> SystemUtil.OS.Unknown
     }
+}
+
+internal actual fun androidVersionSdk(): Int {
+    throw UnsupportedOperationException()
+}
+
+internal actual fun windowsBuild(): Int {
+    require(hostOs.isWindows)
+    val osVersionInfoEx = WinNT.OSVERSIONINFOEX()
+    Kernel32.INSTANCE.GetVersionEx(osVersionInfoEx)
+    return osVersionInfoEx.buildNumber
+}
+
+internal actual fun macOSVersion(): String {
+    require(hostOs.isMacOS)
+    return System.getProperty("os.version")
 }
