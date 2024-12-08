@@ -5,7 +5,7 @@ core-ktx = "1.9.0"
 material = "1.12.0"
 material3 = "1.2.1"
 compose-multiplatform = "1.7.1"
-activity-compose = "1.7.0"
+activity-compose = "1.9.2"
 hiddenapibypass = "4.3"
 jna = "5.14.0"
 
