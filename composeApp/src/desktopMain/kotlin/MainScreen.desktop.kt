@@ -1,10 +1,12 @@
 import androidx.compose.runtime.Composable
 import com.moriafly.salt.ui.ItemValue
 import com.moriafly.salt.ui.RoundedColumn
+import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.moriafly.salt.ui.util.SystemUtil
 import org.jetbrains.skiko.OS
 import org.jetbrains.skiko.hostOs
 
+@OptIn(UnstableSaltUiApi::class)
 @Composable
 actual fun RomUtilColumn() {
     RoundedColumn {
