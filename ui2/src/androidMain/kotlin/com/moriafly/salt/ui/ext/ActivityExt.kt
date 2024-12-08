@@ -25,7 +25,7 @@ import android.os.Build
 import android.view.Window
 import android.view.WindowManager
 import androidx.core.view.WindowCompat
-import com.moriafly.salt.ui.UnstableSaltApi
+import com.moriafly.salt.ui.UnstableSaltUiApi
 
 /**
  * Call this method in the [Activity.onCreate]:
@@ -46,7 +46,7 @@ import com.moriafly.salt.ui.UnstableSaltApi
  * </style>
  * ```
  */
-@UnstableSaltApi
+@UnstableSaltUiApi
 @Suppress("DEPRECATION")
 fun Activity.edgeToEdge() {
     // The decor view should not fit root-level content views for WindowInsets.

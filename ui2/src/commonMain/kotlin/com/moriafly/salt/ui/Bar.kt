@@ -51,7 +51,7 @@ import saltui.ui2.generated.resources.ic_arrow_back
 /**
  * the title bar.
  */
-@UnstableSaltApi
+@UnstableSaltUiApi
 @Composable
 fun TitleBar(
     onBack: () -> Unit,
@@ -98,7 +98,7 @@ fun TitleBar(
 /**
  * the bottom bar.
  */
-@UnstableSaltApi
+@UnstableSaltUiApi
 @Composable
 fun BottomBar(
     modifier: Modifier = Modifier,
@@ -118,7 +118,7 @@ fun BottomBar(
 /**
  * the item in [BottomBar].
  */
-@UnstableSaltApi
+@UnstableSaltUiApi
 @Composable
 fun RowScope.BottomBarItem(
     state: Boolean,

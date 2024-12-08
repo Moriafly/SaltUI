@@ -46,13 +46,13 @@ import androidx.compose.ui.state.ToggleableState
 import androidx.compose.ui.unit.dp
 import com.moriafly.salt.ui.SaltTheme
 import com.moriafly.salt.ui.Text
-import com.moriafly.salt.ui.UnstableSaltApi
+import com.moriafly.salt.ui.UnstableSaltUiApi
 
 @get:Composable
 internal expect val popupMenuItemPadding: PaddingValues
 
 @Deprecated("Use Item instead")
-@UnstableSaltApi
+@UnstableSaltUiApi
 @Composable
 fun PopupMenuItem(
     onClick: () -> Unit,

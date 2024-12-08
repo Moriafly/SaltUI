@@ -40,7 +40,7 @@ import com.moriafly.salt.ui.ItemOuterTip
 import com.moriafly.salt.ui.SaltTheme
 import com.moriafly.salt.ui.Text
 import com.moriafly.salt.ui.TextButton
-import com.moriafly.salt.ui.UnstableSaltApi
+import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.moriafly.salt.ui.internal.stringResourceCancel
 import com.moriafly.salt.ui.internal.stringResourceConfirm
 import com.moriafly.salt.ui.outerPadding
@@ -124,7 +124,7 @@ fun YesNoDialog(
 /**
  * Input Dialog.
  */
-@UnstableSaltApi
+@UnstableSaltUiApi
 @Composable
 fun InputDialog(
     onDismissRequest: () -> Unit,

@@ -22,4 +22,4 @@ package com.moriafly.salt.ui
     level = RequiresOptIn.Level.ERROR
 )
 @Retention(AnnotationRetention.BINARY)
-annotation class UnstableSaltApi
+annotation class UnstableSaltUiApi

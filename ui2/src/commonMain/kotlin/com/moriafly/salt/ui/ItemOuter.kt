@@ -72,7 +72,7 @@ fun ItemOuterTip(
 /**
  * Can replace [ItemTitle].
  */
-@UnstableSaltApi
+@UnstableSaltUiApi
 @Composable
 fun ItemOuterLargeTitle(
     text: String,
@@ -113,7 +113,7 @@ fun ItemOuterLargeTitle(
  * @param visualTransformation visualTransformation.
  * @param actionContent actionContent.
  */
-@UnstableSaltApi
+@UnstableSaltUiApi
 @Composable
 fun ItemOuterEdit(
     text: String,

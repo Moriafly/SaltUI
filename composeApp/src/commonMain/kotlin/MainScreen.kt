@@ -31,7 +31,7 @@ import com.moriafly.salt.ui.ItemValue
 import com.moriafly.salt.ui.RoundedColumn
 import com.moriafly.salt.ui.SaltTheme
 import com.moriafly.salt.ui.TitleBar
-import com.moriafly.salt.ui.UnstableSaltApi
+import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.moriafly.salt.ui.dialog.InputDialog
 import com.moriafly.salt.ui.dialog.YesDialog
 import com.moriafly.salt.ui.dialog.YesNoDialog
@@ -43,7 +43,7 @@ import saltui.composeapp.generated.resources.Res
 import saltui.composeapp.generated.resources.ic_qr_code
 import saltui.composeapp.generated.resources.ic_verified
 
-@OptIn(UnstableSaltApi::class)
+@OptIn(UnstableSaltUiApi::class)
 @Composable
 fun MainScreen() {
     Column(

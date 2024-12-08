@@ -22,9 +22,9 @@ package com.moriafly.salt.ui.util
 import android.annotation.SuppressLint
 import android.content.Context
 import android.content.res.Resources
-import com.moriafly.salt.ui.UnstableSaltApi
+import com.moriafly.salt.ui.UnstableSaltUiApi
 
-@UnstableSaltApi
+@UnstableSaltUiApi
 object ScreenUtil {
     /**
      * Get the rounded corner radius for the top corners of the screen.

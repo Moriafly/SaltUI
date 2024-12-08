@@ -21,12 +21,12 @@ package com.moriafly.salt.ui.util
 
 import android.os.Handler
 import android.os.Looper
-import com.moriafly.salt.ui.UnstableSaltApi
+import com.moriafly.salt.ui.UnstableSaltUiApi
 
 /**
  * Run on main thread.
  */
-@UnstableSaltApi
+@UnstableSaltUiApi
 fun runOnMainThread(runnable: Runnable) {
     Handler(Looper.getMainLooper()).post(runnable)
 }

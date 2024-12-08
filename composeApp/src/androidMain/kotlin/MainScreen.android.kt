@@ -3,10 +3,10 @@ import androidx.compose.runtime.remember
 import com.moriafly.salt.ui.ItemOuterTitle
 import com.moriafly.salt.ui.ItemValue
 import com.moriafly.salt.ui.RoundedColumn
-import com.moriafly.salt.ui.UnstableSaltApi
+import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.moriafly.salt.ui.util.RomUtil
 
-@OptIn(UnstableSaltApi::class)
+@OptIn(UnstableSaltUiApi::class)
 @Composable
 actual fun RomUtilColumn() {
     ItemOuterTitle(text = "RomUtil")

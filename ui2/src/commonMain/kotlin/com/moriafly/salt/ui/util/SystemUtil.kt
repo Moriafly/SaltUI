@@ -19,7 +19,7 @@
 
 package com.moriafly.salt.ui.util
 
-import com.moriafly.salt.ui.UnstableSaltApi
+import com.moriafly.salt.ui.UnstableSaltUiApi
 
 object SystemUtil {
     const val ANDROID_6 = 23
@@ -56,25 +56,25 @@ object SystemUtil {
     const val WINDOWS_11_23H2 = 22631
     const val WINDOWS_11_24H2 = 26100
 
-    @UnstableSaltApi
+    @UnstableSaltUiApi
     val os: OS by lazy { os() }
 
     /**
      * android.os.Build.VERSION.SDK_INT.
      */
-    @UnstableSaltApi
+    @UnstableSaltUiApi
     val androidVersionSdk: Int by lazy { androidVersionSdk() }
 
     /**
      * [Build number](https://learn.microsoft.com/en-us/windows-hardware/drivers/install/inf-manufacturer-section).
      */
-    @UnstableSaltApi
+    @UnstableSaltUiApi
     val windowsBuild: Int by lazy { windowsBuild() }
 
     /**
      * macOS product version.
      */
-    @UnstableSaltApi
+    @UnstableSaltUiApi
     val macOSVersion: String by lazy { macOSVersion() }
 
     /**
@@ -89,7 +89,7 @@ object SystemUtil {
     @Deprecated(
         message = "Use androidVersionSdk or windowsBuild."
     )
-    @UnstableSaltApi
+    @UnstableSaltUiApi
     val versionCode by lazy {
         when (os) {
             OS.Android -> androidVersionSdk
@@ -107,7 +107,7 @@ object SystemUtil {
      * }
      * ```
      */
-    @UnstableSaltApi
+    @UnstableSaltUiApi
     fun isAndroidAndVersionSdk(value: (Int) -> Boolean): Boolean {
         return if (os == OS.Android) value(androidVersionSdk) else false
     }
@@ -121,7 +121,7 @@ object SystemUtil {
      * }
      * ```
      */
-    @UnstableSaltApi
+    @UnstableSaltUiApi
     fun isWindowsAndBuild(value: (Int) -> Boolean): Boolean {
         return if (os == OS.Windows) value(windowsBuild) else false
     }

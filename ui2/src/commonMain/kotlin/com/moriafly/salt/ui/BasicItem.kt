@@ -99,7 +99,7 @@ internal fun BasicItem(
     }
 }
 
-@UnstableSaltApi
+@UnstableSaltUiApi
 @Composable
 internal fun BasicItemEdit(
     text: String,

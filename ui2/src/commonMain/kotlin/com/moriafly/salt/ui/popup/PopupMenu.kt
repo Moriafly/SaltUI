@@ -53,14 +53,14 @@ import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupPositionProvider
 import androidx.compose.ui.window.PopupProperties
 import com.moriafly.salt.ui.SaltTheme
-import com.moriafly.salt.ui.UnstableSaltApi
+import com.moriafly.salt.ui.UnstableSaltUiApi
 
 /**
  * Build on Google Jetpack Compose Popup.
  *
  * @param backgroundColor background color of the popup.
  */
-@UnstableSaltApi
+@UnstableSaltUiApi
 @Composable
 fun PopupMenu(
     expanded: Boolean,

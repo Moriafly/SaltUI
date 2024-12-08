@@ -317,7 +317,7 @@ expect fun ItemPopupArrow()
  *   color.
  * @param content composable content.
  */
-@UnstableSaltApi
+@UnstableSaltUiApi
 @Composable
 fun ItemSelect(
     state: PopupState,
@@ -346,7 +346,7 @@ fun ItemSelect(
  *
  * @param state the state of popup.
  */
-@UnstableSaltApi
+@UnstableSaltUiApi
 @Composable
 fun ItemPopup(
     state: PopupState,
@@ -421,7 +421,7 @@ fun ItemPopup(
  * @param enabled enabled.
  * @param text main text.
  */
-@UnstableSaltApi
+@UnstableSaltUiApi
 @Composable
 fun ItemCheck(
     state: Boolean,
@@ -511,7 +511,7 @@ fun ItemValue(
  * @param visualTransformation visualTransformation.
  * @param actionContent actionContent.
  */
-@UnstableSaltApi
+@UnstableSaltUiApi
 @Composable
 fun ItemEdit(
     text: String,
@@ -551,7 +551,7 @@ fun ItemEdit(
  * @param keyboardOptions keyboardOptions.
  * @param keyboardActions keyboardActions.
  */
-@UnstableSaltApi
+@UnstableSaltUiApi
 @Composable
 fun ItemEditPassword(
     text: String,
@@ -605,7 +605,7 @@ fun ItemEditPassword(
     )
 }
 
-@UnstableSaltApi
+@UnstableSaltUiApi
 @Composable
 fun ItemSlider(
     value: Float,
@@ -681,7 +681,7 @@ fun ItemSlider(
  * @param primary Indicates whether the button is primary and prominent, emphasized with a highlight
  *   color.
  */
-@UnstableSaltApi
+@UnstableSaltUiApi
 @Composable
 fun ItemButton(
     onClick: () -> Unit,
@@ -779,13 +779,13 @@ fun ItemDivider(
     )
 }
 
-@UnstableSaltApi
+@UnstableSaltUiApi
 enum class ItemInfoType {
     Warning,
     Error
 }
 
-@UnstableSaltApi
+@UnstableSaltUiApi
 @Composable
 fun ItemInfo(
     text: String,

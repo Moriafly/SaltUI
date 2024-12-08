@@ -23,12 +23,12 @@ import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.union
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.NonRestartableComposable
-import com.moriafly.salt.ui.UnstableSaltApi
+import com.moriafly.salt.ui.UnstableSaltUiApi
 
 /**
  * Same as [safeMain]
  */
-@UnstableSaltApi
+@UnstableSaltUiApi
 actual val WindowInsets.Companion.safeMainIgnoringVisibility: WindowInsets
     @Composable
     @NonRestartableComposable
@@ -37,7 +37,7 @@ actual val WindowInsets.Companion.safeMainIgnoringVisibility: WindowInsets
 /**
  * Same as [safeMainIgnoringVisibility]
  */
-@UnstableSaltApi
+@UnstableSaltUiApi
 actual val WindowInsets.Companion.safeMainCompat: WindowInsets
     @Composable
     @NonRestartableComposable

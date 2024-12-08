@@ -27,7 +27,7 @@ import com.moriafly.salt.ui.util.RomUtil
 
 class MainActivity : ComponentActivity() {
 
-    @OptIn(UnstableSaltApi::class)
+    @OptIn(UnstableSaltUiApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         edgeToEdge()
         super.onCreate(savedInstanceState)

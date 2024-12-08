@@ -21,13 +21,13 @@ package com.moriafly.salt.ui.util
 
 import android.annotation.SuppressLint
 import android.os.Build
-import com.moriafly.salt.ui.UnstableSaltApi
+import com.moriafly.salt.ui.UnstableSaltUiApi
 import org.lsposed.hiddenapibypass.HiddenApiBypass
 
 /**
  * Utility class for getting information about the current ROM.
  */
-@UnstableSaltApi
+@UnstableSaltUiApi
 object RomUtil {
     /**
      * [Meizu FlymeOS](https://www.flyme.com).

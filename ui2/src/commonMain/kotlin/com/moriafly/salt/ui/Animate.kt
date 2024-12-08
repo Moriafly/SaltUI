@@ -39,7 +39,7 @@ import androidx.compose.runtime.setValue
  * @param resetDuration Duration for resetting the position back to the starting point.
  * @param repeatDuration Duration for completing one full rotation cycle.
  */
-@UnstableSaltApi
+@UnstableSaltUiApi
 @Composable
 fun animateInfiniteRotationState(
     key: Any,

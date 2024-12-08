@@ -48,7 +48,7 @@ import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.view.get
-import com.moriafly.salt.ui.UnstableSaltApi
+import com.moriafly.salt.ui.UnstableSaltUiApi
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -81,7 +81,7 @@ import kotlinx.coroutines.withContext
  * @param chromeClient provides access to WebChromeClient via subclassing.
  * @param factory an optional WebView factory for using a custom subclass of WebView.
  */
-@UnstableSaltApi
+@UnstableSaltUiApi
 @Composable
 fun WebView(
     state: WebViewState,
@@ -155,7 +155,7 @@ fun WebView(
  * @param chromeClient provides access to WebChromeClient via subclassing.
  * @param factory an optional WebView factory for using a custom subclass of WebView.
  */
-@UnstableSaltApi
+@UnstableSaltUiApi
 @Composable
 fun WebView(
     state: WebViewState,

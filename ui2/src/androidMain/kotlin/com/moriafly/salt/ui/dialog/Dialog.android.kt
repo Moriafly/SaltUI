@@ -28,12 +28,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
 import com.moriafly.salt.ui.SaltTheme
-import com.moriafly.salt.ui.UnstableSaltApi
+import com.moriafly.salt.ui.UnstableSaltUiApi
 
 /**
  * The basic bottom sheet dialog has default corner background and vertical padding
  */
-@UnstableSaltApi
+@UnstableSaltUiApi
 @Composable
 fun BasicBottomSheetDialog(
     onDismissRequest: () -> Unit,
@@ -63,7 +63,7 @@ fun BasicBottomSheetDialog(
 }
 
 @Deprecated("Use BasicBottomSheetDialog", replaceWith = ReplaceWith("BasicBottomSheetDialog"))
-@UnstableSaltApi
+@UnstableSaltUiApi
 @Composable
 fun ColumnBottomSheetDialog(
     onDismissRequest: () -> Unit,

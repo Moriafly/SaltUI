@@ -32,7 +32,7 @@ import androidx.compose.ui.unit.dp
  * Of course, you can also implement the corresponding color conversion yourself.
  */
 @RequiresApi(Build.VERSION_CODES.S)
-@UnstableSaltApi
+@UnstableSaltUiApi
 fun saltColorsByColorScheme(
     colorScheme: ColorScheme
 ): SaltColors = SaltColors(

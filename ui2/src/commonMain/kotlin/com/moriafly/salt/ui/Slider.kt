@@ -117,7 +117,7 @@ import kotlin.math.roundToInt
  *   for this slider. You can create and pass in your own `remember`ed instance to observe
  *   [Interaction]s and customize the appearance / behavior of this slider in different states
  */
-@UnstableSaltApi
+@UnstableSaltUiApi
 @Composable
 internal fun Slider(
     value: Float,

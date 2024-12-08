@@ -26,7 +26,7 @@ import androidx.compose.foundation.layout.systemBarsIgnoringVisibility
 import androidx.compose.foundation.layout.union
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.NonRestartableComposable
-import com.moriafly.salt.ui.UnstableSaltApi
+import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.moriafly.salt.ui.util.RomUtil
 
 /**
@@ -34,7 +34,7 @@ import com.moriafly.salt.ui.util.RomUtil
  * In other words, regardless of whether the system columns included in [safeMain] are displayed or not, it will have paddings
  */
 @OptIn(ExperimentalLayoutApi::class)
-@UnstableSaltApi
+@UnstableSaltUiApi
 actual val WindowInsets.Companion.safeMainIgnoringVisibility: WindowInsets
     @Composable
     @NonRestartableComposable
@@ -46,7 +46,7 @@ actual val WindowInsets.Companion.safeMainIgnoringVisibility: WindowInsets
  * I don't understand why Xiaomi's HyperOS behaves this way, but there are cases where users hide the navigation bar on some car systems
  * So this parameter is added
  */
-@UnstableSaltApi
+@UnstableSaltUiApi
 actual val WindowInsets.Companion.safeMainCompat: WindowInsets
     @Composable
     @NonRestartableComposable

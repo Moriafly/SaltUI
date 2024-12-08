@@ -23,9 +23,9 @@ import android.os.Build
 import android.view.View
 import android.view.Window
 import androidx.annotation.RequiresApi
-import com.moriafly.salt.ui.UnstableSaltApi
+import com.moriafly.salt.ui.UnstableSaltUiApi
 
-@UnstableSaltApi
+@UnstableSaltUiApi
 object WindowUtil {
     /**
      * Set the status bar foreground color.

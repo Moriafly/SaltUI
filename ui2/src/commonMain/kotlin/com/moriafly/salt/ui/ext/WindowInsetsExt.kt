@@ -27,7 +27,7 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.NonRestartableComposable
 import androidx.compose.ui.Modifier
-import com.moriafly.salt.ui.UnstableSaltApi
+import com.moriafly.salt.ui.UnstableSaltUiApi
 
 /**
  * All system bars (status bars, caption bar as well as navigation bars) and display cutout. but not
@@ -43,20 +43,20 @@ val WindowInsets.Companion.safeMain: WindowInsets
  * empty. In other words, regardless of whether the system columns included in [safeMain] are
  * displayed or not, it will have paddings.
  */
-@UnstableSaltApi
+@UnstableSaltUiApi
 expect val WindowInsets.Companion.safeMainIgnoringVisibility: WindowInsets
 
-@UnstableSaltApi
+@UnstableSaltUiApi
 expect val WindowInsets.Companion.safeMainCompat: WindowInsets
 
 @Composable
 fun Modifier.safeMainPadding() = windowInsetsPadding(WindowInsets.safeMain)
 
-@UnstableSaltApi
+@UnstableSaltUiApi
 @Composable
 fun Modifier.safeMainIgnoringVisibilityPadding()
     = windowInsetsPadding(WindowInsets.safeMainIgnoringVisibility)
 
-@UnstableSaltApi
+@UnstableSaltUiApi
 @Composable
 fun Modifier.safeMainCompatPadding() = windowInsetsPadding(WindowInsets.safeMainCompat)
