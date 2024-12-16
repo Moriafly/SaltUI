@@ -41,11 +41,14 @@ fun App() {
 
 See demo: [composeApp](https://github.com/Moriafly/SaltUI/tree/main/composeApp).
 
-## Others
+## Text Description and Translation Standards
 
-- [LICENSE](LICENSE)
-- [Contributor Covenant Code of Conduct](CODE_OF_CONDUCT.md)
+See: [Salt UI Text Description and Translation Standards](https://moriafly.com/standards/tdts).
 
-## Star History
+## License
 
-[![Star History Chart](https://api.star-history.com/svg?repos=Moriafly/SaltUI&type=Date)](https://star-history.com/#Moriafly/SaltUI&Date)
+See [LICENSE](LICENSE).
+
+## Contribute
+
+See [Contributor Covenant Code of Conduct](CODE_OF_CONDUCT.md).
