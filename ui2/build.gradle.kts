@@ -67,7 +67,7 @@ kotlin {
         publishLibraryVariants("release")
         // publishLibraryVariantsGroupedByFlavor = true
     }
-    
+
     jvm("desktop")
 
     listOf(
@@ -80,7 +80,7 @@ kotlin {
             isStatic = true
         }
     }
-    
+
     sourceSets {
         androidMain.dependencies {
             implementation(libs.core.ktx)
@@ -148,6 +148,5 @@ android {
     }
 
     dependencies {
-
     }
 }
