@@ -1,4 +1,4 @@
-[![Maven Central](https://img.shields.io/maven-central/v/io.github.moriafly/salt-ui)](https://search.maven.org/search?q=g:io.github.moriafly)
+[![Maven Central](https://img.shields.io/maven-central/v/io.github.moriafly/salt-ui)](https://search.maven.org/search?q=g:io.github.moriafly) [![CodeFactor](https://www.codefactor.io/repository/github/moriafly/saltui/badge/main)](https://www.codefactor.io/repository/github/moriafly/saltui/overview/main)
 
 # Salt UI
 
