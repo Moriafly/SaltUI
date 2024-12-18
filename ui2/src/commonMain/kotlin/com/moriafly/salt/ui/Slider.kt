@@ -265,7 +265,7 @@ private fun SliderImpl(
         SliderDraggableState {
             val maxPx = max(totalWidth.value - thumbWidth.value / 2, 0f)
             val minPx = min(thumbWidth.value / 2, maxPx)
-            rawOffset.value = (rawOffset.value + it + pressOffset.value)
+            rawOffset.value += it + pressOffset.value
             pressOffset.value = 0f
             val offsetInTrack = snapValueToTick(rawOffset.value, tickFractions, minPx, maxPx)
             onValueChangeState.value.invoke(scaleToUserValue(minPx, maxPx, offsetInTrack))
@@ -341,7 +341,7 @@ private fun SliderImpl(
         totalWidth.value = sliderWidth
 
         val trackOffsetX = thumbPlaceable.width / 2
-        val thumbOffsetX = ((trackPlaceable.width) * positionFraction).roundToInt()
+        val thumbOffsetX = (trackPlaceable.width * positionFraction).roundToInt()
         val trackOffsetY = (sliderHeight - trackPlaceable.height) / 2
         val thumbOffsetY = (sliderHeight - thumbPlaceable.height) / 2
 
@@ -412,14 +412,14 @@ private fun RangeSliderImpl(
         val maxPx = max(totalWidth - endThumbWidth / 2, 0f)
         val minPx = min(startThumbWidth / 2, maxPx)
         val offsetRange = if (isStart) {
-            rawOffsetStart.value = (rawOffsetStart.value + offset)
+            rawOffsetStart.value += offset
             rawOffsetEnd.value = scaleToOffset(minPx, maxPx, value.endInclusive)
             val offsetEnd = rawOffsetEnd.value
             var offsetStart = rawOffsetStart.value.coerceIn(minPx, offsetEnd)
             offsetStart = snapValueToTick(offsetStart, tickFractions, minPx, maxPx)
             offsetStart..offsetEnd
         } else {
-            rawOffsetEnd.value = (rawOffsetEnd.value + offset)
+            rawOffsetEnd.value += offset
             rawOffsetStart.value = scaleToOffset(minPx, maxPx, value.start)
             val offsetStart = rawOffsetStart.value
             var offsetEnd = rawOffsetEnd.value.coerceIn(offsetStart, maxPx)

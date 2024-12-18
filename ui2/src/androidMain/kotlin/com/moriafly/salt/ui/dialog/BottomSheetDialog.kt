@@ -580,7 +580,7 @@ private fun BottomSheetDialogLayout(
 private fun View.isFlagSecureEnabled(): Boolean {
     val windowParams = rootView.layoutParams as? WindowManager.LayoutParams
     if (windowParams != null) {
-        return (windowParams.flags and WindowManager.LayoutParams.FLAG_SECURE) != 0
+        return windowParams.flags and WindowManager.LayoutParams.FLAG_SECURE != 0
     }
     return false
 }
