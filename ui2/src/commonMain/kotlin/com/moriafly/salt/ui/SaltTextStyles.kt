@@ -25,7 +25,7 @@ import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 
 @Immutable
-class SaltTextStyles (
+class SaltTextStyles(
     val main: TextStyle,
     val sub: TextStyle,
     val paragraph: TextStyle

@@ -31,20 +31,20 @@ import androidx.compose.ui.unit.dp
  * Dimens for Salt UI.
  *
  *   ╭──────────────────────────────────────────────────╮
- *   │                   [padding] * 0.5f               │
+ *   │ ------------------[padding] * 0.5f               │
  *   │           ╭──────────────────────────╮           │
- *   │           │       [subPadding]       │           │
+ *   │           │ ------[subPadding]       │           │
  *   │ [padding] │ [padding] Text [padding] │ [padding] │
- *   │           │       [subPadding]       │           │
+ *   │           │ ------[subPadding]       │           │
  *   │           ╰──────────────────────────╯           │
- *   │                   [padding] * 0.5f               │
- *   │                   [padding] * 0.5f               │
+ *   │ ------------------[padding] * 0.5f               │
+ *   │ ------------------[padding] * 0.5f               │
  *   │           ╭──────────────────────────╮           │
- *   │           │       [subPadding]       │           │
+ *   │           │ ------[subPadding]       │           │
  *   │ [padding] │ [padding] Text [padding] │ [padding] │
- *   │           │       [subPadding]       │           │
+ *   │           │ ------[subPadding]       │           │
  *   │           ╰──────────────────────────╯           │
- *   │                   [padding] * 0.5f               │
+ *   │ ------------------[padding] * 0.5f               │
  *   ╰──────────────────────────────────────────────────╯
  *
  * @param item Minimum size of an [Item], [ItemSwitcher], etc.

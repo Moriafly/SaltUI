@@ -46,12 +46,20 @@ fun RoundedColumn(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = SaltTheme.dimens.padding, vertical = SaltTheme.dimens.padding * 0.5f)
+            .padding(
+                horizontal = SaltTheme.dimens.padding,
+                vertical =
+                    SaltTheme.dimens.padding * 0.5f
+            )
             .clip(RoundedCornerShape(SaltTheme.dimens.corner))
             .background(color)
             .border(
                 width = Dp.Hairline,
-                color = if (color == Color.Unspecified) Color.Unspecified else SaltTheme.colors.stroke,
+                color = if (color == Color.Unspecified) {
+                    Color.Unspecified
+                } else {
+                    SaltTheme.colors.stroke
+                },
                 shape = RoundedCornerShape(SaltTheme.dimens.corner)
             ),
         content = content

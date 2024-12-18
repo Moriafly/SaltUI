@@ -104,8 +104,8 @@ internal fun BasicItem(
 internal fun BasicItemEdit(
     text: String,
     onChange: (String) -> Unit,
-    modifier: Modifier = Modifier,
     paddingValues: SaltPaddingValues,
+    modifier: Modifier = Modifier,
     hint: String? = null,
     hintColor: Color = SaltTheme.colors.subText,
     readOnly: Boolean = false,

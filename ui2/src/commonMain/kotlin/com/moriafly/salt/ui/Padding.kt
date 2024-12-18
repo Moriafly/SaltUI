@@ -39,7 +39,7 @@ internal class SaltPaddingValues(
     val end: Dp = 0.dp,
     @Stable
     val bottom: Dp = 0.dp
-): PaddingValues {
+) : PaddingValues {
     constructor(all: Dp) : this(all, all, all, all)
     constructor(horizontal: Dp, vertical: Dp) : this(horizontal, vertical, horizontal, vertical)
 
@@ -63,9 +63,9 @@ internal class SaltPaddingValues(
     override fun equals(other: Any?): Boolean {
         if (other !is SaltPaddingValues) return false
         return start == other.start &&
-                top == other.top &&
-                end == other.end &&
-                bottom == other.bottom
+            top == other.top &&
+            end == other.end &&
+            bottom == other.bottom
     }
 
     override fun hashCode() =

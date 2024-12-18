@@ -184,7 +184,9 @@ class BottomSheetBehaviorProperties(
 
     @JvmInline
     @Immutable
-    value class Size(@Px val value: Int) {
+    value class Size(
+        @Px val value: Int
+    ) {
         companion object {
             @Stable
             val NotSet = Size(-1)
@@ -193,7 +195,9 @@ class BottomSheetBehaviorProperties(
 
     @JvmInline
     @Stable
-    value class PeekHeight(val value: Int) {
+    value class PeekHeight(
+        val value: Int
+    ) {
         companion object {
             @Stable
             val Auto = PeekHeight(PEEK_HEIGHT_AUTO)
@@ -322,13 +326,17 @@ interface DialogWindowProvider {
 private class BottomSheetDialogLayout(
     context: Context,
     override val window: Window
-) : AbstractComposeView(context), DialogWindowProvider {
+) : AbstractComposeView(context),
+    DialogWindowProvider {
     private var content: @Composable () -> Unit by mutableStateOf({})
 
     override var shouldCreateCompositionOnAttachedToWindow: Boolean = false
         private set
 
-    fun setContent(parent: CompositionContext, content: @Composable () -> Unit) {
+    fun setContent(
+        parent: CompositionContext,
+        content: @Composable () -> Unit
+    ) {
         setParentCompositionContext(parent)
         this.content = content
         shouldCreateCompositionOnAttachedToWindow = true
@@ -349,23 +357,30 @@ private class BottomSheetDialogWrapper(
     density: Density,
     dialogId: UUID
 ) : BottomSheetDialog(
-    ContextThemeWrapper(
-        composeView.context,
-        if (properties.enableEdgeToEdge) {
-            R.style.TransparentEdgeToEdgeEnabledBottomSheetTheme
-        } else {
-            R.style.TransparentEdgeToEdgeDisabledBottomSheetTheme
-        }
-    )
-), ViewRootForInspector {
+        ContextThemeWrapper(
+            composeView.context,
+            if (properties.enableEdgeToEdge) {
+                R.style.TransparentEdgeToEdgeEnabledBottomSheetTheme
+            } else {
+                R.style.TransparentEdgeToEdgeDisabledBottomSheetTheme
+            }
+        )
+    ),
+    ViewRootForInspector {
     private val bottomSheetDialogLayout: BottomSheetDialogLayout
 
     private val bottomSheetCallbackForAnimation: BottomSheetCallback =
         object : BottomSheetCallback() {
-            override fun onSlide(bottomSheet: View, slideOffset: Float) {
+            override fun onSlide(
+                bottomSheet: View,
+                slideOffset: Float
+            ) {
             }
 
-            override fun onStateChanged(bottomSheet: View, newState: Int) {
+            override fun onStateChanged(
+                bottomSheet: View,
+                newState: Int
+            ) {
                 if (newState == STATE_HIDDEN) {
                     onDismissRequest()
                 }
@@ -416,7 +431,10 @@ private class BottomSheetDialogWrapper(
             // shapes like circle the area for dismiss might be to small (rectangular outline
             // consuming clicks outside of the circle).
             outlineProvider = object : ViewOutlineProvider() {
-                override fun getOutline(view: View, result: Outline) {
+                override fun getOutline(
+                    view: View,
+                    result: Outline
+                ) {
                     result.setRect(0, 0, view.width, view.height)
                     // We set alpha to 0 to hide the view's shadow and let the composable to draw
                     // its own shadow. This still enables us to get the extra space needed in the
@@ -442,7 +460,9 @@ private class BottomSheetDialogWrapper(
         (window.decorView as? ViewGroup)?.disableClipping()
         setContentView(bottomSheetDialogLayout)
         bottomSheetDialogLayout.setViewTreeLifecycleOwner(composeView.findViewTreeLifecycleOwner())
-        bottomSheetDialogLayout.setViewTreeViewModelStoreOwner(composeView.findViewTreeViewModelStoreOwner())
+        bottomSheetDialogLayout.setViewTreeViewModelStoreOwner(
+            composeView.findViewTreeViewModelStoreOwner()
+        )
         bottomSheetDialogLayout.setViewTreeSavedStateRegistryOwner(
             composeView.findViewTreeSavedStateRegistryOwner()
         )
@@ -459,7 +479,10 @@ private class BottomSheetDialogWrapper(
     }
 
     // TODO: (b/159900354) Make the Android Dialog full screen and the scrim fully transparent.
-    fun setContent(parentComposition: CompositionContext, children: @Composable () -> Unit) {
+    fun setContent(
+        parentComposition: CompositionContext,
+        children: @Composable () -> Unit
+    ) {
         bottomSheetDialogLayout.setContent(parentComposition, children)
     }
 
@@ -585,10 +608,9 @@ private fun View.isFlagSecureEnabled(): Boolean {
     return false
 }
 
-private fun SecureFlagPolicy.shouldApplySecureFlag(isSecureFlagSetOnParent: Boolean): Boolean {
-    return when (this) {
+private fun SecureFlagPolicy.shouldApplySecureFlag(isSecureFlagSetOnParent: Boolean): Boolean =
+    when (this) {
         SecureFlagPolicy.SecureOff -> false
         SecureFlagPolicy.SecureOn -> true
         SecureFlagPolicy.Inherit -> isSecureFlagSetOnParent
     }
-}

@@ -143,8 +143,8 @@ fun Icon(
         modifier = modifier
             .toolingGraphicsLayer()
             .thenIf(
-                painter.intrinsicSize == Size.Unspecified
-                        || painter.intrinsicSize.isInfinite()
+                painter.intrinsicSize == Size.Unspecified ||
+                    painter.intrinsicSize.isInfinite()
             ) {
                 size(SaltTheme.dimens.itemIcon)
             }

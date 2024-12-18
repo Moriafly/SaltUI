@@ -39,9 +39,7 @@ import androidx.compose.ui.unit.sp
  * Build content interface title text, out of [RoundedColumn].
  */
 @Composable
-fun ItemOuterTitle(
-    text: String
-) {
+fun ItemOuterTitle(text: String) {
     Text(
         text = text,
         modifier = Modifier
@@ -51,16 +49,16 @@ fun ItemOuterTitle(
                 start = SaltTheme.dimens.padding * 2,
                 top = SaltTheme.dimens.padding * 0.5f + SaltTheme.dimens.subPadding,
                 end = SaltTheme.dimens.padding * 2,
-                bottom = (SaltTheme.dimens.subPadding - SaltTheme.dimens.padding * 0.5f).coerceAtLeast(0.dp)
+                bottom = (SaltTheme.dimens.subPadding - SaltTheme.dimens.padding * 0.5f).coerceAtLeast(
+                    0.dp
+                )
             ),
         style = SaltTheme.textStyles.sub
     )
 }
 
 @Composable
-fun ItemOuterTip(
-    text: String
-) {
+fun ItemOuterTip(text: String) {
     Text(
         text = text,
         modifier = Modifier
@@ -81,7 +79,11 @@ fun ItemOuterLargeTitle(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = SaltTheme.dimens.padding * 2, vertical = SaltTheme.dimens.padding * 3),
+            .padding(
+                horizontal = SaltTheme.dimens.padding * 2,
+                vertical =
+                    SaltTheme.dimens.padding * 3
+            ),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(

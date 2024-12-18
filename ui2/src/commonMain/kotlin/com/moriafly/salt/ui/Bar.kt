@@ -136,7 +136,13 @@ fun RowScope.BottomBarItem(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        val color = if (state) SaltTheme.colors.highlight else SaltTheme.colors.subText.copy(alpha = 0.5f)
+        val color = if (state) {
+            SaltTheme.colors.highlight
+        } else {
+            SaltTheme.colors.subText.copy(
+                alpha = 0.5f
+            )
+        }
         Icon(
             modifier = Modifier
                 .size(24.dp),
