@@ -1,0 +1,11 @@
+root = true
+
+[*.{kt,kts}]
+max_line_length = 100
+ktlint_code_style = ktlint_official
+ktlint_standard = enabled
+ktlint_function_naming_ignore_when_annotated_with = Composable
+ktlint_standard_trailing-comma-on-call-site = disabled
+ktlint_standard_trailing-comma-on-declaration-site = disabled
+ktlint_standard_multiline-expression-wrapping = disabled
+ktlint_standard_chain-method-continuation = disabled
