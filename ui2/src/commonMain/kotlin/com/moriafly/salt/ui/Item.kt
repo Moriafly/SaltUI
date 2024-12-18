@@ -79,9 +79,7 @@ import saltui.ui2.generated.resources.ic_warning
  * @param arrowType [ItemArrowType].
  */
 @Composable
-expect fun ItemArrow(
-    arrowType: ItemArrowType
-)
+expect fun ItemArrow(arrowType: ItemArrowType)
 
 /**
  * Build content interface title text.
@@ -95,9 +93,7 @@ expect fun ItemArrow(
     level = DeprecationLevel.WARNING
 )
 @Composable
-fun ItemTitle(
-    text: String
-) {
+fun ItemTitle(text: String) {
     Text(
         text = text,
         modifier = Modifier
@@ -115,9 +111,7 @@ fun ItemTitle(
  * @param text text.
  */
 @Composable
-fun ItemTip(
-    text: String
-) {
+fun ItemTip(text: String) {
     Text(
         text = text,
         modifier = Modifier
@@ -133,8 +127,9 @@ fun ItemTip(
  * @param text text.
  */
 @Deprecated(
-    message = "Use ItemTip instead. In actual development, an ItemSpacer is almost always needed above and below the ItemText, so this padding is more suitable to be included within the component. " +
-            "Note that after the replacement, remove the ItemSpacer above and below",
+    message = "Use ItemTip instead. In actual development, an ItemSpacer is almost always needed " +
+        "above and below the ItemText, so this padding is more suitable to be included within " +
+        "the component. Note that after the replacement, remove the ItemSpacer above and below.",
     replaceWith = ReplaceWith(
         expression = "ItemTip(text = text)",
         imports = arrayOf("com.moriafly.salt.ui.ItemText")
@@ -142,9 +137,7 @@ fun ItemTip(
     level = DeprecationLevel.WARNING
 )
 @Composable
-fun ItemText(
-    text: String
-) {
+fun ItemText(text: String) {
     Text(
         text = text,
         modifier = Modifier
@@ -447,7 +440,11 @@ fun ItemCheck(
         Icon(
             modifier = Modifier
                 .size(SaltTheme.dimens.itemIcon),
-            painter = if (state) painterResource(Res.drawable.ic_check) else painterResource(Res.drawable.ic_uncheck),
+            painter = if (state) {
+                painterResource(Res.drawable.ic_check)
+            } else {
+                painterResource(Res.drawable.ic_uncheck)
+            },
             contentDescription = null,
             tint = SaltTheme.colors.highlight
         )
@@ -724,7 +721,11 @@ fun ItemButton(
                 .weight(1f)
                 .fillMaxWidth()
                 .innerPadding(horizontal = false),
-            color = if (enabled && primary) SaltTheme.colors.highlight else SaltTheme.colors.subText,
+            color = if (enabled && primary) {
+                SaltTheme.colors.highlight
+            } else {
+                SaltTheme.colors.subText
+            },
             fontWeight = FontWeight.Bold
         )
     }
@@ -746,9 +747,7 @@ fun ItemSpacer() {
  * elements such as buttons internally.
  */
 @Composable
-fun ItemContainer(
-    content: @Composable BoxScope.() -> Unit
-) {
+fun ItemContainer(content: @Composable BoxScope.() -> Unit) {
     Box(
         modifier = Modifier
             .innerPadding()
@@ -796,8 +795,16 @@ fun ItemInfo(
             .fillMaxWidth()
             .background(
                 when (infoType) {
-                    ItemInfoType.Warning -> if (SaltTheme.configs.isDarkTheme) SaltPalette.WarningDarkBackground else SaltPalette.WarningLightBackground
-                    ItemInfoType.Error -> if (SaltTheme.configs.isDarkTheme) SaltPalette.ErrorDarkBackground else SaltPalette.ErrorLightBackground
+                    ItemInfoType.Warning -> if (SaltTheme.configs.isDarkTheme) {
+                        SaltPalette.WarningDarkBackground
+                    } else {
+                        SaltPalette.WarningLightBackground
+                    }
+                    ItemInfoType.Error -> if (SaltTheme.configs.isDarkTheme) {
+                        SaltPalette.ErrorDarkBackground
+                    } else {
+                        SaltPalette.ErrorLightBackground
+                    }
                 }
             )
             .semantics(true) { }
@@ -816,8 +823,16 @@ fun ItemInfo(
             contentDescription = null,
             colorFilter = ColorFilter.tint(
                 when (infoType) {
-                    ItemInfoType.Warning -> if (SaltTheme.configs.isDarkTheme) SaltPalette.WarningDarkIcon else SaltPalette.WarningLightIcon
-                    ItemInfoType.Error -> if (SaltTheme.configs.isDarkTheme) SaltPalette.ErrorDarkIcon else SaltPalette.ErrorLightIcon
+                    ItemInfoType.Warning -> if (SaltTheme.configs.isDarkTheme) {
+                        SaltPalette.WarningDarkIcon
+                    } else {
+                        SaltPalette.WarningLightIcon
+                    }
+                    ItemInfoType.Error -> if (SaltTheme.configs.isDarkTheme) {
+                        SaltPalette.ErrorDarkIcon
+                    } else {
+                        SaltPalette.ErrorLightIcon
+                    }
                 }
             )
         )
