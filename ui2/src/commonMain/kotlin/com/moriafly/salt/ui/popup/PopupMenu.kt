@@ -28,7 +28,6 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
@@ -166,8 +165,8 @@ internal fun DropdownMenuContent(
                 this.transformOrigin = transformOriginState.value
             }
             .width(IntrinsicSize.Max)
-            .clip(RoundedCornerShape(SaltTheme.dimens.corner))
-            .border(1.dp, SaltTheme.colors.stroke, RoundedCornerShape(SaltTheme.dimens.corner))
+            .clip(SaltTheme.shapes.medium)
+            .border(1.dp, SaltTheme.colors.stroke, SaltTheme.shapes.medium)
             .background(color = backgroundColor)
             .verticalScroll(rememberScrollState()),
         content = content
@@ -185,9 +184,9 @@ internal fun calculateTransformOrigin(
         else -> {
             val intersectionCenter =
                 (
-                        kotlin.math.max(parentBounds.left, menuBounds.left) +
-                                kotlin.math.min(parentBounds.right, menuBounds.right)
-                        ) / 2
+                    kotlin.math.max(parentBounds.left, menuBounds.left) +
+                        kotlin.math.min(parentBounds.right, menuBounds.right)
+                ) / 2
             (intersectionCenter - menuBounds.left).toFloat() / menuBounds.width
         }
     }
@@ -198,9 +197,9 @@ internal fun calculateTransformOrigin(
         else -> {
             val intersectionCenter =
                 (
-                        kotlin.math.max(parentBounds.top, menuBounds.top) +
-                                kotlin.math.min(parentBounds.bottom, menuBounds.bottom)
-                        ) / 2
+                    kotlin.math.max(parentBounds.top, menuBounds.top) +
+                        kotlin.math.min(parentBounds.bottom, menuBounds.bottom)
+                ) / 2
             (intersectionCenter - menuBounds.top).toFloat() / menuBounds.height
         }
     }
@@ -257,7 +256,7 @@ internal data class DropdownMenuPositionProvider(
         val toDisplayBottom = windowSize.height - popupContentSize.height - verticalMargin
         val y = sequenceOf(toBottom, toTop, toCenter, toDisplayBottom).firstOrNull {
             it >= verticalMargin &&
-                    it + popupContentSize.height <= windowSize.height - verticalMargin
+                it + popupContentSize.height <= windowSize.height - verticalMargin
         } ?: toTop
 
         onPositionCalculated(

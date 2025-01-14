@@ -65,8 +65,13 @@ class SaltDimens(
 ) {
     val item by mutableStateOf(item, structuralEqualityPolicy())
     val itemIcon by mutableStateOf(itemIcon, structuralEqualityPolicy())
+
+    @Deprecated("Use SaltTheme.shape.medium instead.")
     val corner by mutableStateOf(corner, structuralEqualityPolicy())
+
+    @Deprecated("Use SaltTheme.shape.large instead.")
     val dialogCorner by mutableStateOf(dialogCorner, structuralEqualityPolicy())
+
     val padding by mutableStateOf(padding, structuralEqualityPolicy())
     val subPadding by mutableStateOf(subPadding, structuralEqualityPolicy())
 
@@ -84,6 +89,7 @@ class SaltDimens(
         SaltPaddingValues(horizontal = padding, vertical = padding * 0.5f)
     }
 
+    @Suppress("DEPRECATION")
     fun copy(
         item: Dp = this.item,
         itemIcon: Dp = this.itemIcon,

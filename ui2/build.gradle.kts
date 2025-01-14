@@ -54,6 +54,14 @@ mavenPublishing {
 }
 
 kotlin {
+    targets.configureEach {
+        compilations.configureEach {
+            compileTaskProvider.get().compilerOptions {
+                freeCompilerArgs.add("-Xexpect-actual-classes")
+            }
+        }
+    }
+
     withSourcesJar(publish = false)
 
     androidTarget {

@@ -23,7 +23,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -51,7 +50,7 @@ fun RoundedColumn(
                 vertical =
                     SaltTheme.dimens.padding * 0.5f
             )
-            .clip(RoundedCornerShape(SaltTheme.dimens.corner))
+            .clip(SaltTheme.shapes.medium)
             .background(color)
             .border(
                 width = Dp.Hairline,
@@ -60,7 +59,7 @@ fun RoundedColumn(
                 } else {
                     SaltTheme.colors.stroke
                 },
-                shape = RoundedCornerShape(SaltTheme.dimens.corner)
+                shape = SaltTheme.shapes.medium
             ),
         content = content
     )
