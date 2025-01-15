@@ -34,6 +34,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.role
@@ -43,14 +44,14 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.moriafly.salt.ui.icons.ArrowBack
+import com.moriafly.salt.ui.icons.SaltIcons
 import com.moriafly.salt.ui.internal.stringResourceBack
-import org.jetbrains.compose.resources.painterResource
-import saltui.ui2.generated.resources.Res
-import saltui.ui2.generated.resources.ic_arrow_back
 
 /**
- * the title bar.
+ * Title bar.
  */
+@Suppress("ktlint:compose:modifier-missing-check")
 @UnstableSaltUiApi
 @Composable
 fun TitleBar(
@@ -76,7 +77,7 @@ fun TitleBar(
                         onBack()
                     }
                     .padding(18.dp),
-                painter = painterResource(Res.drawable.ic_arrow_back),
+                painter = rememberVectorPainter(SaltIcons.ArrowBack),
                 contentDescription = stringResourceBack(),
                 tint = SaltTheme.colors.text
             )
@@ -116,8 +117,9 @@ fun BottomBar(
 }
 
 /**
- * the item in [BottomBar].
+ * The item in [BottomBar].
  */
+@Suppress("ktlint:compose:modifier-missing-check")
 @UnstableSaltUiApi
 @Composable
 fun RowScope.BottomBarItem(
