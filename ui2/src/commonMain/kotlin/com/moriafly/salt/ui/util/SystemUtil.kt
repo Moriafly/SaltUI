@@ -22,6 +22,9 @@ package com.moriafly.salt.ui.util
 import com.moriafly.salt.ui.UnstableSaltUiApi
 
 object SystemUtil {
+    @Suppress("MemberVisibilityCanBePrivate")
+    const val VERSION_CODE_UNKNOWN = -1
+
     const val ANDROID_6 = 23
     const val ANDROID_7 = 24
     const val ANDROID_7_1 = 25
@@ -78,7 +81,8 @@ object SystemUtil {
     val macOSVersion: String by lazy { macOSVersion() }
 
     /**
-     * Get the version code of the current system.
+     * Get the version code of the current system, or [VERSION_CODE_UNKNOWN] if the system is not
+     * supported.
      *
      * - Android: android.os.Build.VERSION.SDK_INT.
      * - Windows: [Build number](https://learn.microsoft.com/en-us/windows-hardware/drivers/install/inf-manufacturer-section).
@@ -94,7 +98,7 @@ object SystemUtil {
         when (os) {
             OS.Android -> androidVersionSdk
             OS.Windows -> windowsBuild
-            else -> throw UnsupportedOperationException()
+            else -> VERSION_CODE_UNKNOWN
         }
     }
 
