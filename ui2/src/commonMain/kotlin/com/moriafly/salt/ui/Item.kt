@@ -747,9 +747,12 @@ fun ItemSpacer() {
  * elements such as buttons internally.
  */
 @Composable
-fun ItemContainer(content: @Composable BoxScope.() -> Unit) {
+fun ItemContainer(
+    modifier: Modifier = Modifier,
+    content: @Composable BoxScope.() -> Unit
+) {
     Box(
-        modifier = Modifier
+        modifier = modifier
             .innerPadding()
     ) {
         content()
