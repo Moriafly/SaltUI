@@ -24,9 +24,9 @@ import com.moriafly.salt.ui.UnstableSaltUiApi
 object SystemUtil {
     const val ANDROID_6 = 23
     const val ANDROID_7 = 24
-    const val ANDROID_7_1 = 24
+    const val ANDROID_7_1 = 25
     const val ANDROID_8 = 26
-    const val ANDROID_8_1 = 26
+    const val ANDROID_8_1 = 27
     const val ANDROID_9 = 28
     const val ANDROID_10 = 29
     const val ANDROID_11 = 30
