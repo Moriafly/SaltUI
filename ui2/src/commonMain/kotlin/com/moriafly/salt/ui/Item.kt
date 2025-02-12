@@ -111,10 +111,13 @@ fun ItemTitle(text: String) {
  * @param text text.
  */
 @Composable
-fun ItemTip(text: String) {
+fun ItemTip(
+    text: String,
+    modifier: Modifier = Modifier
+) {
     Text(
         text = text,
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .innerPadding(),
         style = SaltTheme.textStyles.sub
@@ -735,9 +738,11 @@ fun ItemButton(
  * Build vertical spacing [SaltDimens.subPadding] for the content interface.
  */
 @Composable
-fun ItemSpacer() {
+fun ItemSpacer(
+    modifier: Modifier = Modifier
+) {
     Spacer(
-        modifier = Modifier
+        modifier = modifier
             .height(SaltTheme.dimens.subPadding)
     )
 }
@@ -791,10 +796,11 @@ enum class ItemInfoType {
 @Composable
 fun ItemInfo(
     text: String,
-    infoType: ItemInfoType
+    infoType: ItemInfoType,
+    modifier: Modifier = Modifier
 ) {
     Row(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .background(
                 when (infoType) {
