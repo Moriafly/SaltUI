@@ -114,7 +114,7 @@ object SystemUtil {
     @UnstableSaltUiApi
     fun isAndroidAndVersionSdk(
         value: (Int) -> Boolean
-    ): Boolean = if (os == OS.Android) value(androidVersionSdk) else false
+    ): Boolean = if (os.isAndroid()) value(androidVersionSdk) else false
 
     /**
      * Sample:
@@ -128,7 +128,7 @@ object SystemUtil {
     @UnstableSaltUiApi
     fun isWindowsAndBuild(
         value: (Int) -> Boolean
-    ): Boolean = if (os == OS.Windows) value(windowsBuild) else false
+    ): Boolean = if (os.isWindows()) value(windowsBuild) else false
 
     enum class OS {
         Android,
@@ -136,7 +136,19 @@ object SystemUtil {
         MacOS,
         Linux,
         IOS,
-        Unknown
+        Unknown;
+
+        fun isAndroid(): Boolean = this == Android
+
+        fun isWindows(): Boolean = this == Windows
+
+        fun isMacOS(): Boolean = this == MacOS
+
+        fun isLinux(): Boolean = this == Linux
+
+        fun isIOS(): Boolean = this == IOS
+
+        fun isUnknown(): Boolean = this == Unknown
     }
 }
 
