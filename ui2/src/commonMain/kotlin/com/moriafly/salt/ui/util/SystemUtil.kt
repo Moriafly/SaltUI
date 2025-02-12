@@ -59,7 +59,6 @@ object SystemUtil {
     const val WINDOWS_11_23H2 = 22631
     const val WINDOWS_11_24H2 = 26100
 
-    @UnstableSaltUiApi
     val os: OS by lazy { os() }
 
     /**
