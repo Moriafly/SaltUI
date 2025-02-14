@@ -6,7 +6,8 @@ plugins {
     alias(libs.plugins.jetbrainsCompose)
     alias(libs.plugins.compose.compiler)
     `maven-publish`
-    id("com.vanniktech.maven.publish") version "0.28.0"
+    // https://github.com/vanniktech/gradle-maven-publish-plugin
+    id("com.vanniktech.maven.publish") version "0.30.0"
 }
 
 mavenPublishing {
