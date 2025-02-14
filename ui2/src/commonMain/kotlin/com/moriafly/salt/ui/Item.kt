@@ -51,6 +51,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.semantics
@@ -60,6 +61,8 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.moriafly.salt.ui.icons.SaltIcons
+import com.moriafly.salt.ui.icons.Success
 import com.moriafly.salt.ui.popup.PopupMenu
 import com.moriafly.salt.ui.popup.PopupState
 import org.jetbrains.compose.resources.painterResource
@@ -788,6 +791,7 @@ fun ItemDivider(
 
 @UnstableSaltUiApi
 enum class ItemInfoType {
+    Success,
     Warning,
     Error
 }
@@ -804,6 +808,11 @@ fun ItemInfo(
             .fillMaxWidth()
             .background(
                 when (infoType) {
+                    ItemInfoType.Success -> if (SaltTheme.configs.isDarkTheme) {
+                        SaltPalette.SuccessDarkBackground
+                    } else {
+                        SaltPalette.SuccessLightBackground
+                    }
                     ItemInfoType.Warning -> if (SaltTheme.configs.isDarkTheme) {
                         SaltPalette.WarningDarkBackground
                     } else {
@@ -823,15 +832,19 @@ fun ItemInfo(
         Image(
             modifier = Modifier
                 .size(SaltTheme.dimens.itemIcon),
-            painter = painterResource(
-                when (infoType) {
-                    ItemInfoType.Warning -> Res.drawable.ic_warning
-                    ItemInfoType.Error -> Res.drawable.ic_error
-                }
-            ),
+            painter = when (infoType) {
+                ItemInfoType.Success -> rememberVectorPainter(SaltIcons.Success)
+                ItemInfoType.Warning -> painterResource(Res.drawable.ic_warning)
+                ItemInfoType.Error -> painterResource(Res.drawable.ic_error)
+            },
             contentDescription = null,
             colorFilter = ColorFilter.tint(
                 when (infoType) {
+                    ItemInfoType.Success -> if (SaltTheme.configs.isDarkTheme) {
+                        SaltPalette.SuccessDarkIcon
+                    } else {
+                        SaltPalette.SuccessLightIcon
+                    }
                     ItemInfoType.Warning -> if (SaltTheme.configs.isDarkTheme) {
                         SaltPalette.WarningDarkIcon
                     } else {

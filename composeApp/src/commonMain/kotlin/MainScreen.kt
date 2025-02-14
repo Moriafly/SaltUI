@@ -43,6 +43,7 @@ import saltui.composeapp.generated.resources.Res
 import saltui.composeapp.generated.resources.ic_qr_code
 import saltui.composeapp.generated.resources.ic_verified
 
+@Suppress("ktlint:compose:modifier-missing-check")
 @OptIn(UnstableSaltUiApi::class)
 @Composable
 fun MainScreen() {
@@ -54,7 +55,6 @@ fun MainScreen() {
     ) {
         TitleBar(
             onBack = {
-
             },
             text = ""
         )
@@ -74,44 +74,37 @@ fun MainScreen() {
                 ItemCheck(
                     state = false,
                     onChange = {
-
                     },
                     text = "未选中按钮"
                 )
                 ItemCheck(
                     state = true,
                     onChange = {
-
                     },
                     text = "选中按钮"
                 )
                 ItemButton(
                     onClick = {
-
                     },
                     text = "强调默认按钮 TextButton"
                 )
                 ItemButton(
                     onClick = {
-
                     },
                     text = "强调默认按钮 TextButton 强调默认按钮 TextButton 强调默认按钮 TextButton 强调默认按钮 TextButton"
                 )
                 ItemButton(
                     onClick = {
-
                     },
                     text = "默认按钮 TextButton 默认按钮 TextButton 默认按钮 TextButton",
                     primary = false
                 )
             }
 
-
             RoundedColumn {
                 ItemTitle(text = "控件")
                 Item(
                     onClick = {
-
                     },
                     iconPainter = painterResource(Res.drawable.ic_qr_code),
                     iconColor = SaltTheme.colors.highlight,
@@ -137,14 +130,12 @@ fun MainScreen() {
                 ItemTip(text = "测试")
                 Item(
                     onClick = {
-
                     },
                     text = "标准 Item 控件",
                     sub = "Item 控件的副标题"
                 )
                 Item(
                     onClick = {
-
                     },
                     iconPainter = painterResource(Res.drawable.ic_qr_code),
                     iconColor = SaltTheme.colors.highlight,
@@ -152,7 +143,6 @@ fun MainScreen() {
                 )
                 Item(
                     onClick = {
-
                     },
                     enabled = false,
                     iconPainter = painterResource(Res.drawable.ic_qr_code),
@@ -162,7 +152,6 @@ fun MainScreen() {
                 )
                 Item(
                     onClick = {
-
                     },
                     text = "标准 Item 控件"
                 )
@@ -179,7 +168,6 @@ fun MainScreen() {
                 ItemSwitcher(
                     state = true,
                     onChange = {
-
                     },
                     enabled = false,
                     iconPainter = painterResource(Res.drawable.ic_verified),
@@ -190,9 +178,15 @@ fun MainScreen() {
                 ItemSwitcher(
                     state = true,
                     onChange = {
-
                     },
                     text = "标准开关控件"
+                )
+            }
+
+            RoundedColumn {
+                ItemInfo(
+                    text = "成功信息",
+                    infoType = ItemInfoType.Success
                 )
             }
 
@@ -402,7 +396,6 @@ fun MainScreen() {
             BottomBarItem(
                 state = true,
                 onClick = {
-
                 },
                 painter = painterResource(Res.drawable.ic_qr_code),
                 text = "二维码"
@@ -410,7 +403,6 @@ fun MainScreen() {
             BottomBarItem(
                 state = false,
                 onClick = {
-
                 },
                 painter = painterResource(Res.drawable.ic_verified),
                 text = "认证"

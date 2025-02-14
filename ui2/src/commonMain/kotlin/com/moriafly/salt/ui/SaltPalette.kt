@@ -33,4 +33,8 @@ object SaltPalette {
     val ErrorDarkIcon = Color(0xFFFF99A4)
     val ErrorLightBackground = Color(0xFFFDE7E9)
     val ErrorDarkBackground = Color(0xFF442726)
+    val SuccessLightIcon = Color(0xFF0E8A00)
+    val SuccessDarkIcon = Color(0xFFB8F2A9)
+    val SuccessLightBackground = Color(0xFFE6F8E0)
+    val SuccessDarkBackground = Color(0xFF2B4C1F)
 }
