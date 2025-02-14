@@ -24,8 +24,16 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.structuralEqualityPolicy
 
 /**
- * @param isDarkTheme whether the theme is dark.
- * @param indication the indication.
+ * Holds the dynamic theme configuration states for the application.
+ *
+ * This stable configuration container uses observable state properties to ensure theme changes
+ * automatically propagate through composition. All properties use structural equality comparison
+ * to optimize recomposition efficiency.
+ *
+ * @property isDarkTheme Controls the dark/light theme mode state.
+ * @property indication The visual interaction indicator for clickable elements.
+ *
+ * @see [ChangeSaltThemeIsDark] For more details on how to change [isDarkTheme].
  */
 @Stable
 class SaltConfigs(
@@ -35,6 +43,12 @@ class SaltConfigs(
     val isDarkTheme by mutableStateOf(isDarkTheme, structuralEqualityPolicy())
     val indication by mutableStateOf(indication, structuralEqualityPolicy())
 
+    /**
+     * Creates a copy of the configuration with optional overrides.
+     *
+     * @param isDarkTheme When specified, overrides the current dark theme state.
+     * @param indication When specified, overrides the current indication style.
+     */
     fun copy(
         isDarkTheme: Boolean = this.isDarkTheme,
         indication: Indication = this.indication

@@ -44,7 +44,7 @@ fun SaltTheme(
     content: @Composable () -> Unit
 ) {
     val applyColorTextStyles = remember(colors.text, colors.subText) {
-        // copy text colors.
+        // Copy text colors.
         saltTextStyles(
             main = textStyles.main.copy(color = colors.text),
             sub = textStyles.sub.copy(color = colors.subText),
@@ -61,6 +61,24 @@ fun SaltTheme(
     ) {
         content()
     }
+}
+
+/**
+ * Dynamically changes the theme's dark mode configuration.
+ */
+@UnstableSaltUiApi
+@Composable
+fun ChangeSaltThemeIsDark(
+    isDarkTheme: Boolean,
+    content: @Composable () -> Unit
+) {
+    val configs = LocalSaltConfigs.current.copy(
+        isDarkTheme = isDarkTheme
+    )
+    CompositionLocalProvider(
+        LocalSaltConfigs provides configs,
+        content = content
+    )
 }
 
 object SaltTheme {
