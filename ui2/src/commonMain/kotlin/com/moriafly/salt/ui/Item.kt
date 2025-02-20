@@ -61,17 +61,17 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.moriafly.salt.ui.icons.Check
 import com.moriafly.salt.ui.icons.SaltIcons
 import com.moriafly.salt.ui.icons.Success
+import com.moriafly.salt.ui.icons.Uncheck
 import com.moriafly.salt.ui.popup.PopupMenu
 import com.moriafly.salt.ui.popup.PopupState
 import org.jetbrains.compose.resources.painterResource
 import saltui.ui2.generated.resources.Res
-import saltui.ui2.generated.resources.ic_check
 import saltui.ui2.generated.resources.ic_closed_eye
 import saltui.ui2.generated.resources.ic_error
 import saltui.ui2.generated.resources.ic_eye
-import saltui.ui2.generated.resources.ic_uncheck
 import saltui.ui2.generated.resources.ic_warning
 
 /**
@@ -426,10 +426,11 @@ fun ItemCheck(
     state: Boolean,
     onChange: (Boolean) -> Unit,
     text: String,
+    modifier: Modifier = Modifier,
     enabled: Boolean = true
 ) {
     Row(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .heightIn(SaltTheme.dimens.item)
             .alpha(if (enabled) 1f else 0.5f)
@@ -447,9 +448,9 @@ fun ItemCheck(
             modifier = Modifier
                 .size(SaltTheme.dimens.itemIcon),
             painter = if (state) {
-                painterResource(Res.drawable.ic_check)
+                rememberVectorPainter(SaltIcons.Check)
             } else {
-                painterResource(Res.drawable.ic_uncheck)
+                rememberVectorPainter(SaltIcons.Uncheck)
             },
             contentDescription = null,
             tint = SaltTheme.colors.highlight
