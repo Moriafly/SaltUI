@@ -96,10 +96,13 @@ expect fun ItemArrow(arrowType: ItemArrowType)
     level = DeprecationLevel.WARNING
 )
 @Composable
-fun ItemTitle(text: String) {
+fun ItemTitle(
+    text: String,
+    modifier: Modifier = Modifier
+) {
     Text(
         text = text,
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .innerPadding(),
         color = SaltTheme.colors.highlight,
@@ -143,10 +146,13 @@ fun ItemTip(
     level = DeprecationLevel.WARNING
 )
 @Composable
-fun ItemText(text: String) {
+fun ItemText(
+    text: String,
+    modifier: Modifier = Modifier
+) {
     Text(
         text = text,
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .innerPadding(vertical = false),
         style = SaltTheme.textStyles.sub
@@ -236,6 +242,7 @@ fun ItemSwitcher(
     state: Boolean,
     onChange: (Boolean) -> Unit,
     text: String,
+    modifier: Modifier = Modifier,
     enabled: Boolean = true,
     iconPainter: Painter? = null,
     iconPaddingValues: PaddingValues = PaddingValues(0.dp),
@@ -243,7 +250,7 @@ fun ItemSwitcher(
     sub: String? = null
 ) {
     Row(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .heightIn(SaltTheme.dimens.item)
             .alpha(if (enabled) 1f else 0.5f)
@@ -322,6 +329,7 @@ fun ItemSelect(
     state: PopupState,
     text: String,
     value: String,
+    modifier: Modifier = Modifier,
     enabled: Boolean = true,
     iconPainter: Painter? = null,
     iconPaddingValues: PaddingValues = PaddingValues(0.dp),
@@ -332,6 +340,7 @@ fun ItemSelect(
         state = state,
         text = text,
         sub = value,
+        modifier = modifier,
         enabled = enabled,
         iconPainter = iconPainter,
         iconPaddingValues = iconPaddingValues,
@@ -351,13 +360,16 @@ fun ItemPopup(
     state: PopupState,
     text: String,
     sub: String,
+    modifier: Modifier = Modifier,
     enabled: Boolean = true,
     iconPainter: Painter? = null,
     iconPaddingValues: PaddingValues = PaddingValues(0.dp),
     iconColor: Color? = SaltTheme.colors.text,
     content: @Composable ColumnScope.() -> Unit
 ) {
-    Box {
+    Box(
+        modifier = modifier
+    ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -560,6 +572,7 @@ fun ItemEdit(
 fun ItemEditPassword(
     text: String,
     onChange: (String) -> Unit,
+    modifier: Modifier = Modifier,
     hint: String? = null,
     hintColor: Color = SaltTheme.colors.subText,
     readOnly: Boolean = false,
@@ -573,12 +586,17 @@ fun ItemEditPassword(
     ItemEdit(
         text = text,
         onChange = onChange,
+        modifier = modifier,
         hint = hint,
         hintColor = hintColor,
         readOnly = readOnly,
         keyboardOptions = keyboardOptions,
         keyboardActions = keyboardActions,
-        visualTransformation = if (hidden) PasswordVisualTransformation() else VisualTransformation.None,
+        visualTransformation = if (hidden) {
+            PasswordVisualTransformation()
+        } else {
+            VisualTransformation.None
+        },
         actionContent = {
             Icon(
                 painter = painterResource(
@@ -615,6 +633,7 @@ fun ItemSlider(
     value: Float,
     onValueChange: (Float) -> Unit,
     text: String,
+    modifier: Modifier = Modifier,
     iconPainter: Painter? = null,
     iconPaddingValues: PaddingValues = PaddingValues(0.dp),
     iconColor: Color? = null,
@@ -626,7 +645,7 @@ fun ItemSlider(
     interactionSource: MutableInteractionSource = remember { MutableInteractionSource() }
 ) {
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .semantics(true) { }
             .innerPadding(vertical = false)
@@ -690,6 +709,7 @@ fun ItemSlider(
 fun ItemButton(
     onClick: () -> Unit,
     text: String,
+    modifier: Modifier = Modifier,
     enabled: Boolean = true,
     primary: Boolean = true,
     iconPainter: Painter? = null,
@@ -697,7 +717,7 @@ fun ItemButton(
     iconColor: Color? = SaltTheme.colors.highlight
 ) {
     Row(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .heightIn(SaltTheme.dimens.item)
             .alpha(if (enabled) 1f else 0.5f)
