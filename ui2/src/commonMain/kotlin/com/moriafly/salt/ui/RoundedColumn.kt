@@ -30,11 +30,28 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
 
 /**
- * Column with rounded radius.
+ * A customized Column composable with rounded corners and a border.
  *
- * @param modifier the modifier to be applied to the column.
- * @param color the background color of the column.
- * @param content the content of the column.
+ * This component applies a rounded corner clipping, a background color, and a thin border
+ * to create a contained section in the UI. It is primarily used to wrap components from [Item]
+ * as a visual enhancement layer, providing consistent styling for list items or grouped content.
+ *
+ * Typical use cases include:
+ * - Creating card-like containers for [Item] components
+ * - Adding elevation-like effects through background/border styling
+ * - Grouping related UI elements with cohesive rounded corners
+ *
+ * @param modifier The modifier to be applied to the layout. Defaults to [Modifier] but extends
+ * to fill the maximum available width with [Modifier.fillMaxWidth].
+ * @param color The background color of the container. Defaults to [SaltColors.subBackground].
+ * When set to [Color.Unspecified], both background and border colors will be unspecified, allowing
+ * full customization of the container's appearance.
+ * @param content The composable content to be laid out in column format. Receives a [ColumnScope]
+ * to enable use of column-specific layout modifiers. This should typically contain multiple [Item]
+ * components from [Item] for consistent visual hierarchy.
+ *
+ * @see Column
+ * @see Item
  */
 @Composable
 fun RoundedColumn(
@@ -47,8 +64,7 @@ fun RoundedColumn(
             .fillMaxWidth()
             .padding(
                 horizontal = SaltTheme.dimens.padding,
-                vertical =
-                    SaltTheme.dimens.padding * 0.5f
+                vertical = SaltTheme.dimens.padding * 0.5f
             )
             .clip(SaltTheme.shapes.medium)
             .background(color)
