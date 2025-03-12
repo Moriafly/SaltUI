@@ -24,20 +24,16 @@ import com.sun.jna.platform.win32.WinNT
 import org.jetbrains.skiko.OS
 import org.jetbrains.skiko.hostOs
 
-internal actual fun os(): SystemUtil.OS {
-    return when (hostOs) {
-        OS.Android -> SystemUtil.OS.Android
-        OS.Windows -> SystemUtil.OS.Windows
-        OS.MacOS -> SystemUtil.OS.MacOS
-        OS.Linux -> SystemUtil.OS.Linux
-        OS.Ios -> SystemUtil.OS.IOS
-        else -> SystemUtil.OS.Unknown
-    }
+internal actual fun os(): SystemUtil.OS = when (hostOs) {
+    OS.Android -> SystemUtil.OS.Android
+    OS.Windows -> SystemUtil.OS.Windows
+    OS.MacOS -> SystemUtil.OS.MacOS
+    OS.Linux -> SystemUtil.OS.Linux
+    OS.Ios -> SystemUtil.OS.IOS
+    else -> SystemUtil.OS.Unknown
 }
 
-internal actual fun androidVersionSdk(): Int {
-    throw UnsupportedOperationException()
-}
+internal actual fun androidVersionSdk(): Int = throw UnsupportedOperationException()
 
 internal actual fun windowsBuild(): Int {
     require(hostOs.isWindows)
