@@ -1,6 +1,6 @@
 @file:Suppress("unused")
 
-/**
+/*
  * Salt UI
  * Copyright (C) 2025 Moriafly
  *
