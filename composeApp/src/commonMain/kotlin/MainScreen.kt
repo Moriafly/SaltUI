@@ -11,6 +11,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import com.moriafly.salt.ui.BottomBar
 import com.moriafly.salt.ui.BottomBarItem
+import com.moriafly.salt.ui.ChangeSaltThemeIsDark
 import com.moriafly.salt.ui.Item
 import com.moriafly.salt.ui.ItemArrowType
 import com.moriafly.salt.ui.ItemButton
@@ -126,61 +127,77 @@ fun MainScreen() {
             }
 
             ItemOuterTitle(text = "其他样式测试")
-            RoundedColumn {
-                ItemTip(text = "测试")
-                Item(
-                    onClick = {
-                    },
-                    text = "标准 Item 控件",
-                    sub = "Item 控件的副标题"
-                )
-                Item(
-                    onClick = {
-                    },
-                    iconPainter = painterResource(Res.drawable.ic_qr_code),
-                    iconColor = SaltTheme.colors.highlight,
-                    text = "标准 Item 控件"
-                )
-                Item(
-                    onClick = {
-                    },
-                    enabled = false,
-                    iconPainter = painterResource(Res.drawable.ic_qr_code),
-                    iconColor = SaltTheme.colors.highlight,
-                    text = "标准 Item 控件",
-                    sub = "已禁用"
-                )
-                Item(
-                    onClick = {
-                    },
-                    text = "标准 Item 控件"
-                )
 
-                var switch by remember { mutableStateOf(false) }
-                ItemSwitcher(
-                    state = switch,
-                    onChange = {
-                        switch = it
-                    },
-                    text = "标准开关控件",
-                    sub = "开关控件的副标题"
-                )
-                ItemSwitcher(
-                    state = true,
-                    onChange = {
-                    },
-                    enabled = false,
-                    iconPainter = painterResource(Res.drawable.ic_verified),
-                    iconColor = SaltTheme.colors.highlight,
-                    text = "标准开关控件（禁用）",
-                    sub = "此开关状态被禁用"
-                )
-                ItemSwitcher(
-                    state = true,
-                    onChange = {
-                    },
-                    text = "标准开关控件"
-                )
+            var dynamicIsDarkTheme by remember { mutableStateOf(false) }
+
+            ChangeSaltThemeIsDark(
+                isDarkTheme = dynamicIsDarkTheme
+            ) {
+                RoundedColumn {
+                    ItemTip(text = "测试")
+                    ItemSwitcher(
+                        state = dynamicIsDarkTheme,
+                        onChange = {
+                            dynamicIsDarkTheme = it
+                        },
+                        text = "动态局部更换主题"
+                    )
+
+                    Item(
+                        onClick = {
+                        },
+                        text = "标准 Item 控件",
+                        sub = "Item 控件的副标题"
+                    )
+                    Item(
+                        onClick = {
+                        },
+                        iconPainter = painterResource(Res.drawable.ic_qr_code),
+                        iconColor = SaltTheme.colors.highlight,
+                        text = "标准 Item 控件"
+                    )
+                    Item(
+                        onClick = {
+                        },
+                        enabled = false,
+                        iconPainter = painterResource(Res.drawable.ic_qr_code),
+                        iconColor = SaltTheme.colors.highlight,
+                        text = "标准 Item 控件",
+                        sub = "已禁用"
+                    )
+
+                    Item(
+                        onClick = {
+                        },
+                        text = "标准 Item 控件"
+                    )
+
+                    var switch by remember { mutableStateOf(false) }
+                    ItemSwitcher(
+                        state = switch,
+                        onChange = {
+                            switch = it
+                        },
+                        text = "标准开关控件",
+                        sub = "开关控件的副标题"
+                    )
+                    ItemSwitcher(
+                        state = true,
+                        onChange = {
+                        },
+                        enabled = false,
+                        iconPainter = painterResource(Res.drawable.ic_verified),
+                        iconColor = SaltTheme.colors.highlight,
+                        text = "标准开关控件（禁用）",
+                        sub = "此开关状态被禁用"
+                    )
+                    ItemSwitcher(
+                        state = true,
+                        onChange = {
+                        },
+                        text = "标准开关控件"
+                    )
+                }
             }
 
             RoundedColumn {

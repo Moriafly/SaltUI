@@ -27,6 +27,30 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.compositeOver
 
 /**
+ * Represents a dynamic color scheme that includes both light and dark mode colors.
+ *
+ * This class is designed to encapsulate the full set of color schemes for applications
+ * that support theme switching between light and dark modes. It holds instances of
+ * [SaltColors] for both themes, allowing easy access and management of color schemes
+ * across different application states.
+ *
+ * @property light The [SaltColors] instance representing the light theme colors.
+ * @property dark The [SaltColors] instance representing the dark theme colors.
+ */
+@Stable
+data class SaltDynamicColors(
+    val light: SaltColors,
+    val dark: SaltColors
+) {
+    companion object {
+        fun default(): SaltDynamicColors = SaltDynamicColors(
+            light = lightSaltColors(),
+            dark = darkSaltColors()
+        )
+    }
+}
+
+/**
  * Colors for SaltUI.
  *
  * @param highlight highlight color.

@@ -21,12 +21,11 @@ import androidx.compose.foundation.LocalIndication
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.ReadOnlyComposable
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.staticCompositionLocalOf
 
 private val LocalSaltConfigs = staticCompositionLocalOf { saltConfigs() }
 
-private val LocalSaltColors = staticCompositionLocalOf { lightSaltColors() }
+private val LocalSaltDynamicColors = staticCompositionLocalOf { SaltDynamicColors.default() }
 
 private val LocalSaltTextStyles = staticCompositionLocalOf { saltTextStyles() }
 
@@ -37,25 +36,17 @@ private val LocalSaltShapes = staticCompositionLocalOf { SaltShapes.default() }
 @Composable
 fun SaltTheme(
     configs: SaltConfigs,
-    colors: SaltColors = SaltTheme.colors,
+    dynamicColors: SaltDynamicColors,
     textStyles: SaltTextStyles = SaltTheme.textStyles,
     dimens: SaltDimens = SaltTheme.dimens,
     shapes: SaltShapes = SaltTheme.shapes,
     content: @Composable () -> Unit
 ) {
-    val applyColorTextStyles = remember(colors.text, colors.subText) {
-        // Copy text colors.
-        saltTextStyles(
-            main = textStyles.main.copy(color = colors.text),
-            sub = textStyles.sub.copy(color = colors.subText),
-            paragraph = textStyles.paragraph.copy(color = colors.text.copy(alpha = 0.85f))
-        )
-    }
     CompositionLocalProvider(
         LocalIndication provides configs.indication,
         LocalSaltConfigs provides configs,
-        LocalSaltColors provides colors,
-        LocalSaltTextStyles provides applyColorTextStyles,
+        LocalSaltDynamicColors provides dynamicColors,
+        LocalSaltTextStyles provides textStyles,
         LocalSaltDimens provides dimens,
         LocalSaltShapes provides shapes
     ) {
@@ -90,7 +81,11 @@ object SaltTheme {
     val colors: SaltColors
         @Composable
         @ReadOnlyComposable
-        get() = LocalSaltColors.current
+        get() = if (configs.isDarkTheme) {
+            LocalSaltDynamicColors.current.dark
+        } else {
+            LocalSaltDynamicColors.current.light
+        }
 
     val textStyles: SaltTextStyles
         @Composable
