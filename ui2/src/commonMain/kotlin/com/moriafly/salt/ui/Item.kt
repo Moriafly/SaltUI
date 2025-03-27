@@ -422,12 +422,15 @@ fun ItemPopup(
 }
 
 /**
- * Build a switcher in the content interface.
+ * A customizable checkable item component.
  *
- * @param state the state of the switcher.
- * @param onChange called when state changed.
- * @param enabled enabled.
- * @param text main text.
+ * @param state whether the item is currently checked or unchecked.
+ * @param onChange Callback invoked when the user clicks to change the checked state. The updated
+ * boolean value is provided as a parameter.
+ * @param text The label text displayed.
+ * @param sub The subtext displayed below the main text.
+ * @param modifier [Modifier] to be applied to the container layout.
+ * @param enabled The enabled state.
  */
 @UnstableSaltUiApi
 @Composable
@@ -435,6 +438,7 @@ fun ItemCheck(
     state: Boolean,
     onChange: (Boolean) -> Unit,
     text: String,
+    sub: String?,
     modifier: Modifier = Modifier,
     enabled: Boolean = true
 ) {
@@ -474,6 +478,13 @@ fun ItemCheck(
             Text(
                 text = text
             )
+            sub?.let {
+                Spacer(modifier = Modifier.height(2.dp))
+                Text(
+                    text = sub,
+                    style = SaltTheme.textStyles.sub
+                )
+            }
         }
     }
 }
