@@ -197,7 +197,7 @@ fun Item(
     subContent: (@Composable () -> Unit)? = null,
     arrowType: ItemArrowType = ItemArrowType.Arrow
 ) {
-    BasicItem(
+    ItemImpl(
         onClick = onClick,
         text = text,
         modifier = modifier,
@@ -541,7 +541,7 @@ fun ItemEdit(
     visualTransformation: VisualTransformation = VisualTransformation.None,
     actionContent: (@Composable () -> Unit)? = null
 ) {
-    BasicItemEdit(
+    ItemEditImpl(
         text = text,
         onChange = onChange,
         modifier = modifier,

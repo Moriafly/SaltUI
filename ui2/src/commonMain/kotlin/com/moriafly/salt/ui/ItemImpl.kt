@@ -46,7 +46,7 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 
 @Composable
-internal fun BasicItem(
+internal fun ItemImpl(
     onClick: () -> Unit,
     text: String,
     modifier: Modifier = Modifier,
@@ -101,7 +101,7 @@ internal fun BasicItem(
 
 @UnstableSaltUiApi
 @Composable
-internal fun BasicItemEdit(
+internal fun ItemEditImpl(
     text: String,
     onChange: (String) -> Unit,
     paddingValues: SaltPaddingValues,
