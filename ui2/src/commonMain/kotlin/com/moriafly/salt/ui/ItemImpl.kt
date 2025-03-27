@@ -121,7 +121,9 @@ internal fun ItemEditImpl(
         readOnly = readOnly,
         keyboardOptions = keyboardOptions,
         keyboardActions = keyboardActions,
-        textStyle = SaltTheme.textStyles.main,
+        textStyle = SaltTheme.textStyles.main.copy(
+            color = SaltTheme.colors.text
+        ),
         visualTransformation = visualTransformation,
         cursorBrush = SolidColor(SaltTheme.colors.highlight),
         decorationBox = { innerTextField ->
