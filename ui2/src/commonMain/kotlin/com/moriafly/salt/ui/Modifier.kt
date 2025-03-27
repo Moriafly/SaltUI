@@ -19,7 +19,9 @@
 
 package com.moriafly.salt.ui
 
+import androidx.compose.runtime.Stable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
@@ -29,9 +31,9 @@ import kotlin.contracts.contract
  *
  * TODO: [Contract to specify that a function parameter is always true inside lambda](https://youtrack.jetbrains.com/issue/KT-32993)
  *
- * @param condition the boolean condition.
- * @param block the block to apply if the condition is true.
- * @return the modified [Modifier] or the original one.
+ * @param condition The boolean condition.
+ * @param block The block to apply if the condition is true.
+ * @return The modified [Modifier] or the original one.
  */
 @OptIn(ExperimentalContracts::class)
 inline fun Modifier.thenIf(condition: Boolean, block: Modifier.() -> Modifier): Modifier {
@@ -40,3 +42,9 @@ inline fun Modifier.thenIf(condition: Boolean, block: Modifier.() -> Modifier): 
     }
     return if (condition) block() else this
 }
+
+/**
+ * Enabled alpha modifier.
+ */
+@Stable
+internal fun Modifier.enabledAlpha(enabled: Boolean): Modifier = if (enabled) this else alpha(0.5f)

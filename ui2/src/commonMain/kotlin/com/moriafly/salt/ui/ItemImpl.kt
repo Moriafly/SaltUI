@@ -37,7 +37,6 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.SolidColor
@@ -62,7 +61,7 @@ internal fun ItemImpl(
         modifier = modifier
             .fillMaxWidth()
             .heightIn(SaltTheme.dimens.item)
-            .alpha(if (enabled) 1f else 0.5f)
+            .enabledAlpha(enabled)
             .clickable(enabled = enabled) {
                 onClick()
             }
@@ -88,7 +87,7 @@ internal fun ItemImpl(
         ) {
             Text(
                 text = text,
-                color = if (enabled) textColor else SaltTheme.colors.subText
+                color = textColor
             )
             content()
         }

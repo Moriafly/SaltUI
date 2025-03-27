@@ -47,7 +47,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.painter.Painter
@@ -253,7 +252,7 @@ fun ItemSwitcher(
         modifier = modifier
             .fillMaxWidth()
             .heightIn(SaltTheme.dimens.item)
-            .alpha(if (enabled) 1f else 0.5f)
+            .enabledAlpha(enabled)
             .toggleable(
                 value = state,
                 enabled = enabled,
@@ -282,8 +281,7 @@ fun ItemSwitcher(
                 .innerPadding(horizontal = false)
         ) {
             Text(
-                text = text,
-                color = if (enabled) SaltTheme.colors.text else SaltTheme.colors.subText
+                text = text
             )
             sub?.let {
                 Spacer(modifier = Modifier.height(2.dp))
@@ -374,7 +372,7 @@ fun ItemPopup(
             modifier = Modifier
                 .fillMaxWidth()
                 .heightIn(SaltTheme.dimens.item)
-                .alpha(if (enabled) 1f else 0.5f)
+                .enabledAlpha(enabled)
                 .clickable(enabled = enabled) {
                     state.expend()
                 }
@@ -399,8 +397,7 @@ fun ItemPopup(
                     .innerPadding(horizontal = false)
             ) {
                 Text(
-                    text = text,
-                    color = if (enabled) SaltTheme.colors.text else SaltTheme.colors.subText
+                    text = text
                 )
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(
@@ -445,7 +442,7 @@ fun ItemCheck(
         modifier = modifier
             .fillMaxWidth()
             .heightIn(SaltTheme.dimens.item)
-            .alpha(if (enabled) 1f else 0.5f)
+            .enabledAlpha(enabled)
             .toggleable(
                 value = state,
                 enabled = enabled,
@@ -475,8 +472,7 @@ fun ItemCheck(
                 .innerPadding(horizontal = false)
         ) {
             Text(
-                text = text,
-                color = if (enabled) SaltTheme.colors.text else SaltTheme.colors.subText
+                text = text
             )
         }
     }
@@ -653,7 +649,7 @@ fun ItemSlider(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .alpha(if (enabled) 1f else 0.5f),
+                .enabledAlpha(enabled),
             verticalAlignment = Alignment.CenterVertically
         ) {
             iconPainter?.let {
@@ -672,14 +668,12 @@ fun ItemSlider(
                 modifier = Modifier
                     .weight(1f)
                     .fillMaxWidth()
-                    .innerPadding(horizontal = false),
-                color = if (enabled) SaltTheme.colors.text else SaltTheme.colors.subText
+                    .innerPadding(horizontal = false)
             )
             Spacer(modifier = Modifier.width(SaltTheme.dimens.subPadding))
             sub?.let {
                 Text(
-                    text = sub,
-                    color = if (enabled) SaltTheme.colors.text else SaltTheme.colors.subText
+                    text = sub
                 )
             }
         }
@@ -720,7 +714,7 @@ fun ItemButton(
         modifier = modifier
             .fillMaxWidth()
             .heightIn(SaltTheme.dimens.item)
-            .alpha(if (enabled) 1f else 0.5f)
+            .enabledAlpha(enabled)
             .clickable(
                 enabled = enabled,
                 role = Role.Button,
