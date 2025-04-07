@@ -438,7 +438,7 @@ fun ItemCheck(
     state: Boolean,
     onChange: (Boolean) -> Unit,
     text: String,
-    sub: String?,
+    sub: String? = null,
     modifier: Modifier = Modifier,
     enabled: Boolean = true
 ) {
