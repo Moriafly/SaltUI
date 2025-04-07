@@ -49,10 +49,12 @@ import com.moriafly.salt.ui.UnstableSaltUiApi
 @UnstableSaltUiApi
 @Suppress("DEPRECATION")
 fun Activity.edgeToEdge() {
+    // Call this method before WindowCompat.setDecorFitsSystemWindows,
+    // https://github.com/Moriafly/SaltPlayerSource/issues/1208
+    requestWindowFeature(Window.FEATURE_NO_TITLE)
+
     // The decor view should not fit root-level content views for WindowInsets.
     WindowCompat.setDecorFitsSystemWindows(window, false)
-
-    requestWindowFeature(Window.FEATURE_NO_TITLE)
 
     // On some Android OEM devices, the FLAG_TRANSLUCENT_STATUS and FLAG_TRANSLUCENT_NAVIGATION
     // flags do not work effectively with isStatusBarContrastEnforced and
