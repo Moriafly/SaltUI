@@ -31,8 +31,9 @@ import com.moriafly.salt.ui.SaltTheme
 import com.moriafly.salt.ui.UnstableSaltUiApi
 
 /**
- * The basic bottom sheet dialog has default corner background and vertical padding
+ * The basic bottom sheet dialog has default corner background and vertical padding.
  */
+@Suppress("ktlint:compose:modifier-missing-check")
 @UnstableSaltUiApi
 @Composable
 fun BasicBottomSheetDialog(
@@ -53,7 +54,7 @@ fun BasicBottomSheetDialog(
             Column(
                 modifier = Modifier
                     .padding(top = 6.dp)
-                    .clip(RoundedCornerShape(topStart = 20.dp, topEnd = 20.dp))
+                    .clip(SaltTheme.shapes.large)
                     .background(color = SaltTheme.colors.background)
             ) {
                 content()
@@ -62,7 +63,11 @@ fun BasicBottomSheetDialog(
     )
 }
 
-@Deprecated("Use BasicBottomSheetDialog", replaceWith = ReplaceWith("BasicBottomSheetDialog"))
+@Deprecated(
+    message = "Use BasicBottomSheetDialog",
+    replaceWith = ReplaceWith("BasicBottomSheetDialog")
+)
+@Suppress("ktlint:compose:modifier-missing-check")
 @UnstableSaltUiApi
 @Composable
 fun ColumnBottomSheetDialog(
