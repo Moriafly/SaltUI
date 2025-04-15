@@ -36,7 +36,10 @@ private val LocalSaltShapes = staticCompositionLocalOf { SaltShapes.default() }
 @Composable
 fun SaltTheme(
     configs: SaltConfigs,
-    dynamicColors: SaltDynamicColors,
+    dynamicColors: SaltDynamicColors = SaltDynamicColors(
+        light = lightSaltColors(),
+        dark = darkSaltColors()
+    ),
     textStyles: SaltTextStyles = SaltTheme.textStyles,
     dimens: SaltDimens = SaltTheme.dimens,
     shapes: SaltShapes = SaltTheme.shapes,
