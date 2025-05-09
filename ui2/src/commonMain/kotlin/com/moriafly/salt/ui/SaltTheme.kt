@@ -35,7 +35,7 @@ private val LocalSaltShapes = staticCompositionLocalOf { SaltShapes.default() }
 
 @Composable
 fun SaltTheme(
-    configs: SaltConfigs,
+    configs: SaltConfigs = saltConfigs(),
     dynamicColors: SaltDynamicColors = SaltDynamicColors(
         light = lightSaltColors(),
         dark = darkSaltColors()
