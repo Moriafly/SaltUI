@@ -1,6 +1,9 @@
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.windowInsetsBottomHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
@@ -36,6 +39,7 @@ import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.moriafly.salt.ui.dialog.InputDialog
 import com.moriafly.salt.ui.dialog.YesDialog
 import com.moriafly.salt.ui.dialog.YesNoDialog
+import com.moriafly.salt.ui.ext.safeMainIgnoringVisibility
 import com.moriafly.salt.ui.ext.safeMainPadding
 import com.moriafly.salt.ui.popup.PopupMenuItem
 import com.moriafly.salt.ui.popup.rememberPopupState
@@ -68,7 +72,8 @@ fun MainScreen() {
         ) {
             ItemOuterLargeTitle(
                 text = "Hello, SaltUI 2.0",
-                sub = "SaltUI（UI for Salt Player） 是提取自椒盐音乐的 UI 风格组件，用以快速生成椒盐音乐风格用户界面。本库将会广泛用以椒盐系列 App 开发，以达到快速开发目的"
+                sub = "SaltUI（UI for Salt Player） 是提取自椒盐音乐的 UI 风格组件，" +
+                    "用以快速生成椒盐音乐风格用户界面。本库将会广泛用以椒盐系列 App 开发，以达到快速开发目的"
             )
 
             RoundedColumn {
@@ -407,6 +412,11 @@ fun MainScreen() {
             }
 
             RomUtilColumn()
+
+            Spacer(
+                modifier = Modifier
+                    .windowInsetsBottomHeight(WindowInsets.safeMainIgnoringVisibility)
+            )
         }
 
         BottomBar {
