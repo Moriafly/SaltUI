@@ -22,6 +22,10 @@ package com.moriafly.salt.ui
 import androidx.compose.runtime.Stable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.input.pointer.AwaitPointerEventScope
+import androidx.compose.ui.input.pointer.PointerEvent
+import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.PointerEventType
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
@@ -48,3 +52,15 @@ inline fun Modifier.thenIf(condition: Boolean, block: Modifier.() -> Modifier): 
  */
 @Stable
 internal fun Modifier.enabledAlpha(enabled: Boolean): Modifier = if (enabled) this else alpha(0.5f)
+
+/**
+ * **Desktop Only**
+ *
+ * Compatibility version of Modifier.onPointerEvent.
+ */
+@UnstableSaltUiApi
+expect fun Modifier.onPointerEventCompat(
+    eventType: PointerEventType,
+    pass: PointerEventPass = PointerEventPass.Main,
+    onEvent: AwaitPointerEventScope.(event: PointerEvent) -> Unit
+): Modifier
