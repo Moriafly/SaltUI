@@ -14,6 +14,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import com.moriafly.salt.ui.BottomBar
 import com.moriafly.salt.ui.BottomBarItem
+import com.moriafly.salt.ui.Button
 import com.moriafly.salt.ui.ChangeSaltThemeIsDark
 import com.moriafly.salt.ui.Item
 import com.moriafly.salt.ui.ItemArrowType
@@ -412,6 +413,14 @@ fun MainScreen() {
             }
 
             RomUtilColumn()
+
+            var clickCount by remember { mutableStateOf(0) }
+            Button(
+                onClick = {
+                    clickCount++
+                },
+                text = "Hello $clickCount"
+            )
 
             Spacer(
                 modifier = Modifier

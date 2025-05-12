@@ -20,55 +20,51 @@ package com.moriafly.salt.ui
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.key.type
 import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.semantics.role
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 
-/**
- * Button component.
- *
- * @param onClick Button click event.
- * @param modifier Modifier.
- * @param enabled Whether the button is enabled.
- * @param backgroundColor Background color.
- * @param contentPadding Button content padding.
- * @param content Button content.
- */
 @Composable
 fun Button(
     onClick: () -> Unit,
+    text: String,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
-    backgroundColor: Color = SaltTheme.colors.highlight,
-    contentPadding: PaddingValues = ButtonDefaults.ContentPadding,
-    content: @Composable RowScope.() -> Unit
+    type: ButtonType = ButtonType.Highlight
 ) {
-    Row(
-        modifier = modifier
-            .clip(SaltTheme.shapes.medium)
-            .background(color = backgroundColor)
-            .clickable(
-                enabled = enabled,
-                onClick = onClick
-            )
-            .padding(contentPadding),
-        horizontalArrangement = Arrangement.Center,
-        verticalAlignment = Alignment.CenterVertically,
-        content = content
-    )
+    BasicButton(
+        onClick = onClick,
+        modifier = modifier,
+        enabled = enabled,
+        backgroundColor = when (type) {
+            ButtonType.Highlight -> SaltTheme.colors.highlight
+            ButtonType.Sub -> SaltTheme.colors.subBackground
+        }
+    ) {
+        Text(
+            text = text,
+            color = when (type) {
+                ButtonType.Highlight -> SaltTheme.colors.onHighlight
+                ButtonType.Sub -> SaltTheme.colors.subText
+            }
+        )
+    }
+}
+
+enum class ButtonType {
+    Highlight,
+    Sub
 }
 
 /**
@@ -77,8 +73,8 @@ fun Button(
 @Deprecated(
     message = "Use Button instead",
     replaceWith = ReplaceWith(
-        expression = "Button(onClick = onClick, modifier = modifier, enabled = enabled, " +
-            "backgroundColor = backgroundColor) { Text(text = text, color = textColor) }",
+        expression = "Button(onClick = onClick, text = text, modifier = modifier, " +
+            "enabled = enabled)",
         imports = arrayOf("com.moriafly.salt.ui.Button", "com.moriafly.salt.ui.SaltTheme")
     )
 )
@@ -91,7 +87,6 @@ fun TextButton(
     textColor: Color = SaltTheme.colors.onHighlight,
     backgroundColor: Color = SaltTheme.colors.highlight
 ) {
-    @Suppress("DEPRECATION")
     BasicButton(
         onClick = onClick,
         modifier = modifier,
@@ -109,42 +104,38 @@ fun TextButton(
 }
 
 /**
- * Basic button.
+ * Basic Button component.
  *
- * No min [SaltDimens.item] height limit.
+ * @param onClick Button click event.
+ * @param modifier Modifier.
+ * @param enabled Whether the button is enabled.
+ * @param backgroundColor Background color.
+ * @param contentPadding Button content padding.
+ * @param content Button content.
  */
-@Deprecated(
-    message = "Use Button instead",
-    replaceWith = ReplaceWith(
-        expression = "Button(onClick = onClick, modifier = modifier, enabled = enabled, " +
-            "backgroundColor = backgroundColor) { content() }",
-        imports = arrayOf("com.moriafly.salt.ui.Button", "com.moriafly.salt.ui.SaltTheme")
-    )
-)
 @Composable
 fun BasicButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     backgroundColor: Color = SaltTheme.colors.highlight,
-    content: @Composable BoxScope.() -> Unit
+    contentPadding: PaddingValues = ButtonDefaults.ContentPadding,
+    content: @Composable RowScope.() -> Unit
 ) {
-    Box(
+    Row(
         modifier = modifier
-            .semantics {
-                role = Role.Button
-            }
             .clip(SaltTheme.shapes.medium)
             .background(color = backgroundColor)
             .clickable(
                 enabled = enabled,
+                role = Role.Button,
                 onClick = onClick
             )
-            .innerPadding(),
-        contentAlignment = Alignment.Center
-    ) {
-        content()
-    }
+            .padding(contentPadding),
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically,
+        content = content
+    )
 }
 
 object ButtonDefaults {
