@@ -153,7 +153,7 @@ fun ItemOuterTextButton(
     onClick: () -> Unit,
     text: String,
     enabled: Boolean = true,
-    textColor: Color = Color.White,
+    textColor: Color = SaltTheme.colors.onHighlight,
     backgroundColor: Color = SaltTheme.colors.highlight
 ) {
     TextButton(

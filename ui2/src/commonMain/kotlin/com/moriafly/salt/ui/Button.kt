@@ -41,7 +41,7 @@ fun TextButton(
     text: String,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
-    textColor: Color = Color.White,
+    textColor: Color = SaltTheme.colors.onHighlight,
     backgroundColor: Color = SaltTheme.colors.highlight
 ) {
     BasicButton(

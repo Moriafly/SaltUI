@@ -60,6 +60,7 @@ data class SaltDynamicColors(
  * @param subBackground sub background color.
  * @param popup background color for UI elements like [com.moriafly.salt.ui.popup.PopupMenu].
  * @param stroke stroke color.
+ * @param onHighlight Text or icon color for elements that are above or behind the highlight.
  */
 @Stable
 class SaltColors(
@@ -69,7 +70,8 @@ class SaltColors(
     background: Color,
     subBackground: Color,
     popup: Color,
-    stroke: Color
+    stroke: Color,
+    onHighlight: Color
 ) {
     val highlight by mutableStateOf(highlight, structuralEqualityPolicy())
     val text by mutableStateOf(text, structuralEqualityPolicy())
@@ -78,6 +80,7 @@ class SaltColors(
     val subBackground by mutableStateOf(subBackground, structuralEqualityPolicy())
     val popup by mutableStateOf(popup, structuralEqualityPolicy())
     val stroke by mutableStateOf(stroke, structuralEqualityPolicy())
+    val onHighlight by mutableStateOf(onHighlight, structuralEqualityPolicy())
 
     fun copy(
         highlight: Color = this.highlight,
@@ -86,7 +89,8 @@ class SaltColors(
         background: Color = this.background,
         subBackground: Color = this.subBackground,
         popup: Color = this.popup,
-        stroke: Color = this.stroke
+        stroke: Color = this.stroke,
+        onHighlight: Color = this.onHighlight
     ): SaltColors = SaltColors(
         highlight = highlight,
         text = text,
@@ -94,7 +98,8 @@ class SaltColors(
         background = background,
         subBackground = subBackground,
         popup = popup,
-        stroke = stroke
+        stroke = stroke,
+        onHighlight = onHighlight
     )
 }
 
@@ -105,7 +110,8 @@ fun lightSaltColors(
     background: Color = Color(0xFFF7F9FA),
     subBackground: Color = Color(0xFFFFFFFF),
     popup: Color = subBackground.compositeOver(background),
-    stroke: Color = subText.copy(alpha = 0.15f)
+    stroke: Color = subText.copy(alpha = 0.15f),
+    onHighlight: Color = Color.White
 ): SaltColors = SaltColors(
     highlight = highlight,
     text = text,
@@ -113,7 +119,8 @@ fun lightSaltColors(
     background = background,
     subBackground = subBackground,
     popup = popup,
-    stroke = stroke
+    stroke = stroke,
+    onHighlight = onHighlight
 )
 
 fun darkSaltColors(
@@ -123,7 +130,8 @@ fun darkSaltColors(
     background: Color = Color(0xFF0C0C0C),
     subBackground: Color = Color(0xFF191919),
     popup: Color = subBackground.compositeOver(background),
-    stroke: Color = subText.copy(alpha = 0.1f)
+    stroke: Color = subText.copy(alpha = 0.1f),
+    onHighlight: Color = Color.White
 ): SaltColors = SaltColors(
     highlight = highlight,
     text = text,
@@ -131,5 +139,6 @@ fun darkSaltColors(
     background = background,
     subBackground = subBackground,
     popup = popup,
-    stroke = stroke
+    stroke = stroke,
+    onHighlight = onHighlight
 )

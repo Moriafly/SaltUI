@@ -66,7 +66,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.input.pointer.AwaitPointerEventScope
 import androidx.compose.ui.input.pointer.PointerId
@@ -658,7 +657,7 @@ internal object SliderDefaults {
             modifier
                 .size(thumbSize)
                 .hoverable(interactionSource = interactionSource)
-                .background(Color.White, shape)
+                .background(SaltTheme.colors.onHighlight, shape)
                 .border(1.dp, SaltTheme.colors.subText.copy(alpha = 0.25f), shape)
         )
     }
