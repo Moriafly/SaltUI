@@ -125,6 +125,7 @@ fun ItemTip(
         modifier = modifier
             .fillMaxWidth()
             .innerPadding(),
+        color = SaltTheme.colors.subText,
         style = SaltTheme.textStyles.sub
     )
 }
@@ -154,6 +155,7 @@ fun ItemText(
         modifier = modifier
             .fillMaxWidth()
             .innerPadding(vertical = false),
+        color = SaltTheme.colors.subText,
         style = SaltTheme.textStyles.sub
     )
 }
@@ -287,6 +289,7 @@ fun ItemSwitcher(
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(
                     text = sub,
+                    color = SaltTheme.colors.subText,
                     style = SaltTheme.textStyles.sub
                 )
             }
@@ -402,6 +405,7 @@ fun ItemPopup(
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(
                     text = sub,
+                    color = SaltTheme.colors.subText,
                     style = SaltTheme.textStyles.sub
                 )
             }
@@ -482,6 +486,7 @@ fun ItemCheck(
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(
                     text = sub,
+                    color = SaltTheme.colors.subText,
                     style = SaltTheme.textStyles.sub
                 )
             }
@@ -509,6 +514,7 @@ fun ItemValue(
     ) {
         Text(
             text = text,
+            color = SaltTheme.colors.subText,
             style = SaltTheme.textStyles.sub
         )
         Spacer(modifier = Modifier.height(2.dp))

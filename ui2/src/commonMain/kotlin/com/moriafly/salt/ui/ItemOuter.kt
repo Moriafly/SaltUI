@@ -53,6 +53,7 @@ fun ItemOuterTitle(text: String) {
                     0.dp
                 )
             ),
+        color = SaltTheme.colors.subText,
         style = SaltTheme.textStyles.sub
     )
 }
@@ -63,6 +64,7 @@ fun ItemOuterTip(text: String) {
         text = text,
         modifier = Modifier
             .outerPadding(),
+        color = SaltTheme.colors.subText,
         style = SaltTheme.textStyles.sub
     )
 }
