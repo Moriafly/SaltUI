@@ -68,7 +68,7 @@ kotlin {
         compilations.all {
             @Suppress("DEPRECATION")
             kotlinOptions {
-                jvmTarget = "17"
+                jvmTarget = "21"
             }
         }
 
@@ -151,8 +151,8 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
     }
 
     dependencies {
