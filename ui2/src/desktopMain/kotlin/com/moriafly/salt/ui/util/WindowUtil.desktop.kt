@@ -20,6 +20,7 @@
 package com.moriafly.salt.ui.util
 
 import androidx.compose.ui.awt.ComposeWindow
+import com.moriafly.salt.core.os.OS
 import com.sun.jna.Pointer
 import com.sun.jna.platform.win32.WinDef
 
@@ -28,6 +29,6 @@ import com.sun.jna.platform.win32.WinDef
  */
 val ComposeWindow.hwnd: WinDef.HWND
     get() {
-        require(SystemUtil.os.isWindows())
+        require(OS.os.isWindows())
         return WinDef.HWND(Pointer(windowHandle))
     }

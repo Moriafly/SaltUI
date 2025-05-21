@@ -100,6 +100,7 @@ kotlin {
 
         val commonMain by getting
         commonMain.dependencies {
+            api(project(":core"))
             implementation(compose.runtime)
             implementation(compose.foundation)
             implementation(compose.ui)

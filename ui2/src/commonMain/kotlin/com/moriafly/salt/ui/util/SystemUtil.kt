@@ -21,6 +21,14 @@ package com.moriafly.salt.ui.util
 
 import com.moriafly.salt.ui.UnstableSaltUiApi
 
+@Deprecated(
+    message = "Use OS instead",
+    replaceWith = ReplaceWith(
+        "OS",
+        "com.moriafly.salt.core.os.OS"
+    ),
+    level = DeprecationLevel.WARNING
+)
 object SystemUtil {
     @Suppress("MemberVisibilityCanBePrivate")
     const val VERSION_CODE_UNKNOWN = -1
