@@ -17,6 +17,7 @@
 
 package com.moriafly.salt.ui
 
+import androidx.compose.runtime.Stable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.graphics.BlendMode
@@ -38,6 +39,7 @@ import androidx.compose.ui.unit.Dp
  * @param top Edge height for the top.
  * @param bottom Edge height for the bottom.
  */
+@Stable
 fun Modifier.verticalEdge(
     top: Dp,
     bottom: Dp
@@ -74,6 +76,7 @@ fun Modifier.verticalEdge(
  * @param start Edge width for the start.
  * @param end Edge width for the end.
  */
+@Stable
 fun Modifier.horizontalEdge(
     start: Dp,
     end: Dp
