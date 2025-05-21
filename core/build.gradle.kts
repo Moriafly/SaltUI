@@ -12,7 +12,7 @@ mavenPublishing {
     coordinates(
         groupId = "io.github.moriafly",
         artifactId = "salt-core",
-        version = "2.5.0-alpha01"
+        version = libs.versions.version.get()
     )
 
     // Configure POM metadata for the published artifact
