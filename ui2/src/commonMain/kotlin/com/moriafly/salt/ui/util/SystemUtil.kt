@@ -24,8 +24,8 @@ import com.moriafly.salt.ui.UnstableSaltUiApi
 @Deprecated(
     message = "Use OS instead",
     replaceWith = ReplaceWith(
-        "OS",
-        "com.moriafly.salt.core.os.OS"
+        expression = "OS",
+        imports = arrayOf("com.moriafly.salt.core.os.OS")
     ),
     level = DeprecationLevel.WARNING
 )
