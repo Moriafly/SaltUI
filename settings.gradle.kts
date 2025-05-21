@@ -26,4 +26,5 @@ dependencyResolutionManagement {
 
 rootProject.name = "SaltUI"
 include(":composeApp")
+include(":core")
 include(":ui2")
