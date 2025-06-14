@@ -23,6 +23,9 @@ import androidx.compose.ui.awt.ComposeWindow
 import com.moriafly.salt.core.os.OS
 import com.sun.jna.Pointer
 import com.sun.jna.platform.win32.WinDef
+import org.jetbrains.skiko.SkiaLayer
+import java.awt.Container
+import javax.swing.JComponent
 
 /**
  * Get the handle of the window, only works on Windows platform.
@@ -32,3 +35,37 @@ val ComposeWindow.hwnd: WinDef.HWND
         require(OS.isWindows())
         return WinDef.HWND(Pointer(windowHandle))
     }
+
+/**
+ * Extension on [ComposeWindow] to find its underlying [SkiaLayer].
+ */
+fun ComposeWindow.findSkiaLayer(): SkiaLayer? = findComponent<SkiaLayer>()
+
+/**
+ * Recursively finds the first JComponent of a specific type in a container (depth-first).
+ *
+ * @param container The container to search in.
+ * @param klass The component class to find.
+ * @return The found component, or null if not found.
+ */
+private fun <T : JComponent> findComponent(container: Container, klass: Class<T>): T? {
+    for (component in container.components) {
+        if (klass.isInstance(component)) {
+            @Suppress("UNCHECKED_CAST")
+            return component as T
+        }
+        if (component is Container) {
+            val found = findComponent(component, klass)
+            if (found != null) {
+                return found
+            }
+        }
+    }
+    return null
+}
+
+/**
+ * Convenience extension to call [findComponent] with a reified type.
+ */
+private inline fun <reified T : JComponent> Container.findComponent(): T? =
+    findComponent(this, T::class.java)

@@ -54,3 +54,7 @@ See [LICENSE](LICENSE).
 ## Contribute
 
 See [Contributor Covenant Code of Conduct](CODE_OF_CONDUCT.md).
+
+## Thanks
+
+[compose-native-look](https://github.com/ComposeNativeLook/compose-native-look)
