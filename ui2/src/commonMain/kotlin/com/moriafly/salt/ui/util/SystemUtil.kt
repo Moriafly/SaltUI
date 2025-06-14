@@ -22,7 +22,7 @@ package com.moriafly.salt.ui.util
 import com.moriafly.salt.ui.UnstableSaltUiApi
 
 @Deprecated(
-    message = "Use OS instead",
+    message = "Use Core OS instead",
     replaceWith = ReplaceWith(
         expression = "OS",
         imports = arrayOf("com.moriafly.salt.core.os.OS")
@@ -137,6 +137,9 @@ object SystemUtil {
         value: (Int) -> Boolean
     ): Boolean = if (os.isWindows()) value(windowsBuild) else false
 
+    @Deprecated(
+        message = "Use Core OS instead"
+    )
     enum class OS {
         Android,
         Windows,
