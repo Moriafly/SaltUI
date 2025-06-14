@@ -32,16 +32,22 @@ enum class OS {
     IOS,
     Unknown;
 
+    @Deprecated("Use this == Android instead")
     fun isAndroid(): Boolean = this == Android
 
+    @Deprecated("Use this == Windows instead")
     fun isWindows(): Boolean = this == Windows
 
+    @Deprecated("Use this == MacOS instead")
     fun isMacOS(): Boolean = this == MacOS
 
+    @Deprecated("Use this == Linux instead")
     fun isLinux(): Boolean = this == Linux
 
+    @Deprecated("Use this == IOS instead")
     fun isIOS(): Boolean = this == IOS
 
+    @Deprecated("Use this == Unknown instead")
     fun isUnknown(): Boolean = this == Unknown
 
     companion object {
@@ -102,6 +108,18 @@ enum class OS {
         @UnstableSaltCoreApi
         val macOSVersion: String by lazy { macOSVersion() }
 
+        fun isAndroid(): Boolean = os == Android
+
+        fun isWindows(): Boolean = os == Windows
+
+        fun isMacOS(): Boolean = os == MacOS
+
+        fun isLinux(): Boolean = os == Linux
+
+        fun isIOS(): Boolean = os == IOS
+
+        fun isUnknown(): Boolean = os == Unknown
+
         /**
          * Sample:
          *
@@ -114,7 +132,7 @@ enum class OS {
         @UnstableSaltCoreApi
         fun isAndroidAndVersionSdk(
             value: (Int) -> Boolean
-        ): Boolean = if (os.isAndroid()) value(androidVersionSdk) else false
+        ): Boolean = if (isAndroid()) value(androidVersionSdk) else false
 
         /**
          * Sample:
@@ -128,7 +146,7 @@ enum class OS {
         @UnstableSaltCoreApi
         fun isWindowsAndBuild(
             value: (Int) -> Boolean
-        ): Boolean = if (os.isWindows()) value(windowsBuild) else false
+        ): Boolean = if (isWindows()) value(windowsBuild) else false
     }
 }
 

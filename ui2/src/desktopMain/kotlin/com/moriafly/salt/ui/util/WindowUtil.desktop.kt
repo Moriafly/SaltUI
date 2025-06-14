@@ -29,6 +29,6 @@ import com.sun.jna.platform.win32.WinDef
  */
 val ComposeWindow.hwnd: WinDef.HWND
     get() {
-        require(OS.os.isWindows())
+        require(OS.isWindows())
         return WinDef.HWND(Pointer(windowHandle))
     }
