@@ -20,7 +20,6 @@
 package com.moriafly.salt.ui.util
 
 import androidx.compose.ui.awt.ComposeWindow
-import com.moriafly.salt.core.os.OS
 import com.sun.jna.Pointer
 import com.sun.jna.platform.win32.WinDef
 import org.jetbrains.skiko.SkiaLayer
@@ -31,10 +30,7 @@ import javax.swing.JComponent
  * Get the handle of the window, only works on Windows platform.
  */
 val ComposeWindow.hwnd: WinDef.HWND
-    get() {
-        require(OS.isWindows())
-        return WinDef.HWND(Pointer(windowHandle))
-    }
+    get() = WinDef.HWND(Pointer(windowHandle))
 
 /**
  * Extension on [ComposeWindow] to find its underlying [SkiaLayer].

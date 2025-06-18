@@ -19,10 +19,4 @@ package com.moriafly.salt.core.os
 
 import android.os.Build
 
-internal actual fun os() = OS.Android
-
-internal actual fun androidVersionSdk(): Int = Build.VERSION.SDK_INT
-
-internal actual fun windowsBuild(): Int = throw UnsupportedOperationException()
-
-internal actual fun macOSVersion(): String = throw UnsupportedOperationException()
+internal actual fun os(): OS = OS.Android(Build.VERSION.SDK_INT)

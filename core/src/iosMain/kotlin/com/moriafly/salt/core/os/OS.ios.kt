@@ -18,9 +18,3 @@
 package com.moriafly.salt.core.os
 
 actual fun os(): OS = OS.IOS
-
-internal actual fun androidVersionSdk(): Int = throw UnsupportedOperationException()
-
-internal actual fun windowsBuild(): Int = throw UnsupportedOperationException()
-
-internal actual fun macOSVersion(): String = throw UnsupportedOperationException()

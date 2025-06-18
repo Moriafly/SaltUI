@@ -9,9 +9,10 @@ import com.moriafly.salt.ui.UnstableSaltUiApi
 @Composable
 actual fun RomUtilColumn() {
     RoundedColumn {
-        val version = when (OS.os) {
-            OS.Windows -> OS.windowsBuild.toString()
-            OS.MacOS -> OS.macOSVersion
+        val os = OS.os
+        val version = when (os) {
+            is OS.Windows -> os.windowsBuild.toString()
+            is OS.MacOS -> os.version
             else -> "Unknown"
         }
 

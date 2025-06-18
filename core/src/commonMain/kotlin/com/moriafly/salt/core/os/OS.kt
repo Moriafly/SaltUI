@@ -19,141 +19,82 @@
 
 package com.moriafly.salt.core.os
 
-import com.moriafly.salt.core.UnstableSaltCoreApi
-
 /**
  * Operating System.
  */
-enum class OS {
-    Android,
-    Windows,
-    MacOS,
-    Linux,
-    IOS,
-    Unknown;
+sealed class OS {
+    data class Android(
+        val versionSdk: Int
+    ) : OS() {
+        companion object {
+            const val ANDROID_6 = 23
+            const val ANDROID_7 = 24
+            const val ANDROID_7_1 = 25
+            const val ANDROID_8 = 26
+            const val ANDROID_8_1 = 27
+            const val ANDROID_9 = 28
+            const val ANDROID_10 = 29
+            const val ANDROID_11 = 30
+            const val ANDROID_12 = 31
+            const val ANDROID_12_V2 = 32
+            const val ANDROID_13 = 33
+            const val ANDROID_14 = 34
+            const val ANDROID_15 = 35
+            const val ANDROID_16 = 36
+        }
+    }
 
-    @Deprecated("Use this == Android instead")
-    fun isAndroid(): Boolean = this == Android
+    data class Windows(
+        val windowsBuild: Int
+    ) : OS() {
+        companion object {
+            const val WINDOWS_10_1607 = 14393
+            const val WINDOWS_SERVER_2016 = 14393
+            const val WINDOWS_10_1703 = 15063
+            const val WINDOWS_10_1709 = 16299
+            const val WINDOWS_10_1803 = 17134
+            const val WINDOWS_10_1809 = 17763
+            const val WINDOWS_SERVER_2019 = 17763
+            const val WINDOWS_10_1903 = 18362
+            const val WINDOWS_10_1909 = 18363
+            const val WINDOWS_10_2004 = 19041
+            const val WINDOWS_10_20H2 = 19042
+            const val WINDOWS_10_21H1 = 19043
+            const val WINDOWS_10_21H2 = 19044
+            const val WINDOWS_10_22H2 = 19045
+            const val WINDOWS_SERVER_2022 = 20348
+            const val WINDOWS_11_21H2 = 22000
+            const val WINDOWS_11_22H2 = 22621
+            const val WINDOWS_11_23H2 = 22631
+            const val WINDOWS_11_24H2 = 26100
+        }
+    }
 
-    @Deprecated("Use this == Windows instead")
-    fun isWindows(): Boolean = this == Windows
+    data class MacOS(
+        val version: String
+    ) : OS()
 
-    @Deprecated("Use this == MacOS instead")
-    fun isMacOS(): Boolean = this == MacOS
+    object Linux : OS()
 
-    @Deprecated("Use this == Linux instead")
-    fun isLinux(): Boolean = this == Linux
+    object IOS : OS()
 
-    @Deprecated("Use this == IOS instead")
-    fun isIOS(): Boolean = this == IOS
-
-    @Deprecated("Use this == Unknown instead")
-    fun isUnknown(): Boolean = this == Unknown
+    object Unknown : OS()
 
     companion object {
-        const val VERSION_CODE_UNKNOWN = -1
-
-        const val ANDROID_6 = 23
-        const val ANDROID_7 = 24
-        const val ANDROID_7_1 = 25
-        const val ANDROID_8 = 26
-        const val ANDROID_8_1 = 27
-        const val ANDROID_9 = 28
-        const val ANDROID_10 = 29
-        const val ANDROID_11 = 30
-        const val ANDROID_12 = 31
-        const val ANDROID_12_V2 = 32
-        const val ANDROID_13 = 33
-        const val ANDROID_14 = 34
-        const val ANDROID_15 = 35
-        const val ANDROID_16 = 36
-
-        const val WINDOWS_10_1607 = 14393
-        const val WINDOWS_SERVER_2016 = 14393
-        const val WINDOWS_10_1703 = 15063
-        const val WINDOWS_10_1709 = 16299
-        const val WINDOWS_10_1803 = 17134
-        const val WINDOWS_10_1809 = 17763
-        const val WINDOWS_SERVER_2019 = 17763
-        const val WINDOWS_10_1903 = 18362
-        const val WINDOWS_10_1909 = 18363
-        const val WINDOWS_10_2004 = 19041
-        const val WINDOWS_10_20H2 = 19042
-        const val WINDOWS_10_21H1 = 19043
-        const val WINDOWS_10_21H2 = 19044
-        const val WINDOWS_10_22H2 = 19045
-        const val WINDOWS_SERVER_2022 = 20348
-        const val WINDOWS_11_21H2 = 22000
-        const val WINDOWS_11_22H2 = 22621
-        const val WINDOWS_11_23H2 = 22631
-        const val WINDOWS_11_24H2 = 26100
-
         val os: OS by lazy { os() }
 
-        /**
-         * android.os.Build.VERSION.SDK_INT.
-         */
-        @UnstableSaltCoreApi
-        val androidVersionSdk: Int by lazy { androidVersionSdk() }
+        fun isAndroid(): Boolean = os is Android
 
-        /**
-         * [Build number](https://learn.microsoft.com/en-us/windows-hardware/drivers/install/inf-manufacturer-section).
-         */
-        @UnstableSaltCoreApi
-        val windowsBuild: Int by lazy { windowsBuild() }
+        fun isWindows(): Boolean = os is Windows
 
-        /**
-         * macOS product version.
-         */
-        @UnstableSaltCoreApi
-        val macOSVersion: String by lazy { macOSVersion() }
+        fun isMacOS(): Boolean = os is MacOS
 
-        fun isAndroid(): Boolean = os == Android
+        fun isLinux(): Boolean = os is Linux
 
-        fun isWindows(): Boolean = os == Windows
+        fun isIOS(): Boolean = os is IOS
 
-        fun isMacOS(): Boolean = os == MacOS
-
-        fun isLinux(): Boolean = os == Linux
-
-        fun isIOS(): Boolean = os == IOS
-
-        fun isUnknown(): Boolean = os == Unknown
-
-        /**
-         * Sample:
-         *
-         * ```kotlin
-         * if (OS.isAndroidAndVersionSdk { it >= OS.ANDROID_10 }) {
-         *     // code.
-         * }
-         * ```
-         */
-        @UnstableSaltCoreApi
-        fun isAndroidAndVersionSdk(
-            value: (Int) -> Boolean
-        ): Boolean = if (isAndroid()) value(androidVersionSdk) else false
-
-        /**
-         * Sample:
-         *
-         * ```kotlin
-         * if (OS.isWindowsAndBuild { it >= OS.WINDOWS_11_21H2 }) {
-         *     // code.
-         * }
-         * ```
-         */
-        @UnstableSaltCoreApi
-        fun isWindowsAndBuild(
-            value: (Int) -> Boolean
-        ): Boolean = if (isWindows()) value(windowsBuild) else false
+        fun isUnknown(): Boolean = os is Unknown
     }
 }
 
 internal expect fun os(): OS
-
-internal expect fun androidVersionSdk(): Int
-
-internal expect fun windowsBuild(): Int
-
-internal expect fun macOSVersion(): String
