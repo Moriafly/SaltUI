@@ -47,6 +47,8 @@ sealed class OS {
     data class Windows(
         val windowsBuild: Int
     ) : OS() {
+        fun isAtLeastWindows11(): Boolean = windowsBuild >= WINDOWS_11_21H2
+
         companion object {
             const val WINDOWS_10_1607 = 14393
             const val WINDOWS_SERVER_2016 = 14393
