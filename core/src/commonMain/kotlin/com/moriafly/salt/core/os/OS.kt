@@ -102,6 +102,24 @@ sealed class OS {
         fun isIOS(): Boolean = current is IOS
 
         fun isUnknown(): Boolean = current is Unknown
+
+        fun ifAndroid(value: (Android) -> Boolean): Boolean =
+            current is Android && value(current as Android)
+
+        fun ifWindows(value: (Windows) -> Boolean): Boolean =
+            current is Windows && value(current as Windows)
+
+        fun ifMacOS(value: (MacOS) -> Boolean): Boolean =
+            current is MacOS && value(current as MacOS)
+
+        fun ifLinux(value: (Linux) -> Boolean): Boolean =
+            current is Linux && value(current as Linux)
+
+        fun ifIOS(value: (IOS) -> Boolean): Boolean =
+            current is IOS && value(current as IOS)
+
+        fun ifUnknown(value: (Unknown) -> Boolean): Boolean =
+            current is Unknown && value(current as Unknown)
     }
 }
 
