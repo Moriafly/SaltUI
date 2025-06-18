@@ -83,7 +83,7 @@ sealed class OS {
     object Unknown : OS()
 
     companion object {
-        val current: OS = os()
+        val current: OS by lazy { os() }
 
         @Deprecated(
             message = "Use current instead",
