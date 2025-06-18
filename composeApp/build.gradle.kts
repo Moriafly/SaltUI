@@ -16,12 +16,12 @@ kotlin {
             }
         }
     }
-    
+
     jvm("desktop")
-    
+
     sourceSets {
         val desktopMain by getting
-        
+
         androidMain.dependencies {
             implementation(libs.activity.compose)
         }
@@ -45,7 +45,7 @@ kotlin {
 
 android {
     namespace = "com.moriafly.salt.ui"
-    compileSdk = 34
+    compileSdk = 35
 
     sourceSets["main"].manifest.srcFile("src/androidMain/AndroidManifest.xml")
     sourceSets["main"].res.srcDirs("src/androidMain/res")
@@ -77,7 +77,6 @@ android {
     }
 
     dependencies {
-
     }
 }
 
