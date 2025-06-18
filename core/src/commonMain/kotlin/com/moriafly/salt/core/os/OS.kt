@@ -83,19 +83,25 @@ sealed class OS {
     object Unknown : OS()
 
     companion object {
-        val os: OS by lazy { os() }
+        val current: OS by lazy { os() }
 
-        fun isAndroid(): Boolean = os is Android
+        @Deprecated(
+            message = "Use current instead",
+            replaceWith = ReplaceWith("current")
+        )
+        val os: OS = current
 
-        fun isWindows(): Boolean = os is Windows
+        fun isAndroid(): Boolean = current is Android
 
-        fun isMacOS(): Boolean = os is MacOS
+        fun isWindows(): Boolean = current is Windows
 
-        fun isLinux(): Boolean = os is Linux
+        fun isMacOS(): Boolean = current is MacOS
 
-        fun isIOS(): Boolean = os is IOS
+        fun isLinux(): Boolean = current is Linux
 
-        fun isUnknown(): Boolean = os is Unknown
+        fun isIOS(): Boolean = current is IOS
+
+        fun isUnknown(): Boolean = current is Unknown
     }
 }
 
