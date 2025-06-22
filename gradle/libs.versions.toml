@@ -12,6 +12,7 @@ jna = "5.16.0"
 vanniktech = "0.30.0"
 
 [libraries]
+kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
 core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "core-ktx" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 compose-material3 = { group = "androidx.compose.material3", name = "material3", version.ref = "material3" }

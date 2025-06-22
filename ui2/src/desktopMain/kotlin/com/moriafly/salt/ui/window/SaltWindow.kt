@@ -20,20 +20,24 @@
 package com.moriafly.salt.ui.window
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.input.key.KeyEvent
+import androidx.compose.ui.unit.DpSize
+import androidx.compose.ui.unit.isSpecified
 import androidx.compose.ui.window.FrameWindowScope
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowDecoration
 import androidx.compose.ui.window.WindowState
 import androidx.compose.ui.window.rememberWindowState
 import com.moriafly.salt.ui.UnstableSaltUiApi
+import java.awt.Dimension
 
 /**
  * # Salt Window
  *
- * TODO
+ * @param minSize The minimum size of the window.
  *
  * @see [Window]
  */
@@ -52,6 +56,7 @@ fun SaltWindow(
     enabled: Boolean = true,
     focusable: Boolean = true,
     alwaysOnTop: Boolean = false,
+    minSize: DpSize = DpSize.Unspecified,
     onPreviewKeyEvent: (KeyEvent) -> Boolean = { false },
     onKeyEvent: (KeyEvent) -> Boolean = { false },
     content: @Composable FrameWindowScope.() -> Unit
@@ -69,7 +74,18 @@ fun SaltWindow(
         focusable = focusable,
         alwaysOnTop = alwaysOnTop,
         onPreviewKeyEvent = onPreviewKeyEvent,
-        onKeyEvent = onKeyEvent,
-        content = content
-    )
+        onKeyEvent = onKeyEvent
+    ) {
+        LaunchedEffect(minSize) {
+            require(minSize.width.isSpecified && minSize.height.isSpecified) {
+                "minSize.width and minSize.height must be specified"
+            }
+
+            // TODO Is this correct?
+            window.minimumSize =
+                Dimension(minSize.width.value.toInt(), minSize.height.value.toInt())
+        }
+
+        content()
+    }
 }
