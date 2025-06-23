@@ -56,7 +56,7 @@ fun SaltWindow(
     enabled: Boolean = true,
     focusable: Boolean = true,
     alwaysOnTop: Boolean = false,
-    minSize: DpSize = DpSize.Unspecified,
+    minSize: DpSize = DpSize.Zero,
     onPreviewKeyEvent: (KeyEvent) -> Boolean = { false },
     onKeyEvent: (KeyEvent) -> Boolean = { false },
     content: @Composable FrameWindowScope.() -> Unit
