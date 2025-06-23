@@ -1,0 +1,76 @@
+@file:Suppress("unused")
+
+package com.moriafly.salt.ui.window
+
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.ExperimentalComposeUiApi
+import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.input.key.KeyEvent
+import androidx.compose.ui.unit.DpSize
+import androidx.compose.ui.unit.isSpecified
+import androidx.compose.ui.window.DialogState
+import androidx.compose.ui.window.DialogWindow
+import androidx.compose.ui.window.DialogWindowScope
+import androidx.compose.ui.window.WindowDecoration
+import androidx.compose.ui.window.rememberDialogState
+import com.moriafly.salt.ui.UnstableSaltUiApi
+import java.awt.Dimension
+
+/**
+ * # Salt Dialog Window
+ *
+ * With this, the window icon won't be displayed on the Taskbar.
+ *
+ * @param minSize The minimum size of the window.
+ *
+ * @see [DialogWindow]
+ */
+@UnstableSaltUiApi
+@ExperimentalComposeUiApi
+@Composable
+fun SaltDialogWindow(
+    onCloseRequest: () -> Unit,
+    state: DialogState = rememberDialogState(),
+    visible: Boolean = true,
+    title: String = "Untitled",
+    icon: Painter? = null,
+    decoration: WindowDecoration = WindowDecoration.SystemDefault,
+    transparent: Boolean = false,
+    resizable: Boolean = true,
+    enabled: Boolean = true,
+    focusable: Boolean = true,
+    alwaysOnTop: Boolean = false,
+    minSize: DpSize = DpSize.Zero,
+    onPreviewKeyEvent: ((KeyEvent) -> Boolean) = { false },
+    onKeyEvent: ((KeyEvent) -> Boolean) = { false },
+    content: @Composable DialogWindowScope.() -> Unit
+) {
+    DialogWindow(
+        onCloseRequest = onCloseRequest,
+        state = state,
+        visible = visible,
+        title = title,
+        icon = icon,
+        decoration = decoration,
+        transparent = transparent,
+        resizable = resizable,
+        enabled = enabled,
+        focusable = focusable,
+        alwaysOnTop = alwaysOnTop,
+        onPreviewKeyEvent = onPreviewKeyEvent,
+        onKeyEvent = onKeyEvent
+    ) {
+        LaunchedEffect(minSize) {
+            require(minSize.width.isSpecified && minSize.height.isSpecified) {
+                "minSize.width and minSize.height must be specified"
+            }
+
+            // TODO Is this correct?
+            window.minimumSize =
+                Dimension(minSize.width.value.toInt(), minSize.height.value.toInt())
+        }
+
+        content()
+    }
+}
