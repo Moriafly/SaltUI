@@ -24,7 +24,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.input.key.KeyEvent
-import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.isSpecified
 import androidx.compose.ui.window.DialogState
 import androidx.compose.ui.window.DialogWindow
@@ -39,7 +38,7 @@ import java.awt.Dimension
  *
  * With this, the window icon won't be displayed on the Taskbar.
  *
- * @param minSize The minimum size of the window.
+ * @param properties [SaltWindowProperties]
  *
  * @see [DialogWindow]
  */
@@ -58,7 +57,7 @@ fun SaltDialogWindow(
     enabled: Boolean = true,
     focusable: Boolean = true,
     alwaysOnTop: Boolean = false,
-    minSize: DpSize = DpSize.Zero,
+    properties: SaltWindowProperties = SaltWindowProperties(),
     onPreviewKeyEvent: ((KeyEvent) -> Boolean) = { false },
     onKeyEvent: ((KeyEvent) -> Boolean) = { false },
     content: @Composable DialogWindowScope.() -> Unit
@@ -78,6 +77,7 @@ fun SaltDialogWindow(
         onPreviewKeyEvent = onPreviewKeyEvent,
         onKeyEvent = onKeyEvent
     ) {
+        val minSize = properties.minSize
         LaunchedEffect(minSize) {
             require(minSize.width.isSpecified && minSize.height.isSpecified) {
                 "minSize.width and minSize.height must be specified"

@@ -24,7 +24,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.input.key.KeyEvent
-import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.isSpecified
 import androidx.compose.ui.window.FrameWindowScope
 import androidx.compose.ui.window.Window
@@ -37,7 +36,7 @@ import java.awt.Dimension
 /**
  * # Salt Window
  *
- * @param minSize The minimum size of the window.
+ * @param properties [SaltWindowProperties]
  *
  * @see [Window]
  */
@@ -56,7 +55,7 @@ fun SaltWindow(
     enabled: Boolean = true,
     focusable: Boolean = true,
     alwaysOnTop: Boolean = false,
-    minSize: DpSize = DpSize.Zero,
+    properties: SaltWindowProperties = SaltWindowProperties(),
     onPreviewKeyEvent: (KeyEvent) -> Boolean = { false },
     onKeyEvent: (KeyEvent) -> Boolean = { false },
     content: @Composable FrameWindowScope.() -> Unit
@@ -76,6 +75,7 @@ fun SaltWindow(
         onPreviewKeyEvent = onPreviewKeyEvent,
         onKeyEvent = onKeyEvent
     ) {
+        val minSize = properties.minSize
         LaunchedEffect(minSize) {
             require(minSize.width.isSpecified && minSize.height.isSpecified) {
                 "minSize.width and minSize.height must be specified"

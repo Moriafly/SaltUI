@@ -19,6 +19,7 @@
 
 package com.moriafly.salt.ui.util
 
+import androidx.compose.ui.awt.ComposeDialog
 import androidx.compose.ui.awt.ComposeWindow
 import com.sun.jna.Pointer
 import com.sun.jna.platform.win32.WinDef
@@ -30,6 +31,12 @@ import javax.swing.JComponent
  * Get the handle of the window, only works on Windows platform.
  */
 val ComposeWindow.hwnd: WinDef.HWND
+    get() = WinDef.HWND(Pointer(windowHandle))
+
+/**
+ * Get the handle of the window, only works on Windows platform.
+ */
+val ComposeDialog.hwnd: WinDef.HWND
     get() = WinDef.HWND(Pointer(windowHandle))
 
 /**
