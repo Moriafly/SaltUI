@@ -1,5 +1,5 @@
 [versions]
-version = "2.5.0"
+version = "2.5.1"
 agp = "8.8.2"
 kotlin = "2.1.21"
 core-ktx = "1.9.0"
