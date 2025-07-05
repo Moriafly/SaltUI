@@ -19,13 +19,43 @@ package com.moriafly.salt.ui.window
 
 import androidx.compose.ui.unit.DpSize
 import com.moriafly.salt.ui.UnstableSaltUiApi
+import java.awt.Window
 
 /**
  * # Properties for SaltWindow
  *
  * @property minSize The minimum size of the window.
+ * @property onVisibleChanged The callback to be invoked when the visibility of the window changes.
+ * To replace obtaining the window isVisible state in Composable.
+ *
+ * Do **not** use this:
+ *
+ * ```kotlin
+ * SaltWindow(
+ *     // ...
+ * ) {
+ *     LaunchEffect(window.isVisible) {
+ *         // Do something
+ *     }
+ * }
+ * ```
+ *
+ * Please use:
+ *
+ * ```kotlin
+ * SaltWindow(
+ *     // ...,
+ *     properties = SaltWindowProperties(
+ *         onVisibleChanged = { window, visible ->
+ *             // Do something
+ *         }
+ *     )
+ * ) {
+ *     // ...
+ * }
  */
 @UnstableSaltUiApi
-data class SaltWindowProperties(
-    val minSize: DpSize = DpSize.Zero
+data class SaltWindowProperties<T : Window>(
+    val minSize: DpSize = DpSize.Zero,
+    val onVisibleChanged: (T, Boolean) -> Unit = { _, _ -> }
 )
