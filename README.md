@@ -58,4 +58,5 @@ See [Contributor Covenant Code of Conduct](CODE_OF_CONDUCT.md).
 
 ## Thanks
 
-[compose-native-look](https://github.com/ComposeNativeLook/compose-native-look)
+- [compose-native-look](https://github.com/ComposeNativeLook/compose-native-look)
+- [compose-fluent-ui](https://github.com/compose-fluent/compose-fluent-ui)
