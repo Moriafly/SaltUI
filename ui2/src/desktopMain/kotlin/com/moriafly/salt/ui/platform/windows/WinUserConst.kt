@@ -71,55 +71,100 @@ object WinUserConst {
     /**
      * Non client area right mouse up message.
      */
-    const val WM_NCRBUTTONUP: Int = 0x00A5
+    const val WM_NCRBUTTONUP = 0x00A5
 
     /**
      * Setting changed message.
      */
-    const val WM_SETTINGCHANGE: Int = 0x001A
+    const val WM_SETTINGCHANGE = 0x001A
 
     /**
      * Window active event.
      */
-    const val WM_ACTIVATE: Int = 0x0006
+    const val WM_ACTIVATE = 0x0006
 
     /**
      * Window is deactivated
      */
-    const val WA_INACTIVE: Int = 0x00000000
+    const val WA_INACTIVE = 0x00000000
 
-    const val SC_RESTORE: Int = 0x0000f120
+    const val SC_RESTORE = 0x0000f120
 
-    const val SC_MOVE: Int = 0xF010
+    const val SC_MOVE = 0xF010
 
-    const val SC_SIZE: Int = 0xF000
+    const val SC_SIZE = 0xF000
 
-    const val SC_CLOSE: Int = 0xF060
+    const val SC_CLOSE = 0xF060
 
-    const val WINT_MAX: Int = 0xFFFF
+    const val WINT_MAX = 0xFFFF
 
     /**
      * The `fState` member is valid.
      */
-    const val MIIM_STATE: Int = 0x00000001
+    const val MIIM_STATE = 0x00000001
 
     /**
      * The item is a text string.
      */
-    const val MFT_STRING: Int = 0x00000000
+    const val MFT_STRING = 0x00000000
 
     /**
      * Returns the menu item identifier of the user's selection instead of sending a message.
      */
-    const val TPM_RETURNCMD: Int = 0x0100
+    const val TPM_RETURNCMD = 0x0100
 
     /**
      * The item is enabled.
      */
-    const val MFS_ENABLED: Int = 0x00000000
+    const val MFS_ENABLED = 0x00000000
 
     /**
      * The item is disabled.
      */
-    const val MFS_DISABLED: Int = 0x00000003
+    const val MFS_DISABLED = 0x00000003
+
+    /**
+     * The OK button was selected.
+     */
+    const val IDOK = 1
+
+    /**
+     * The Cancel button was selected.
+     */
+    const val IDCANCEL = 2
+
+    /**
+     * The Abort button was selected.
+     */
+    const val IDABORT = 3
+
+    /**
+     * The Retry button was selected.
+     */
+    const val IDRETRY = 4
+
+    /**
+     * The Ignore button was selected.
+     */
+    const val IDIGNORE = 5
+
+    /**
+     * The Yes button was selected.
+     */
+    const val IDYES = 6
+
+    /**
+     * The No button was selected.
+     */
+    const val IDNO = 7
+
+    /**
+     * The Try Again button was selected.
+     */
+    const val IDTRYAGAIN = 10
+
+    /**
+     * The Continue button was selected.
+     */
+    const val IDCONTINUE = 11
 }
