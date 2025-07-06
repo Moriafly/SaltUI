@@ -26,7 +26,7 @@ import com.sun.jna.platform.win32.WinDef.HBITMAP
 import com.sun.jna.platform.win32.WinDef.HMENU
 
 @UnstableSaltUiApi
-internal class MENUITEMINFO : Structure() {
+class MENUITEMINFO : Structure() {
     @JvmField
     var cbSize: Int = 0
 

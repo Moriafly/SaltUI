@@ -36,7 +36,7 @@ import com.sun.jna.platform.win32.WinUser.WindowProc
 import com.sun.jna.win32.W32APIOptions
 
 @UnstableSaltUiApi
-internal interface User32Ex : User32 {
+interface User32Ex : User32 {
     fun SetWindowLongPtr(hWnd: HWND, nIndex: Int, wndProc: WindowProc): LONG_PTR
 
     fun CallWindowProc(
