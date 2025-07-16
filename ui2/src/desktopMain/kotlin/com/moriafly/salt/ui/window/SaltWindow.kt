@@ -87,7 +87,7 @@ fun SaltWindow(
                 "minSize.width and minSize.height must be specified"
             }
 
-            // TODO Is this correct?
+            // TODO https://bugs.openjdk.org/browse/JDK-8221452
             window.minimumSize =
                 Dimension(minSize.width.value.toInt(), minSize.height.value.toInt())
         }
