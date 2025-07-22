@@ -649,7 +649,7 @@ fun ItemSlider(
     modifier: Modifier = Modifier,
     iconPainter: Painter? = null,
     iconPaddingValues: PaddingValues = PaddingValues(0.dp),
-    iconColor: Color? = null,
+    iconColor: Color? = SaltTheme.colors.text,
     sub: String? = null,
     enabled: Boolean = true,
     valueRange: ClosedFloatingPointRange<Float> = 0f..1f,
