@@ -20,8 +20,10 @@
 package com.moriafly.salt.ui.window
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.awt.ComposeDialog
 import androidx.compose.ui.graphics.painter.Painter
@@ -83,60 +85,69 @@ fun SaltDialogWindow(
         onPreviewKeyEvent = onPreviewKeyEvent,
         onKeyEvent = onKeyEvent
     ) {
-        val minSize = properties.minSize
-        LaunchedEffect(minSize) {
-            require(minSize.width.isSpecified && minSize.height.isSpecified) {
-                "minSize.width and minSize.height must be specified"
+        CompositionLocalProvider(
+            LocalDialogState provides state
+        ) {
+            val minSize = properties.minSize
+            LaunchedEffect(minSize) {
+                require(minSize.width.isSpecified && minSize.height.isSpecified) {
+                    "minSize.width and minSize.height must be specified"
+                }
+
+                // TODO https://bugs.openjdk.org/browse/JDK-8221452
+                window.minimumSize =
+                    Dimension(minSize.width.value.toInt(), minSize.height.value.toInt())
             }
 
-            // TODO https://bugs.openjdk.org/browse/JDK-8221452
-            window.minimumSize =
-                Dimension(minSize.width.value.toInt(), minSize.height.value.toInt())
+            DisposableEffect(window) {
+                val adapter = object : WindowAdapter(), ComponentListener {
+                    override fun windowActivated(e: WindowEvent?) {
+                    }
+
+                    override fun windowDeactivated(e: WindowEvent?) {
+                    }
+
+                    override fun windowIconified(e: WindowEvent?) {
+                    }
+
+                    override fun windowDeiconified(e: WindowEvent?) {
+                    }
+
+                    override fun windowStateChanged(e: WindowEvent) {
+                    }
+
+                    override fun componentResized(e: ComponentEvent?) {
+                    }
+
+                    override fun componentMoved(e: ComponentEvent?) {
+                    }
+
+                    override fun componentShown(e: ComponentEvent?) {
+                        properties.onVisibleChanged(window, true)
+                    }
+
+                    override fun componentHidden(e: ComponentEvent?) {
+                        properties.onVisibleChanged(window, false)
+                    }
+                }
+
+                window.addWindowListener(adapter)
+                window.addWindowStateListener(adapter)
+                window.addComponentListener(adapter)
+
+                onDispose {
+                    window.removeWindowListener(adapter)
+                    window.removeWindowStateListener(adapter)
+                    window.removeComponentListener(adapter)
+                }
+            }
+
+            content()
         }
-
-        DisposableEffect(window) {
-            val adapter = object : WindowAdapter(), ComponentListener {
-                override fun windowActivated(e: WindowEvent?) {
-                }
-
-                override fun windowDeactivated(e: WindowEvent?) {
-                }
-
-                override fun windowIconified(e: WindowEvent?) {
-                }
-
-                override fun windowDeiconified(e: WindowEvent?) {
-                }
-
-                override fun windowStateChanged(e: WindowEvent) {
-                }
-
-                override fun componentResized(e: ComponentEvent?) {
-                }
-
-                override fun componentMoved(e: ComponentEvent?) {
-                }
-
-                override fun componentShown(e: ComponentEvent?) {
-                    properties.onVisibleChanged(window, true)
-                }
-
-                override fun componentHidden(e: ComponentEvent?) {
-                    properties.onVisibleChanged(window, false)
-                }
-            }
-
-            window.addWindowListener(adapter)
-            window.addWindowStateListener(adapter)
-            window.addComponentListener(adapter)
-
-            onDispose {
-                window.removeWindowListener(adapter)
-                window.removeWindowStateListener(adapter)
-                window.removeComponentListener(adapter)
-            }
-        }
-
-        content()
     }
+}
+
+@UnstableSaltUiApi
+val LocalDialogState = staticCompositionLocalOf<DialogState> {
+    error("LocalDialogState is not provided")
 }
