@@ -52,24 +52,13 @@ mavenPublishing {
 }
 
 kotlin {
-    targets.configureEach {
-        compilations.configureEach {
-            compileTaskProvider.get().compilerOptions {
-                freeCompilerArgs.add("-Xexpect-actual-classes")
-            }
-        }
+    compilerOptions {
+        freeCompilerArgs.add("-Xexpect-actual-classes")
     }
 
     withSourcesJar(publish = false)
 
     androidTarget {
-        compilations.all {
-            @Suppress("DEPRECATION")
-            kotlinOptions {
-                jvmTarget = "21"
-            }
-        }
-
         publishLibraryVariants("release")
         // publishLibraryVariantsGroupedByFlavor = true
     }
