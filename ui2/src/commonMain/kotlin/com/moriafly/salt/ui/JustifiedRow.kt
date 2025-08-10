@@ -19,33 +19,41 @@ package com.moriafly.salt.ui
 
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.Layout
-import androidx.compose.ui.layout.Placeable
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.constrainHeight
+import androidx.compose.ui.unit.constrainWidth
 import kotlin.math.max
 
 /**
  * A layout that arranges two children at the start and end of its container.
  *
  * It prioritizes measuring the children at their intrinsic widths, respecting the minimum
- * space between them. If the total required width exceeds the available space, it splits
- * the available width equally between the two children, potentially causing them to wrap.
+ * space between them. If space is insufficient, it intelligently allocates space, allowing
+ * a smaller child (one taking less than half the available space) to maintain its preferred
+ * size while the larger child fills the remainder. Only if this condition isn't met will
+ * the space be divided.
+ *
  * This composable fully supports LTR and RTL layout directions.
  *
  * @param startContent The composable to place at the start of the layout.
  * @param endContent The composable to place at the end of the layout.
  * @param modifier The [Modifier] to be applied to this layout.
+ * @param verticalAlignment The vertical alignment of the children. Defaults to Top.
  * @param spaceBetween The minimum space between the start and end content when there is
  * sufficient room.
  */
+@UnstableSaltUiApi
 @Composable
 fun JustifiedRow(
     startContent: @Composable () -> Unit,
     endContent: @Composable () -> Unit,
     modifier: Modifier = Modifier,
+    verticalAlignment: Alignment.Vertical = Alignment.Top,
     spaceBetween: Dp = SaltTheme.dimens.subPadding
 ) {
     val spaceBetweenPx = with(LocalDensity.current) { spaceBetween.roundToPx() }
@@ -55,49 +63,72 @@ fun JustifiedRow(
             startContent()
             endContent()
         },
-        modifier = modifier.fillMaxWidth()
+        modifier = modifier
+            .fillMaxWidth()
     ) { measurables, constraints ->
+        require(measurables.size == 2) { "JustifiedRow expects exactly two children" }
 
-        if (measurables.size != 2) {
-            error("JustifiedRow expects exactly two children")
-        }
-
-        val startMeasurable = measurables[0]
-        val endMeasurable = measurables[1]
+        val (startMeasurable, endMeasurable) = measurables
         val parentMaxWidth = constraints.maxWidth
+        // Width available to children after reserving the minimum gap (never negative)
+        val availableSpace = (parentMaxWidth - spaceBetweenPx).coerceAtLeast(0)
 
-        // Use intrinsic measurement to decide the layout strategy ahead of time
-        val startIntrinsicWidth = startMeasurable.maxIntrinsicWidth(0)
-        val endIntrinsicWidth = endMeasurable.maxIntrinsicWidth(0)
+        // Height hint for intrinsics; use bounded maxHeight if available
+        val heightHint = if (constraints.hasBoundedHeight) constraints.maxHeight else 0
 
-        val totalRequiredWidth = startIntrinsicWidth + spaceBetweenPx + endIntrinsicWidth
+        val startIntrinsic = startMeasurable.maxIntrinsicWidth(heightHint)
+        val endIntrinsic = endMeasurable.maxIntrinsicWidth(heightHint)
+        val totalRequired = startIntrinsic + spaceBetweenPx + endIntrinsic
 
-        val startPlaceable: Placeable
-        val endPlaceable: Placeable
-
-        if (totalRequiredWidth <= parentMaxWidth) {
-            // Enough space: measure children with their preferred width
-            startPlaceable = startMeasurable.measure(Constraints())
-            endPlaceable = endMeasurable.measure(Constraints())
+        // Decide hard caps for measurement so min gap is enforced by construction
+        val (startCap, endCap) = if (totalRequired <= parentMaxWidth) {
+            // Fit case: cap at intrinsic to avoid uncontrolled expansion
+            startIntrinsic to endIntrinsic
         } else {
-            // Not enough space: divide width equally
-            val halfWidthConstraints = constraints.copy(
-                minWidth = 0,
-                maxWidth = parentMaxWidth / 2
-            )
-            startPlaceable = startMeasurable.measure(halfWidthConstraints)
-            endPlaceable = endMeasurable.measure(halfWidthConstraints)
+            val isStartSmall = startIntrinsic < availableSpace / 2
+            val isEndSmall = endIntrinsic < availableSpace / 2
+            when {
+                isStartSmall && !isEndSmall -> {
+                    val endCap = (availableSpace - startIntrinsic).coerceAtLeast(0)
+                    startIntrinsic to endCap
+                }
+
+                !isStartSmall && isEndSmall -> {
+                    val startCap = (availableSpace - endIntrinsic).coerceAtLeast(0)
+                    startCap to endIntrinsic
+                }
+
+                else -> {
+                    // Even split; handle odd pixels to keep sum exact
+                    val half = availableSpace / 2
+                    val other = availableSpace - half
+                    half to other
+                }
+            }
         }
 
-        val layoutHeight = max(startPlaceable.height, endPlaceable.height)
+        // Build child constraints with width caps aligned to parent height constraints
+        fun capWidth(maxW: Int): Constraints = Constraints(
+            minWidth = 0,
+            maxWidth = maxW.coerceAtLeast(0),
+            minHeight = 0,
+            maxHeight = constraints.maxHeight
+        )
 
-        layout(
-            width = parentMaxWidth,
-            height = layoutHeight
-        ) {
-            // placeRelative handles LTR and RTL automatically
-            startPlaceable.placeRelative(x = 0, y = 0)
-            endPlaceable.placeRelative(x = parentMaxWidth - endPlaceable.width, y = 0)
+        val startPlaceable = startMeasurable.measure(capWidth(startCap))
+        val endPlaceable = endMeasurable.measure(capWidth(endCap))
+
+        val measuredHeight = max(startPlaceable.height, endPlaceable.height)
+        val layoutWidth = constraints.constrainWidth(parentMaxWidth)
+        val layoutHeight = constraints.constrainHeight(measuredHeight)
+
+        // Place at relative edges; remaining space forms the gap (≥ spaceBetweenPx)
+        layout(width = layoutWidth, height = layoutHeight) {
+            val startY = verticalAlignment.align(startPlaceable.height, layoutHeight)
+            val endY = verticalAlignment.align(endPlaceable.height, layoutHeight)
+
+            startPlaceable.placeRelative(x = 0, y = startY)
+            endPlaceable.placeRelative(x = layoutWidth - endPlaceable.width, y = endY)
         }
     }
 }
