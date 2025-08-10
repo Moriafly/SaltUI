@@ -21,6 +21,7 @@ import com.moriafly.salt.ui.ItemArrowType
 import com.moriafly.salt.ui.ItemButton
 import com.moriafly.salt.ui.ItemCheck
 import com.moriafly.salt.ui.ItemDivider
+import com.moriafly.salt.ui.ItemDropdown
 import com.moriafly.salt.ui.ItemEdit
 import com.moriafly.salt.ui.ItemEditPassword
 import com.moriafly.salt.ui.ItemInfo
@@ -426,6 +427,27 @@ fun MainScreen() {
                 modifier = Modifier
                     .windowInsetsBottomHeight(WindowInsets.safeMainIgnoringVisibility)
             )
+
+            RoundedColumn {
+                ItemDropdown(
+                    state = rememberPopupState(),
+                    text = "这是个很长长长长长长长长长长长长长长长长长长长长长长长的内容",
+                    value = "这是个短的内容"
+                ) {
+                }
+                ItemDropdown(
+                    state = rememberPopupState(),
+                    text = "这是个短的内容",
+                    value = "这是个很长长长长长长长长长长长长长长长长长长长长长长长的内容"
+                ) {
+                }
+                ItemDropdown(
+                    state = rememberPopupState(),
+                    text = "这是个很长长长长长长长长长长长长长长长长长长长长长长长的内容",
+                    value = "这是个很长长长长长长长长长长长长长长长长长长长长长长长的内容"
+                ) {
+                }
+            }
         }
 
         BottomBar {

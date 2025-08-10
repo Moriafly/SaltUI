@@ -324,6 +324,7 @@ expect fun ItemPopupArrow()
  *   color.
  * @param content composable content.
  */
+@Deprecated("Use ItemDropdown")
 @UnstableSaltUiApi
 @Composable
 fun ItemSelect(
@@ -337,6 +338,7 @@ fun ItemSelect(
     iconColor: Color? = SaltTheme.colors.text,
     content: @Composable ColumnScope.() -> Unit
 ) {
+    @Suppress("DEPRECATION")
     ItemPopup(
         state = state,
         text = text,
@@ -355,6 +357,7 @@ fun ItemSelect(
  *
  * @param state the state of popup.
  */
+@Deprecated("Use ItemDropdown")
 @UnstableSaltUiApi
 @Composable
 fun ItemPopup(
@@ -368,61 +371,18 @@ fun ItemPopup(
     iconColor: Color? = SaltTheme.colors.text,
     content: @Composable ColumnScope.() -> Unit
 ) {
-    Box(
-        modifier = modifier
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .heightIn(SaltTheme.dimens.item)
-                .enabledAlpha(enabled)
-                .clickable(enabled = enabled) {
-                    state.expend()
-                }
-                .innerPadding(vertical = false),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            iconPainter?.let {
-                Image(
-                    modifier = Modifier
-                        .size(SaltTheme.dimens.itemIcon)
-                        .padding(iconPaddingValues),
-                    painter = iconPainter,
-                    contentDescription = null,
-                    colorFilter = iconColor?.let { ColorFilter.tint(iconColor) }
-                )
-                Spacer(modifier = Modifier.width(SaltTheme.dimens.subPadding))
-            }
-            Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxWidth()
-                    .innerPadding(horizontal = false)
-            ) {
-                Text(
-                    text = text
-                )
-                Spacer(modifier = Modifier.height(2.dp))
-                Text(
-                    text = sub,
-                    color = SaltTheme.colors.subText,
-                    style = SaltTheme.textStyles.sub
-                )
-            }
-            Spacer(modifier = Modifier.width(SaltTheme.dimens.subPadding))
-
-            ItemPopupArrow()
-        }
-
-        PopupMenu(
-            expanded = state.expend,
-            onDismissRequest = {
-                state.dismiss()
-            }
-        ) {
-            content()
-        }
-    }
+    ItemDropdown(
+        state = state,
+        text = text,
+        value = sub,
+        modifier = modifier,
+        enabled = enabled,
+        iconPainter = iconPainter,
+        iconPaddingValues = iconPaddingValues,
+        iconColor = iconColor,
+        sub = null,
+        content = content
+    )
 }
 
 /**
