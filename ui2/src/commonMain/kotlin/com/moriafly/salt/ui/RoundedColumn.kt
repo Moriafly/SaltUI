@@ -21,13 +21,16 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 
 /**
  * A customized Column composable with rounded corners and a border.
@@ -43,6 +46,7 @@ import androidx.compose.ui.unit.Dp
  *
  * @param modifier The modifier to be applied to the layout. Defaults to [Modifier] but extends
  * to fill the maximum available width with [Modifier.fillMaxWidth].
+ * @param padding The padding values to be applied to the layout.
  * @param color The background color of the container. Defaults to [SaltColors.subBackground].
  * When set to [Color.Unspecified], both background and border colors will be unspecified, allowing
  * full customization of the container's appearance.
@@ -56,16 +60,17 @@ import androidx.compose.ui.unit.Dp
 @Composable
 fun RoundedColumn(
     modifier: Modifier = Modifier,
+    padding: PaddingValues = PaddingValues(
+        horizontal = SaltTheme.dimens.padding,
+        vertical = SaltTheme.dimens.padding * 0.5f
+    ),
     color: Color = SaltTheme.colors.subBackground,
     content: @Composable ColumnScope.() -> Unit
 ) {
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .padding(
-                horizontal = SaltTheme.dimens.padding,
-                vertical = SaltTheme.dimens.padding * 0.5f
-            )
+            .padding(padding)
             .clip(SaltTheme.shapes.medium)
             .background(color)
             .border(
