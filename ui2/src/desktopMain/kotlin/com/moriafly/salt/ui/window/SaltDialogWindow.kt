@@ -26,6 +26,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.awt.ComposeDialog
+import androidx.compose.ui.awt.SwingDialog
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.input.key.KeyEvent
 import androidx.compose.ui.unit.isSpecified
@@ -44,11 +45,21 @@ import java.awt.event.WindowEvent
 /**
  * # Salt Dialog Window
  *
- * With this, the window icon won't be displayed on the Taskbar.
+ * Composes platform dialog in the current composition. When Dialog enters the composition,
+ * a new platform dialog will be created and receives the focus. When Dialog leaves the
+ * composition, dialog will be disposed and closed.
+ *
+ * Dialog is a modal window. It means it blocks the parent [SaltWindow] / [SaltDialogWindow] in
+ * which composition context it was created.
  *
  * @param properties [SaltWindowProperties]
+ * @param init https://youtrack.jetbrains.com/issue/CMP-8719
+ * ```
+ * init = { it.modalityType = ModalityType.MODELESS }
+ * ```
  *
  * @see [DialogWindow]
+ * @see [SwingDialog]
  */
 @UnstableSaltUiApi
 @ExperimentalComposeUiApi
@@ -68,9 +79,10 @@ fun SaltDialogWindow(
     properties: SaltWindowProperties<ComposeDialog> = SaltWindowProperties(),
     onPreviewKeyEvent: ((KeyEvent) -> Boolean) = { false },
     onKeyEvent: ((KeyEvent) -> Boolean) = { false },
+    init: (ComposeDialog) -> Unit = {},
     content: @Composable DialogWindowScope.() -> Unit
 ) {
-    DialogWindow(
+    SwingDialog(
         onCloseRequest = onCloseRequest,
         state = state,
         visible = visible,
@@ -83,7 +95,8 @@ fun SaltDialogWindow(
         focusable = focusable,
         alwaysOnTop = alwaysOnTop,
         onPreviewKeyEvent = onPreviewKeyEvent,
-        onKeyEvent = onKeyEvent
+        onKeyEvent = onKeyEvent,
+        init = init
     ) {
         CompositionLocalProvider(
             LocalDialogState provides state

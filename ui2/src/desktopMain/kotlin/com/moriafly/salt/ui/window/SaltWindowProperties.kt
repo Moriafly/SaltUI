@@ -29,8 +29,7 @@ import java.awt.Window
  * To replace obtaining the window isVisible state in Composable.
  *
  * Do **not** use this:
- *
- * ```kotlin
+ * ```
  * SaltWindow(
  *     // ...
  * ) {
@@ -41,8 +40,7 @@ import java.awt.Window
  * ```
  *
  * Please use:
- *
- * ```kotlin
+ * ```
  * SaltWindow(
  *     // ...,
  *     properties = SaltWindowProperties(

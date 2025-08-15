@@ -26,6 +26,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.awt.ComposeWindow
+import androidx.compose.ui.awt.SwingWindow
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.input.key.KeyEvent
 import androidx.compose.ui.unit.isSpecified
@@ -43,6 +44,10 @@ import java.awt.event.WindowEvent
 
 /**
  * # Salt Window
+ *
+ * Composes platform window in the current composition. When [SaltWindow] enters the composition,
+ * a new platform window will be created and receive focus. When [SaltWindow] leaves the composition,
+ * the window will be disposed and closed.
  *
  * @param properties [SaltWindowProperties]
  *
@@ -66,9 +71,10 @@ fun SaltWindow(
     properties: SaltWindowProperties<ComposeWindow> = SaltWindowProperties(),
     onPreviewKeyEvent: (KeyEvent) -> Boolean = { false },
     onKeyEvent: (KeyEvent) -> Boolean = { false },
+    init: (ComposeWindow) -> Unit = {},
     content: @Composable FrameWindowScope.() -> Unit
 ) {
-    Window(
+    SwingWindow(
         onCloseRequest = onCloseRequest,
         state = state,
         visible = visible,
@@ -81,7 +87,8 @@ fun SaltWindow(
         focusable = focusable,
         alwaysOnTop = alwaysOnTop,
         onPreviewKeyEvent = onPreviewKeyEvent,
-        onKeyEvent = onKeyEvent
+        onKeyEvent = onKeyEvent,
+        init = init
     ) {
         CompositionLocalProvider(
             LocalWindowState provides state
