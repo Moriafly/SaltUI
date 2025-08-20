@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-@file:Suppress("unused", "MemberVisibilityCanBePrivate")
+@file:Suppress("unused", "MemberVisibilityCanBePrivate", "SpellCheckingInspection")
 
 package com.moriafly.salt.ui.util
 
@@ -85,8 +85,8 @@ object RomUtil {
      * @return The property value, or [Build.UNKNOWN] if failed
      */
     @SuppressLint("PrivateApi")
-    fun getSystemProperty(property: String): String {
-        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+    fun getSystemProperty(property: String): String =
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             HiddenApiBypass.invoke(Build::class.java, null, "getString", property) as String
         } else {
             try {
@@ -98,5 +98,4 @@ object RomUtil {
                 Build.UNKNOWN
             }
         }
-    }
 }
