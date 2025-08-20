@@ -27,6 +27,8 @@ import com.sun.jna.platform.win32.WinUser.WindowProc
 /**
  * An abstract base class to intercept window messages via subclassing.
  *
+ * TODO Test 1
+ *
  * @property originalHwnd The handle of the window to be subclassed.
  */
 @UnstableSaltUiApi
