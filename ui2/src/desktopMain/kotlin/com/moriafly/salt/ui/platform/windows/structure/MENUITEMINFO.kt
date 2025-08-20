@@ -25,6 +25,11 @@ import com.sun.jna.platform.win32.BaseTSD.ULONG_PTR
 import com.sun.jna.platform.win32.WinDef.HBITMAP
 import com.sun.jna.platform.win32.WinDef.HMENU
 
+/**
+ * https://learn.microsoft.com/zh-cn/windows/win32/api/winuser/ns-winuser-menuiteminfow
+ *
+ * - 2025/8/20 Test 1
+ */
 @UnstableSaltUiApi
 class MENUITEMINFO :
     Structure(),
