@@ -69,14 +69,14 @@ import kotlinx.coroutines.withContext
  * @param state the WebView state holder where the Uri to load is defined.
  * @param modifier a compose modifier.
  * @param captureBackPresses Set to true to have this Composable capture back presses and navigate
- *   the WebView back.
+ * the WebView back.
  * @param navigator an optional navigator object that can be used to control the WebView's
- *   navigation from outside the composable.
- * @param onCreated called when the WebView is first created, this can be used to set additional
- *   settings on the WebView. WebChromeClient and WebViewClient should not be set here as they will
- *   be subsequently overwritten after this lambda is called.
+ * navigation from outside the composable.
+ * @param onCreate called when the WebView is first created, this can be used to set additional
+ * settings on the WebView. WebChromeClient and WebViewClient should not be set here as they will
+ * be subsequently overwritten after this lambda is called.
  * @param onDispose called when the WebView is destroyed. Provides a bundle which can be saved if
- *   you need to save and restore state in this WebView.
+ * you need to save and restore state in this WebView.
  * @param client provides access to WebViewClient via subclassing.
  * @param chromeClient provides access to WebChromeClient via subclassing.
  * @param factory an optional WebView factory for using a custom subclass of WebView.
@@ -88,7 +88,7 @@ fun WebView(
     modifier: Modifier = Modifier,
     captureBackPresses: Boolean = true,
     navigator: WebViewNavigator = rememberWebViewNavigator(),
-    onCreated: (WebView) -> Unit = {},
+    onCreate: (WebView) -> Unit = {},
     onDispose: (WebView) -> Unit = {},
     client: AccompanistWebViewClient = remember { AccompanistWebViewClient() },
     chromeClient: AccompanistWebChromeClient = remember { AccompanistWebChromeClient() },
@@ -98,15 +98,17 @@ fun WebView(
         // WebView changes it's layout strategy based on it's layoutParams. We convert from Compose
         // Modifier to layout params here.
         val width =
-            if (constraints.hasFixedWidth)
+            if (constraints.hasFixedWidth) {
                 LayoutParams.MATCH_PARENT
-            else
+            } else {
                 LayoutParams.WRAP_CONTENT
+            }
         val height =
-            if (constraints.hasFixedHeight)
+            if (constraints.hasFixedHeight) {
                 LayoutParams.MATCH_PARENT
-            else
+            } else {
                 LayoutParams.WRAP_CONTENT
+            }
 
         val layoutParams = FrameLayout.LayoutParams(
             width,
@@ -119,7 +121,7 @@ fun WebView(
             Modifier,
             captureBackPresses,
             navigator,
-            onCreated,
+            onCreate,
             onDispose,
             client,
             chromeClient,
@@ -143,12 +145,12 @@ fun WebView(
  * @param layoutParams a FrameLayout.LayoutParams object to custom size the underlying WebView.
  * @param modifier a compose modifier
  * @param captureBackPresses set to true to have this Composable capture back presses and navigate
- *   the WebView back.
+ * the WebView back.
  * @param navigator an optional navigator object that can be used to control the WebView's
- *   navigation from outside the composable.
- * @param onCreated called when the WebView is first created, this can be used to set additional
- *   settings on the WebView. WebChromeClient and WebViewClient should not be set here as they will
- *   be subsequently overwritten after this lambda is called.
+ * navigation from outside the composable.
+ * @param onCreate called when the WebView is first created, this can be used to set additional
+ * settings on the WebView. WebChromeClient and WebViewClient should not be set here as they will
+ * be subsequently overwritten after this lambda is called.
  * @param onDispose called when the WebView is destroyed. Provides a bundle which can be saved
  * if you need to save and restore state in this WebView.
  * @param client provides access to WebViewClient via subclassing.
@@ -163,7 +165,7 @@ fun WebView(
     modifier: Modifier = Modifier,
     captureBackPresses: Boolean = true,
     navigator: WebViewNavigator = rememberWebViewNavigator(),
-    onCreated: (WebView) -> Unit = {},
+    onCreate: (WebView) -> Unit = {},
     onDispose: (WebView) -> Unit = {},
     client: AccompanistWebViewClient = remember { AccompanistWebViewClient() },
     chromeClient: AccompanistWebChromeClient = remember { AccompanistWebChromeClient() },
@@ -226,7 +228,7 @@ fun WebView(
                 this.layoutParams = layoutParams
             }
             val view = (factory?.invoke(context) ?: WebView(context)).apply {
-                onCreated(this)
+                onCreate(this)
 
                 this.layoutParams = FrameLayout.LayoutParams(
                     LayoutParams.MATCH_PARENT,
@@ -256,7 +258,7 @@ fun WebView(
  * A parent class implementation of WebViewClient that can be subclassed to add custom behaviour.
  *
  * As Accompanist Web needs to set its own web client to function, it provides this intermediary
- * class that can be overriden if further custom behaviour is required.
+ * class that can be overridden if further custom behaviour is required.
  */
 open class AccompanistWebViewClient : WebViewClient() {
     open lateinit var state: WebViewState
@@ -384,7 +386,9 @@ sealed class LoadingState {
      * Describes a WebView between `onPageStarted` and `onPageFinished` events, contains a
      * [progress] property which is updated by the WebView.
      */
-    data class Loading(val progress: Float) : LoadingState()
+    data class Loading(
+        val progress: Float
+    ) : LoadingState()
 
     /**
      * Describes a WebView that has finished loading content.
@@ -397,7 +401,9 @@ sealed class LoadingState {
  * using the rememberWebViewState(uri) function.
  */
 @Stable
-class WebViewState(webContent: WebContent) {
+class WebViewState(
+    webContent: WebContent
+) {
     var lastLoadedUrl: String? by mutableStateOf(null)
         internal set
 
@@ -458,11 +464,16 @@ class WebViewState(webContent: WebContent) {
  * @see [rememberWebViewNavigator]
  */
 @Stable
-class WebViewNavigator(private val coroutineScope: CoroutineScope) {
+class WebViewNavigator(
+    private val coroutineScope: CoroutineScope
+) {
     private sealed interface NavigationEvent {
         object Back : NavigationEvent
+
         object Forward : NavigationEvent
+
         object Reload : NavigationEvent
+
         object StopLoading : NavigationEvent
 
         data class LoadUrl(
@@ -684,7 +695,11 @@ fun rememberWebViewStateWithHTMLData(
         WebViewState(WebContent.Data(data, baseUrl, encoding, mimeType, historyUrl))
     }.apply {
         this.content = WebContent.Data(
-            data, baseUrl, encoding, mimeType, historyUrl
+            data,
+            baseUrl,
+            encoding,
+            mimeType,
+            historyUrl
         )
     }
 
