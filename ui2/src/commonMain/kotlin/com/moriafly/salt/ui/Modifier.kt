@@ -51,7 +51,7 @@ inline fun Modifier.thenIf(condition: Boolean, block: Modifier.() -> Modifier): 
  * Enabled alpha modifier.
  */
 @Stable
-internal fun Modifier.enabledAlpha(enabled: Boolean): Modifier = if (enabled) this else alpha(0.5f)
+fun Modifier.enabledAlpha(enabled: Boolean): Modifier = if (enabled) this else alpha(0.5f)
 
 /**
  * **Desktop Only**
