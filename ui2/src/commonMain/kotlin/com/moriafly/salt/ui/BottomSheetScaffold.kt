@@ -259,6 +259,7 @@ fun rememberBottomSheetState(
  * @param sheetGesturesEnabled whether the bottom sheet can be interacted with by gestures.
  * @param sheetPeekHeight the height of the bottom sheet when it is collapsed. If the peek height
  * equals the sheet's full height, the sheet will only have a collapsed state.
+ * @param nestedScrollConnection the [NestedScrollConnection] to be used by the [sheetContent].
  * @param content the main content of the screen. You should use the provided [PaddingValues] to
  * properly offset the content, so that it is not obstructed by the bottom sheet when collapsed.
  */
