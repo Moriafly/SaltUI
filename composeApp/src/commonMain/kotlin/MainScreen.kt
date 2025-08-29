@@ -53,9 +53,11 @@ import saltui.composeapp.generated.resources.ic_verified
 @Suppress("ktlint:compose:modifier-missing-check")
 @OptIn(UnstableSaltUiApi::class)
 @Composable
-fun MainScreen() {
+fun MainScreen(
+    modifier: Modifier = Modifier
+) {
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
             .background(color = SaltTheme.colors.background)
             .safeMainPadding()

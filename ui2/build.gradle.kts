@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.compose.multiplatform)
     alias(libs.plugins.vanniktech.maven.publish)
+    alias(libs.plugins.kotlinx.atomicfu)
     `maven-publish`
 }
 

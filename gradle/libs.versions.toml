@@ -10,6 +10,7 @@ activity-compose = "1.9.2"
 hiddenapibypass = "6.1"
 jna = "5.17.0"
 vanniktech = "0.34.0"
+kotlinx-atomicfu = "0.29.0"
 
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
@@ -30,5 +31,6 @@ android-application = { id = "com.android.application", version.ref = "agp" }
 android-library = { id = "com.android.library", version.ref = "agp" }
 compose-multiplatform = { id = "org.jetbrains.compose", version.ref = "compose-multiplatform" }
 vanniktech-maven-publish = { id = "com.vanniktech.maven.publish", version.ref = "vanniktech" }
+kotlinx-atomicfu = { id  = "org.jetbrains.kotlinx.atomicfu", version.ref = "kotlinx-atomicfu" }
 
 [bundles]
