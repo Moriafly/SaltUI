@@ -8,6 +8,7 @@ Salt UI is UI components based on [Compose Multiplatform](https://github.com/Jet
 
 | Salt UI        | Compose Multiplatform | Jetpack Compose |
 |----------------|-----------------------|-----------------|
+| 2.6.0-beta02+  | 1.9.0-rc01            | 1.9.0           |
 | 2.6.0-beta01+  | 1.9.0-beta03          | 1.9.0-rc01      |
 | 2.5.0-alpha05+ | 1.8.2                 | 1.8.2           |
 | 2.4.0+         | 1.8.0                 | 1.8.0           |
@@ -26,7 +27,7 @@ Add dependency:
 
 ```kotlin
 // Replace <TAG> with the latest version
-// e.g. implementation("io.github.moriafly:salt-ui:2.0.0")
+// e.g. implementation("io.github.moriafly:salt-ui:2.6.0-beta02")
 implementation("io.github.moriafly:salt-ui:<TAG>")
 ```
 
