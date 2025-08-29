@@ -131,21 +131,20 @@ class BottomSheetState(
         get() = anchoredDraggableState.currentValue == Collapsed
 
     /**
-     * The fraction of the offset between [from] and [to], as a fraction between [0f..1f], or 1f if
-     * [from] is equal to [to].
-     *
-     * @param from the starting value used to calculate the distance
-     * @param to the end value used to calculate the distance
+     * The fraction of the offset from [Collapsed] to [Expanded], between [0f..1f].
      */
     @FloatRange(from = 0.0, to = 1.0)
-    fun progress(from: BottomSheetValue, to: BottomSheetValue): Float {
-        if (from == to) return 1f
+    fun progress(): Float {
+        val fromOffset = anchoredDraggableState.anchors.positionOf(Collapsed)
+        val toOffset = anchoredDraggableState.anchors.positionOf(Expanded)
 
-        val fromOffset = anchoredDraggableState.anchors.positionOf(from)
-        val toOffset = anchoredDraggableState.anchors.positionOf(to)
-
-        // If either offset is NaN, return 0f
-        if (fromOffset.isNaN() || toOffset.isNaN()) return 0f
+        // If either offset is NaN, return the initial collapsed/expanded state
+        if (fromOffset.isNaN() || toOffset.isNaN()) {
+            return when (anchoredDraggableState.initialValue) {
+                Collapsed -> 0f
+                Expanded -> 1f
+            }
+        }
 
         val currentOffset =
             anchoredDraggableState.offset.coerceIn(

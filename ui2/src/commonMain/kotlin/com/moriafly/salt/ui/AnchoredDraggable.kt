@@ -232,7 +232,7 @@ internal interface AnchoredDragScope {
 @Stable
 @UnstableSaltUiApi
 class AnchoredDraggableState<T>(
-    initialValue: T,
+    internal val initialValue: T,
     internal val positionalThreshold: (totalDistance: Float) -> Float,
     internal val velocityThreshold: () -> Float,
     val animationSpec: AnimationSpec<Float>,
