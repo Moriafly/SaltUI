@@ -30,12 +30,14 @@ import androidx.compose.ui.awt.SwingDialog
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.input.key.KeyEvent
 import androidx.compose.ui.unit.isSpecified
+import androidx.compose.ui.window.DialogModalityType
 import androidx.compose.ui.window.DialogState
 import androidx.compose.ui.window.DialogWindow
 import androidx.compose.ui.window.DialogWindowScope
 import androidx.compose.ui.window.WindowDecoration
 import androidx.compose.ui.window.rememberDialogState
 import com.moriafly.salt.ui.UnstableSaltUiApi
+import java.awt.Dialog.ModalityType
 import java.awt.Dimension
 import java.awt.event.ComponentEvent
 import java.awt.event.ComponentListener
@@ -76,6 +78,7 @@ fun SaltDialogWindow(
     enabled: Boolean = true,
     focusable: Boolean = true,
     alwaysOnTop: Boolean = false,
+    modalityType: DialogModalityType = DialogModalityType.DocumentModal,
     properties: SaltWindowProperties<ComposeDialog> = SaltWindowProperties(),
     onPreviewKeyEvent: ((KeyEvent) -> Boolean) = { false },
     onKeyEvent: ((KeyEvent) -> Boolean) = { false },
@@ -96,6 +99,7 @@ fun SaltDialogWindow(
         alwaysOnTop = alwaysOnTop,
         onPreviewKeyEvent = onPreviewKeyEvent,
         onKeyEvent = onKeyEvent,
+        modalityType = modalityType.toAwtModalityType(),
         init = init
     ) {
         CompositionLocalProvider(
@@ -163,4 +167,16 @@ fun SaltDialogWindow(
 @UnstableSaltUiApi
 val LocalDialogState = staticCompositionLocalOf<DialogState> {
     error("LocalDialogState is not provided")
+}
+
+/**
+ * Returns the AWT [java.awt.Dialog.ModalityType] corresponding to the given Compose
+ * [DialogModalityType].
+ */
+@OptIn(ExperimentalComposeUiApi::class)
+internal fun DialogModalityType.toAwtModalityType(): ModalityType = when (this) {
+    DialogModalityType.Modeless -> ModalityType.MODELESS
+    DialogModalityType.DocumentModal -> ModalityType.DOCUMENT_MODAL
+    DialogModalityType.ApplicationModal -> ModalityType.APPLICATION_MODAL
+    else -> error("Unknown dialog modality type: $this")
 }
