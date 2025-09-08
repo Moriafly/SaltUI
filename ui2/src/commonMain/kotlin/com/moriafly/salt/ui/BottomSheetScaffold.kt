@@ -120,15 +120,61 @@ class BottomSheetState(
 
     /**
      * Whether the bottom sheet is expanded.
+     *
+     * @see isCurrentlyExpanded
      */
+    @Deprecated(
+        message = "Use isCurrentlyExpanded instead",
+        replaceWith = ReplaceWith("isCurrentlyExpanded")
+    )
     val isExpanded: Boolean
         get() = anchoredDraggableState.currentValue == Expanded
 
     /**
      * Whether the bottom sheet is collapsed.
+     *
+     * @see isCurrentlyCollapsed
      */
+    @Deprecated(
+        message = "Use isCurrentlyCollapsed instead",
+        replaceWith = ReplaceWith("isCurrentlyCollapsed")
+    )
     val isCollapsed: Boolean
         get() = anchoredDraggableState.currentValue == Collapsed
+
+    /**
+     * Whether the bottom sheet's *current visual state* is expanded.
+     * Note: This may be true even during a collapse animation.
+     */
+    val isCurrentlyExpanded: Boolean
+        get() = anchoredDraggableState.currentValue == Expanded
+
+    /**
+     * Whether the bottom sheet's *current visual state* is collapsed.
+     * Note: This may be true even during an expand animation.
+     */
+    val isCurrentlyCollapsed: Boolean
+        get() = anchoredDraggableState.currentValue == Collapsed
+
+    /**
+     * Whether the bottom sheet is fully expanded.
+     *
+     * - FullyExpanded: currentValue = Expanded, targetValue = Expanded
+     * - FullyExpanded -> FullyCollapsed: currentValue = Expanded, targetValue = Collapsed
+     */
+    val isFullyExpanded: Boolean
+        get() = anchoredDraggableState.currentValue == Expanded &&
+            targetValue == Expanded
+
+    /**
+     * Whether the bottom sheet is fully collapsed.
+     *
+     * - FullyCollapsed: currentValue = Collapsed, targetValue = Collapsed
+     * - FullyCollapsed -> FullyExpanded: currentValue = Collapsed, targetValue = Expanded
+     */
+    val isFullyCollapsed: Boolean
+        get() = anchoredDraggableState.currentValue == Collapsed &&
+            targetValue == Collapsed
 
     /**
      * The fraction of the offset from [Collapsed] to [Expanded], between [0f..1f].
@@ -376,7 +422,7 @@ private fun BottomSheet(
                 // If we don't have anchors yet, or have only one anchor we don't want any
                 // accessibility actions
                 if (state.anchoredDraggableState.anchors.size > 1) {
-                    if (state.isCollapsed) {
+                    if (state.isCurrentlyCollapsed) {
                         expand {
                             if (state.anchoredDraggableState.confirmValueChange(Expanded)) {
                                 scope.launch { state.expand() }
