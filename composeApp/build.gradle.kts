@@ -38,7 +38,7 @@ kotlin {
 
 android {
     namespace = "com.moriafly.salt.ui"
-    compileSdk = 35
+    compileSdk = 36
 
     sourceSets["main"].manifest.srcFile("src/androidMain/AndroidManifest.xml")
     sourceSets["main"].res.srcDirs("src/androidMain/res")
@@ -47,7 +47,7 @@ android {
     defaultConfig {
         applicationId = "com.moriafly.salt.ui"
         minSdk = 23
-        targetSdk = 34
+        targetSdk = 36
         versionCode = 1
         versionName = "1.0"
     }
