@@ -28,10 +28,15 @@ import androidx.compose.ui.semantics.semantics
 
 /**
  * A component marked as a Container that prevents touch events from being passed down.
+ *
+ * @param modifier The modifier to be applied to the layout.
+ * @param propagateMinConstraints Whether the incoming min constraints should be passed to content.
+ * @param content The content of the [Surface].
  */
 @Composable
 fun Surface(
     modifier: Modifier = Modifier,
+    propagateMinConstraints: Boolean = true,
     content: @Composable () -> Unit
 ) {
     Box(
@@ -40,7 +45,7 @@ fun Surface(
                 isTraversalGroup = true
             }
             .pointerInput(Unit) { },
-        propagateMinConstraints = true
+        propagateMinConstraints = propagateMinConstraints
     ) {
         content()
     }
