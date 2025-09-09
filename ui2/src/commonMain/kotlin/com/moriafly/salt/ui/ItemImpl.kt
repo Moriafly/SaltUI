@@ -19,17 +19,12 @@
 
 package com.moriafly.salt.ui
 
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
@@ -38,65 +33,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.unit.dp
-
-@Composable
-internal fun ItemImpl(
-    onClick: () -> Unit,
-    text: String,
-    modifier: Modifier = Modifier,
-    enabled: Boolean = true,
-    iconPainter: Painter? = null,
-    iconPaddingValues: PaddingValues = PaddingValues(0.dp),
-    iconColor: Color? = SaltTheme.colors.text,
-    textColor: Color = SaltTheme.colors.text,
-    arrowType: ItemArrowType = ItemArrowType.Arrow,
-    content: @Composable () -> Unit
-) {
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .heightIn(SaltTheme.dimens.item)
-            .enabledAlpha(enabled)
-            .clickable(enabled = enabled) {
-                onClick()
-            }
-            .innerPadding(vertical = false),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        iconPainter?.let {
-            Image(
-                modifier = Modifier
-                    .size(SaltTheme.dimens.itemIcon)
-                    .padding(iconPaddingValues),
-                painter = iconPainter,
-                contentDescription = null,
-                colorFilter = iconColor?.let { ColorFilter.tint(iconColor) }
-            )
-            Spacer(modifier = Modifier.width(SaltTheme.dimens.subPadding))
-        }
-        Column(
-            modifier = Modifier
-                .weight(1f)
-                .fillMaxWidth()
-                .innerPadding(horizontal = false)
-        ) {
-            Text(
-                text = text,
-                color = textColor
-            )
-            content()
-        }
-
-        ItemArrow(
-            arrowType = arrowType
-        )
-    }
-}
 
 @UnstableSaltUiApi
 @Composable

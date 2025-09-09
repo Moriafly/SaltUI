@@ -30,6 +30,7 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
@@ -167,22 +168,30 @@ enum class ItemArrowType {
 }
 
 /**
- * Build item for the content interface.
+ * Builds a list item for content interfaces.
  *
- * @param onClick will be called when user clicks on the element.
- * @param text main text.
+ * This composable provides a standard list item layout including main text, optional sub text,
+ * icon, tag, and an arrow indicator.
+ *
+ * @param onClick Callback invoked when the user clicks on the item.
+ * @param text The main text content.
  * @param modifier [Modifier] to apply to this layout node.
- * @param enabled enabled.
- * @param iconPainter icon.
- * @param iconPaddingValues iconPaddingValues.
- * @param iconColor color of [iconPainter], if this value is null, will use the paint original
- *   color.
- * @param textColor color of [text] text, you can set highlight to replace ItemTextButton.
- * @param sub sub text.
- * @param subColor color of [sub] text.
- * @param subContent Allow customizing the region of existing sub text.
- * @param arrowType type of arrow.
+ * @param enabled Controls the enabled state of the item. When `false`, this component will not
+ * respond to user input.
+ * @param iconPainter Optional icon painter displayed at the start of the item.
+ * @param iconPaddingValues Padding values applied around the icon.
+ * @param iconColor Tint color for the icon. If `null`, the original color of the [iconPainter] is
+ * used.
+ * @param textColor Color of the main [text].
+ * @param sub Optional sub text displayed below the main text.
+ * @param subColor Color of the [sub] text.
+ * @param subContent Optional composable content to replace or complement the [sub] text area.
+ * @param tag Optional tag text displayed at the end of the item, typically used for status or
+ * metadata.
+ * @param arrowType Type of arrow indicator displayed at the end of the item. Defaults to
+ * [ItemArrowType.Arrow].
  */
+@OptIn(UnstableSaltUiApi::class)
 @Composable
 fun Item(
     onClick: () -> Unit,
@@ -196,32 +205,75 @@ fun Item(
     sub: String? = null,
     subColor: Color = SaltTheme.colors.subText,
     subContent: (@Composable () -> Unit)? = null,
+    tag: String? = null,
     arrowType: ItemArrowType = ItemArrowType.Arrow
 ) {
-    ItemImpl(
-        onClick = onClick,
-        text = text,
-        modifier = modifier,
-        enabled = enabled,
-        iconPainter = iconPainter,
-        iconPaddingValues = iconPaddingValues,
-        iconColor = iconColor,
-        textColor = textColor,
-        arrowType = arrowType
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .heightIn(SaltTheme.dimens.item)
+            .enabledAlpha(enabled)
+            .clickable(enabled = enabled) {
+                onClick()
+            }
+            .innerPadding(vertical = false),
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        sub?.let {
-            Spacer(modifier = Modifier.height(2.dp))
-            Text(
-                text = sub,
-                color = subColor,
-                style = SaltTheme.textStyles.sub
+        iconPainter?.let {
+            Image(
+                modifier = Modifier
+                    .size(SaltTheme.dimens.itemIcon)
+                    .padding(iconPaddingValues),
+                painter = iconPainter,
+                contentDescription = null,
+                colorFilter = iconColor?.let { ColorFilter.tint(iconColor) }
             )
+            Spacer(modifier = Modifier.width(SaltTheme.dimens.subPadding))
         }
-
-        subContent?.let {
-            Spacer(modifier = Modifier.height(2.dp))
-            subContent()
-        }
+        JustifiedRow(
+            startContent = {
+                Column {
+                    Text(
+                        text = text,
+                        color = textColor
+                    )
+                    sub?.let {
+                        Spacer(modifier = Modifier.height(2.dp))
+                        Text(
+                            text = sub,
+                            color = subColor,
+                            style = SaltTheme.textStyles.sub
+                        )
+                    }
+                    subContent?.let {
+                        Spacer(modifier = Modifier.height(2.dp))
+                        subContent()
+                    }
+                }
+            },
+            endContent = {
+                tag?.let {
+                    Text(
+                        text = tag,
+                        color = SaltTheme.colors.subText,
+                        style = SaltTheme.textStyles.sub
+                    )
+                }
+            },
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxWidth()
+                .innerPadding(horizontal = false),
+            verticalAlignment = Alignment.CenterVertically,
+            spaceBetween = if (tag != null) {
+                SaltTheme.dimens.subPadding
+            } else {
+                0.dp
+            }
+        )
+        ItemArrow(
+            arrowType = arrowType
+        )
     }
 }
 

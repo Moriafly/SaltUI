@@ -119,7 +119,8 @@ fun MainScreen(
                     iconPainter = painterResource(Res.drawable.ic_qr_code),
                     iconColor = SaltTheme.colors.highlight,
                     text = "标准 Item 控件，带图标（可选），副标题文本（可选）",
-                    sub = "Item 控件的副标题"
+                    sub = "Item 控件的副标题",
+                    tag = "Tag，可选"
                 )
 
                 var switch by remember { mutableStateOf(false) }

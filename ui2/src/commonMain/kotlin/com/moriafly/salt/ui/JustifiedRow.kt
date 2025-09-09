@@ -27,6 +27,8 @@ import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.constrainHeight
 import androidx.compose.ui.unit.constrainWidth
+import androidx.compose.ui.util.fastForEach
+import androidx.compose.ui.util.fastMap
 import kotlin.math.max
 
 /**
@@ -59,47 +61,57 @@ fun JustifiedRow(
     val spaceBetweenPx = with(LocalDensity.current) { spaceBetween.roundToPx() }
 
     Layout(
-        content = {
-            startContent()
-            endContent()
-        },
+        contents = listOf(startContent, endContent),
         modifier = modifier
             .fillMaxWidth()
     ) { measurables, constraints ->
-        require(measurables.size == 2) { "JustifiedRow expects exactly two children" }
-
-        val (startMeasurable, endMeasurable) = measurables
+        val (startMeasurables, endMeasurables) = measurables
         val parentMaxWidth = constraints.maxWidth
-        // Width available to children after reserving the minimum gap (never negative)
-        val availableSpace = (parentMaxWidth - spaceBetweenPx).coerceAtLeast(0)
-
-        // Height hint for intrinsics; use bounded maxHeight if available
         val heightHint = if (constraints.hasBoundedHeight) constraints.maxHeight else 0
 
-        val startIntrinsic = startMeasurable.maxIntrinsicWidth(heightHint)
-        val endIntrinsic = endMeasurable.maxIntrinsicWidth(heightHint)
-        val totalRequired = startIntrinsic + spaceBetweenPx + endIntrinsic
+        val startIntrinsic = startMeasurables
+            .fastMap { it.maxIntrinsicWidth(heightHint) }
+            .maxOrNull() ?: 0
 
-        // Decide hard caps for measurement so min gap is enforced by construction
+        val endIntrinsic = endMeasurables
+            .fastMap { it.maxIntrinsicWidth(heightHint) }
+            .maxOrNull() ?: 0
+
+        // Check if both exist, only add spacing in that case
+        val hasStartContent = startMeasurables.isNotEmpty()
+        val hasEndContent = endMeasurables.isNotEmpty()
+
+        val spaceToUse = if (hasStartContent && hasEndContent) spaceBetweenPx else 0
+
+        // Available space for allocation calculation
+        val availableSpace = (parentMaxWidth - spaceToUse).coerceAtLeast(0)
+        // Total required width including the gap (if needed)
+        val totalRequired = startIntrinsic + spaceToUse + endIntrinsic
+
+        // Decide hard caps for measurement
         val (startCap, endCap) = if (totalRequired <= parentMaxWidth) {
-            // Fit case: cap at intrinsic to avoid uncontrolled expansion
+            // Fits (or only one element exists and it fits)
             startIntrinsic to endIntrinsic
         } else {
+            // Not enough space, apply smart allocation logic
+            // This logic works correctly even with only one element (e.g., hasStartContent=true, hasEndContent=false)
+            // because isEndSmall will be true, isStartSmall will be false (assuming start overflows)
+            // This enters the !isStartSmall && isEndSmall branch, calculating startCap = availableSpace, endCap = 0, which is correct
             val isStartSmall = startIntrinsic < availableSpace / 2
             val isEndSmall = endIntrinsic < availableSpace / 2
             when {
                 isStartSmall && !isEndSmall -> {
-                    val endCap = (availableSpace - startIntrinsic).coerceAtLeast(0)
-                    startIntrinsic to endCap
+                    val endCapCalculated = (availableSpace - startIntrinsic).coerceAtLeast(0)
+                    startIntrinsic to endCapCalculated
                 }
 
                 !isStartSmall && isEndSmall -> {
-                    val startCap = (availableSpace - endIntrinsic).coerceAtLeast(0)
-                    startCap to endIntrinsic
+                    val startCapCalculated = (availableSpace - endIntrinsic).coerceAtLeast(0)
+                    startCapCalculated to endIntrinsic
                 }
 
                 else -> {
-                    // Even split; handle odd pixels to keep sum exact
+                    // Both are large or both are small (but sum overflows), split evenly
                     val half = availableSpace / 2
                     val other = availableSpace - half
                     half to other
@@ -107,7 +119,7 @@ fun JustifiedRow(
             }
         }
 
-        // Build child constraints with width caps aligned to parent height constraints
+        // Build child constraints
         fun capWidth(maxW: Int): Constraints = Constraints(
             minWidth = 0,
             maxWidth = maxW.coerceAtLeast(0),
@@ -115,20 +127,30 @@ fun JustifiedRow(
             maxHeight = constraints.maxHeight
         )
 
-        val startPlaceable = startMeasurable.measure(capWidth(startCap))
-        val endPlaceable = endMeasurable.measure(capWidth(endCap))
+        val startPlaceables = startMeasurables.fastMap { it.measure(capWidth(startCap)) }
+        val endPlaceables = endMeasurables.fastMap { it.measure(capWidth(endCap)) }
 
-        val measuredHeight = max(startPlaceable.height, endPlaceable.height)
+        val maxStartPlaceablesHeight = startPlaceables.maxOfOrNull { it.height } ?: 0
+        val maxEndPlaceablesHeight = endPlaceables.maxOfOrNull { it.height } ?: 0
+
+        val measuredHeight = max(
+            maxStartPlaceablesHeight,
+            maxEndPlaceablesHeight
+        )
         val layoutWidth = constraints.constrainWidth(parentMaxWidth)
         val layoutHeight = constraints.constrainHeight(measuredHeight)
 
-        // Place at relative edges; remaining space forms the gap (≥ spaceBetweenPx)
+        // Placement
         layout(width = layoutWidth, height = layoutHeight) {
-            val startY = verticalAlignment.align(startPlaceable.height, layoutHeight)
-            val endY = verticalAlignment.align(endPlaceable.height, layoutHeight)
+            // Calculate Y alignment
+            val startY = verticalAlignment.align(maxStartPlaceablesHeight, layoutHeight)
+            val endY = verticalAlignment.align(maxEndPlaceablesHeight, layoutHeight)
 
-            startPlaceable.placeRelative(x = 0, y = startY)
-            endPlaceable.placeRelative(x = layoutWidth - endPlaceable.width, y = endY)
+            // Place all start children (stacked at 0, startY)
+            startPlaceables.fastForEach { it.placeRelative(x = 0, y = startY) }
+
+            // Place all end children (each individually right-aligned, forming a "right-aligned stack")
+            endPlaceables.fastForEach { it.placeRelative(x = layoutWidth - it.width, y = endY) }
         }
     }
 }
