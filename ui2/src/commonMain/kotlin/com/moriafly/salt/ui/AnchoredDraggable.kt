@@ -19,6 +19,9 @@
 
 package com.moriafly.salt.ui
 
+/**
+ * TODO Replace androidx.compose.foundation.gestures.AnchoredDraggable
+ */
 import androidx.annotation.FloatRange
 import androidx.compose.animation.core.AnimationSpec
 import androidx.compose.animation.core.SpringSpec
@@ -68,21 +71,26 @@ import kotlin.math.roundToInt
 @UnstableSaltUiApi
 interface DraggableAnchors<T> {
     /**
-     * Get the anchor position for an associated [value].
+     * The amount of anchors.
+     */
+    val size: Int
+
+    /**
+     * Get the anchor position for an associated [anchor].
      *
      * @return the position of the anchor, or [Float.NaN] if the anchor does not exist.
      */
-    fun positionOf(value: T): Float
+    fun positionOf(anchor: T): Float
 
     /**
-     * Whether there is an anchor position associated with the [value].
+     * Whether there is an anchor position associated with the [anchor].
      *
-     * @param value the value to look up.
+     * @param anchor the value to look up.
      *
      * @return true if there is an anchor for this value, false if there is no anchor for this
      * value.
      */
-    fun hasAnchorFor(value: T): Boolean
+    fun hasPositionFor(anchor: T): Boolean
 
     /**
      * Find the closest anchor to the [position].
@@ -104,19 +112,14 @@ interface DraggableAnchors<T> {
     fun closestAnchor(position: Float, searchUpwards: Boolean): T?
 
     /**
-     * The smallest anchor, or [Float.NEGATIVE_INFINITY] if the anchors are empty.
+     * The smallest anchor position, or [Float.NaN] if the anchors are empty.
      */
-    fun minAnchor(): Float
+    fun minPosition(): Float
 
     /**
-     * The biggest anchor, or [Float.POSITIVE_INFINITY] if the anchors are empty.
+     * The biggest anchor position, or [Float.NaN] if the anchors are empty.
      */
-    fun maxAnchor(): Float
-
-    /**
-     * The amount of anchors.
-     */
-    val size: Int
+    fun maxPosition(): Float
 }
 
 /**
@@ -594,7 +597,7 @@ class AnchoredDraggableState<T>(
         dragPriority: MutatePriority = MutatePriority.Default,
         block: suspend AnchoredDragScope.(anchors: DraggableAnchors<T>, targetValue: T) -> Unit,
     ) {
-        if (anchors.hasAnchorFor(targetValue)) {
+        if (anchors.hasPositionFor(targetValue)) {
             try {
                 dragMutex.mutate(dragPriority) {
                     dragTarget = targetValue
@@ -623,8 +626,8 @@ class AnchoredDraggableState<T>(
 
     internal fun newOffsetForDelta(delta: Float) =
         ((if (offset.isNaN()) 0f else offset) + delta).coerceIn(
-            anchors.minAnchor(),
-            anchors.maxAnchor(),
+            anchors.minPosition(),
+            anchors.maxPosition()
         )
 
     /**
@@ -778,9 +781,9 @@ private fun <T> emptyDraggableAnchors() = MapDraggableAnchors<T>(emptyMap())
 private class MapDraggableAnchors<T>(
     private val anchors: Map<T, Float>
 ) : DraggableAnchors<T> {
-    override fun positionOf(value: T): Float = anchors[value] ?: Float.NaN
+    override fun positionOf(anchor: T): Float = anchors[anchor] ?: Float.NaN
 
-    override fun hasAnchorFor(value: T) = anchors.containsKey(value)
+    override fun hasPositionFor(anchor: T) = anchors.containsKey(anchor)
 
     override fun closestAnchor(position: Float): T? =
         anchors.minByOrNull { abs(position - it.value) }?.key
@@ -792,9 +795,9 @@ private class MapDraggableAnchors<T>(
         }
         ?.key
 
-    override fun minAnchor() = anchors.values.minOrNull() ?: Float.NaN
+    override fun minPosition() = anchors.values.minOrNull() ?: Float.NaN
 
-    override fun maxAnchor() = anchors.values.maxOrNull() ?: Float.NaN
+    override fun maxPosition() = anchors.values.maxOrNull() ?: Float.NaN
 
     override val size: Int
         get() = anchors.size
