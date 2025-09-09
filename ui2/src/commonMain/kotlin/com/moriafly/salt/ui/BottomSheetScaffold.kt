@@ -211,7 +211,7 @@ class BottomSheetState(
      */
     suspend fun expand() {
         val target =
-            if (anchoredDraggableState.anchors.hasAnchorFor(Expanded)) {
+            if (anchoredDraggableState.anchors.hasPositionFor(Expanded)) {
                 Expanded
             } else {
                 Collapsed
@@ -409,7 +409,7 @@ private fun BottomSheet(
                 val newTarget =
                     when (state.anchoredDraggableState.targetValue) {
                         Collapsed -> Collapsed
-                        Expanded -> if (newAnchors.hasAnchorFor(Expanded)) Expanded else Collapsed
+                        Expanded -> if (newAnchors.hasPositionFor(Expanded)) Expanded else Collapsed
                     }
                 return@draggableAnchors newAnchors to newTarget
             }
