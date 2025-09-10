@@ -33,8 +33,6 @@ import kotlin.contracts.contract
 /**
  * Conditionally applies additional [Modifier].
  *
- * TODO: [Contract to specify that a function parameter is always true inside lambda](https://youtrack.jetbrains.com/issue/KT-32993)
- *
  * @param condition The boolean condition.
  * @param block The block to apply if the condition is true.
  * @return The modified [Modifier] or the original one.
@@ -42,7 +40,13 @@ import kotlin.contracts.contract
 @OptIn(ExperimentalContracts::class)
 inline fun Modifier.thenIf(condition: Boolean, block: Modifier.() -> Modifier): Modifier {
     contract {
+        // Declares that the lambda runs at most once
         callsInPlace(block, InvocationKind.AT_MOST_ONCE)
+        // Declares that the condition is assumed to be true inside the lambda
+        // See:
+        // - https://kotlinlang.org/docs/whatsnew2220.html#improved-kotlin-contracts
+        // - [Contract to specify that a function parameter is always true inside lambda](https://youtrack.jetbrains.com/issue/KT-32993)
+        condition holdsIn block
     }
     return if (condition) block() else this
 }
