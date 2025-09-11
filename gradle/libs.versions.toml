@@ -1,6 +1,6 @@
 [versions]
 version = "2.7.0-alpha03"
-agp = "8.11.1"
+agp = "8.12.2"
 kotlin = "2.2.20"
 core-ktx = "1.17.0"
 material = "1.12.0"
