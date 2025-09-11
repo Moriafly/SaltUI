@@ -54,7 +54,10 @@ mavenPublishing {
 
 kotlin {
     compilerOptions {
-        freeCompilerArgs.add("-Xexpect-actual-classes")
+        freeCompilerArgs.addAll(
+            "-Xexpect-actual-classes",
+            "-Xallow-holdsin-contract"
+        )
     }
 
     withSourcesJar(publish = false)

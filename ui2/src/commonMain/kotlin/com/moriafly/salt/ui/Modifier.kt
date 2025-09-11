@@ -27,6 +27,7 @@ import androidx.compose.ui.input.pointer.PointerEvent
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.PointerEventType
 import kotlin.contracts.ExperimentalContracts
+import kotlin.contracts.ExperimentalExtendedContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
 
@@ -37,7 +38,7 @@ import kotlin.contracts.contract
  * @param block The block to apply if the condition is true.
  * @return The modified [Modifier] or the original one.
  */
-@OptIn(ExperimentalContracts::class)
+@OptIn(ExperimentalContracts::class, ExperimentalExtendedContracts::class)
 inline fun Modifier.thenIf(condition: Boolean, block: Modifier.() -> Modifier): Modifier {
     contract {
         // Declares that the lambda runs at most once
