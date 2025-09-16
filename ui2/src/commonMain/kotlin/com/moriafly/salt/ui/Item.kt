@@ -30,7 +30,6 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
@@ -833,14 +832,36 @@ fun ItemDivider(
     )
 }
 
-@UnstableSaltUiApi
+/**
+ * Enum representing the type of information message to display.
+ *
+ * Determines visual styling and iconography for [ItemInfo] composable.
+ */
 enum class ItemInfoType {
+    /**
+     * Indicates a successful operation or positive status.
+     */
     Success,
+
+    /**
+     * Indicates a potential issue that requires attention.
+     */
     Warning,
+
+    /**
+     * Indicates an error state or critical problem.
+     */
     Error
 }
 
-@UnstableSaltUiApi
+/**
+ * Composable that displays a styled information message with contextual iconography.
+ *
+ * @param text The message content to display.
+ * @param infoType The semantic type of information ([ItemInfoType.Success], [ItemInfoType.Warning],
+ * or [ItemInfoType.Error]).
+ * @param modifier Optional [Modifier] for styling or layout adjustments.
+ */
 @Composable
 fun ItemInfo(
     text: String,
