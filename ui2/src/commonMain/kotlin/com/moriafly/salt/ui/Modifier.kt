@@ -47,7 +47,7 @@ inline fun Modifier.thenIf(condition: Boolean, block: Modifier.() -> Modifier): 
         // See:
         // - https://kotlinlang.org/docs/whatsnew2220.html#improved-kotlin-contracts
         // - [Contract to specify that a function parameter is always true inside lambda](https://youtrack.jetbrains.com/issue/KT-32993)
-        condition holdsIn block
+        // TODO condition holdsIn block
     }
     return if (condition) block() else this
 }
