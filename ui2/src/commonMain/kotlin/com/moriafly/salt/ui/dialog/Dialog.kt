@@ -40,6 +40,9 @@ import com.moriafly.salt.ui.SaltTheme
 import com.moriafly.salt.ui.Text
 import com.moriafly.salt.ui.TextButton
 import com.moriafly.salt.ui.UnstableSaltUiApi
+import com.moriafly.salt.ui.blur.MultiBlurLevel
+import com.moriafly.salt.ui.blur.MultiBlurLevelUp
+import com.moriafly.salt.ui.blur.multiBlurBackground
 import com.moriafly.salt.ui.internal.stringResourceCancel
 import com.moriafly.salt.ui.internal.stringResourceConfirm
 import com.moriafly.salt.ui.outerPadding
@@ -183,6 +186,7 @@ fun InputDialog(
 /**
  * The basic dialog has default corner background and vertical padding.
  */
+@OptIn(UnstableSaltUiApi::class)
 @Composable
 fun BasicDialog(
     onDismissRequest: () -> Unit,
@@ -193,14 +197,16 @@ fun BasicDialog(
         onDismissRequest = onDismissRequest,
         properties = properties
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(SaltTheme.shapes.large)
-                .background(color = SaltTheme.colors.background)
-                .outerPadding(horizontal = false)
-        ) {
-            content()
+        MultiBlurLevelUp {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(SaltTheme.shapes.large)
+                    .multiBlurBackground(MultiBlurLevel.Window, SaltTheme.colors.background)
+                    .outerPadding(horizontal = false)
+            ) {
+                content()
+            }
         }
     }
 }
