@@ -62,6 +62,7 @@ fun main() = application {
     }
 }
 
+@Suppress("UnusedReceiverParameter")
 @OptIn(UnstableSaltUiApi::class)
 @Composable
 private fun BoxScope.Content() {
