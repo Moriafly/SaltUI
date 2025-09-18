@@ -13,7 +13,7 @@
  * Lesser General Public License for more details.
  */
 
-@file:Suppress("unused")
+@file:Suppress("unused", "ktlint:standard:property-naming")
 
 package com.moriafly.salt.ui.blur
 
@@ -24,9 +24,14 @@ import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
+import com.moriafly.salt.ui.SaltTheme
 import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.moriafly.salt.ui.thenIf
+import dev.chrisbanes.haze.ExperimentalHazeApi
+import dev.chrisbanes.haze.HazeInputScale
 import dev.chrisbanes.haze.HazeState
+import dev.chrisbanes.haze.HazeStyle
 import dev.chrisbanes.haze.hazeEffect
 import dev.chrisbanes.haze.hazeSource
 
@@ -74,7 +79,7 @@ fun MultiBlurLevelUp(
 ) {
     val multiBlurLevelUp = LocalMultiBlurLevelUp.current
     CompositionLocalProvider(
-        LocalMultiBlurLevelUp provides multiBlurLevelUp + LEVEL_UP
+        LocalMultiBlurLevelUp provides multiBlurLevelUp + LevelUp
     ) {
         content()
     }
@@ -86,6 +91,7 @@ fun MultiBlurLevelUp(
  * If the [MultiBlurLayer]'s background is not enabled, it will use the [elseColor] as the
  * background color.
  */
+@OptIn(ExperimentalHazeApi::class)
 @UnstableSaltUiApi
 @Composable
 fun Modifier.multiBlurBackground(
@@ -101,7 +107,17 @@ fun Modifier.multiBlurBackground(
             .hazeSource(multiBlur, zIndex)
             // If zIndex is not 0, apply hazeEffect
             .thenIf(zIndex != 0f) {
-                hazeEffect(multiBlur)
+                hazeEffect(
+                    state = multiBlur,
+                    style = HazeStyle(
+                        backgroundColor = SaltTheme.colors.popup,
+                        tint = null,
+                        blurRadius = BlurRadius,
+                        noiseFactor = NoiseFactor
+                    )
+                ) {
+                    inputScale = HazeInputScale.Fixed(InputScale)
+                }
             }
     } else {
         this
@@ -113,4 +129,8 @@ internal val LocalMultiBlur = compositionLocalOf<HazeState?> { null }
 
 internal val LocalMultiBlurLevelUp = compositionLocalOf { 0f }
 
-private const val LEVEL_UP = 100f
+private const val LevelUp = 100f
+
+private const val InputScale = 0.67f
+private val BlurRadius = 50.dp
+private const val NoiseFactor = 0.02f
