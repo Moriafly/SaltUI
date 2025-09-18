@@ -91,11 +91,13 @@ fun MaterialSource(
             content = content
         )
 
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .material()
-        )
+        if (materialSelf) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .material()
+            )
+        }
     }
 }
 
