@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import com.moriafly.salt.ui.Item
+import com.moriafly.salt.ui.ItemDropdown
 import com.moriafly.salt.ui.RoundedColumn
 import com.moriafly.salt.ui.SaltTheme
 import com.moriafly.salt.ui.UnstableSaltUiApi
@@ -86,6 +87,10 @@ private fun BoxScope.Content() {
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
     ) {
+        RoundedColumn {
+            ItemDropdown()
+        }
+
         RoundedColumn {
             repeat(100) {
                 Item(
