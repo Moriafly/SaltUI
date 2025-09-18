@@ -39,10 +39,9 @@ import com.moriafly.salt.ui.SaltTheme
 import com.moriafly.salt.ui.Text
 import com.moriafly.salt.ui.TextButton
 import com.moriafly.salt.ui.UnstableSaltUiApi
-import com.moriafly.salt.ui.blur.mica
-import com.moriafly.salt.ui.blur.micaAlt
 import com.moriafly.salt.ui.internal.stringResourceCancel
 import com.moriafly.salt.ui.internal.stringResourceConfirm
+import com.moriafly.salt.ui.material.material
 import com.moriafly.salt.ui.outerPadding
 
 /**
@@ -199,7 +198,7 @@ fun BasicDialog(
             modifier = Modifier
                 .fillMaxWidth()
                 .clip(SaltTheme.shapes.large)
-                .micaAlt(fallback = SaltTheme.colors.background)
+                .material(fallback = SaltTheme.colors.background)
                 .outerPadding(horizontal = false)
         ) {
             content()

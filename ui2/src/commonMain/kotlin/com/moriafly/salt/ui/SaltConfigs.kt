@@ -32,49 +32,38 @@ import androidx.compose.runtime.structuralEqualityPolicy
  *
  * @property isDarkTheme Controls the dark/light theme mode state.
  * @property indication The visual interaction indicator for clickable elements.
- * @property mica Whether to enable Mica/MicaAlt effects.
- * Compared to Salt UI 2.8.0-dev01, MultiBlurLevel has been deprecated. If you want to achieve a
- * similar effect where the Bar is relative to the LazyColumn background, try using methods like the
- * Haze library yourself.
  *
  * @see [ChangeSaltThemeIsDark] For more details on how to change [isDarkTheme].
  */
 @Stable
 class SaltConfigs(
     isDarkTheme: Boolean,
-    indication: Indication,
-    mica: Boolean
+    indication: Indication
 ) {
     val isDarkTheme by mutableStateOf(isDarkTheme, structuralEqualityPolicy())
     val indication by mutableStateOf(indication, structuralEqualityPolicy())
-    val mica by mutableStateOf(mica, structuralEqualityPolicy())
 
     /**
      * Creates a copy of the configuration with optional overrides.
      *
      * @param isDarkTheme When specified, overrides the current dark theme state.
      * @param indication When specified, overrides the current indication style.
-     * @param mica When specified, overrides the current multi-blur state.
      */
     fun copy(
         isDarkTheme: Boolean = this.isDarkTheme,
-        indication: Indication = this.indication,
-        mica: Boolean = this.mica
+        indication: Indication = this.indication
     ): SaltConfigs = SaltConfigs(
         isDarkTheme = isDarkTheme,
-        indication = indication,
-        mica = mica
+        indication = indication
     )
 
     companion object {
         fun default(
             isDarkTheme: Boolean = false,
-            indication: Indication = AlphaIndication,
-            mica: Boolean = false
+            indication: Indication = AlphaIndication
         ): SaltConfigs = SaltConfigs(
             isDarkTheme = isDarkTheme,
-            indication = indication,
-            mica = mica
+            indication = indication
         )
     }
 }
@@ -88,6 +77,5 @@ fun saltConfigs(
     indication: Indication = AlphaIndication,
 ): SaltConfigs = SaltConfigs(
     isDarkTheme = isDarkTheme,
-    indication = indication,
-    mica = false
+    indication = indication
 )

@@ -1,3 +1,18 @@
+/**
+ * Salt UI
+ * Copyright (C) 2025 Moriafly
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ */
+
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -15,18 +30,22 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
 import com.moriafly.salt.ui.Item
+import com.moriafly.salt.ui.ItemDropdown
+import com.moriafly.salt.ui.ItemSwitcher
 import com.moriafly.salt.ui.RoundedColumn
 import com.moriafly.salt.ui.SaltConfigs
+import com.moriafly.salt.ui.SaltMaterial
 import com.moriafly.salt.ui.SaltTheme
 import com.moriafly.salt.ui.UnstableSaltUiApi
-import com.moriafly.salt.ui.blur.MicaSource
 import com.moriafly.salt.ui.dialog.BasicDialog
+import com.moriafly.salt.ui.material.MaterialSource
+import com.moriafly.salt.ui.material.MaterialType
+import com.moriafly.salt.ui.popup.PopupMenuItem
 import org.jetbrains.compose.resources.painterResource
 import saltui.composeapp.generated.resources.Res
 import saltui.composeapp.generated.resources.bg_wallpaper
@@ -37,10 +56,14 @@ fun main() = application {
         onCloseRequest = ::exitApplication,
         title = "Multi Blur",
     ) {
+        var isDarkTheme by remember { mutableStateOf(false) }
+        var materialType by remember { mutableStateOf(MaterialType.None) }
         SaltTheme(
             configs = SaltConfigs.default(
-                isDarkTheme = true,
-                mica = true
+                isDarkTheme = isDarkTheme
+            ),
+            material = SaltMaterial.default(
+                type = materialType
             )
         ) {
             Box(
@@ -48,7 +71,7 @@ fun main() = application {
                     .fillMaxSize()
                     .background(SaltTheme.colors.background)
             ) {
-                MicaSource {
+                MaterialSource {
                     Image(
                         painter = painterResource(Res.drawable.bg_wallpaper),
                         contentDescription = null,
@@ -58,7 +81,14 @@ fun main() = application {
                     )
                 }
 
-                Content()
+                Content(
+                    onIsDarkTheme = {
+                        isDarkTheme = it
+                    },
+                    onMaterialType = {
+                        materialType = it
+                    }
+                )
             }
         }
     }
@@ -67,7 +97,10 @@ fun main() = application {
 @Suppress("UnusedReceiverParameter")
 @OptIn(UnstableSaltUiApi::class)
 @Composable
-private fun BoxScope.Content() {
+private fun BoxScope.Content(
+    onIsDarkTheme: (Boolean) -> Unit,
+    onMaterialType: (MaterialType) -> Unit,
+) {
     var dialog by remember { mutableStateOf(false) }
     if (dialog) {
         BasicDialog(
@@ -85,89 +118,6 @@ private fun BoxScope.Content() {
             }
         }
     }
-
-//    val hazeState = remember { HazeState() }
-//    Box(
-//        modifier = Modifier
-//            .fillMaxSize()
-//    ) {
-//        Box(
-//            modifier = Modifier
-//                .fillMaxSize()
-//                .hazeSource(hazeState, 0f)
-//        ) {
-//            Image(
-//                painter = painterResource(Res.drawable.bg_wallpaper),
-//                contentDescription = null,
-//                modifier = Modifier
-//                    .fillMaxSize(),
-//                contentScale = ContentScale.Crop
-//            )
-//        }
-//        Box(
-//            modifier = Modifier
-//                .fillMaxSize()
-//                .hazeSource(hazeState, 1f, "bg")
-//        ) {
-//            Column(
-//                modifier = Modifier
-//                    .padding(32.dp)
-//                    .fillMaxSize()
-//                    .hazeSource(hazeState, 2f)
-//                    .hazeEffect(hazeState) {
-//                        canDrawArea = { area ->
-//                            area.zIndex != 1f
-//                        }
-//                    }
-//            ) {
-//                repeat(100) {
-//                    Text(
-//                        text = "测试测试测试测试测试测试 1 测试 1 测试 1 测试 1 测试 1",
-//                        color = Color.Red
-//                    )
-//                }
-//            }
-//
-//            Column(
-//                modifier = Modifier
-//                    .padding(64.dp)
-//                    .fillMaxSize()
-//                    // 绘制小于同级，即绘制 1f
-//                    .hazeSource(hazeState, 3f)
-//                    .hazeEffect(hazeState) {
-//                        canDrawArea = { area ->
-//                            area.zIndex != 1f
-//                        }
-//                    }
-//            ) {
-//                repeat(100) {
-//                    Text(
-//                        text = "测试测试测试测试测试测试 2 测试 2 测试 2 测试 2 测试 2",
-//                        color = Color.Green
-//                    )
-//                }
-//            }
-//
-//            Dialog(
-//                onDismissRequest = {}
-//            ) {
-//                Box(
-//                    modifier = Modifier
-//                        .fillMaxSize()
-//                        .hazeSource(hazeState, 4f)
-//                        .hazeEffect(hazeState)
-//                )
-//            }
-//
-//            Column(
-//                modifier = Modifier
-//                    .padding(128.dp)
-//                    .fillMaxSize()
-//                    .background(Color.White)
-//            ) {
-//            }
-//        }
-//    }
 
     Column(
         modifier = Modifier
@@ -192,6 +142,26 @@ private fun BoxScope.Content() {
 //                    text = "菜单 2",
 //                )
 //            }
+            ItemSwitcher(
+                state = SaltTheme.configs.isDarkTheme,
+                onChange = {
+                    onIsDarkTheme(it)
+                },
+                text = "深色模式"
+            )
+            ItemDropdown(
+                text = "材质",
+                value = ""
+            ) {
+                MaterialType.entries.forEach {
+                    PopupMenuItem(
+                        onClick = {
+                            onMaterialType(it)
+                        },
+                        text = it.name
+                    )
+                }
+            }
         }
 
         RoundedColumn {

@@ -23,7 +23,8 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.staticCompositionLocalOf
-import com.moriafly.salt.ui.blur.LocalHazeState
+import com.moriafly.salt.ui.material.LocalHazeState
+import com.moriafly.salt.ui.material.MaterialType
 import dev.chrisbanes.haze.HazeState
 
 private val LocalSaltConfigs = staticCompositionLocalOf { SaltConfigs.default() }
@@ -36,9 +37,13 @@ private val LocalSaltDimens = staticCompositionLocalOf { saltDimens() }
 
 private val LocalSaltShapes = staticCompositionLocalOf { SaltShapes.default() }
 
+@UnstableSaltUiApi
+private val LocalSaltMaterial = staticCompositionLocalOf { SaltMaterial.default() }
+
 /**
  * The main entry point for defining the theme.
  */
+@OptIn(UnstableSaltUiApi::class)
 @Composable
 fun SaltTheme(
     configs: SaltConfigs = SaltConfigs.default(),
@@ -49,11 +54,12 @@ fun SaltTheme(
     textStyles: SaltTextStyles = SaltTheme.textStyles,
     dimens: SaltDimens = SaltTheme.dimens,
     shapes: SaltShapes = SaltTheme.shapes,
+    material: SaltMaterial = SaltTheme.material,
     content: @Composable () -> Unit
 ) {
-    val multiBlur = configs.mica
-    val hazeState = remember(multiBlur) {
-        if (multiBlur) HazeState() else null
+    val materialType = material.type
+    val hazeState = remember(materialType) {
+        if (materialType != MaterialType.None) HazeState() else null
     }
 
     CompositionLocalProvider(
@@ -63,6 +69,7 @@ fun SaltTheme(
         LocalSaltTextStyles provides textStyles,
         LocalSaltDimens provides dimens,
         LocalSaltShapes provides shapes,
+        LocalSaltMaterial provides material,
         LocalHazeState provides hazeState
     ) {
         content()
@@ -116,4 +123,10 @@ object SaltTheme {
         @Composable
         @ReadOnlyComposable
         get() = LocalSaltShapes.current
+
+    @UnstableSaltUiApi
+    val material: SaltMaterial
+        @Composable
+        @ReadOnlyComposable
+        get() = LocalSaltMaterial.current
 }
