@@ -31,11 +31,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.application
+import androidx.compose.ui.window.rememberWindowState
 import com.moriafly.salt.ui.Item
 import com.moriafly.salt.ui.ItemDropdown
+import com.moriafly.salt.ui.ItemSpacer
 import com.moriafly.salt.ui.ItemSwitcher
 import com.moriafly.salt.ui.RoundedColumn
 import com.moriafly.salt.ui.SaltConfigs
@@ -49,15 +52,22 @@ import com.moriafly.salt.ui.popup.PopupMenuItem
 import org.jetbrains.compose.resources.painterResource
 import saltui.composeapp.generated.resources.Res
 import saltui.composeapp.generated.resources.bg_wallpaper
+import saltui.composeapp.generated.resources.bg_wallpaper2
 
 @OptIn(UnstableSaltUiApi::class)
 fun main() = application {
     Window(
         onCloseRequest = ::exitApplication,
+        state = rememberWindowState(
+            size = DpSize(
+                width = 460.dp,
+                height = 1000.dp
+            )
+        ),
         title = "Multi Blur",
     ) {
-        var isDarkTheme by remember { mutableStateOf(false) }
-        var materialType by remember { mutableStateOf(MaterialType.None) }
+        var isDarkTheme by remember { mutableStateOf(true) }
+        var materialType by remember { mutableStateOf(MaterialType.Premium) }
         SaltTheme(
             configs = SaltConfigs.default(
                 isDarkTheme = isDarkTheme
@@ -73,7 +83,7 @@ fun main() = application {
             ) {
                 MaterialSource {
                     Image(
-                        painter = painterResource(Res.drawable.bg_wallpaper),
+                        painter = painterResource(Res.drawable.bg_wallpaper2),
                         contentDescription = null,
                         modifier = Modifier
                             .fillMaxSize(),
@@ -124,7 +134,7 @@ private fun BoxScope.Content(
             .fillMaxSize()
             .verticalScroll(rememberScrollState())
     ) {
-        Spacer(Modifier.height(56.dp))
+        Spacer(Modifier.height(140.dp))
 
         RoundedColumn {
 //            ItemDropdown(
@@ -149,6 +159,10 @@ private fun BoxScope.Content(
                 },
                 text = "深色模式"
             )
+            ItemSpacer()
+        }
+
+        RoundedColumn {
             ItemDropdown(
                 text = "材质",
                 value = ""
@@ -162,17 +176,27 @@ private fun BoxScope.Content(
                     )
                 }
             }
+            ItemSpacer()
         }
 
         RoundedColumn {
-            repeat(100) {
-                Item(
-                    onClick = {
-                        dialog = true
-                    },
-                    text = "测试 Blur 测试 Blur 测试 Blur 测试 Blur 测试 Blur 测试 Blur 测试 Blur 测试 Blur",
-                )
-            }
+            Item(
+                onClick = {
+                    dialog = true
+                },
+                text = "测试 Blur 测试 Blur 测试 Blur 测试 Blur 测试 Blur 测试 Blur 测试 Blur 测试 Blur",
+            )
+            ItemSpacer()
+        }
+
+        RoundedColumn {
+            Item(
+                onClick = {
+                    dialog = true
+                },
+                text = "测试 Blur 测试 Blur 测试 Blur 测试 Blur 测试 Blur 测试 Blur 测试 Blur 测试 Blur",
+            )
+            ItemSpacer()
         }
     }
 
