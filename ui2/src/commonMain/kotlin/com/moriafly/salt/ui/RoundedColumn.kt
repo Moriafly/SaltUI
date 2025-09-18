@@ -17,7 +17,6 @@
 
 package com.moriafly.salt.ui
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
@@ -29,6 +28,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
+import com.moriafly.salt.ui.blur.MultiBlurLevel
+import com.moriafly.salt.ui.blur.multiBlurBackground
 
 /**
  * A customized Column composable with rounded corners and a border.
@@ -55,6 +56,7 @@ import androidx.compose.ui.unit.Dp
  * @see Column
  * @see Item
  */
+@OptIn(UnstableSaltUiApi::class)
 @Composable
 fun RoundedColumn(
     modifier: Modifier = Modifier,
@@ -70,7 +72,7 @@ fun RoundedColumn(
             .fillMaxWidth()
             .padding(paddingValues)
             .clip(SaltTheme.shapes.medium)
-            .background(color)
+            .multiBlurBackground(MultiBlurLevel.Item, color)
             .border(
                 width = Dp.Hairline,
                 color = if (color == Color.Unspecified) {

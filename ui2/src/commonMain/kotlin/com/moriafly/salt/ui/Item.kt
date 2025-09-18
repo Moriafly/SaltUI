@@ -423,10 +423,10 @@ fun ItemPopup(
     content: @Composable ColumnScope.() -> Unit
 ) {
     ItemDropdown(
-        state = state,
-        text = text,
+        text,
         value = sub,
         modifier = modifier,
+        state = state,
         enabled = enabled,
         iconPainter = iconPainter,
         iconPaddingValues = iconPaddingValues,

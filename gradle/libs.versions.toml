@@ -11,6 +11,7 @@ hiddenapibypass = "6.1"
 jna = "5.17.0"
 vanniktech = "0.34.0"
 kotlinx-atomicfu = "0.29.0"
+haze = "1.6.10"
 
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
@@ -21,6 +22,7 @@ activity-compose = { group = "androidx.activity", name = "activity-compose", ver
 hiddenapibypass = { group = "org.lsposed.hiddenapibypass", name = "hiddenapibypass", version.ref = "hiddenapibypass" }
 jna = { group = "net.java.dev.jna", name = "jna", version.ref = "jna" }
 jna-platform = { group = "net.java.dev.jna", name = "jna-platform", version.ref = "jna" }
+haze = { group = "dev.chrisbanes.haze", name = "haze", version.ref = "haze"}
 
 [plugins]
 kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }

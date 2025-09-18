@@ -21,7 +21,6 @@ import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.rememberTransition
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
@@ -53,6 +52,8 @@ import androidx.compose.ui.window.PopupPositionProvider
 import androidx.compose.ui.window.PopupProperties
 import com.moriafly.salt.ui.SaltTheme
 import com.moriafly.salt.ui.UnstableSaltUiApi
+import com.moriafly.salt.ui.blur.MultiBlurLevel
+import com.moriafly.salt.ui.blur.multiBlurBackground
 
 /**
  * Build on Google Jetpack Compose Popup.
@@ -99,6 +100,7 @@ fun PopupMenu(
     }
 }
 
+@OptIn(UnstableSaltUiApi::class)
 @Composable
 internal fun DropdownMenuContent(
     expandedStates: MutableTransitionState<Boolean>,
@@ -167,7 +169,7 @@ internal fun DropdownMenuContent(
             .width(IntrinsicSize.Max)
             .clip(SaltTheme.shapes.medium)
             .border(1.dp, SaltTheme.colors.stroke, SaltTheme.shapes.medium)
-            .background(color = backgroundColor)
+            .multiBlurBackground(MultiBlurLevel.Popup, backgroundColor)
             .verticalScroll(rememberScrollState()),
         content = content
     )

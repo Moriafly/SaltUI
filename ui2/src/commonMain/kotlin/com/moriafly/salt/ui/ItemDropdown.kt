@@ -44,6 +44,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.moriafly.salt.ui.popup.PopupMenu
 import com.moriafly.salt.ui.popup.PopupState
+import com.moriafly.salt.ui.popup.rememberPopupState
 
 /**
  * A scope for the content of [ItemDropdown].
@@ -72,10 +73,10 @@ private class ItemDropdownScopeImpl(
  * a main text label with an optional subtitle, a value text on the end, and a dropdown arrow.
  * Clicking anywhere on the item will trigger the popup menu.
  *
- * @param state State object that controls the menu's expanded state.
  * @param text The primary text label for the item.
  * @param value The current value text displayed at the end of the item.
  * @param modifier The [Modifier] to be applied to this component.
+ * @param state State object that controls the menu's expanded state.
  * @param enabled Controls the enabled state of the component. When `false`, the item will not
  * be clickable and will appear disabled.
  * @param iconPainter An optional [Painter] for the leading icon.
@@ -90,10 +91,10 @@ private class ItemDropdownScopeImpl(
 @UnstableSaltUiApi
 @Composable
 fun ItemDropdown(
-    state: PopupState,
     text: String,
     value: String,
     modifier: Modifier = Modifier,
+    state: PopupState = rememberPopupState(),
     enabled: Boolean = true,
     iconPainter: Painter? = null,
     iconPaddingValues: PaddingValues = PaddingValues(0.dp),
@@ -173,3 +174,56 @@ fun ItemDropdown(
         }
     }
 }
+
+/**
+ * A clickable list item that displays a label, a current value, and reveals a popup menu.
+ *
+ * This composable is structured as a row containing an optional leading icon,
+ * a main text label with an optional subtitle, a value text on the end, and a dropdown arrow.
+ * Clicking anywhere on the item will trigger the popup menu.
+ *
+ * @param state State object that controls the menu's expanded state.
+ * @param text The primary text label for the item.
+ * @param value The current value text displayed at the end of the item.
+ * @param modifier The [Modifier] to be applied to this component.
+ * @param enabled Controls the enabled state of the component. When `false`, the item will not
+ * be clickable and will appear disabled.
+ * @param iconPainter An optional [Painter] for the leading icon.
+ * @param iconPaddingValues Padding to apply around the icon, if it exists.
+ * @param iconColor Tint color for the icon. If `null`, the icon will be rendered with its
+ * original colors.
+ * @param sub Optional subtitle text displayed below the primary [text].
+ * @param content The composable content to be displayed inside the popup menu. The lambda
+ * receiver is an [ItemDropdownScope], which provides access to the [PopupState] and
+ * inherits from [ColumnScope].
+ */
+@Deprecated("Use overload without state or with default state")
+@UnstableSaltUiApi
+@Composable
+fun ItemDropdown(
+    state: PopupState,
+    text: String,
+    value: String,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    iconPainter: Painter? = null,
+    iconPaddingValues: PaddingValues = PaddingValues(0.dp),
+    iconColor: Color? = SaltTheme.colors.text,
+    sub: String? = null,
+    content: @Composable ItemDropdownScope.() -> Unit
+) {
+    ItemDropdown(
+        text,
+        value = value,
+        modifier = modifier,
+        state = state,
+        enabled = enabled,
+        iconPainter = iconPainter,
+        iconPaddingValues = iconPaddingValues,
+        iconColor = iconColor,
+        sub = sub,
+        content = content
+    )
+}
+
+// TODO DropdownMenuItem

@@ -433,19 +433,16 @@ fun MainScreen(
 
             RoundedColumn {
                 ItemDropdown(
-                    state = rememberPopupState(),
                     text = "这是个很长长长长长长长长长长长长长长长长长长长长长长长的内容",
                     value = "这是个短的内容"
                 ) {
                 }
                 ItemDropdown(
-                    state = rememberPopupState(),
                     text = "这是个短的内容",
                     value = "这是个很长长长长长长长长长长长长长长长长长长长长长长长的内容"
                 ) {
                 }
                 ItemDropdown(
-                    state = rememberPopupState(),
                     text = "这是个很长长长长长长长长长长长长长长长长长长长长长长长的内容",
                     value = "这是个很长长长长长长长长长长长长长长长长长长长长长长长的内容"
                 ) {

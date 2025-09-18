@@ -51,7 +51,6 @@ import com.moriafly.salt.ui.UnstableSaltUiApi
 @get:Composable
 internal expect val popupMenuItemPadding: PaddingValues
 
-@Deprecated("Use Item instead")
 @UnstableSaltUiApi
 @Composable
 fun PopupMenuItem(
@@ -80,7 +79,13 @@ fun PopupMenuItem(
                 minWidth = DropdownMenuItemDefaultMinWidth,
                 maxWidth = DropdownMenuItemDefaultMaxWidth
             )
-            .background(if (selected == true) SaltTheme.colors.highlight.copy(alpha = 0.1f) else Color.Unspecified)
+            .background(
+                if (selected == true) {
+                    SaltTheme.colors.highlight.copy(alpha = 0.1f)
+                } else {
+                    Color.Unspecified
+                }
+            )
             .clickable {
                 onClick()
             }
@@ -100,7 +105,11 @@ fun PopupMenuItem(
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(
                     text = sub,
-                    color = if (selected == true) SaltTheme.colors.highlight else SaltTheme.colors.subText,
+                    color = if (selected == true) {
+                        SaltTheme.colors.highlight
+                    } else {
+                        SaltTheme.colors.subText
+                    },
                     style = SaltTheme.textStyles.sub
                 )
             }
