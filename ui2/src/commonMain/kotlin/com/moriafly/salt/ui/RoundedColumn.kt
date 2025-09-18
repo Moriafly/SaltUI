@@ -28,8 +28,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
-import com.moriafly.salt.ui.blur.MultiBlurLevel
-import com.moriafly.salt.ui.blur.multiBlurBackground
+import com.moriafly.salt.ui.blur.mica
+import com.moriafly.salt.ui.blur.micaAlt
 
 /**
  * A customized Column composable with rounded corners and a border.
@@ -72,7 +72,7 @@ fun RoundedColumn(
             .fillMaxWidth()
             .padding(paddingValues)
             .clip(SaltTheme.shapes.medium)
-            .multiBlurBackground(MultiBlurLevel.Item, color)
+            .mica(fallback = color)
             .border(
                 width = Dp.Hairline,
                 color = if (color == Color.Unspecified) {

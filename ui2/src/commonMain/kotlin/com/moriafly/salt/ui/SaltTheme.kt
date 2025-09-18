@@ -21,9 +21,12 @@ import androidx.compose.foundation.LocalIndication
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.ReadOnlyComposable
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.staticCompositionLocalOf
+import com.moriafly.salt.ui.blur.LocalHazeState
+import dev.chrisbanes.haze.HazeState
 
-private val LocalSaltConfigs = staticCompositionLocalOf { saltConfigs() }
+private val LocalSaltConfigs = staticCompositionLocalOf { SaltConfigs.default() }
 
 private val LocalSaltDynamicColors = staticCompositionLocalOf { SaltDynamicColors.default() }
 
@@ -33,9 +36,12 @@ private val LocalSaltDimens = staticCompositionLocalOf { saltDimens() }
 
 private val LocalSaltShapes = staticCompositionLocalOf { SaltShapes.default() }
 
+/**
+ * The main entry point for defining the theme.
+ */
 @Composable
 fun SaltTheme(
-    configs: SaltConfigs = saltConfigs(),
+    configs: SaltConfigs = SaltConfigs.default(),
     dynamicColors: SaltDynamicColors = SaltDynamicColors(
         light = lightSaltColors(),
         dark = darkSaltColors()
@@ -45,13 +51,19 @@ fun SaltTheme(
     shapes: SaltShapes = SaltTheme.shapes,
     content: @Composable () -> Unit
 ) {
+    val multiBlur = configs.mica
+    val hazeState = remember(multiBlur) {
+        if (multiBlur) HazeState() else null
+    }
+
     CompositionLocalProvider(
         LocalIndication provides configs.indication,
         LocalSaltConfigs provides configs,
         LocalSaltDynamicColors provides dynamicColors,
         LocalSaltTextStyles provides textStyles,
         LocalSaltDimens provides dimens,
-        LocalSaltShapes provides shapes
+        LocalSaltShapes provides shapes,
+        LocalHazeState provides hazeState
     ) {
         content()
     }

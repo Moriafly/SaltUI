@@ -17,7 +17,6 @@
 
 package com.moriafly.salt.ui.dialog
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -40,9 +39,8 @@ import com.moriafly.salt.ui.SaltTheme
 import com.moriafly.salt.ui.Text
 import com.moriafly.salt.ui.TextButton
 import com.moriafly.salt.ui.UnstableSaltUiApi
-import com.moriafly.salt.ui.blur.MultiBlurLevel
-import com.moriafly.salt.ui.blur.MultiBlurLevelUp
-import com.moriafly.salt.ui.blur.multiBlurBackground
+import com.moriafly.salt.ui.blur.mica
+import com.moriafly.salt.ui.blur.micaAlt
 import com.moriafly.salt.ui.internal.stringResourceCancel
 import com.moriafly.salt.ui.internal.stringResourceConfirm
 import com.moriafly.salt.ui.outerPadding
@@ -197,16 +195,14 @@ fun BasicDialog(
         onDismissRequest = onDismissRequest,
         properties = properties
     ) {
-        MultiBlurLevelUp {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(SaltTheme.shapes.large)
-                    .multiBlurBackground(MultiBlurLevel.Window, SaltTheme.colors.background)
-                    .outerPadding(horizontal = false)
-            ) {
-                content()
-            }
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(SaltTheme.shapes.large)
+                .micaAlt(fallback = SaltTheme.colors.background)
+                .outerPadding(horizontal = false)
+        ) {
+            content()
         }
     }
 }
