@@ -18,8 +18,6 @@
 package com.moriafly.salt.ui.blur
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.compositionLocalOf
@@ -47,44 +45,22 @@ enum class MultiBlurLevel(
 /**
  * # Multi Blur Layer
  *
- * The Multi Blur Layer itself serves as a [MultiBlurLevel.Window] level, ultimately forming a
- * hierarchical structure.
- *
- * @param modifier The modifier to be applied to the layout.
- * @param background Background composable, typically used to set the wallpaper background for the
- * entire app.
- * Can also be used in smaller scopes like a single Screen in Navigation or even smaller areas if
- * not used as app background.
- * Set to `null` to disable this feature.
+ * @param enabled Whether to enable the Multi Blur.
  * @param content The main content to be displayed.
  */
 @UnstableSaltUiApi
 @Composable
 fun MultiBlurLayer(
-    modifier: Modifier = Modifier,
-    background: (@Composable BoxScope.() -> Unit)? = null,
-    content: @Composable BoxScope.() -> Unit
+    enabled: Boolean = true,
+    content: @Composable () -> Unit
 ) {
-    Box(
-        modifier = modifier
+    val hazeState = remember(enabled) {
+        if (enabled) HazeState() else null
+    }
+    CompositionLocalProvider(
+        LocalMultiBlur provides hazeState
     ) {
-        val hazeState = remember(background) {
-            background?.let { HazeState() }
-        }
-        CompositionLocalProvider(
-            LocalMultiBlur provides hazeState
-        ) {
-            background?.let {
-                Box(
-                    modifier = Modifier
-                        .multiBlurBackground(MultiBlurLevel.Window)
-                ) {
-                    it.invoke(this)
-                }
-            }
-
-            content()
-        }
+        content()
     }
 }
 

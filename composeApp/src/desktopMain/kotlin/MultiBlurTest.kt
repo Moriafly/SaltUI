@@ -43,20 +43,24 @@ fun main() = application {
             )
         ) {
             MultiBlurLayer(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(SaltTheme.colors.background),
-                background = {
+                enabled = true
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(SaltTheme.colors.background)
+                ) {
                     Image(
                         painter = painterResource(Res.drawable.bg_wallpaper),
                         contentDescription = null,
                         modifier = Modifier
-                            .fillMaxSize(),
+                            .fillMaxSize()
+                            .multiBlurBackground(MultiBlurLevel.Window),
                         contentScale = ContentScale.Crop
                     )
+
+                    Content()
                 }
-            ) {
-                Content()
             }
         }
     }
