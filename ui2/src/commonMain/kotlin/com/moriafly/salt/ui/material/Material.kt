@@ -38,6 +38,7 @@ import dev.chrisbanes.haze.HazeStyle
 import dev.chrisbanes.haze.HazeTint
 import dev.chrisbanes.haze.hazeEffect
 import dev.chrisbanes.haze.hazeSource
+import dev.chrisbanes.haze.materials.CupertinoMaterials
 import dev.chrisbanes.haze.materials.ExperimentalHazeMaterialsApi
 import dev.chrisbanes.haze.materials.FluentMaterials
 
@@ -190,16 +191,7 @@ private fun blurryGlassMaterial(
             backgroundColor = SaltTheme.colors.background,
             tints = listOf(
                 HazeTint(
-                    color = Color(0x99444444),
-                    blendMode = BlendMode.Lighten
-                ),
-                HazeTint(
-                    color = Color(0xFFDFDFDF),
-                    blendMode = BlendMode.ColorBurn
-                ),
-                HazeTint(
-                    color = Color(0xFF111111),
-                    blendMode = BlendMode.Plus
+                    color = Color(0x80000000)
                 )
             ),
             blurRadius = 45.dp
@@ -225,11 +217,11 @@ private fun blurryGlassMaterial(
                         blendMode = BlendMode.Luminosity
                     ),
                     HazeTint(
-                        color = Color(0xFF0F0F0F),
-                        blendMode = BlendMode.Plus
+                        color = Color(0x60404040),
+                        blendMode = BlendMode.Screen
                     ),
                     HazeTint(
-                        color = Color(0xFF6F6F6F),
+                        color = Color(0xFF808080),
                         blendMode = BlendMode.ColorDodge
                     ),
                     HazeTint(
