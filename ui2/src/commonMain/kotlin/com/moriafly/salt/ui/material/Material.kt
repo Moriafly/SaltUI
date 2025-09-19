@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.BlendMode
@@ -37,7 +38,6 @@ import dev.chrisbanes.haze.HazeStyle
 import dev.chrisbanes.haze.HazeTint
 import dev.chrisbanes.haze.hazeEffect
 import dev.chrisbanes.haze.hazeSource
-import dev.chrisbanes.haze.materials.CupertinoMaterials
 import dev.chrisbanes.haze.materials.ExperimentalHazeMaterialsApi
 import dev.chrisbanes.haze.materials.FluentMaterials
 
@@ -152,12 +152,7 @@ internal fun Modifier.basicMica(
             style = when (type) {
                 MaterialType.None -> HazeStyle.Unspecified
 
-                MaterialType.BlurryGlass -> when (layer) {
-                    MaterialLayer.Background ->
-                        CupertinoMaterials.ultraThin(SaltTheme.colors.background)
-                    MaterialLayer.SubBackground ->
-                        CupertinoMaterials.regular(SaltTheme.colors.background)
-                }
+                MaterialType.BlurryGlass -> blurryGlassMaterial(layer, isDarkTheme)
 
                 MaterialType.Acrylic -> when (layer) {
                     MaterialLayer.Background ->
@@ -173,60 +168,7 @@ internal fun Modifier.basicMica(
                         FluentMaterials.mica(isDarkTheme)
                 }
 
-                MaterialType.Premium ->
-                    when (layer) {
-                        MaterialLayer.Background ->
-                            HazeStyle(
-                                backgroundColor = Color.Unspecified,
-                                tints = listOf(
-                                    HazeTint(
-                                        color = Color(0x10000000),
-                                        blendMode = BlendMode.Luminosity
-                                    )
-                                ),
-                                blurRadius = 90.dp
-                            )
-                        MaterialLayer.SubBackground ->
-                            HazeStyle(
-                                backgroundColor = Color.Unspecified,
-                                tints = if (isDarkTheme) {
-                                    listOf(
-                                        HazeTint(
-                                            color = Color(0x35666666)
-                                        ),
-                                        HazeTint(
-                                            color = Color(0x15333333),
-                                            blendMode = BlendMode.Softlight
-                                        ),
-                                        HazeTint(
-                                            color = Color(0x99000000),
-                                            blendMode = BlendMode.Overlay
-                                        ),
-                                        HazeTint(
-                                            color = Color(0x18000000),
-                                            blendMode = BlendMode.Luminosity
-                                        )
-                                    )
-                                } else {
-                                    listOf(
-                                        HazeTint(
-                                            color = Color(0x65DBDBDB),
-                                            blendMode = BlendMode.Softlight
-                                        ),
-                                        HazeTint(
-                                            color = Color(0x38EFEFEF),
-                                            blendMode = BlendMode.Plus
-                                        )
-                                    )
-                                },
-                                blurRadius = if (isDarkTheme) {
-                                    110.dp
-                                } else {
-                                    90.dp
-                                },
-                                noiseFactor = 0.01f
-                            )
-                    }
+                MaterialType.Premium -> premiumMaterial(layer, isDarkTheme)
             }
         ) {
             inputScale = HazeInputScale.Fixed(InputScale)
@@ -234,6 +176,130 @@ internal fun Modifier.basicMica(
     } else {
         background(fallback)
     }
+}
+
+@UnstableSaltUiApi
+@Composable
+@ReadOnlyComposable
+private fun blurryGlassMaterial(
+    layer: MaterialLayer,
+    isDarkTheme: Boolean
+): HazeStyle = when (layer) {
+    MaterialLayer.Background ->
+        HazeStyle(
+            backgroundColor = SaltTheme.colors.background,
+            tints = listOf(
+                HazeTint(
+                    color = Color(0x99444444),
+                    blendMode = BlendMode.Lighten
+                ),
+                HazeTint(
+                    color = Color(0xFFDFDFDF),
+                    blendMode = BlendMode.ColorBurn
+                ),
+                HazeTint(
+                    color = Color(0xFF111111),
+                    blendMode = BlendMode.Plus
+                )
+            ),
+            blurRadius = 45.dp
+        )
+
+    MaterialLayer.SubBackground ->
+        HazeStyle(
+            backgroundColor = SaltTheme.colors.background,
+            tints = if (isDarkTheme) {
+                listOf(
+                    HazeTint(
+                        color = Color(0x60333333)
+                    ),
+                    HazeTint(
+                        color = Color(0x80000000),
+                        blendMode = BlendMode.Overlay
+                    )
+                )
+            } else {
+                listOf(
+                    HazeTint(
+                        color = Color(0x99585858),
+                        blendMode = BlendMode.Luminosity
+                    ),
+                    HazeTint(
+                        color = Color(0xFF0F0F0F),
+                        blendMode = BlendMode.Plus
+                    ),
+                    HazeTint(
+                        color = Color(0xFF6F6F6F),
+                        blendMode = BlendMode.ColorDodge
+                    ),
+                    HazeTint(
+                        color = Color(0x8CFFFFFF),
+                        blendMode = BlendMode.Luminosity
+                    )
+                )
+            },
+            blurRadius = 45.dp
+        )
+}
+
+@UnstableSaltUiApi
+@Composable
+@ReadOnlyComposable
+private fun premiumMaterial(
+    layer: MaterialLayer,
+    isDarkTheme: Boolean
+): HazeStyle = when (layer) {
+    MaterialLayer.Background ->
+        HazeStyle(
+            backgroundColor = SaltTheme.colors.background,
+            tints = listOf(
+                HazeTint(
+                    color = Color(0x10000000),
+                    blendMode = BlendMode.Luminosity
+                )
+            ),
+            blurRadius = 90.dp
+        )
+    MaterialLayer.SubBackground ->
+        HazeStyle(
+            backgroundColor = SaltTheme.colors.background,
+            tints = if (isDarkTheme) {
+                listOf(
+                    HazeTint(
+                        color = Color(0x35666666)
+                    ),
+                    HazeTint(
+                        color = Color(0x15333333),
+                        blendMode = BlendMode.Softlight
+                    ),
+                    HazeTint(
+                        color = Color(0x99000000),
+                        blendMode = BlendMode.Overlay
+                    ),
+                    HazeTint(
+                        color = Color(0x18000000),
+                        blendMode = BlendMode.Luminosity
+                    )
+                )
+            } else {
+                listOf(
+                    HazeTint(
+                        color = Color(0x65DBDBDB),
+                        blendMode = BlendMode.Softlight
+                    ),
+                    HazeTint(
+                        color = Color(0x38EFEFEF),
+                        blendMode = BlendMode.Plus
+                    )
+                )
+            },
+            blurRadius = if (isDarkTheme) {
+                110.dp
+            } else {
+                90.dp
+            },
+            noiseFactor = 0.01f
+        )
 }
 
 internal val LocalHazeState = compositionLocalOf<HazeState?> { null }

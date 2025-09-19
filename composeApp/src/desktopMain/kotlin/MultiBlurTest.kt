@@ -38,7 +38,6 @@ import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
 import com.moriafly.salt.ui.Item
 import com.moriafly.salt.ui.ItemDropdown
-import com.moriafly.salt.ui.ItemSpacer
 import com.moriafly.salt.ui.ItemSwitcher
 import com.moriafly.salt.ui.RoundedColumn
 import com.moriafly.salt.ui.SaltConfigs
@@ -52,7 +51,6 @@ import com.moriafly.salt.ui.popup.PopupMenuItem
 import org.jetbrains.compose.resources.painterResource
 import saltui.composeapp.generated.resources.Res
 import saltui.composeapp.generated.resources.bg_wallpaper
-import saltui.composeapp.generated.resources.bg_wallpaper2
 
 @OptIn(UnstableSaltUiApi::class)
 fun main() = application {
@@ -66,8 +64,8 @@ fun main() = application {
         ),
         title = "Multi Blur",
     ) {
-        var isDarkTheme by remember { mutableStateOf(true) }
-        var materialType by remember { mutableStateOf(MaterialType.Premium) }
+        var isDarkTheme by remember { mutableStateOf(false) }
+        var materialType by remember { mutableStateOf(MaterialType.BlurryGlass) }
         SaltTheme(
             configs = SaltConfigs.default(
                 isDarkTheme = isDarkTheme
@@ -83,7 +81,7 @@ fun main() = application {
             ) {
                 MaterialSource {
                     Image(
-                        painter = painterResource(Res.drawable.bg_wallpaper2),
+                        painter = painterResource(Res.drawable.bg_wallpaper),
                         contentDescription = null,
                         modifier = Modifier
                             .fillMaxSize(),
@@ -159,7 +157,6 @@ private fun BoxScope.Content(
                 },
                 text = "深色模式"
             )
-            ItemSpacer()
         }
 
         RoundedColumn {
@@ -176,7 +173,6 @@ private fun BoxScope.Content(
                     )
                 }
             }
-            ItemSpacer()
         }
 
         RoundedColumn {
@@ -186,7 +182,6 @@ private fun BoxScope.Content(
                 },
                 text = "测试 Blur 测试 Blur 测试 Blur 测试 Blur 测试 Blur 测试 Blur 测试 Blur 测试 Blur",
             )
-            ItemSpacer()
         }
 
         RoundedColumn {
@@ -196,7 +191,6 @@ private fun BoxScope.Content(
                 },
                 text = "测试 Blur 测试 Blur 测试 Blur 测试 Blur 测试 Blur 测试 Blur 测试 Blur 测试 Blur",
             )
-            ItemSpacer()
         }
     }
 
