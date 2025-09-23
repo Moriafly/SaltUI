@@ -26,14 +26,13 @@ import com.moriafly.salt.ui.SaltMaterial
 import com.moriafly.salt.ui.SaltTheme
 import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.moriafly.salt.ui.dialog.BasicDialog
+import com.moriafly.salt.ui.dialog.YesNoDialog
 import com.moriafly.salt.ui.material.MaterialSource
 import com.moriafly.salt.ui.material.MaterialType
 import com.moriafly.salt.ui.popup.PopupMenuItem
 import org.jetbrains.compose.resources.painterResource
 import saltui.composeapp.generated.resources.Res
 import saltui.composeapp.generated.resources.bg_iphone
-import saltui.composeapp.generated.resources.bg_wallpaper
-import saltui.composeapp.generated.resources.bg_wallpaper2
 
 @Suppress("ktlint:compose:modifier-missing-check")
 @OptIn(UnstableSaltUiApi::class)
@@ -81,24 +80,20 @@ fun MaterialScreen() {
 @Composable
 private fun BoxScope.Content(
     onIsDarkTheme: (Boolean) -> Unit,
-    onMaterialType: (MaterialType) -> Unit,
+    onMaterialType: (MaterialType) -> Unit
 ) {
     var dialog by remember { mutableStateOf(false) }
     if (dialog) {
-        BasicDialog(
+        YesNoDialog(
             onDismissRequest = {
                 dialog = false
-            }
-        ) {
-            RoundedColumn {
-                Item(
-                    onClick = {
-                        dialog = false
-                    },
-                    text = "关闭"
-                )
-            }
-        }
+            },
+            onConfirm = {
+                dialog = false
+            },
+            title = "提示",
+            content = "内容文本"
+        )
     }
 
     Column(
@@ -136,7 +131,7 @@ private fun BoxScope.Content(
         RoundedColumn {
             ItemDropdown(
                 text = "材质",
-                value = ""
+                value = SaltTheme.material.type.name
             ) {
                 MaterialType.entries.forEach {
                     PopupMenuItem(
@@ -154,16 +149,7 @@ private fun BoxScope.Content(
                 onClick = {
                     dialog = true
                 },
-                text = "测试 Blur 测试 Blur 测试 Blur 测试 Blur 测试 Blur 测试 Blur 测试 Blur 测试 Blur",
-            )
-        }
-
-        RoundedColumn {
-            Item(
-                onClick = {
-                    dialog = true
-                },
-                text = "测试 Blur 测试 Blur 测试 Blur 测试 Blur 测试 Blur 测试 Blur 测试 Blur 测试 Blur",
+                text = "Salt UI 2.8",
             )
         }
     }

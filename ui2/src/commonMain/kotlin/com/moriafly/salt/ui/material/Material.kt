@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.ui.Modifier
@@ -38,7 +39,6 @@ import dev.chrisbanes.haze.HazeStyle
 import dev.chrisbanes.haze.HazeTint
 import dev.chrisbanes.haze.hazeEffect
 import dev.chrisbanes.haze.hazeSource
-import dev.chrisbanes.haze.materials.CupertinoMaterials
 import dev.chrisbanes.haze.materials.ExperimentalHazeMaterialsApi
 import dev.chrisbanes.haze.materials.FluentMaterials
 
@@ -102,12 +102,27 @@ fun MaterialSource(
     }
 }
 
+/**
+ * Disables material effects for child components, commonly used in Dialogs.
+ */
+@UnstableSaltUiApi
+@Composable
+fun DisableMaterial(
+    content: @Composable () -> Unit
+) {
+    CompositionLocalProvider(
+        LocalHazeState provides null
+    ) {
+        content()
+    }
+}
+
 @UnstableSaltUiApi
 @OptIn(ExperimentalHazeMaterialsApi::class)
 @Composable
 fun Modifier.material(
     fallback: Color = Color.Unspecified
-): Modifier = basicMica(
+): Modifier = basicMaterial(
     type = SaltTheme.material.type,
     layer = MaterialLayer.Background,
     fallback = fallback
@@ -118,28 +133,16 @@ fun Modifier.material(
 @Composable
 fun Modifier.subMaterial(
     fallback: Color = Color.Unspecified
-): Modifier = basicMica(
+): Modifier = basicMaterial(
     type = SaltTheme.material.type,
     layer = MaterialLayer.SubBackground,
     fallback = fallback
 )
 
-/**
- * This implementation takes inspiration from Windows 11's Mica material,
- * with key differences in scope and application:
- *
- * - Windows applies Material effects system-wide to app backgrounds
- * - Salt UI implements localized effects for specific components:
- *     - `com.moriafly.salt.ui.RoundedColumn` uses MicaAlt
- *     - `com.moriafly.salt.ui.dialog.BasicDialog` uses standard Mica
- *
- * Both variants are rendered relative to the application's own wallpaper layer,
- * not the system wallpaper as in Windows.
- */
 @UnstableSaltUiApi
 @OptIn(ExperimentalHazeApi::class, ExperimentalHazeMaterialsApi::class)
 @Composable
-internal fun Modifier.basicMica(
+internal fun Modifier.basicMaterial(
     type: MaterialType,
     layer: MaterialLayer,
     fallback: Color = Color.Unspecified

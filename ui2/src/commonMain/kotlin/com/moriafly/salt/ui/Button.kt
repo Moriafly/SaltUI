@@ -25,12 +25,10 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.input.key.type
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -41,7 +39,8 @@ fun Button(
     text: String,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
-    type: ButtonType = ButtonType.Highlight
+    type: ButtonType = ButtonType.Highlight,
+    maxLines: Int = Int.MAX_VALUE
 ) {
     BasicButton(
         onClick = onClick,
@@ -57,7 +56,8 @@ fun Button(
             color = when (type) {
                 ButtonType.Highlight -> SaltTheme.colors.onHighlight
                 ButtonType.Sub -> SaltTheme.colors.subText
-            }
+            },
+            maxLines = maxLines
         )
     }
 }
@@ -138,11 +138,6 @@ fun BasicButton(
     )
 }
 
-object ButtonDefaults {
+expect object ButtonDefaults {
     val ContentPadding: PaddingValues
-        @Composable
-        get() = PaddingValues(
-            horizontal = SaltTheme.dimens.padding,
-            vertical = SaltTheme.dimens.padding * 0.5f
-        )
 }

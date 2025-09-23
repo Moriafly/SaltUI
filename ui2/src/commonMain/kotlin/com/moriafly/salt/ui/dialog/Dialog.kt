@@ -17,6 +17,8 @@
 
 package com.moriafly.salt.ui.dialog
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -30,9 +32,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import com.moriafly.salt.ui.Button
+import com.moriafly.salt.ui.ButtonType
 import com.moriafly.salt.ui.ItemOuterEdit
 import com.moriafly.salt.ui.ItemOuterTip
 import com.moriafly.salt.ui.SaltTheme
@@ -41,7 +46,7 @@ import com.moriafly.salt.ui.TextButton
 import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.moriafly.salt.ui.internal.stringResourceCancel
 import com.moriafly.salt.ui.internal.stringResourceConfirm
-import com.moriafly.salt.ui.material.material
+import com.moriafly.salt.ui.material.DisableMaterial
 import com.moriafly.salt.ui.outerPadding
 
 /**
@@ -61,14 +66,15 @@ fun YesDialog(
     ) {
         DialogTitle(text = title)
         ItemOuterTip(text = content)
-        TextButton(
+        Button(
             onClick = {
                 onDismissRequest()
             },
+            text = confirmText,
             modifier = Modifier
                 .fillMaxWidth()
                 .outerPadding(),
-            text = confirmText
+            maxLines = 1
         )
     }
 }
@@ -92,29 +98,33 @@ fun YesNoDialog(
         properties = properties
     ) {
         DialogTitle(text = title)
-        ItemOuterTip(text = content)
+        Text(
+            text = content,
+            modifier = Modifier
+                .outerPadding()
+        )
         drawContent?.invoke()
         Row(
             modifier = Modifier.outerPadding()
         ) {
-            TextButton(
+            Button(
                 onClick = {
                     onDismissRequest()
                 },
+                text = cancelText,
                 modifier = Modifier
                     .weight(1f),
-                text = cancelText,
-                textColor = SaltTheme.colors.subText,
-                backgroundColor = SaltTheme.colors.subBackground
+                type = ButtonType.Sub
             )
             Spacer(modifier = Modifier.width(SaltTheme.dimens.padding))
-            TextButton(
+            Button(
                 onClick = {
                     onConfirm()
                 },
+                text = confirmText,
                 modifier = Modifier
                     .weight(1f),
-                text = confirmText
+                maxLines = 1
             )
         }
     }
@@ -194,25 +204,29 @@ fun BasicDialog(
         onDismissRequest = onDismissRequest,
         properties = properties
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .clip(SaltTheme.shapes.large)
-                .material(fallback = SaltTheme.colors.background)
-                .outerPadding(horizontal = false)
-        ) {
-            content()
+        DisableMaterial {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(SaltTheme.shapes.large)
+                    .border(Dp.Hairline, SaltTheme.colors.stroke)
+                    .background(SaltTheme.colors.background)
+                    .outerPadding(horizontal = false)
+            ) {
+                content()
+            }
         }
     }
 }
 
 @Composable
 fun DialogTitle(
-    text: String
+    text: String,
+    modifier: Modifier = Modifier
 ) {
     Text(
         text = text,
-        modifier = Modifier
+        modifier = modifier
             .outerPadding(),
         fontSize = 18.sp,
         fontWeight = FontWeight.Bold
