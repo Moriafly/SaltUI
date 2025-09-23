@@ -71,16 +71,15 @@ fun RoundedColumn(
             .fillMaxWidth()
             .padding(paddingValues)
             .clip(SaltTheme.shapes.medium)
-            .subMaterial(fallback = color)
-            .border(
-                width = Dp.Hairline,
-                color = if (color == Color.Unspecified) {
-                    Color.Unspecified
-                } else {
-                    SaltTheme.colors.stroke
-                },
-                shape = SaltTheme.shapes.medium
-            ),
+            .thenIf(color != Color.Unspecified) {
+                this
+                    .subMaterial(fallback = color)
+                    .border(
+                        width = Dp.Hairline,
+                        color = SaltTheme.colors.stroke,
+                        shape = SaltTheme.shapes.medium
+                    )
+            },
         content = content
     )
 }
