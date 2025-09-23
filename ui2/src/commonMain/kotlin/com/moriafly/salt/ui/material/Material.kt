@@ -121,10 +121,12 @@ fun DisableMaterial(
 @OptIn(ExperimentalHazeMaterialsApi::class)
 @Composable
 fun Modifier.material(
+    isDarkTheme: Boolean = SaltTheme.configs.isDarkTheme,
     fallback: Color = Color.Unspecified
 ): Modifier = basicMaterial(
     type = SaltTheme.material.type,
     layer = MaterialLayer.Background,
+    isDarkTheme = isDarkTheme,
     fallback = fallback
 )
 
@@ -132,10 +134,12 @@ fun Modifier.material(
 @OptIn(ExperimentalHazeMaterialsApi::class)
 @Composable
 fun Modifier.subMaterial(
+    isDarkTheme: Boolean = SaltTheme.configs.isDarkTheme,
     fallback: Color = Color.Unspecified
 ): Modifier = basicMaterial(
     type = SaltTheme.material.type,
     layer = MaterialLayer.SubBackground,
+    isDarkTheme = isDarkTheme,
     fallback = fallback
 )
 
@@ -145,12 +149,12 @@ fun Modifier.subMaterial(
 internal fun Modifier.basicMaterial(
     type: MaterialType,
     layer: MaterialLayer,
-    fallback: Color = Color.Unspecified
+    isDarkTheme: Boolean,
+    fallback: Color
 ): Modifier {
     val hazeState = LocalHazeState.current
 
     return if (hazeState != null) {
-        val isDarkTheme = SaltTheme.configs.isDarkTheme
         hazeEffect(
             state = hazeState,
             style = when (type) {
@@ -192,11 +196,19 @@ private fun blurryGlassMaterial(
     MaterialLayer.Background ->
         HazeStyle(
             backgroundColor = SaltTheme.colors.background,
-            tints = listOf(
-                HazeTint(
-                    color = Color(0x80000000)
+            tints = if (isDarkTheme) {
+                listOf(
+                    HazeTint(
+                        color = Color(0x80000000)
+                    )
                 )
-            ),
+            } else {
+                listOf(
+                    HazeTint(
+                        color = Color(0x80FFFFFF)
+                    )
+                )
+            },
             blurRadius = 45.dp
         )
 
