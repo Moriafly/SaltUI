@@ -47,33 +47,41 @@ import com.moriafly.salt.ui.UnstableSaltUiApi
  * ```
  */
 @UnstableSaltUiApi
-@Suppress("DEPRECATION")
 fun Activity.edgeToEdge() {
     // Call this method before WindowCompat.setDecorFitsSystemWindows,
     // https://github.com/Moriafly/SaltPlayerSource/issues/1208
     requestWindowFeature(Window.FEATURE_NO_TITLE)
 
-    // The decor view should not fit root-level content views for WindowInsets.
+    // The decor view should not fit root-level content views for WindowInsets
     WindowCompat.setDecorFitsSystemWindows(window, false)
 
     // On some Android OEM devices, the FLAG_TRANSLUCENT_STATUS and FLAG_TRANSLUCENT_NAVIGATION
     // flags do not work effectively with isStatusBarContrastEnforced and
-    // isNavigationBarContrastEnforced.
+    // isNavigationBarContrastEnforced
     //
-    // Instead, use FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS along with an active setting approach.
+    // Instead, use FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS along with an active setting approach
+    @Suppress("DEPRECATION")
     window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
+    @Suppress("DEPRECATION")
     window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION)
     window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
-    window.statusBarColor = Color.TRANSPARENT
-    window.navigationBarColor = Color.TRANSPARENT
+
+    // If the app targets VANILLA_ICE_CREAM or above, the color will be transparent and cannot be
+    // changed
+    @Suppress("DEPRECATION")
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.VANILLA_ICE_CREAM) {
+        window.statusBarColor = Color.TRANSPARENT
+        window.navigationBarColor = Color.TRANSPARENT
+    }
 
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-        // In the XML, it only requires O_MR1 API 27, I don't know why.
+        // In the XML, it only requires O_MR1 API 27, I don't know why
         window.attributes.layoutInDisplayCutoutMode =
             WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
     }
 
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+        @Suppress("DEPRECATION")
         window.isStatusBarContrastEnforced = false
         window.isNavigationBarContrastEnforced = false
 
