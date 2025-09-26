@@ -85,7 +85,7 @@ fun Activity.edgeToEdge() {
         window.isStatusBarContrastEnforced = false
         window.isNavigationBarContrastEnforced = false
 
-        // Disable force dark.
+        // Disable force dark
         window.decorView.isForceDarkAllowed = false
     }
 }
