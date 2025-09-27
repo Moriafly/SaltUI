@@ -42,8 +42,37 @@ private val LocalSaltMaterial = staticCompositionLocalOf { SaltMaterial.default(
 
 /**
  * The main entry point for defining the theme.
+ *
+ * TODO Deprecate this API when SaltMaterial is stable.
  */
-@OptIn(UnstableSaltUiApi::class)
+@Composable
+fun SaltTheme(
+    configs: SaltConfigs = SaltConfigs.default(),
+    dynamicColors: SaltDynamicColors = SaltDynamicColors(
+        light = lightSaltColors(),
+        dark = darkSaltColors()
+    ),
+    textStyles: SaltTextStyles = SaltTheme.textStyles,
+    dimens: SaltDimens = SaltTheme.dimens,
+    shapes: SaltShapes = SaltTheme.shapes,
+    content: @Composable () -> Unit
+) {
+    @OptIn(UnstableSaltUiApi::class)
+    SaltTheme(
+        configs = configs,
+        dynamicColors = dynamicColors,
+        textStyles = textStyles,
+        dimens = dimens,
+        shapes = shapes,
+        material = SaltMaterial.default(),
+        content = content
+    )
+}
+
+/**
+ * The main entry point for defining the theme.
+ */
+@UnstableSaltUiApi
 @Composable
 fun SaltTheme(
     configs: SaltConfigs = SaltConfigs.default(),
