@@ -45,7 +45,7 @@ object SaltHazeStyles {
     @ReadOnlyComposable
     fun blurryGlass(
         layer: MaterialLayer,
-        isDarkTheme: Boolean
+        isDarkTheme: Boolean = SaltTheme.configs.isDarkTheme
     ): HazeStyle = when (layer) {
         MaterialLayer.Background ->
             HazeStyle(
@@ -111,7 +111,7 @@ object SaltHazeStyles {
     @ReadOnlyComposable
     fun acrylic(
         layer: MaterialLayer,
-        isDarkTheme: Boolean
+        isDarkTheme: Boolean = SaltTheme.configs.isDarkTheme
     ): HazeStyle = when (layer) {
         MaterialLayer.Background ->
             FluentMaterials.acrylicBase(isDarkTheme)
@@ -127,7 +127,7 @@ object SaltHazeStyles {
     @ReadOnlyComposable
     fun mica(
         layer: MaterialLayer,
-        isDarkTheme: Boolean
+        isDarkTheme: Boolean = SaltTheme.configs.isDarkTheme
     ): HazeStyle = when (layer) {
         MaterialLayer.Background ->
             FluentMaterials.micaAlt(isDarkTheme)
@@ -145,7 +145,7 @@ object SaltHazeStyles {
     @ReadOnlyComposable
     fun premium(
         layer: MaterialLayer,
-        isDarkTheme: Boolean
+        isDarkTheme: Boolean = SaltTheme.configs.isDarkTheme
     ): HazeStyle = when (layer) {
         MaterialLayer.Background ->
             HazeStyle(
