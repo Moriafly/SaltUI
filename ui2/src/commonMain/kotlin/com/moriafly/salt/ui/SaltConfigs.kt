@@ -56,11 +56,25 @@ class SaltConfigs(
         isDarkTheme = isDarkTheme,
         indication = indication
     )
+
+    companion object {
+        fun default(
+            isDarkTheme: Boolean = false,
+            indication: Indication = AlphaIndication
+        ): SaltConfigs = SaltConfigs(
+            isDarkTheme = isDarkTheme,
+            indication = indication
+        )
+    }
 }
 
+@Deprecated(
+    "Use SaltConfigs.default() instead",
+    ReplaceWith("SaltConfigs.default(isDarkTheme, indication)")
+)
 fun saltConfigs(
     isDarkTheme: Boolean = false,
-    indication: Indication = AlphaIndication
+    indication: Indication = AlphaIndication,
 ): SaltConfigs = SaltConfigs(
     isDarkTheme = isDarkTheme,
     indication = indication

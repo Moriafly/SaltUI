@@ -18,6 +18,7 @@
 package com.moriafly.salt.ui
 
 import MainActivityContent
+import MaterialScreen
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
@@ -26,7 +27,6 @@ import com.moriafly.salt.ui.ext.edgeToEdge
 import com.moriafly.salt.ui.util.RomUtil
 
 class MainActivity : ComponentActivity() {
-
     @OptIn(UnstableSaltUiApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         edgeToEdge()
@@ -35,14 +35,14 @@ class MainActivity : ComponentActivity() {
         Log.d(
             "MainActivity",
             """
-                isXiaomiHyperOS: ${RomUtil.isXiaomiHyperOS}
-                isMeizuFlymeOS: ${RomUtil.isMeizuFlymeOS}
+            isXiaomiHyperOS: ${RomUtil.isXiaomiHyperOS}
+            isMeizuFlymeOS: ${RomUtil.isMeizuFlymeOS}
             """.trimIndent()
         )
 
         setContent {
-            MainActivityContent()
+            MaterialScreen()
+            // MainActivityContent()
         }
     }
-
 }

@@ -54,8 +54,10 @@ fun Modifier.safeMainPadding() = windowInsetsPadding(WindowInsets.safeMain)
 
 @UnstableSaltUiApi
 @Composable
-fun Modifier.safeMainIgnoringVisibilityPadding()
-    = windowInsetsPadding(WindowInsets.safeMainIgnoringVisibility)
+fun Modifier.safeMainIgnoringVisibilityPadding() =
+    windowInsetsPadding(
+        WindowInsets.safeMainIgnoringVisibility
+    )
 
 @UnstableSaltUiApi
 @Composable

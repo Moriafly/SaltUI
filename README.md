@@ -1,4 +1,4 @@
-[![Maven Central](https://img.shields.io/maven-central/v/io.github.moriafly/salt-ui)](https://search.maven.org/search?q=g:io.github.moriafly) [![CodeFactor](https://www.codefactor.io/repository/github/moriafly/saltui/badge/main)](https://www.codefactor.io/repository/github/moriafly/saltui/overview/main)
+[![stable](https://img.shields.io/github/v/release/Moriafly/SaltUI?sort=semver&display_name=release&label=stable&color=brightgreen)](https://github.com/JetBrains/compose-multiplatform/releases/latest)[![Maven Central](https://img.shields.io/maven-central/v/io.github.moriafly/salt-ui)](https://search.maven.org/search?q=g:io.github.moriafly) [![CodeFactor](https://www.codefactor.io/repository/github/moriafly/saltui/badge/main)](https://www.codefactor.io/repository/github/moriafly/saltui/overview/main)
 
 # Salt UI
 
@@ -8,6 +8,7 @@ Salt UI is UI components based on [Compose Multiplatform](https://github.com/Jet
 
 | Salt UI        | Compose Multiplatform | Jetpack Compose |
 |----------------|-----------------------|-----------------|
+| 2.8.0-alpha01+ | 1.10.0-alpha02        | 1.10.0-alpha04  |
 | 2.7.0-alpha01+ | 1.10.0-alpha01        | 1.10.0-alpha02  |
 | 2.6.0-beta02+  | 1.9.0-rc01            | 1.9.0           |
 | 2.6.0-beta01+  | 1.9.0-beta03          | 1.9.0-rc01      |
@@ -51,6 +52,23 @@ See demo: [composeApp](https://github.com/Moriafly/SaltUI/tree/main/composeApp).
 
 See: [Salt UI Text Description and Translation Standards](https://moriafly.com/standards/tdts).
 
+## Google Play
+
+Salt UI performs operations related to internal ART APIs. Please refer to the following solution for publishing on the Google Play platform.
+
+> Google Play doesn't allow apps to use hidden APIs, reporting library usage will cause your app to fail app review, you need to disable dependencies info reporting in build.gradle. Remember to update this library to latest version to be compatible with new Android version.
+>
+> Quoted from **AndroidHiddenApiBypass**
+>
+> ```kotlin
+>  android {
+>      dependenciesInfo {
+>          includeInApk = false
+>          includeInBundle = false
+>      }
+>  }
+>  ```
+
 ## License
 
 See [LICENSE](LICENSE).
@@ -61,5 +79,7 @@ See [Contributor Covenant Code of Conduct](CODE_OF_CONDUCT.md).
 
 ## Thanks
 
+- [AndroidHiddenApiBypass](https://github.com/LSPosed/AndroidHiddenApiBypass)
 - [compose-native-look](https://github.com/ComposeNativeLook/compose-native-look)
 - [compose-fluent-ui](https://github.com/compose-fluent/compose-fluent-ui)
+- [haze](https://github.com/chrisbanes/haze)

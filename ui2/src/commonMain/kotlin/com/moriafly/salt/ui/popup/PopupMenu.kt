@@ -99,6 +99,7 @@ fun PopupMenu(
     }
 }
 
+@OptIn(UnstableSaltUiApi::class)
 @Composable
 internal fun DropdownMenuContent(
     expandedStates: MutableTransitionState<Boolean>,
@@ -167,7 +168,7 @@ internal fun DropdownMenuContent(
             .width(IntrinsicSize.Max)
             .clip(SaltTheme.shapes.medium)
             .border(1.dp, SaltTheme.colors.stroke, SaltTheme.shapes.medium)
-            .background(color = backgroundColor)
+            .background(backgroundColor)
             .verticalScroll(rememberScrollState()),
         content = content
     )

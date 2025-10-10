@@ -62,6 +62,7 @@ import java.awt.event.WindowEvent
  *
  * @see [DialogWindow]
  * @see [SwingDialog]
+ * @see [SaltWindowProperties]
  */
 @UnstableSaltUiApi
 @ExperimentalComposeUiApi

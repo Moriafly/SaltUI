@@ -1,6 +1,6 @@
 /**
  * Salt UI
- * Copyright (C) 2023 Moriafly
+ * Copyright (C) 2025 Moriafly
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -13,14 +13,18 @@
  * Lesser General Public License for more details.
  */
 
-@file:Suppress("unused")
+@file:Suppress("ktlint:standard:filename")
 
 package com.moriafly.salt.ui
 
-@RequiresOptIn(
-    message = "This Salt UI API is experimental and may change or be removed in the future",
-    level = RequiresOptIn.Level.ERROR
-)
-@Suppress("ExperimentalAnnotationRetention")
-@Retention(AnnotationRetention.BINARY)
-annotation class UnstableSaltUiApi
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.runtime.Composable
+
+actual object ButtonDefaults {
+    actual val ContentPadding: PaddingValues
+        @Composable
+        get() = PaddingValues(
+            horizontal = SaltTheme.dimens.padding,
+            vertical = SaltTheme.dimens.padding * 0.5f
+        )
+}

@@ -124,7 +124,7 @@ fun lightSaltColors(
 )
 
 fun darkSaltColors(
-    highlight: Color = Color(0xFF1478C8),
+    highlight: Color = Color(0xFF0088FF),
     text: Color = Color(0xFFEBEEF1),
     subText: Color = Color(0xBFE1E6EB),
     background: Color = Color(0xFF0C0C0C),

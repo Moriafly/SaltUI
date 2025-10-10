@@ -1,16 +1,17 @@
 [versions]
-version = "2.7.0-alpha03"
+version = "2.8.0-alpha01"
 agp = "8.12.2"
 kotlin = "2.2.20"
 core-ktx = "1.17.0"
 material = "1.12.0"
 material3 = "1.2.1"
-compose-multiplatform = "1.10.0-alpha01"
+compose-multiplatform = "1.10.0-alpha02"
 activity-compose = "1.9.2"
 hiddenapibypass = "6.1"
 jna = "5.17.0"
 vanniktech = "0.34.0"
 kotlinx-atomicfu = "0.29.0"
+haze = "1.6.10"
 
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
@@ -21,6 +22,8 @@ activity-compose = { group = "androidx.activity", name = "activity-compose", ver
 hiddenapibypass = { group = "org.lsposed.hiddenapibypass", name = "hiddenapibypass", version.ref = "hiddenapibypass" }
 jna = { group = "net.java.dev.jna", name = "jna", version.ref = "jna" }
 jna-platform = { group = "net.java.dev.jna", name = "jna-platform", version.ref = "jna" }
+haze = { group = "dev.chrisbanes.haze", name = "haze", version.ref = "haze"}
+haze-materials = { group = "dev.chrisbanes.haze", name = "haze-materials", version.ref = "haze"}
 
 [plugins]
 kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }

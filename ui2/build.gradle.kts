@@ -101,6 +101,8 @@ kotlin {
             implementation(compose.ui)
             implementation(compose.components.resources)
             implementation(compose.components.uiToolingPreview)
+            implementation(libs.haze)
+            implementation(libs.haze.materials)
         }
 
         val desktopMain by getting
