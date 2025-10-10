@@ -49,9 +49,9 @@ import java.awt.event.WindowEvent
  * a new platform window will be created and receive focus. When [SaltWindow] leaves the composition,
  * the window will be disposed and closed.
  *
- * @param properties [SaltWindowProperties]
- *
  * @see [Window]
+ * @see [SwingWindow]
+ * @see [SaltWindowProperties]
  */
 @UnstableSaltUiApi
 @ExperimentalComposeUiApi
