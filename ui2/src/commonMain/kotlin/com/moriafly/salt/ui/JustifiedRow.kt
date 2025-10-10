@@ -26,7 +26,6 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.constrainHeight
-import androidx.compose.ui.unit.constrainWidth
 import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.util.fastMap
 import kotlin.math.max
@@ -137,7 +136,18 @@ fun JustifiedRow(
             maxStartPlaceablesHeight,
             maxEndPlaceablesHeight
         )
-        val layoutWidth = constraints.constrainWidth(parentMaxWidth)
+
+        // Check if the constraints have a bounded width
+        val layoutWidth = if (constraints.hasBoundedWidth) {
+            // If bounded, use the max width provided by the parent
+            parentMaxWidth
+        } else {
+            // If unbounded (which typically happens during intrinsic measurement),
+            // calculate our own width based on the actual measured width of the children
+            val measuredStartWidth = startPlaceables.maxOfOrNull { it.width } ?: 0
+            val measuredEndWidth = endPlaceables.maxOfOrNull { it.width } ?: 0
+            measuredStartWidth + measuredEndWidth + spaceToUse
+        }
         val layoutHeight = constraints.constrainHeight(measuredHeight)
 
         // Placement

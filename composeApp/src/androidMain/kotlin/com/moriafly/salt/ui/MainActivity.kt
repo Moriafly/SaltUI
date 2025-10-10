@@ -41,8 +41,8 @@ class MainActivity : ComponentActivity() {
         )
 
         setContent {
-            MaterialScreen()
-            // MainActivityContent()
+            // MaterialScreen()
+            MainActivityContent()
         }
     }
 }

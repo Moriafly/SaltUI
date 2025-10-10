@@ -267,6 +267,11 @@ fun MainScreen(
                     text = "Popup Item",
                     sub = "Value"
                 ) {
+                    ItemDropdown(
+                        text = "选项",
+                        value = "1"
+                    ) {
+                    }
                     PopupMenuItem(
                         onClick = {
                             popupState.dismiss()
