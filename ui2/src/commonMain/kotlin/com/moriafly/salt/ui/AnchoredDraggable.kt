@@ -27,6 +27,7 @@ import androidx.compose.animation.core.AnimationSpec
 import androidx.compose.animation.core.SpringSpec
 import androidx.compose.animation.core.animate
 import androidx.compose.foundation.MutatePriority
+import androidx.compose.foundation.MutatorMutex
 import androidx.compose.foundation.gestures.DragScope
 import androidx.compose.foundation.gestures.DraggableState
 import androidx.compose.foundation.gestures.Orientation
@@ -277,7 +278,7 @@ class AnchoredDraggableState<T>(
         trySnapTo(initialValue)
     }
 
-    private val dragMutex = InternalMutatorMutex()
+    private val dragMutex = MutatorMutex()
 
     internal val draggableState =
         object : DraggableState {
