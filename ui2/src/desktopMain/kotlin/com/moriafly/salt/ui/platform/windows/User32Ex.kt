@@ -58,11 +58,14 @@ interface User32Ex : User32 {
 
     fun GetSystemMenu(hWnd: HWND, bRevert: Boolean): HMENU?
 
+    /**
+     * https://learn.microsoft.com/zh-cn/windows/win32/api/winuser/nf-winuser-setmenuiteminfow
+     */
     fun SetMenuItemInfo(
         hMenu: HMENU,
-        uItem: Int,
+        item: Int,
         fByPosition: Boolean,
-        lpmii: MENUITEMINFO
+        lpmii: MENUITEMINFO.ByReference
     ): Boolean
 
     fun TrackPopupMenu(
