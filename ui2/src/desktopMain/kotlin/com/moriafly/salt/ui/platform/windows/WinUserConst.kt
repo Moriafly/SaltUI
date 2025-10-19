@@ -91,7 +91,7 @@ object WinUserConst {
      */
     const val WA_INACTIVE = 0x00000000
 
-    const val SC_RESTORE = 0x0000f120
+    const val SC_RESTORE = 0x0000F120
 
     const val SC_MOVE = 0xF010
 
