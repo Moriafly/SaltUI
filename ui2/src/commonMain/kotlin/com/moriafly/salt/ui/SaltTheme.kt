@@ -27,19 +27,6 @@ import com.moriafly.salt.ui.material.LocalHazeState
 import com.moriafly.salt.ui.material.MaterialType
 import dev.chrisbanes.haze.HazeState
 
-private val LocalSaltConfigs = staticCompositionLocalOf { SaltConfigs.default() }
-
-private val LocalSaltDynamicColors = staticCompositionLocalOf { SaltDynamicColors.default() }
-
-private val LocalSaltTextStyles = staticCompositionLocalOf { saltTextStyles() }
-
-private val LocalSaltDimens = staticCompositionLocalOf { saltDimens() }
-
-private val LocalSaltShapes = staticCompositionLocalOf { SaltShapes.default() }
-
-@UnstableSaltUiApi
-private val LocalSaltMaterial = staticCompositionLocalOf { SaltMaterial.default() }
-
 /**
  * The main entry point for defining the theme.
  *
@@ -159,3 +146,16 @@ object SaltTheme {
         @ReadOnlyComposable
         get() = LocalSaltMaterial.current
 }
+
+private val LocalSaltConfigs = staticCompositionLocalOf { SaltConfigs.default() }
+
+private val LocalSaltDynamicColors = staticCompositionLocalOf { SaltDynamicColors.default() }
+
+private val LocalSaltTextStyles = staticCompositionLocalOf { saltTextStyles() }
+
+private val LocalSaltDimens = staticCompositionLocalOf { saltDimens() }
+
+private val LocalSaltShapes = staticCompositionLocalOf { SaltShapes.default() }
+
+@UnstableSaltUiApi
+private val LocalSaltMaterial = staticCompositionLocalOf { SaltMaterial.default() }
