@@ -1,8 +1,11 @@
-import androidx.compose.ui.window.Window
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.window.application
+import com.moriafly.salt.ui.UnstableSaltUiApi
+import com.moriafly.salt.ui.window.SaltWindow
 
+@OptIn(ExperimentalComposeUiApi::class, UnstableSaltUiApi::class)
 fun main() = application {
-    Window(
+    SaltWindow(
         onCloseRequest = ::exitApplication,
         title = "SaltUI",
     ) {
