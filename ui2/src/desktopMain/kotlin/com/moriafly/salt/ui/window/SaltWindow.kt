@@ -19,9 +19,11 @@
 
 package com.moriafly.salt.ui.window
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.MutableWindowInsets
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -38,11 +40,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.awt.ComposeWindow
 import androidx.compose.ui.awt.SwingWindow
 import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.input.key.KeyEvent
 import androidx.compose.ui.layout.boundsInWindow
@@ -99,6 +103,10 @@ fun SaltWindow(
     init: (ComposeWindow) -> Unit = {},
     content: @Composable FrameWindowScope.() -> Unit
 ) {
+    require(properties.captionButtonHeight <= properties.captionBarHeight) {
+        "Caption button height must be less than caption bar height"
+    }
+
     SaltWindowEnvironment {
         SwingWindow(
             onCloseRequest = onCloseRequest,
@@ -127,6 +135,7 @@ fun SaltWindow(
                 val windowClientInsets = remember { MutableWindowInsets() }
 
                 var captionBarRect by remember { mutableStateOf(Rect.Zero) }
+                var closeButtonRect by remember { mutableStateOf(Rect.Zero) }
 
                 if (OS.isWindows()) {
                     remember(window) {
@@ -136,6 +145,9 @@ fun SaltWindow(
                                 when {
                                     captionBarRect.contains(x, y) && isHitTestInCaptionBar.value ->
                                         HitTestResult.HTCAPTION
+
+                                    closeButtonRect.contains(x, y) ->
+                                        HitTestResult.HTCLOSE
 
                                     else -> HitTestResult.HTCLIENT
                                 }
@@ -201,8 +213,6 @@ fun SaltWindow(
                     }
                 }
 
-                // Caption bar hit test
-
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
@@ -218,6 +228,25 @@ fun SaltWindow(
                     )
 
                     content()
+
+                    Row(
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                    ) {
+                        val iconFontFamily by rememberFontIconFamily()
+                        CaptionButtonClose(
+                            onClick = {
+                                window.dispatchEvent(
+                                    WindowEvent(window, WindowEvent.WINDOW_CLOSING)
+                                )
+                            },
+                            iconFontFamily = iconFontFamily,
+                            modifier = Modifier
+                                .onGloballyPositioned {
+                                    closeButtonRect = it.boundsInWindow()
+                                }
+                        )
+                    }
                 }
             }
         }
