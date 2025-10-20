@@ -19,6 +19,11 @@
 
 package com.moriafly.salt.ui.window
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.MutableWindowInsets
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
@@ -26,6 +31,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.ExperimentalComposeUiApi
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.awt.ComposeWindow
 import androidx.compose.ui.awt.SwingWindow
 import androidx.compose.ui.graphics.painter.Painter
@@ -38,6 +44,7 @@ import androidx.compose.ui.window.WindowState
 import androidx.compose.ui.window.rememberWindowState
 import com.moriafly.salt.core.os.OS
 import com.moriafly.salt.ui.UnstableSaltUiApi
+import com.moriafly.salt.ui.platform.windows.HitTestResult
 import com.moriafly.salt.ui.window.internal.SaltWindowDecorator
 import com.moriafly.salt.ui.window.internal.SaltWindowEnvironment
 import java.awt.Dimension
@@ -58,7 +65,8 @@ import java.awt.event.WindowEvent
  * @see [SaltWindowProperties]
  */
 @UnstableSaltUiApi
-@ExperimentalComposeUiApi
+@Suppress("ktlint:compose:modifier-missing-check")
+@OptIn(ExperimentalLayoutApi::class, ExperimentalComposeUiApi::class)
 @Composable
 fun SaltWindow(
     onCloseRequest: () -> Unit,
@@ -98,12 +106,17 @@ fun SaltWindow(
             CompositionLocalProvider(
                 LocalWindowState provides state
             ) {
+                val windowClientInsets = remember { MutableWindowInsets() }
+
                 if (OS.isWindows()) {
                     remember(window) {
                         SaltWindowDecorator(
                             composeWindow = window,
+                            hitTest = { x, y ->
+                                HitTestResult.HTCAPTION
+                            },
                             onWindowInsetUpdate = { windowInsets ->
-                                // TODO
+                                windowClientInsets.insets = windowInsets
                             }
                         )
                     }
@@ -163,7 +176,13 @@ fun SaltWindow(
                     }
                 }
 
-                content()
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .windowInsetsPadding(windowClientInsets)
+                ) {
+                    content()
+                }
             }
         }
     }

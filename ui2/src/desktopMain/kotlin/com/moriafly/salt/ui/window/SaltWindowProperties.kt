@@ -17,7 +17,9 @@
 
 package com.moriafly.salt.ui.window
 
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpSize
+import androidx.compose.ui.unit.dp
 import com.moriafly.salt.ui.UnstableSaltUiApi
 import java.awt.Window
 
@@ -51,9 +53,13 @@ import java.awt.Window
  * ) {
  *     // ...
  * }
+ * ```
+ * @property captionBarHeight The height of the caption bar, default is 48.dp, also usually 32.dp on
+ * Windows.
  */
 @UnstableSaltUiApi
 data class SaltWindowProperties<T : Window>(
     val minSize: DpSize = DpSize.Zero,
-    val onVisibleChanged: (T, Boolean) -> Unit = { _, _ -> }
+    val onVisibleChanged: (T, Boolean) -> Unit = { _, _ -> },
+    val captionBarHeight: Dp = 48.dp
 )

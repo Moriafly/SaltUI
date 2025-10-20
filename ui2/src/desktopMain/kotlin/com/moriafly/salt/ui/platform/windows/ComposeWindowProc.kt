@@ -67,7 +67,7 @@ import org.jetbrains.skiko.currentSystemTheme
 internal class ComposeWindowProc(
     composeWindow: ComposeWindow,
     private val hitTest: (x: Float, y: Float) -> HitTestResult,
-    private val onWindowInsetUpdate: (WindowNonClientAreaInsets) -> Unit
+    private val onWindowInsetUpdate: (WindowClientInsets) -> Unit
 ) : BasicWindowProc(composeWindow.hwnd) {
     private val marginsByReference = WindowMargins.ByReference()
 
@@ -160,7 +160,7 @@ internal class ComposeWindowProc(
                 isMaximized = User32Ex.INSTANCE.isWindowInMaximized(hwnd)
                 // Edge inset padding for non-client area
                 onWindowInsetUpdate(
-                    WindowNonClientAreaInsets(
+                    WindowClientInsets(
                         leftVal = if (isMaximized) {
                             frameX + padding
                         } else {

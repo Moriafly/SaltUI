@@ -21,7 +21,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.LayoutDirection
 
-internal class WindowNonClientAreaInsets(
+internal class WindowClientInsets(
     val leftVal: Int,
     val topVal: Int,
     val rightVal: Int,
@@ -42,7 +42,7 @@ internal class WindowNonClientAreaInsets(
         if (this === other) {
             return true
         }
-        if (other !is WindowNonClientAreaInsets) {
+        if (other !is WindowClientInsets) {
             return false
         }
 

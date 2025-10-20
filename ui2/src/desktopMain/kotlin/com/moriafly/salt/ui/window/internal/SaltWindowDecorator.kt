@@ -31,20 +31,18 @@ import com.sun.jna.platform.win32.WinUser.WS_SYSMENU
 @OptIn(UnstableSaltUiApi::class)
 internal class SaltWindowDecorator(
     composeWindow: ComposeWindow,
+    private val hitTest: (Float, Float) -> HitTestResult,
     private val onWindowInsetUpdate: (WindowInsets) -> Unit
 ) : BasicWindowProc(composeWindow.hwnd) {
     @Suppress("unused")
     private val composeWindowProc = ComposeWindowProc(
         composeWindow = composeWindow,
-        hitTest = { x, y ->
-            // TODO
-            HitTestResult.HTCAPTION
-        },
-        onWindowInsetUpdate = { windowNonClientAreaInsets ->
-            val left = windowNonClientAreaInsets.leftVal
-            val top = windowNonClientAreaInsets.topVal
-            val right = windowNonClientAreaInsets.rightVal
-            val bottom = windowNonClientAreaInsets.bottomVal
+        hitTest = hitTest,
+        onWindowInsetUpdate = { windowClientInsets ->
+            val left = windowClientInsets.leftVal
+            val top = windowClientInsets.topVal
+            val right = windowClientInsets.rightVal
+            val bottom = windowClientInsets.bottomVal
             val windowInsets = if (left == 2 && top == 2 && right == 2 && bottom == 2) {
                 // When the window is floating
                 WindowInsets()
