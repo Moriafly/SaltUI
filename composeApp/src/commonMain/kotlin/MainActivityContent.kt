@@ -21,7 +21,7 @@ import com.moriafly.salt.ui.saltConfigs
 @OptIn(UnstableSaltUiApi::class)
 @Composable
 fun MainActivityContent() {
-    val isDarkTheme = isSystemInDarkTheme()
+    val isDarkTheme = false // isSystemInDarkTheme()
     SaltTheme(
         configs = saltConfigs(
             isDarkTheme = isDarkTheme
