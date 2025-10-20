@@ -23,6 +23,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.awt.ComposeWindow
@@ -35,7 +36,10 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowDecoration
 import androidx.compose.ui.window.WindowState
 import androidx.compose.ui.window.rememberWindowState
+import com.moriafly.salt.core.os.OS
 import com.moriafly.salt.ui.UnstableSaltUiApi
+import com.moriafly.salt.ui.window.internal.SaltWindowDecorator
+import com.moriafly.salt.ui.window.internal.SaltWindowEnvironment
 import java.awt.Dimension
 import java.awt.event.ComponentEvent
 import java.awt.event.ComponentListener
@@ -94,6 +98,17 @@ fun SaltWindow(
             CompositionLocalProvider(
                 LocalWindowState provides state
             ) {
+                if (OS.isWindows()) {
+                    remember(window) {
+                        SaltWindowDecorator(
+                            composeWindow = window,
+                            onWindowInsetUpdate = { windowInsets ->
+                                // TODO
+                            }
+                        )
+                    }
+                }
+
                 val minSize = properties.minSize
                 LaunchedEffect(minSize) {
                     require(minSize.width.isSpecified && minSize.height.isSpecified) {

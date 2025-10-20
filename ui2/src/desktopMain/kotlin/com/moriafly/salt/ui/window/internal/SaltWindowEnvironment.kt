@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.moriafly.salt.ui.window
+package com.moriafly.salt.ui.window.internal
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -26,7 +26,7 @@ import com.moriafly.salt.ui.SaltUiFlags
 import com.moriafly.salt.ui.UnstableSaltUiApi
 
 /**
- * Provides the environment for [SaltWindow] and [SaltDialogWindow].
+ * Provides the environment for [com.moriafly.salt.ui.window.SaltWindow] and [com.moriafly.salt.ui.window.SaltDialogWindow].
  */
 @UnstableSaltUiApi
 @ExperimentalComposeUiApi

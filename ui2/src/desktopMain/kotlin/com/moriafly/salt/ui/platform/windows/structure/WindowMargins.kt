@@ -15,19 +15,28 @@
  * limitations under the License.
  */
 
-package com.moriafly.salt.ui.window
+@file:Suppress("unused")
 
-import androidx.compose.ui.ExperimentalComposeUiApi
-import androidx.compose.ui.window.WindowExceptionHandler
-import androidx.compose.ui.window.WindowExceptionHandlerFactory
-import com.moriafly.salt.ui.UnstableSaltUiApi
-import java.awt.Window
+package com.moriafly.salt.ui.platform.windows.structure
 
-@UnstableSaltUiApi
-@ExperimentalComposeUiApi
-internal object SaltWindowExceptionHandlerFactory : WindowExceptionHandlerFactory {
-    override fun exceptionHandler(window: Window): WindowExceptionHandler =
-        WindowExceptionHandler { throwable ->
-            throw throwable
-        }
+import com.sun.jna.Structure
+
+@Structure.FieldOrder(
+    "leftBorderWidth",
+    "rightBorderWidth",
+    "topBorderHeight",
+    "bottomBorderHeight"
+)
+internal open class WindowMargins : Structure() {
+    @JvmField var leftBorderWidth: Int = 0
+
+    @JvmField var rightBorderWidth: Int = 0
+
+    @JvmField var topBorderHeight: Int = -1
+
+    @JvmField var bottomBorderHeight: Int = -1
+
+    class ByReference :
+        WindowMargins(),
+        Structure.ByReference
 }

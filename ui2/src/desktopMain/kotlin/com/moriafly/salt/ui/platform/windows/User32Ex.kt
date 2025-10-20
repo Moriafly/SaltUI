@@ -22,6 +22,7 @@ package com.moriafly.salt.ui.platform.windows
 import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.moriafly.salt.ui.platform.windows.structure.MENUITEMINFO
 import com.sun.jna.Native
+import com.sun.jna.Pointer
 import com.sun.jna.platform.win32.BaseTSD.LONG_PTR
 import com.sun.jna.platform.win32.User32
 import com.sun.jna.platform.win32.WinDef.HMENU
@@ -32,11 +33,13 @@ import com.sun.jna.platform.win32.WinDef.POINT
 import com.sun.jna.platform.win32.WinDef.RECT
 import com.sun.jna.platform.win32.WinDef.UINT
 import com.sun.jna.platform.win32.WinDef.WPARAM
+import com.sun.jna.platform.win32.WinUser
 import com.sun.jna.platform.win32.WinUser.WindowProc
 import com.sun.jna.win32.W32APIOptions
 
 /**
  * TODO Test 1
+ * TODO internal
  */
 @UnstableSaltUiApi
 interface User32Ex : User32 {
@@ -87,4 +90,34 @@ interface User32Ex : User32 {
             W32APIOptions.DEFAULT_OPTIONS
         )
     }
+}
+
+/**
+ * Checks if a window is maximized.
+ *
+ * @param hWnd The handle to the window to check.
+ * @return `true` if the window is maximized, `false` otherwise or on failure.
+ */
+internal fun User32.isWindowInMaximized(hWnd: HWND): Boolean {
+    val placement = WinUser.WINDOWPLACEMENT()
+    return GetWindowPlacement(hWnd, placement).booleanValue() &&
+        placement.showCmd == WinUser.SW_SHOWMAXIMIZED
+}
+
+/**
+ * Updates the window's basic style using a transform function on the old style.
+ */
+@UnstableSaltUiApi
+internal fun User32.updateWindowStyle(hWnd: HWND, styleBlock: (oldStyle: Int) -> Int) {
+    val oldStyle = GetWindowLong(hWnd, WinUser.GWL_STYLE)
+    SetWindowLongPtr(hWnd, WinUser.GWL_STYLE, Pointer(styleBlock(oldStyle).toLong()))
+}
+
+/**
+ * Updates the window's extended style using a transform function on the old extended style.
+ */
+@UnstableSaltUiApi
+internal fun User32.updateWindowExStyle(hWnd: HWND, exStyleBlock: (oldExStyle: Int) -> Int) {
+    val oldExStyle = GetWindowLong(hWnd, WinUser.GWL_EXSTYLE)
+    SetWindowLongPtr(hWnd, WinUser.GWL_EXSTYLE, Pointer(exStyleBlock(oldExStyle).toLong()))
 }

@@ -29,6 +29,8 @@ import com.sun.jna.platform.win32.WinDef.HMENU
  * https://learn.microsoft.com/zh-cn/windows/win32/api/winuser/ns-winuser-menuiteminfow
  *
  * - 2025/8/20 Test 1
+ *
+ * TODO internal
  */
 @UnstableSaltUiApi
 @Structure.FieldOrder(

@@ -37,6 +37,7 @@ import androidx.compose.ui.window.DialogWindowScope
 import androidx.compose.ui.window.WindowDecoration
 import androidx.compose.ui.window.rememberDialogState
 import com.moriafly.salt.ui.UnstableSaltUiApi
+import com.moriafly.salt.ui.window.internal.SaltWindowEnvironment
 import java.awt.Dialog.ModalityType
 import java.awt.Dimension
 import java.awt.event.ComponentEvent
