@@ -45,8 +45,8 @@ import androidx.compose.ui.window.rememberWindowState
 import com.moriafly.salt.core.os.OS
 import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.moriafly.salt.ui.platform.windows.HitTestResult
-import com.moriafly.salt.ui.window.internal.SaltWindowDecorator
 import com.moriafly.salt.ui.window.internal.SaltWindowEnvironment
+import com.moriafly.salt.ui.window.internal.SaltWindowStyler
 import java.awt.Dimension
 import java.awt.event.ComponentEvent
 import java.awt.event.ComponentListener
@@ -110,7 +110,7 @@ fun SaltWindow(
 
                 if (OS.isWindows()) {
                     remember(window) {
-                        SaltWindowDecorator(
+                        SaltWindowStyler(
                             composeWindow = window,
                             hitTest = { x, y ->
                                 HitTestResult.HTCAPTION

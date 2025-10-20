@@ -29,7 +29,7 @@ import com.moriafly.salt.ui.util.hwnd
 import com.sun.jna.platform.win32.WinUser.WS_SYSMENU
 
 @OptIn(UnstableSaltUiApi::class)
-internal class SaltWindowDecorator(
+internal class SaltWindowStyler(
     composeWindow: ComposeWindow,
     private val hitTest: (Float, Float) -> HitTestResult,
     private val onWindowInsetUpdate: (WindowInsets) -> Unit
