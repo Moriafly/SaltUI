@@ -86,81 +86,83 @@ fun SaltDialogWindow(
     init: (ComposeDialog) -> Unit = {},
     content: @Composable DialogWindowScope.() -> Unit
 ) {
-    SwingDialog(
-        onCloseRequest = onCloseRequest,
-        state = state,
-        visible = visible,
-        title = title,
-        icon = icon,
-        decoration = decoration,
-        transparent = transparent,
-        resizable = resizable,
-        enabled = enabled,
-        focusable = focusable,
-        alwaysOnTop = alwaysOnTop,
-        onPreviewKeyEvent = onPreviewKeyEvent,
-        onKeyEvent = onKeyEvent,
-        modalityType = modalityType.toAwtModalityType(),
-        init = init
-    ) {
-        CompositionLocalProvider(
-            LocalDialogState provides state
+    SaltWindowEnvironment {
+        SwingDialog(
+            onCloseRequest = onCloseRequest,
+            state = state,
+            visible = visible,
+            title = title,
+            icon = icon,
+            decoration = decoration,
+            transparent = transparent,
+            resizable = resizable,
+            enabled = enabled,
+            focusable = focusable,
+            alwaysOnTop = alwaysOnTop,
+            onPreviewKeyEvent = onPreviewKeyEvent,
+            onKeyEvent = onKeyEvent,
+            modalityType = modalityType.toAwtModalityType(),
+            init = init
         ) {
-            val minSize = properties.minSize
-            LaunchedEffect(minSize) {
-                require(minSize.width.isSpecified && minSize.height.isSpecified) {
-                    "minSize.width and minSize.height must be specified"
+            CompositionLocalProvider(
+                LocalDialogState provides state
+            ) {
+                val minSize = properties.minSize
+                LaunchedEffect(minSize) {
+                    require(minSize.width.isSpecified && minSize.height.isSpecified) {
+                        "minSize.width and minSize.height must be specified"
+                    }
+
+                    // TODO https://bugs.openjdk.org/browse/JDK-8221452
+                    window.minimumSize =
+                        Dimension(minSize.width.value.toInt(), minSize.height.value.toInt())
                 }
 
-                // TODO https://bugs.openjdk.org/browse/JDK-8221452
-                window.minimumSize =
-                    Dimension(minSize.width.value.toInt(), minSize.height.value.toInt())
+                DisposableEffect(window) {
+                    val adapter = object : WindowAdapter(), ComponentListener {
+                        override fun windowActivated(e: WindowEvent?) {
+                        }
+
+                        override fun windowDeactivated(e: WindowEvent?) {
+                        }
+
+                        override fun windowIconified(e: WindowEvent?) {
+                        }
+
+                        override fun windowDeiconified(e: WindowEvent?) {
+                        }
+
+                        override fun windowStateChanged(e: WindowEvent) {
+                        }
+
+                        override fun componentResized(e: ComponentEvent?) {
+                        }
+
+                        override fun componentMoved(e: ComponentEvent?) {
+                        }
+
+                        override fun componentShown(e: ComponentEvent?) {
+                            properties.onVisibleChanged(window, true)
+                        }
+
+                        override fun componentHidden(e: ComponentEvent?) {
+                            properties.onVisibleChanged(window, false)
+                        }
+                    }
+
+                    window.addWindowListener(adapter)
+                    window.addWindowStateListener(adapter)
+                    window.addComponentListener(adapter)
+
+                    onDispose {
+                        window.removeWindowListener(adapter)
+                        window.removeWindowStateListener(adapter)
+                        window.removeComponentListener(adapter)
+                    }
+                }
+
+                content()
             }
-
-            DisposableEffect(window) {
-                val adapter = object : WindowAdapter(), ComponentListener {
-                    override fun windowActivated(e: WindowEvent?) {
-                    }
-
-                    override fun windowDeactivated(e: WindowEvent?) {
-                    }
-
-                    override fun windowIconified(e: WindowEvent?) {
-                    }
-
-                    override fun windowDeiconified(e: WindowEvent?) {
-                    }
-
-                    override fun windowStateChanged(e: WindowEvent) {
-                    }
-
-                    override fun componentResized(e: ComponentEvent?) {
-                    }
-
-                    override fun componentMoved(e: ComponentEvent?) {
-                    }
-
-                    override fun componentShown(e: ComponentEvent?) {
-                        properties.onVisibleChanged(window, true)
-                    }
-
-                    override fun componentHidden(e: ComponentEvent?) {
-                        properties.onVisibleChanged(window, false)
-                    }
-                }
-
-                window.addWindowListener(adapter)
-                window.addWindowStateListener(adapter)
-                window.addComponentListener(adapter)
-
-                onDispose {
-                    window.removeWindowListener(adapter)
-                    window.removeWindowStateListener(adapter)
-                    window.removeComponentListener(adapter)
-                }
-            }
-
-            content()
         }
     }
 }
