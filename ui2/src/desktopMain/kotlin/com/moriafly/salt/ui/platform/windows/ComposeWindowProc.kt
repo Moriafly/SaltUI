@@ -69,7 +69,7 @@ internal class ComposeWindowProc(
     private val hitTest: (x: Float, y: Float) -> HitTestResult,
     private val onWindowInsetUpdate: (WindowNonClientAreaInsets) -> Unit
 ) : BasicWindowProc(composeWindow.hwnd) {
-    private val margins = WindowMargins()
+    private val marginsByReference = WindowMargins.ByReference()
 
     private var hitResult = HitTestResult.HTCLIENT
 
@@ -354,7 +354,7 @@ internal class ComposeWindowProc(
                 )
             }
             ?.getOrNull()
-            ?.invoke(arrayOf(originalHwnd, margins))
+            ?.invoke(arrayOf(originalHwnd, marginsByReference))
 
         if (OS.ifWindows { it.isAtLeastWindows11() }) {
             dwmApi?.getFunction("DwmSetWindowAttribute")?.apply {
