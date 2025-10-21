@@ -58,13 +58,17 @@ internal class SkiaLayerWindowProc(
             User32Ex.INSTANCE.ScreenToClient(skiaLayerHwnd, point)
             hitResult = hitTest(point.x.toFloat(), point.y.toFloat())
 
-            when (hitResult) {
+            val result = when (hitResult) {
                 HitTestResult.HTCLIENT,
                 HitTestResult.HTREDUCE,
                 HitTestResult.HTMAXBUTTON,
-                HitTestResult.HTCLOSE -> hitResult.toLRESULT()
-                else -> HitTestResult.HTTRANSPARENT.toLRESULT()
+                HitTestResult.HTCLOSE -> hitResult // .toLRESULT()
+                // TODO HitTestResult.HTTRANSPARENT
+                else -> hitResult // HitTestResult.HTCLIENT // .toLRESULT()
             }
+
+            println("SkiaLayerWindowProc WM_NCHITTEST = $result")
+            result.toLRESULT()
         }
 
         WM_NCMOUSEMOVE -> {

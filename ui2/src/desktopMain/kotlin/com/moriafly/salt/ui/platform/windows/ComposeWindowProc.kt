@@ -198,7 +198,10 @@ internal class ComposeWindowProc(
             }
         }
 
-        WM_NCHITTEST -> hitResult.toLRESULT()
+        WM_NCHITTEST -> {
+            println("ComposeWindowProc WM_NCHITTEST = $hitResult")
+            hitResult.toLRESULT()
+        }
 
         WM_DESTROY -> {
             super.callback(hwnd, uMsg, wParam, lParam)

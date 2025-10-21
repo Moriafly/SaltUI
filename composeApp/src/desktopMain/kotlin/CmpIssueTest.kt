@@ -3,7 +3,9 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.ExperimentalComposeUiApi
@@ -36,7 +38,8 @@ fun main() = application {
 
         Box(
             modifier = Modifier
-                .fillMaxSize()
+                .fillMaxWidth(0.5f)
+                .fillMaxHeight()
                 .background(backgroundColor)
                 .clickable(
                     interactionSource = interactionSource,
