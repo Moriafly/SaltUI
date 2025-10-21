@@ -15,7 +15,7 @@ fun main() = application {
         title = "Salt UI",
 //        decoration = WindowDecoration.Undecorated(),
 //        transparent = true,
-        // resizable = false
+        resizable = false,
         properties = SaltWindowProperties(
             captionButtonIsDarkTheme = isDarkTheme
         )
@@ -33,12 +33,12 @@ fun main() = application {
             text = "Throw Exception"
         )
 
-        SaltDialogWindow(
-            onCloseRequest = {
-            },
-            title = "Dialog"
-        ) {
-            CaptionBarHitTest()
-        }
+//        SaltDialogWindow(
+//            onCloseRequest = {
+//            },
+//            title = "Dialog",
+//        ) {
+//            CaptionBarHitTest()
+//        }
     }
 }

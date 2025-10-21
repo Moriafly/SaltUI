@@ -109,7 +109,8 @@ internal fun rememberFontIconFamily(): State<FontFamily?> {
 internal fun CaptionButtonMinimize(
     onClick: () -> Unit,
     iconFontFamily: FontFamily?,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true
 ) {
     val windowInfo = LocalWindowInfo.current
     CaptionButton(
@@ -129,7 +130,8 @@ internal fun CaptionButtonMinimize(
                 CaptionButtonColors.MinMaxInactiveLight
             }
         },
-        modifier = modifier
+        modifier = modifier,
+        enabled = enabled
     )
 }
 
@@ -139,7 +141,8 @@ internal fun CaptionButtonMaximize(
     onClick: () -> Unit,
     iconFontFamily: FontFamily?,
     maximized: Boolean,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true
 ) {
     val windowInfo = LocalWindowInfo.current
     CaptionButton(
@@ -163,7 +166,8 @@ internal fun CaptionButtonMaximize(
                 CaptionButtonColors.MinMaxInactiveLight
             }
         },
-        modifier = modifier
+        modifier = modifier,
+        enabled = enabled
     )
 }
 
@@ -172,7 +176,8 @@ internal fun CaptionButtonMaximize(
 internal fun CaptionButtonClose(
     onClick: () -> Unit,
     iconFontFamily: FontFamily?,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true
 ) {
     val windowInfo = LocalWindowInfo.current
     CaptionButton(
@@ -192,7 +197,8 @@ internal fun CaptionButtonClose(
                 CaptionButtonColors.CloseInactiveLight
             }
         },
-        modifier = modifier
+        modifier = modifier,
+        enabled = enabled
     )
 }
 
@@ -203,7 +209,8 @@ private fun CaptionButton(
     iconGlyph: Char,
     iconFontFamily: FontFamily?,
     colors: CaptionButtonColors,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true
 ) {
     val saltWindowProperties = LocalSaltWindowProperties.current
 
@@ -225,12 +232,13 @@ private fun CaptionButton(
             .clickable(
                 interactionSource = interactionSource,
                 indication = null,
-                // TODO enabled = enabled
+                enabled = enabled
             ) {
                 onClick()
             }
     ) {
         val color = when {
+            !enabled -> colors.disabled
             isPressed -> colors.pressed
             isHovered -> colors.hover
             else -> colors.rest
@@ -251,15 +259,19 @@ private class CaptionButtonColors(
     val hover: Color,
     val hoverBackground: Color,
     val pressed: Color,
-    val pressedBackground: Color
+    val pressedBackground: Color,
+    val disabled: Color
 ) {
     companion object {
+        private val TextLightDisabled = Color.Black.copy(alpha = 0.3614f)
+
         val MinMaxLight = CaptionButtonColors(
             rest = Color.Black.copy(alpha = 0.8956f),
             hover = Color.Black.copy(alpha = 0.8956f),
             hoverBackground = Color.Black.copy(alpha = 0.0373f),
             pressed = Color.Black.copy(alpha = 0.6063f),
-            pressedBackground = Color.Black.copy(alpha = 0.0214f)
+            pressedBackground = Color.Black.copy(alpha = 0.0214f),
+            disabled = TextLightDisabled
         )
 
         val MinMaxDark = CaptionButtonColors(
@@ -267,15 +279,17 @@ private class CaptionButtonColors(
             hover = Color.White,
             hoverBackground = Color.White.copy(alpha = 0.0605f),
             pressed = Color.White.copy(alpha = 0.7860f),
-            pressedBackground = Color.White.copy(alpha = 0.0419f)
+            pressedBackground = Color.White.copy(alpha = 0.0419f),
+            disabled = TextLightDisabled
         )
 
         val MinMaxInactiveLight = CaptionButtonColors(
-            rest = Color.Black.copy(alpha = 0.3614f),
+            rest = TextLightDisabled,
             hover = Color.Black.copy(alpha = 0.8956f),
             hoverBackground = Color.Black.copy(alpha = 0.0373f),
             pressed = Color.Black.copy(alpha = 0.4458f),
-            pressedBackground = Color.Black.copy(alpha = 0.0214f)
+            pressedBackground = Color.Black.copy(alpha = 0.0214f),
+            disabled = TextLightDisabled
         )
 
         val MinMaxInactiveDark = CaptionButtonColors(
@@ -283,7 +297,8 @@ private class CaptionButtonColors(
             hover = Color.White,
             hoverBackground = Color.White.copy(alpha = 0.0605f),
             pressed = Color.White.copy(alpha = 0.5442f),
-            pressedBackground = Color.White.copy(alpha = 0.0419f)
+            pressedBackground = Color.White.copy(alpha = 0.0419f),
+            disabled = TextLightDisabled
         )
 
         val CloseLight = CaptionButtonColors(
@@ -292,6 +307,7 @@ private class CaptionButtonColors(
             hoverBackground = Color(0xFFC42B1C),
             pressed = Color.White.copy(alpha = 0.7f),
             pressedBackground = Color(0xFFC42B1C).copy(alpha = 0.9f),
+            disabled = TextLightDisabled
         )
 
         val CloseDark = CaptionButtonColors(
@@ -300,14 +316,16 @@ private class CaptionButtonColors(
             hoverBackground = Color(0xFFC42B1C),
             pressed = Color.White.copy(alpha = 0.7f),
             pressedBackground = Color(0xFFC42B1C).copy(alpha = 0.9f),
+            disabled = TextLightDisabled
         )
 
         val CloseInactiveLight = CaptionButtonColors(
-            rest = Color.Black.copy(alpha = 0.3614f),
+            rest = TextLightDisabled,
             hover = Color.White,
             hoverBackground = Color(0xFFC42B1C),
             pressed = Color.White.copy(alpha = 0.7f),
             pressedBackground = Color(0xFFC42B1C).copy(alpha = 0.9f),
+            disabled = TextLightDisabled
         )
 
         val CloseInactiveDark = CaptionButtonColors(
@@ -316,6 +334,7 @@ private class CaptionButtonColors(
             hoverBackground = Color(0xFFC42B1C),
             pressed = Color.White.copy(alpha = 0.7f),
             pressedBackground = Color(0xFFC42B1C).copy(alpha = 0.9f),
+            disabled = TextLightDisabled
         )
     }
 }

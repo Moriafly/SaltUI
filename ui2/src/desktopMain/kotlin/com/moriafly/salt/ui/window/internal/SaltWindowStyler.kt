@@ -62,6 +62,10 @@ internal class SaltWindowStyler(
         }
     )
 
+    fun updateIsResizable(value: Boolean) {
+        composeWindowProc.isResizable = value
+    }
+
     init {
         val hwnd = window.hwnd
         val isDecorated = !window.isUndecorated

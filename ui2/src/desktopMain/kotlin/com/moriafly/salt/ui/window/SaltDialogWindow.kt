@@ -53,7 +53,6 @@ import androidx.compose.ui.window.DialogState
 import androidx.compose.ui.window.DialogWindow
 import androidx.compose.ui.window.DialogWindowScope
 import androidx.compose.ui.window.WindowDecoration
-import androidx.compose.ui.window.WindowPlacement
 import androidx.compose.ui.window.rememberDialogState
 import com.moriafly.salt.core.os.OS
 import com.moriafly.salt.ui.ChangeSaltThemeIsDark
@@ -149,7 +148,7 @@ fun SaltDialogWindow(
                 var closeButtonRect by remember { mutableStateOf(Rect.Zero) }
 
                 if (OS.isWindows()) {
-                    remember(window) {
+                    val saltWindowStyler = remember(window) {
                         SaltWindowStyler(
                             window = window,
                             hitTest = { x, y ->
@@ -168,6 +167,10 @@ fun SaltDialogWindow(
                                 windowClientInsets.insets = windowInsets
                             }
                         )
+                    }
+
+                    LaunchedEffect(resizable) {
+                        saltWindowStyler.updateIsResizable(resizable)
                     }
                 }
 

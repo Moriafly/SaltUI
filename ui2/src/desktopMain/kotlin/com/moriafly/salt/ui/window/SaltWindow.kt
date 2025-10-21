@@ -140,7 +140,7 @@ fun SaltWindow(
                 var closeButtonRect by remember { mutableStateOf(Rect.Zero) }
 
                 if (OS.isWindows()) {
-                    remember(window) {
+                    val saltWindowStyler = remember(window) {
                         SaltWindowStyler(
                             window = window,
                             hitTest = { x, y ->
@@ -165,6 +165,10 @@ fun SaltWindow(
                                 windowClientInsets.insets = windowInsets
                             }
                         )
+                    }
+
+                    LaunchedEffect(resizable) {
+                        saltWindowStyler.updateIsResizable(resizable)
                     }
                 }
 
@@ -271,7 +275,8 @@ fun SaltWindow(
                                 modifier = Modifier
                                     .onGloballyPositioned {
                                         maximizeButtonRect = it.boundsInWindow()
-                                    }
+                                    },
+                                enabled = resizable
                             )
                             CaptionButtonClose(
                                 onClick = {

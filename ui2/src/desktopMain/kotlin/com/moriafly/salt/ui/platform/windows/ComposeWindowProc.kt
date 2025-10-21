@@ -84,6 +84,11 @@ internal class ComposeWindowProc(
 
     private var isMaximized = User32Ex.INSTANCE.isWindowInMaximized(originalHwnd)
 
+    /**
+     * Whether the window is resizable.
+     */
+    var isResizable = true
+
     var isWindowFrameAccentColorEnabled by mutableStateOf(isAccentColorWindowFrame())
 
     var windowFrameColor by mutableStateOf(currentAccentColor())
@@ -103,6 +108,10 @@ internal class ComposeWindowProc(
                 hitResult = when {
                     // Skip resizer border hit test if window is maximized
                     isMaximized -> hitTest(x, y)
+
+                    // Skip resizer border hit test if window is not resizable
+                    !isResizable -> hitTest(x, y)
+
                     x <= horizontalPadding &&
                         y > verticalPadding &&
                         y < height - verticalPadding -> HitTestResult.HTLEFT
