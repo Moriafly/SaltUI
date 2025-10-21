@@ -17,10 +17,12 @@
 
 package com.moriafly.salt.ui.window
 
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
+import com.moriafly.salt.ui.SaltTheme
 import com.moriafly.salt.ui.UnstableSaltUiApi
 import java.awt.Window
 
@@ -61,13 +63,15 @@ import java.awt.Window
  * You can also customize the height of the CaptionButton (window control buttons such as Minimize,
  * Maximize, and Close). Similar to how apps like Windows 11,
  * [captionButtonHeight] <= [captionBarHeight].
+ * @property captionButtonIsDarkTheme Whether the caption button is dark theme, default is false.
  */
 @UnstableSaltUiApi
 data class SaltWindowProperties<T : Window>(
     val minSize: DpSize = DpSize.Zero,
     val onVisibleChanged: (T, Boolean) -> Unit = { _, _ -> },
     val captionBarHeight: Dp = 40.dp,
-    val captionButtonHeight: Dp = captionBarHeight
+    val captionButtonHeight: Dp = captionBarHeight,
+    val captionButtonIsDarkTheme: Boolean = false
 )
 
 @UnstableSaltUiApi

@@ -19,7 +19,6 @@
 
 package com.moriafly.salt.ui.window
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.MutableWindowInsets
@@ -46,7 +45,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.awt.ComposeWindow
 import androidx.compose.ui.awt.SwingWindow
 import androidx.compose.ui.geometry.Rect
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.input.key.KeyEvent
 import androidx.compose.ui.layout.boundsInWindow
@@ -55,9 +53,11 @@ import androidx.compose.ui.unit.isSpecified
 import androidx.compose.ui.window.FrameWindowScope
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowDecoration
+import androidx.compose.ui.window.WindowPlacement
 import androidx.compose.ui.window.WindowState
 import androidx.compose.ui.window.rememberWindowState
 import com.moriafly.salt.core.os.OS
+import com.moriafly.salt.ui.ChangeSaltThemeIsDark
 import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.moriafly.salt.ui.platform.windows.HitTestResult
 import com.moriafly.salt.ui.util.contains
@@ -124,7 +124,7 @@ fun SaltWindow(
             onKeyEvent = onKeyEvent,
             init = init
         ) {
-            val isHitTestInCaptionBar = remember { mutableStateOf(true) }
+            val isHitTestInCaptionBar = remember { mutableStateOf(false) }
 
             @Suppress("UNCHECKED_CAST")
             CompositionLocalProvider(
@@ -135,19 +135,28 @@ fun SaltWindow(
                 val windowClientInsets = remember { MutableWindowInsets() }
 
                 var captionBarRect by remember { mutableStateOf(Rect.Zero) }
+                var minimizeButtonRect by remember { mutableStateOf(Rect.Zero) }
+                var maximizeButtonRect by remember { mutableStateOf(Rect.Zero) }
                 var closeButtonRect by remember { mutableStateOf(Rect.Zero) }
 
                 if (OS.isWindows()) {
                     remember(window) {
                         SaltWindowStyler(
-                            composeWindow = window,
+                            window = window,
                             hitTest = { x, y ->
                                 when {
-                                    captionBarRect.contains(x, y) && isHitTestInCaptionBar.value ->
-                                        HitTestResult.HTCAPTION
+                                    minimizeButtonRect.contains(x, y) ->
+                                        HitTestResult.HTREDUCE
+
+                                    maximizeButtonRect.contains(x, y) ->
+                                        HitTestResult.HTMAXBUTTON
 
                                     closeButtonRect.contains(x, y) ->
                                         HitTestResult.HTCLOSE
+
+                                    // Last hit test result is Caption
+                                    captionBarRect.contains(x, y) && isHitTestInCaptionBar.value ->
+                                        HitTestResult.HTCAPTION
 
                                     else -> HitTestResult.HTCLIENT
                                 }
@@ -229,23 +238,54 @@ fun SaltWindow(
 
                     content()
 
-                    Row(
-                        modifier = Modifier
-                            .align(Alignment.TopEnd)
+                    ChangeSaltThemeIsDark(
+                        isDarkTheme = properties.captionButtonIsDarkTheme
                     ) {
-                        val iconFontFamily by rememberFontIconFamily()
-                        CaptionButtonClose(
-                            onClick = {
-                                window.dispatchEvent(
-                                    WindowEvent(window, WindowEvent.WINDOW_CLOSING)
-                                )
-                            },
-                            iconFontFamily = iconFontFamily,
+                        Row(
                             modifier = Modifier
-                                .onGloballyPositioned {
-                                    closeButtonRect = it.boundsInWindow()
-                                }
-                        )
+                                .align(Alignment.TopEnd)
+                        ) {
+                            val windowState = LocalWindowState.current
+                            val iconFontFamily by rememberFontIconFamily()
+                            CaptionButtonMinimize(
+                                onClick = {
+                                    windowState.isMinimized = true
+                                },
+                                iconFontFamily = iconFontFamily,
+                                modifier = Modifier
+                                    .onGloballyPositioned {
+                                        minimizeButtonRect = it.boundsInWindow()
+                                    }
+                            )
+                            val isMaximized = windowState.placement == WindowPlacement.Maximized
+                            CaptionButtonMaximize(
+                                onClick = {
+                                    if (isMaximized) {
+                                        windowState.placement = WindowPlacement.Floating
+                                    } else {
+                                        windowState.placement = WindowPlacement.Maximized
+                                    }
+                                },
+                                iconFontFamily = iconFontFamily,
+                                maximized = isMaximized,
+                                modifier = Modifier
+                                    .onGloballyPositioned {
+                                        maximizeButtonRect = it.boundsInWindow()
+                                    }
+                            )
+                            CaptionButtonClose(
+                                onClick = {
+                                    window.dispatchEvent(
+                                        WindowEvent(window, WindowEvent.WINDOW_CLOSING)
+                                    )
+                                },
+                                iconFontFamily = iconFontFamily,
+                                modifier = Modifier
+                                    .onGloballyPositioned {
+                                        closeButtonRect = it.boundsInWindow()
+                                    }
+                            )
+                        }
                     }
                 }
             }

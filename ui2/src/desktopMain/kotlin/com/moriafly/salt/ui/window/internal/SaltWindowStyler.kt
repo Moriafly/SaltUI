@@ -18,7 +18,6 @@
 package com.moriafly.salt.ui.window.internal
 
 import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.ui.awt.ComposeWindow
 import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.moriafly.salt.ui.platform.windows.BasicWindowProc
 import com.moriafly.salt.ui.platform.windows.ComposeWindowProc
@@ -26,17 +25,19 @@ import com.moriafly.salt.ui.platform.windows.HitTestResult
 import com.moriafly.salt.ui.platform.windows.User32Ex
 import com.moriafly.salt.ui.platform.windows.updateWindowStyle
 import com.moriafly.salt.ui.util.hwnd
+import com.moriafly.salt.ui.util.isUndecorated
 import com.sun.jna.platform.win32.WinUser.WS_SYSMENU
+import java.awt.Window
 
 @OptIn(UnstableSaltUiApi::class)
 internal class SaltWindowStyler(
-    composeWindow: ComposeWindow,
+    window: Window,
     private val hitTest: (Float, Float) -> HitTestResult,
     private val onWindowInsetUpdate: (WindowInsets) -> Unit
-) : BasicWindowProc(composeWindow.hwnd) {
+) : BasicWindowProc(window.hwnd) {
     @Suppress("unused")
     private val composeWindowProc = ComposeWindowProc(
-        composeWindow = composeWindow,
+        window = window,
         hitTest = hitTest,
         onWindowInsetUpdate = { windowClientInsets ->
             val left = windowClientInsets.leftVal
@@ -62,8 +63,8 @@ internal class SaltWindowStyler(
     )
 
     init {
-        val hwnd = composeWindow.hwnd
-        val isDecorated = !composeWindow.isUndecorated
+        val hwnd = window.hwnd
+        val isDecorated = !window.isUndecorated
 
         if (isDecorated) {
             User32Ex.INSTANCE.updateWindowStyle(hwnd) { oldStyle ->

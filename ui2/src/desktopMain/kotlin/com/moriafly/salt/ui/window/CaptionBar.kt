@@ -19,7 +19,11 @@
 
 package com.moriafly.salt.ui.window
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsHoveredAsState
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -28,19 +32,23 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.onPointerEvent
 import androidx.compose.ui.platform.LocalFontFamilyResolver
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.platform.FontLoadResult
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.moriafly.salt.ui.SaltTheme
 import com.moriafly.salt.ui.Text
 import com.moriafly.salt.ui.UnstableSaltUiApi
 
@@ -99,15 +107,64 @@ internal fun rememberFontIconFamily(): State<FontFamily?> {
 @UnstableSaltUiApi
 @Composable
 internal fun CaptionButtonMinimize(
+    onClick: () -> Unit,
     iconFontFamily: FontFamily?,
+    modifier: Modifier = Modifier
 ) {
+    val windowInfo = LocalWindowInfo.current
+    CaptionButton(
+        onClick = onClick,
+        iconGlyph = CaptionButtonMinimizeIconGlyph,
+        iconFontFamily = iconFontFamily,
+        colors = if (windowInfo.isWindowFocused) {
+            if (SaltTheme.configs.isDarkTheme) {
+                CaptionButtonColors.MinMaxDark
+            } else {
+                CaptionButtonColors.MinMaxLight
+            }
+        } else {
+            if (SaltTheme.configs.isDarkTheme) {
+                CaptionButtonColors.MinMaxInactiveDark
+            } else {
+                CaptionButtonColors.MinMaxInactiveLight
+            }
+        },
+        modifier = modifier
+    )
 }
 
 @UnstableSaltUiApi
 @Composable
-internal fun CaptionButtonMaximizeRestore(
+internal fun CaptionButtonMaximize(
+    onClick: () -> Unit,
     iconFontFamily: FontFamily?,
+    maximized: Boolean,
+    modifier: Modifier = Modifier
 ) {
+    val windowInfo = LocalWindowInfo.current
+    CaptionButton(
+        onClick = onClick,
+        iconGlyph = if (maximized) {
+            CaptionButtonRestoreIconGlyph
+        } else {
+            CaptionButtonMaximizeIconGlyph
+        },
+        iconFontFamily = iconFontFamily,
+        colors = if (windowInfo.isWindowFocused) {
+            if (SaltTheme.configs.isDarkTheme) {
+                CaptionButtonColors.MinMaxDark
+            } else {
+                CaptionButtonColors.MinMaxLight
+            }
+        } else {
+            if (SaltTheme.configs.isDarkTheme) {
+                CaptionButtonColors.MinMaxInactiveDark
+            } else {
+                CaptionButtonColors.MinMaxInactiveLight
+            }
+        },
+        modifier = modifier
+    )
 }
 
 @UnstableSaltUiApi
@@ -117,10 +174,24 @@ internal fun CaptionButtonClose(
     iconFontFamily: FontFamily?,
     modifier: Modifier = Modifier
 ) {
+    val windowInfo = LocalWindowInfo.current
     CaptionButton(
         onClick = onClick,
-        iconText = CaptionButtonCloseIconGlyph.toString(),
+        iconGlyph = CaptionButtonCloseIconGlyph,
         iconFontFamily = iconFontFamily,
+        colors = if (windowInfo.isWindowFocused) {
+            if (SaltTheme.configs.isDarkTheme) {
+                CaptionButtonColors.CloseDark
+            } else {
+                CaptionButtonColors.CloseLight
+            }
+        } else {
+            if (SaltTheme.configs.isDarkTheme) {
+                CaptionButtonColors.CloseInactiveDark
+            } else {
+                CaptionButtonColors.CloseInactiveLight
+            }
+        },
         modifier = modifier
     )
 }
@@ -129,25 +200,122 @@ internal fun CaptionButtonClose(
 @Composable
 private fun CaptionButton(
     onClick: () -> Unit,
-    iconText: String,
+    iconGlyph: Char,
     iconFontFamily: FontFamily?,
+    colors: CaptionButtonColors,
     modifier: Modifier = Modifier
 ) {
     val saltWindowProperties = LocalSaltWindowProperties.current
+
+    val interactionSource = remember { MutableInteractionSource() }
+    val isPressed by interactionSource.collectIsPressedAsState()
+    val isHovered by interactionSource.collectIsHoveredAsState()
+
+    val backgroundColor = when {
+        isPressed -> colors.pressedBackground
+        isHovered -> colors.hoverBackground
+        else -> Color.Unspecified
+    }
+
     Box(
         modifier = modifier
             .width(CaptionButtonWidth)
             .height(saltWindowProperties.captionButtonHeight)
-            .clickable {
+            .background(backgroundColor)
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null,
+                // TODO enabled = enabled
+            ) {
                 onClick()
             }
     ) {
+        val color = when {
+            isPressed -> colors.pressed
+            isHovered -> colors.hover
+            else -> colors.rest
+        }
         Text(
-            text = iconText,
+            text = iconGlyph.toString(),
             modifier = Modifier
                 .align(Alignment.Center),
+            color = color,
             fontSize = 10.sp,
             fontFamily = iconFontFamily
+        )
+    }
+}
+
+private class CaptionButtonColors(
+    val rest: Color,
+    val hover: Color,
+    val hoverBackground: Color,
+    val pressed: Color,
+    val pressedBackground: Color
+) {
+    companion object {
+        val MinMaxLight = CaptionButtonColors(
+            rest = Color.Black.copy(alpha = 0.8956f),
+            hover = Color.Black.copy(alpha = 0.8956f),
+            hoverBackground = Color.Black.copy(alpha = 0.0373f),
+            pressed = Color.Black.copy(alpha = 0.6063f),
+            pressedBackground = Color.Black.copy(alpha = 0.0214f)
+        )
+
+        val MinMaxDark = CaptionButtonColors(
+            rest = Color.White,
+            hover = Color.White,
+            hoverBackground = Color.White.copy(alpha = 0.0605f),
+            pressed = Color.White.copy(alpha = 0.7860f),
+            pressedBackground = Color.White.copy(alpha = 0.0419f)
+        )
+
+        val MinMaxInactiveLight = CaptionButtonColors(
+            rest = Color.Black.copy(alpha = 0.3614f),
+            hover = Color.Black.copy(alpha = 0.8956f),
+            hoverBackground = Color.Black.copy(alpha = 0.0373f),
+            pressed = Color.Black.copy(alpha = 0.4458f),
+            pressedBackground = Color.Black.copy(alpha = 0.0214f)
+        )
+
+        val MinMaxInactiveDark = CaptionButtonColors(
+            rest = Color.White.copy(alpha = 0.3628f),
+            hover = Color.White,
+            hoverBackground = Color.White.copy(alpha = 0.0605f),
+            pressed = Color.White.copy(alpha = 0.5442f),
+            pressedBackground = Color.White.copy(alpha = 0.0419f)
+        )
+
+        val CloseLight = CaptionButtonColors(
+            rest = Color.Black.copy(alpha = 0.8956f),
+            hover = Color.White,
+            hoverBackground = Color(0xFFC42B1C),
+            pressed = Color.White.copy(alpha = 0.7f),
+            pressedBackground = Color(0xFFC42B1C).copy(alpha = 0.9f),
+        )
+
+        val CloseDark = CaptionButtonColors(
+            rest = Color.White,
+            hover = Color.White,
+            hoverBackground = Color(0xFFC42B1C),
+            pressed = Color.White.copy(alpha = 0.7f),
+            pressedBackground = Color(0xFFC42B1C).copy(alpha = 0.9f),
+        )
+
+        val CloseInactiveLight = CaptionButtonColors(
+            rest = Color.Black.copy(alpha = 0.3614f),
+            hover = Color.White,
+            hoverBackground = Color(0xFFC42B1C),
+            pressed = Color.White.copy(alpha = 0.7f),
+            pressedBackground = Color(0xFFC42B1C).copy(alpha = 0.9f),
+        )
+
+        val CloseInactiveDark = CaptionButtonColors(
+            rest = Color.White.copy(alpha = 0.3628f),
+            hover = Color.White,
+            hoverBackground = Color(0xFFC42B1C),
+            pressed = Color.White.copy(alpha = 0.7f),
+            pressedBackground = Color(0xFFC42B1C).copy(alpha = 0.9f),
         )
     }
 }

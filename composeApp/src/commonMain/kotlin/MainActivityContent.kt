@@ -20,8 +20,9 @@ import com.moriafly.salt.ui.saltConfigs
 @Suppress("ktlint:compose:modifier-missing-check")
 @OptIn(UnstableSaltUiApi::class)
 @Composable
-fun MainActivityContent() {
-    val isDarkTheme = false // isSystemInDarkTheme()
+fun MainActivityContent(
+    isDarkTheme: Boolean = isSystemInDarkTheme()
+) {
     SaltTheme(
         configs = saltConfigs(
             isDarkTheme = isDarkTheme

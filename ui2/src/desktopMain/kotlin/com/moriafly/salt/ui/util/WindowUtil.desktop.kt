@@ -1,5 +1,3 @@
-@file:Suppress("unused")
-
 /*
  * Salt UI
  * Copyright (C) 2025 Moriafly
@@ -17,14 +15,18 @@
  * limitations under the License.
  */
 
+@file:Suppress("unused")
+
 package com.moriafly.salt.ui.util
 
 import androidx.compose.ui.awt.ComposeDialog
 import androidx.compose.ui.awt.ComposeWindow
+import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.sun.jna.Pointer
 import com.sun.jna.platform.win32.WinDef
 import org.jetbrains.skiko.SkiaLayer
 import java.awt.Container
+import java.awt.Window
 import javax.swing.JComponent
 
 /**
@@ -40,9 +42,53 @@ val ComposeDialog.hwnd: WinDef.HWND
     get() = WinDef.HWND(Pointer(windowHandle))
 
 /**
+ * Get the handle of the window, only works on Windows platform.
+ */
+@UnstableSaltUiApi
+val Window.hwnd: WinDef.HWND
+    get() = when (this) {
+        is ComposeWindow -> hwnd
+        is ComposeDialog -> hwnd
+        else -> throw IllegalArgumentException(
+            "Unsupported window type: ${this::class.simpleName}"
+        )
+    }
+
+/**
+ * Get whether the window is undecorated, only works on Windows platform.
+ */
+@UnstableSaltUiApi
+val Window.isUndecorated: Boolean
+    get() = when (this) {
+        is ComposeWindow -> isUndecorated
+        is ComposeDialog -> isUndecorated
+        else -> throw IllegalArgumentException(
+            "Unsupported window type: ${this::class.simpleName}"
+        )
+    }
+
+/**
  * Extension on [ComposeWindow] to find its underlying [SkiaLayer].
  */
 fun ComposeWindow.findSkiaLayer(): SkiaLayer? = findComponent<SkiaLayer>()
+
+/**
+ * Extension on [ComposeDialog] to find its underlying [SkiaLayer].
+ */
+@UnstableSaltUiApi
+fun ComposeDialog.findSkiaLayer(): SkiaLayer? = findComponent<SkiaLayer>()
+
+/**
+ * Extension on [Window] to find its underlying [SkiaLayer].
+ */
+@UnstableSaltUiApi
+fun Window.findSkiaLayer(): SkiaLayer? = when (this) {
+    is ComposeWindow -> findSkiaLayer()
+    is ComposeDialog -> findSkiaLayer()
+    else -> throw IllegalArgumentException(
+        "Unsupported window type: ${this::class.simpleName}"
+    )
+}
 
 /**
  * Recursively finds the first JComponent of a specific type in a container (depth-first).

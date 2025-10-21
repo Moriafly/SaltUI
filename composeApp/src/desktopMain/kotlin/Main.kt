@@ -3,18 +3,26 @@ import androidx.compose.ui.window.application
 import com.moriafly.salt.ui.Button
 import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.moriafly.salt.ui.window.CaptionBarHitTest
+import com.moriafly.salt.ui.window.SaltDialogWindow
 import com.moriafly.salt.ui.window.SaltWindow
+import com.moriafly.salt.ui.window.SaltWindowProperties
 
 @OptIn(ExperimentalComposeUiApi::class, UnstableSaltUiApi::class)
 fun main() = application {
+    val isDarkTheme = false
     SaltWindow(
         onCloseRequest = ::exitApplication,
         title = "Salt UI",
 //        decoration = WindowDecoration.Undecorated(),
 //        transparent = true,
         // resizable = false
+        properties = SaltWindowProperties(
+            captionButtonIsDarkTheme = isDarkTheme
+        )
     ) {
-        MainActivityContent()
+        MainActivityContent(
+            isDarkTheme = isDarkTheme
+        )
 
         CaptionBarHitTest()
 
@@ -24,5 +32,13 @@ fun main() = application {
             },
             text = "Throw Exception"
         )
+
+        SaltDialogWindow(
+            onCloseRequest = {
+            },
+            title = "Dialog"
+        ) {
+            CaptionBarHitTest()
+        }
     }
 }

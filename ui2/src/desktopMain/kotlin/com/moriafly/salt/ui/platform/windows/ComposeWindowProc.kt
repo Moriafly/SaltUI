@@ -20,7 +20,6 @@ package com.moriafly.salt.ui.platform.windows
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.awt.ComposeWindow
 import androidx.compose.ui.graphics.Color
 import com.moriafly.salt.core.os.OS
 import com.moriafly.salt.ui.UnstableSaltUiApi
@@ -62,13 +61,14 @@ import com.sun.jna.platform.win32.WinUser.WM_SIZE
 import com.sun.jna.platform.win32.WinUser.WS_SYSMENU
 import com.sun.jna.ptr.IntByReference
 import org.jetbrains.skiko.currentSystemTheme
+import java.awt.Window
 
 @UnstableSaltUiApi
 internal class ComposeWindowProc(
-    composeWindow: ComposeWindow,
+    window: Window,
     private val hitTest: (x: Float, y: Float) -> HitTestResult,
     private val onWindowInsetUpdate: (WindowClientInsets) -> Unit
-) : BasicWindowProc(composeWindow.hwnd) {
+) : BasicWindowProc(window.hwnd) {
     private val marginsByReference = WindowMargins.ByReference()
 
     private var hitResult = HitTestResult.HTCLIENT
@@ -92,7 +92,7 @@ internal class ComposeWindowProc(
 
     var isWindowActive by mutableStateOf(true)
 
-    val skiaLayerProcedure = composeWindow.findSkiaLayer()?.let {
+    val skiaLayerProcedure = window.findSkiaLayer()?.let {
         SkiaLayerWindowProc(
             skiaLayer = it,
             hitTest = { x, y ->
