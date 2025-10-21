@@ -64,7 +64,7 @@ internal class SkiaLayerWindowProc(
                 HitTestResult.HTMAXBUTTON,
                 HitTestResult.HTCLOSE -> hitResult // .toLRESULT()
                 // TODO HitTestResult.HTTRANSPARENT
-                else -> hitResult // HitTestResult.HTCLIENT // .toLRESULT()
+                else -> HitTestResult.HTTRANSPARENT // HitTestResult.HTCLIENT // .toLRESULT()
             }
 
             println("SkiaLayerWindowProc WM_NCHITTEST = $result")
@@ -72,7 +72,16 @@ internal class SkiaLayerWindowProc(
         }
 
         WM_NCMOUSEMOVE -> {
-            User32Ex.INSTANCE.SendMessage(originalHwnd, WM_MOUSEMOVE, wParam, lParam)
+            when (hitResult) {
+                HitTestResult.HTREDUCE,
+                HitTestResult.HTMAXBUTTON,
+                HitTestResult.HTCLOSE -> {
+                    User32Ex.INSTANCE.SendMessage(originalHwnd, WM_MOUSEMOVE, wParam, lParam)
+                }
+                else -> {
+                    User32Ex.INSTANCE.SendMessage(originalHwnd, WM_MOUSELEAVE, wParam, lParam)
+                }
+            }
             HitTestResult.HTNOWHERE.toLRESULT()
         }
 
