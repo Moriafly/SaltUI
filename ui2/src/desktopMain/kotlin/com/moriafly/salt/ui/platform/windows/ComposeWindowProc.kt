@@ -35,8 +35,10 @@ import com.moriafly.salt.ui.platform.windows.WinUserConst.TPM_RETURNCMD
 import com.moriafly.salt.ui.platform.windows.WinUserConst.WA_INACTIVE
 import com.moriafly.salt.ui.platform.windows.WinUserConst.WINT_MAX
 import com.moriafly.salt.ui.platform.windows.WinUserConst.WM_ACTIVATE
+import com.moriafly.salt.ui.platform.windows.WinUserConst.WM_MOUSELEAVE
 import com.moriafly.salt.ui.platform.windows.WinUserConst.WM_NCCALCSIZE
 import com.moriafly.salt.ui.platform.windows.WinUserConst.WM_NCHITTEST
+import com.moriafly.salt.ui.platform.windows.WinUserConst.WM_NCMOUSELEAVE
 import com.moriafly.salt.ui.platform.windows.WinUserConst.WM_NCMOUSEMOVE
 import com.moriafly.salt.ui.platform.windows.WinUserConst.WM_NCRBUTTONUP
 import com.moriafly.salt.ui.platform.windows.WinUserConst.WM_SETTINGCHANGE
@@ -284,7 +286,7 @@ internal class ComposeWindowProc(
             if (uMsg == WM_ACTIVATE) {
                 isWindowActive = wParam.toInt() != WA_INACTIVE
             }
-            if (uMsg == WM_NCMOUSEMOVE) {
+            if (uMsg == WM_NCMOUSEMOVE || uMsg == WM_NCMOUSELEAVE) {
                 skiaLayerProcedure?.let {
                     User32Ex.INSTANCE.PostMessage(it.originalHwnd, uMsg, wParam, lParam)
                 }
