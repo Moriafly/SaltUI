@@ -57,19 +57,21 @@ import java.awt.Window
  * ```
  * @property captionBarHeight The height of the caption bar, default is 40.dp, also usually 30.dp on
  * Windows.
+ * @property captionButtonsVisible Whether the caption buttons are visible.
  * @property captionButtonHeight The height of the caption button, default is captionBarHeight.
  * You can also customize the height of the CaptionButton (window control buttons such as Minimize,
  * Maximize, and Close). Similar to how apps like Windows 11,
  * [captionButtonHeight] <= [captionBarHeight].
- * @property captionButtonIsDarkTheme Whether the caption button is dark theme, default is false.
- * @property extraDisplayScale The extra display scale, default is 1.0f.
- * @property extraFontScale The extra font scale, default is 1.0f.
+ * @property captionButtonIsDarkTheme Whether the caption button is dark theme.
+ * @property extraDisplayScale The extra display scale.
+ * @property extraFontScale The extra font scale.
  */
 @UnstableSaltUiApi
 data class SaltWindowProperties<T : Window>(
     val minSize: DpSize = DpSize.Zero,
     val onVisibleChanged: (T, Boolean) -> Unit = { _, _ -> },
     val captionBarHeight: Dp = 40.dp,
+    val captionButtonsVisible: Boolean = true,
     val captionButtonHeight: Dp = captionBarHeight,
     val captionButtonIsDarkTheme: Boolean = false,
     val extraDisplayScale: Float = 1.0f,

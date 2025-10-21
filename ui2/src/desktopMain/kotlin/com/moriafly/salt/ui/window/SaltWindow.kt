@@ -49,6 +49,7 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.input.key.KeyEvent
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.onVisibilityChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.isSpecified
@@ -256,51 +257,60 @@ fun SaltWindow(
                     ChangeSaltThemeIsDark(
                         isDarkTheme = properties.captionButtonIsDarkTheme
                     ) {
-                        Row(
-                            modifier = Modifier
-                                .align(Alignment.TopEnd)
-                        ) {
-                            val windowState = LocalWindowState.current
-                            val iconFontFamily by rememberFontIconFamily()
-                            CaptionButtonMinimize(
-                                onClick = {
-                                    windowState.isMinimized = true
-                                },
-                                iconFontFamily = iconFontFamily,
+                        if (properties.captionButtonsVisible) {
+                            Row(
                                 modifier = Modifier
-                                    .onGloballyPositioned {
-                                        minimizeButtonRect = it.boundsInWindow()
+                                    .align(Alignment.TopEnd)
+                                    .onVisibilityChanged { visible ->
+                                        if (!visible) {
+                                            minimizeButtonRect = Rect.Zero
+                                            maximizeButtonRect = Rect.Zero
+                                            closeButtonRect = Rect.Zero
+                                        }
                                     }
-                            )
-                            val isMaximized = windowState.placement == WindowPlacement.Maximized
-                            CaptionButtonMaximize(
-                                onClick = {
-                                    if (isMaximized) {
-                                        windowState.placement = WindowPlacement.Floating
-                                    } else {
-                                        windowState.placement = WindowPlacement.Maximized
-                                    }
-                                },
-                                iconFontFamily = iconFontFamily,
-                                maximized = isMaximized,
-                                modifier = Modifier
-                                    .onGloballyPositioned {
-                                        maximizeButtonRect = it.boundsInWindow()
+                            ) {
+                                val windowState = LocalWindowState.current
+                                val iconFontFamily by rememberFontIconFamily()
+                                CaptionButtonMinimize(
+                                    onClick = {
+                                        windowState.isMinimized = true
                                     },
-                                enabled = resizable
-                            )
-                            CaptionButtonClose(
-                                onClick = {
-                                    window.dispatchEvent(
-                                        WindowEvent(window, WindowEvent.WINDOW_CLOSING)
-                                    )
-                                },
-                                iconFontFamily = iconFontFamily,
-                                modifier = Modifier
-                                    .onGloballyPositioned {
-                                        closeButtonRect = it.boundsInWindow()
-                                    }
-                            )
+                                    iconFontFamily = iconFontFamily,
+                                    modifier = Modifier
+                                        .onGloballyPositioned {
+                                            minimizeButtonRect = it.boundsInWindow()
+                                        }
+                                )
+                                val isMaximized = windowState.placement == WindowPlacement.Maximized
+                                CaptionButtonMaximize(
+                                    onClick = {
+                                        if (isMaximized) {
+                                            windowState.placement = WindowPlacement.Floating
+                                        } else {
+                                            windowState.placement = WindowPlacement.Maximized
+                                        }
+                                    },
+                                    iconFontFamily = iconFontFamily,
+                                    maximized = isMaximized,
+                                    modifier = Modifier
+                                        .onGloballyPositioned {
+                                            maximizeButtonRect = it.boundsInWindow()
+                                        },
+                                    enabled = resizable
+                                )
+                                CaptionButtonClose(
+                                    onClick = {
+                                        window.dispatchEvent(
+                                            WindowEvent(window, WindowEvent.WINDOW_CLOSING)
+                                        )
+                                    },
+                                    iconFontFamily = iconFontFamily,
+                                    modifier = Modifier
+                                        .onGloballyPositioned {
+                                            closeButtonRect = it.boundsInWindow()
+                                        }
+                                )
+                            }
                         }
                     }
                 }

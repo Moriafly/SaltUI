@@ -47,6 +47,7 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.input.key.KeyEvent
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.onVisibilityChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.isSpecified
@@ -258,23 +259,30 @@ fun SaltDialogWindow(
                     ChangeSaltThemeIsDark(
                         isDarkTheme = properties.captionButtonIsDarkTheme
                     ) {
-                        Row(
-                            modifier = Modifier
-                                .align(Alignment.TopEnd)
-                        ) {
-                            val iconFontFamily by rememberFontIconFamily()
-                            CaptionButtonClose(
-                                onClick = {
-                                    window.dispatchEvent(
-                                        WindowEvent(window, WindowEvent.WINDOW_CLOSING)
-                                    )
-                                },
-                                iconFontFamily = iconFontFamily,
+                        if (properties.captionButtonsVisible) {
+                            Row(
                                 modifier = Modifier
-                                    .onGloballyPositioned {
-                                        closeButtonRect = it.boundsInWindow()
+                                    .align(Alignment.TopEnd)
+                                    .onVisibilityChanged { visible ->
+                                        if (!visible) {
+                                            closeButtonRect = Rect.Zero
+                                        }
                                     }
-                            )
+                            ) {
+                                val iconFontFamily by rememberFontIconFamily()
+                                CaptionButtonClose(
+                                    onClick = {
+                                        window.dispatchEvent(
+                                            WindowEvent(window, WindowEvent.WINDOW_CLOSING)
+                                        )
+                                    },
+                                    iconFontFamily = iconFontFamily,
+                                    modifier = Modifier
+                                        .onGloballyPositioned {
+                                            closeButtonRect = it.boundsInWindow()
+                                        }
+                                )
+                            }
                         }
                     }
                 }
