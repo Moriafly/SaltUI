@@ -140,7 +140,11 @@ fun SaltDialogWindow(
             CompositionLocalProvider(
                 LocalDialogState provides state,
                 LocalSaltWindowProperties provides properties as SaltWindowProperties<Window>,
-                LocalIsHitTestInCaptionBarState provides isHitTestInCaptionBar
+                LocalIsHitTestInCaptionBarState provides isHitTestInCaptionBar,
+                LocalSaltWindowInfo provides SaltWindowInfo(
+                    captionButtonsAlign = CaptionButtonsAlign.End,
+                    captionButtonsFullWidth = CaptionButtonWidth
+                )
             ) {
                 val windowClientInsets = remember { MutableWindowInsets() }
 

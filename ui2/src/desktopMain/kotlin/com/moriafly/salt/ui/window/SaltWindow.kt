@@ -130,7 +130,11 @@ fun SaltWindow(
             CompositionLocalProvider(
                 LocalWindowState provides state,
                 LocalSaltWindowProperties provides properties as SaltWindowProperties<Window>,
-                LocalIsHitTestInCaptionBarState provides isHitTestInCaptionBar
+                LocalIsHitTestInCaptionBarState provides isHitTestInCaptionBar,
+                LocalSaltWindowInfo provides SaltWindowInfo(
+                    captionButtonsAlign = CaptionButtonsAlign.End,
+                    captionButtonsFullWidth = CaptionButtonWidth * 3f
+                )
             ) {
                 val windowClientInsets = remember { MutableWindowInsets() }
 

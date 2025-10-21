@@ -339,7 +339,7 @@ private class CaptionButtonColors(
     }
 }
 
-private val CaptionButtonWidth = 46.83f.dp
+internal val CaptionButtonWidth = 46.83f.dp
 
 private const val CaptionButtonMinimizeIconGlyph = '\uE921'
 private const val CaptionButtonMaximizeIconGlyph = '\uE922'
