@@ -49,6 +49,8 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.input.key.KeyEvent
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.isSpecified
 import androidx.compose.ui.window.FrameWindowScope
 import androidx.compose.ui.window.Window
@@ -125,6 +127,7 @@ fun SaltWindow(
             init = init
         ) {
             val isHitTestInCaptionBar = remember { mutableStateOf(false) }
+            val density = LocalDensity.current
 
             @Suppress("UNCHECKED_CAST")
             CompositionLocalProvider(
@@ -134,6 +137,10 @@ fun SaltWindow(
                 LocalSaltWindowInfo provides SaltWindowInfo(
                     captionButtonsAlign = CaptionButtonsAlign.End,
                     captionButtonsFullWidth = CaptionButtonWidth * 3f
+                ),
+                LocalDensity provides Density(
+                    density = density.density * properties.extraDisplayScale,
+                    fontScale = density.fontScale * properties.extraFontScale
                 )
             ) {
                 val windowClientInsets = remember { MutableWindowInsets() }

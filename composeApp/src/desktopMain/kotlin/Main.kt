@@ -15,7 +15,7 @@ fun main() = application {
         title = "Salt UI",
 //        decoration = WindowDecoration.Undecorated(),
 //        transparent = true,
-        resizable = false,
+        resizable = true,
         properties = SaltWindowProperties(
             captionButtonIsDarkTheme = isDarkTheme
         )
