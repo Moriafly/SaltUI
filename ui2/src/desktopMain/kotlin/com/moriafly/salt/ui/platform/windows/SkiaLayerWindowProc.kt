@@ -65,7 +65,20 @@ internal class SkiaLayerWindowProc(
         }
 
         WM_NCMOUSEMOVE -> {
-            User32Ex.INSTANCE.SendMessage(originalHwnd, WM_MOUSEMOVE, wParam, lParam)
+            when (hitResult) {
+                // Only forward move events to the window when located within the drawing area
+                HitTestResult.HTCLIENT,
+                HitTestResult.HTCAPTION,
+                HitTestResult.HTREDUCE,
+                HitTestResult.HTMAXBUTTON,
+                HitTestResult.HTCLOSE -> {
+                    User32Ex.INSTANCE.SendMessage(originalHwnd, WM_MOUSEMOVE, wParam, lParam)
+                }
+
+                else -> {
+                    // Do nothing
+                }
+            }
             HitTestResult.HTNOWHERE.toLRESULT()
         }
 

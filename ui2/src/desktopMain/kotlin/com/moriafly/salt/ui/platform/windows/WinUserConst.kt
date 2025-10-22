@@ -48,6 +48,11 @@ object WinUserConst {
     const val WM_MOUSEMOVE = 0x0200
 
     /**
+     * mouse leave message.
+     */
+    const val WM_MOUSELEAVE = 0x02A3
+
+    /**
      * Left mouse button down message.
      */
     const val WM_LBUTTONDOWN = 0x0201
@@ -61,6 +66,11 @@ object WinUserConst {
      * Non client area mouse move message.
      */
     const val WM_NCMOUSEMOVE = 0x00A0
+
+    /**
+     * Non client area mouse leave message.
+     */
+    const val WM_NCMOUSELEAVE = 0x02A2
 
     /**
      * Non client area left mouse down message.

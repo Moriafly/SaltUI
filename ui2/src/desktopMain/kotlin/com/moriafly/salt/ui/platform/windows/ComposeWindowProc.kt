@@ -56,7 +56,6 @@ import com.sun.jna.platform.win32.WinDef.WPARAM
 import com.sun.jna.platform.win32.WinNT
 import com.sun.jna.platform.win32.WinReg
 import com.sun.jna.platform.win32.WinUser
-import com.sun.jna.platform.win32.WinUser.WM_DESTROY
 import com.sun.jna.platform.win32.WinUser.WM_SIZE
 import com.sun.jna.platform.win32.WinUser.WS_SYSMENU
 import com.sun.jna.ptr.IntByReference
@@ -196,10 +195,8 @@ internal class ComposeWindowProc(
             }
         }
 
-        WM_NCHITTEST -> hitResult.toLRESULT()
-
-        WM_DESTROY -> {
-            super.callback(hwnd, uMsg, wParam, lParam)
+        WM_NCHITTEST -> {
+            hitResult.toLRESULT()
         }
 
         WM_SIZE -> {
@@ -280,15 +277,19 @@ internal class ComposeWindowProc(
             )
         }
 
+        WM_ACTIVATE -> {
+            isWindowActive = wParam.toInt() != WA_INACTIVE
+            super.callback(hwnd, uMsg, wParam, lParam)
+        }
+
+        WM_NCMOUSEMOVE -> {
+            skiaLayerProcedure?.let {
+                User32Ex.INSTANCE.PostMessage(it.originalHwnd, uMsg, wParam, lParam)
+            }
+            super.callback(hwnd, uMsg, wParam, lParam)
+        }
+
         else -> {
-            if (uMsg == WM_ACTIVATE) {
-                isWindowActive = wParam.toInt() != WA_INACTIVE
-            }
-            if (uMsg == WM_NCMOUSEMOVE) {
-                skiaLayerProcedure?.let {
-                    User32Ex.INSTANCE.PostMessage(it.originalHwnd, uMsg, wParam, lParam)
-                }
-            }
             super.callback(hwnd, uMsg, wParam, lParam)
         }
     }
