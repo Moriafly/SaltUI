@@ -20,12 +20,10 @@ package com.moriafly.salt.ui.platform.windows
 import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.moriafly.salt.ui.platform.windows.WinUserConst.WM_LBUTTONDOWN
 import com.moriafly.salt.ui.platform.windows.WinUserConst.WM_LBUTTONUP
-import com.moriafly.salt.ui.platform.windows.WinUserConst.WM_MOUSELEAVE
 import com.moriafly.salt.ui.platform.windows.WinUserConst.WM_MOUSEMOVE
 import com.moriafly.salt.ui.platform.windows.WinUserConst.WM_NCHITTEST
 import com.moriafly.salt.ui.platform.windows.WinUserConst.WM_NCLBUTTONDOWN
 import com.moriafly.salt.ui.platform.windows.WinUserConst.WM_NCLBUTTONUP
-import com.moriafly.salt.ui.platform.windows.WinUserConst.WM_NCMOUSELEAVE
 import com.moriafly.salt.ui.platform.windows.WinUserConst.WM_NCMOUSEMOVE
 import com.sun.jna.Native
 import com.sun.jna.Pointer
@@ -33,12 +31,11 @@ import com.sun.jna.platform.win32.WinDef
 import com.sun.jna.platform.win32.WinDef.HWND
 import com.sun.jna.platform.win32.WinDef.LRESULT
 import com.sun.jna.platform.win32.WinDef.POINT
-import com.sun.jna.platform.win32.WinUser
 import org.jetbrains.skiko.SkiaLayer
 
 @UnstableSaltUiApi
 internal class SkiaLayerWindowProc(
-    private val skiaLayer: SkiaLayer,
+    skiaLayer: SkiaLayer,
     private val hitTest: (x: Float, y: Float) -> HitTestResult
 ) : BasicWindowProc(HWND(skiaLayer.canvas.let(Native::getComponentPointer))) {
     private val skiaLayerHwnd = HWND(Pointer(skiaLayer.windowHandle))
@@ -58,35 +55,30 @@ internal class SkiaLayerWindowProc(
             User32Ex.INSTANCE.ScreenToClient(skiaLayerHwnd, point)
             hitResult = hitTest(point.x.toFloat(), point.y.toFloat())
 
-            val result = when (hitResult) {
+            when (hitResult) {
                 HitTestResult.HTCLIENT,
                 HitTestResult.HTREDUCE,
                 HitTestResult.HTMAXBUTTON,
-                HitTestResult.HTCLOSE -> hitResult // .toLRESULT()
-                // TODO HitTestResult.HTTRANSPARENT
-                else -> HitTestResult.HTTRANSPARENT // HitTestResult.HTCLIENT // .toLRESULT()
+                HitTestResult.HTCLOSE -> hitResult.toLRESULT()
+                else -> HitTestResult.HTTRANSPARENT.toLRESULT()
             }
-
-            println("SkiaLayerWindowProc WM_NCHITTEST = $result")
-            result.toLRESULT()
         }
 
         WM_NCMOUSEMOVE -> {
             when (hitResult) {
+                // Only forward move events to the window when located within the drawing area
+                HitTestResult.HTCLIENT,
+                HitTestResult.HTCAPTION,
                 HitTestResult.HTREDUCE,
                 HitTestResult.HTMAXBUTTON,
                 HitTestResult.HTCLOSE -> {
                     User32Ex.INSTANCE.SendMessage(originalHwnd, WM_MOUSEMOVE, wParam, lParam)
                 }
+
                 else -> {
-                    User32Ex.INSTANCE.SendMessage(originalHwnd, WM_MOUSELEAVE, wParam, lParam)
+                    // Do nothing
                 }
             }
-            HitTestResult.HTNOWHERE.toLRESULT()
-        }
-
-        WM_NCMOUSELEAVE -> {
-            User32Ex.INSTANCE.SendMessage(originalHwnd, WM_MOUSELEAVE, wParam, lParam)
             HitTestResult.HTNOWHERE.toLRESULT()
         }
 

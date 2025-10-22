@@ -25,8 +25,6 @@ fun main() = application {
             composeWindow.findSkiaLayer()?.transparency = true
         }
     ) {
-        CaptionBarHitTest()
-
         val interactionSource = remember { MutableInteractionSource() }
 
         val isHovered by interactionSource.collectIsHoveredAsState()
@@ -47,5 +45,7 @@ fun main() = application {
                 ) {
                 }
         )
+
+        CaptionBarHitTest()
     }
 }

@@ -35,10 +35,8 @@ import com.moriafly.salt.ui.platform.windows.WinUserConst.TPM_RETURNCMD
 import com.moriafly.salt.ui.platform.windows.WinUserConst.WA_INACTIVE
 import com.moriafly.salt.ui.platform.windows.WinUserConst.WINT_MAX
 import com.moriafly.salt.ui.platform.windows.WinUserConst.WM_ACTIVATE
-import com.moriafly.salt.ui.platform.windows.WinUserConst.WM_MOUSELEAVE
 import com.moriafly.salt.ui.platform.windows.WinUserConst.WM_NCCALCSIZE
 import com.moriafly.salt.ui.platform.windows.WinUserConst.WM_NCHITTEST
-import com.moriafly.salt.ui.platform.windows.WinUserConst.WM_NCMOUSELEAVE
 import com.moriafly.salt.ui.platform.windows.WinUserConst.WM_NCMOUSEMOVE
 import com.moriafly.salt.ui.platform.windows.WinUserConst.WM_NCRBUTTONUP
 import com.moriafly.salt.ui.platform.windows.WinUserConst.WM_SETTINGCHANGE
@@ -58,7 +56,6 @@ import com.sun.jna.platform.win32.WinDef.WPARAM
 import com.sun.jna.platform.win32.WinNT
 import com.sun.jna.platform.win32.WinReg
 import com.sun.jna.platform.win32.WinUser
-import com.sun.jna.platform.win32.WinUser.WM_DESTROY
 import com.sun.jna.platform.win32.WinUser.WM_SIZE
 import com.sun.jna.platform.win32.WinUser.WS_SYSMENU
 import com.sun.jna.ptr.IntByReference
@@ -199,12 +196,7 @@ internal class ComposeWindowProc(
         }
 
         WM_NCHITTEST -> {
-            println("ComposeWindowProc WM_NCHITTEST = $hitResult")
             hitResult.toLRESULT()
-        }
-
-        WM_DESTROY -> {
-            super.callback(hwnd, uMsg, wParam, lParam)
         }
 
         WM_SIZE -> {
@@ -285,15 +277,19 @@ internal class ComposeWindowProc(
             )
         }
 
+        WM_ACTIVATE -> {
+            isWindowActive = wParam.toInt() != WA_INACTIVE
+            super.callback(hwnd, uMsg, wParam, lParam)
+        }
+
+        WM_NCMOUSEMOVE -> {
+            skiaLayerProcedure?.let {
+                User32Ex.INSTANCE.PostMessage(it.originalHwnd, uMsg, wParam, lParam)
+            }
+            super.callback(hwnd, uMsg, wParam, lParam)
+        }
+
         else -> {
-            if (uMsg == WM_ACTIVATE) {
-                isWindowActive = wParam.toInt() != WA_INACTIVE
-            }
-            if (uMsg == WM_NCMOUSEMOVE || uMsg == WM_NCMOUSELEAVE) {
-                skiaLayerProcedure?.let {
-                    User32Ex.INSTANCE.PostMessage(it.originalHwnd, uMsg, wParam, lParam)
-                }
-            }
             super.callback(hwnd, uMsg, wParam, lParam)
         }
     }
