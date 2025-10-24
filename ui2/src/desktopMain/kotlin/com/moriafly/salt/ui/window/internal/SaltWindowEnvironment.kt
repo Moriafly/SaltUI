@@ -34,12 +34,13 @@ import com.moriafly.salt.ui.UnstableSaltUiApi
 internal fun SaltWindowEnvironment(
     content: @Composable () -> Unit
 ) {
+    val windowExceptionHandlerFactory = LocalWindowExceptionHandlerFactory.current
     CompositionLocalProvider(
         LocalWindowExceptionHandlerFactory provides
             if (SaltUiFlags.isDisableDefaultWindowExceptionHandler) {
                 SaltWindowExceptionHandlerFactory
             } else {
-                DefaultWindowExceptionHandlerFactory
+                windowExceptionHandlerFactory
             }
     ) {
         content()
