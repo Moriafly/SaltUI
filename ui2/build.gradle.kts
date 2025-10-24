@@ -99,7 +99,7 @@ kotlin {
             implementation(compose.foundation)
             implementation(compose.ui)
             implementation(compose.components.resources)
-            implementation(compose.components.uiToolingPreview)
+            implementation(compose.preview)
             implementation(libs.haze)
             implementation(libs.haze.materials)
         }
