@@ -96,7 +96,7 @@ internal class ComposeWindowProc(
 
     var isWindowActive by mutableStateOf(true)
 
-    val skiaLayerProcedure = window.findSkiaLayer()?.let {
+    val skiaLayerProc = window.findSkiaLayer()?.let {
         SkiaLayerWindowProc(
             skiaLayer = it,
             hitTest = { x, y ->
@@ -283,7 +283,7 @@ internal class ComposeWindowProc(
         }
 
         WM_NCMOUSEMOVE -> {
-            skiaLayerProcedure?.let {
+            skiaLayerProc?.let {
                 User32Ex.INSTANCE.PostMessage(it.originalHwnd, uMsg, wParam, lParam)
             }
             super.callback(hwnd, uMsg, wParam, lParam)
