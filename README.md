@@ -8,6 +8,7 @@ Salt UI is UI components based on [Compose Multiplatform](https://github.com/Jet
 
 | Salt UI        | Compose Multiplatform | Jetpack Compose |
 |----------------|-----------------------|-----------------|
+| 2.8.0-alpha09+ | 1.10.0-alpha03        | 1.10.0-alpha05  |
 | 2.8.0-alpha01+ | 1.10.0-alpha02        | 1.10.0-alpha04  |
 | 2.7.0-alpha01+ | 1.10.0-alpha01        | 1.10.0-alpha02  |
 | 2.6.0-beta02+  | 1.9.0-rc01            | 1.9.0           |
