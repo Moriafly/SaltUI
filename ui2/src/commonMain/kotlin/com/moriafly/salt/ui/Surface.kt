@@ -41,10 +41,10 @@ fun Surface(
 ) {
     Box(
         modifier = modifier
-            .semantics(mergeDescendants = false) {
+            .semantics {
                 isTraversalGroup = true
             }
-            .pointerInput(Unit) { },
+            .pointerInput(Unit) {},
         propagateMinConstraints = propagateMinConstraints
     ) {
         content()
