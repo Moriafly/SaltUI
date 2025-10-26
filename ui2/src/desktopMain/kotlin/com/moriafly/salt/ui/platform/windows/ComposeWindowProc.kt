@@ -68,6 +68,8 @@ internal class ComposeWindowProc(
     private val hitTest: (x: Float, y: Float) -> HitTestResult,
     private val onWindowInsetUpdate: (WindowClientInsets) -> Unit
 ) : BasicWindowProc(window.hwnd) {
+    private val skiaLayer = window.findSkiaLayer()!!
+
     private val marginsByReference = WindowMargins.ByReference()
 
     private var hitResult = HitTestResult.HTCLIENT
@@ -96,50 +98,48 @@ internal class ComposeWindowProc(
 
     var isWindowActive by mutableStateOf(true)
 
-    val skiaLayerProc = window.findSkiaLayer()?.let {
-        SkiaLayerWindowProc(
-            skiaLayer = it,
-            hitTest = { x, y ->
-                updateWindowInfo()
-                val horizontalPadding = frameX
-                val verticalPadding = frameY
-                // Hit test for resizer border
-                hitResult = when {
-                    // Skip resizer border hit test if window is maximized
-                    isMaximized -> hitTest(x, y)
+    val skiaLayerProc = SkiaLayerWindowProc(
+        skiaLayer = skiaLayer,
+        hitTest = { x, y ->
+            updateWindowInfo()
+            val horizontalPadding = frameX
+            val verticalPadding = frameY
 
-                    // Skip resizer border hit test if window is not resizable
-                    !isResizable -> hitTest(x, y)
+            // Hit test for resizer border
+            hitResult = when {
+                // Skip resizer border hit test
+                isMaximized ||
+                    !isResizable ||
+                    skiaLayer.fullscreen -> hitTest(x, y)
 
-                    x <= horizontalPadding &&
-                        y > verticalPadding &&
-                        y < height - verticalPadding -> HitTestResult.HTLEFT
-                    x <= horizontalPadding && y <= verticalPadding -> HitTestResult.HTTOPLEFT
-                    x <= horizontalPadding -> HitTestResult.HTBOTTOMLEFT
-                    y <= verticalPadding &&
-                        x > horizontalPadding &&
-                        x < width - horizontalPadding -> HitTestResult.HTTOP
-                    y <= verticalPadding && x <= horizontalPadding -> HitTestResult.HTTOPLEFT
-                    y <= verticalPadding -> HitTestResult.HTTOPRIGHT
-                    x >= width - horizontalPadding &&
-                        y > verticalPadding &&
-                        y < height - verticalPadding -> HitTestResult.HTRIGHT
-                    x >= width - horizontalPadding && y <= verticalPadding ->
-                        HitTestResult.HTTOPRIGHT
-                    x >= width - horizontalPadding -> HitTestResult.HTBOTTOMRIGHT
-                    y >= height - verticalPadding &&
-                        x > horizontalPadding &&
-                        x < width - horizontalPadding -> HitTestResult.HTBOTTOM
-                    y >= height - verticalPadding && x <= horizontalPadding ->
-                        HitTestResult.HTBOTTOMLEFT
-                    y >= height - verticalPadding -> HitTestResult.HTBOTTOMRIGHT
-                    // Else hit test by user
-                    else -> hitTest(x, y)
-                }
-                hitResult
+                x <= horizontalPadding &&
+                    y > verticalPadding &&
+                    y < height - verticalPadding -> HitTestResult.HTLEFT
+                x <= horizontalPadding && y <= verticalPadding -> HitTestResult.HTTOPLEFT
+                x <= horizontalPadding -> HitTestResult.HTBOTTOMLEFT
+                y <= verticalPadding &&
+                    x > horizontalPadding &&
+                    x < width - horizontalPadding -> HitTestResult.HTTOP
+                y <= verticalPadding && x <= horizontalPadding -> HitTestResult.HTTOPLEFT
+                y <= verticalPadding -> HitTestResult.HTTOPRIGHT
+                x >= width - horizontalPadding &&
+                    y > verticalPadding &&
+                    y < height - verticalPadding -> HitTestResult.HTRIGHT
+                x >= width - horizontalPadding && y <= verticalPadding ->
+                    HitTestResult.HTTOPRIGHT
+                x >= width - horizontalPadding -> HitTestResult.HTBOTTOMRIGHT
+                y >= height - verticalPadding &&
+                    x > horizontalPadding &&
+                    x < width - horizontalPadding -> HitTestResult.HTBOTTOM
+                y >= height - verticalPadding && x <= horizontalPadding ->
+                    HitTestResult.HTBOTTOMLEFT
+                y >= height - verticalPadding -> HitTestResult.HTBOTTOMRIGHT
+                // Else hit test by user
+                else -> hitTest(x, y)
             }
-        )
-    }
+            hitResult
+        }
+    )
 
     init {
         enableBorderAndShadow()
@@ -283,9 +283,7 @@ internal class ComposeWindowProc(
         }
 
         WM_NCMOUSEMOVE -> {
-            skiaLayerProc?.let {
-                User32Ex.INSTANCE.PostMessage(it.originalHwnd, uMsg, wParam, lParam)
-            }
+            User32Ex.INSTANCE.PostMessage(skiaLayerProc.originalHwnd, uMsg, wParam, lParam)
             super.callback(hwnd, uMsg, wParam, lParam)
         }
 

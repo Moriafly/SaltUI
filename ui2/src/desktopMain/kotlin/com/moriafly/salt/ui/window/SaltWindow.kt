@@ -151,6 +151,13 @@ fun SaltWindow(
                 var maximizeButtonRect by remember { mutableStateOf(Rect.Zero) }
                 var closeButtonRect by remember { mutableStateOf(Rect.Zero) }
 
+                val windowState = LocalWindowState.current
+                val isMaximized = windowState.placement == WindowPlacement.Maximized
+                val isFullscreen =
+                    windowState.placement == WindowPlacement.Fullscreen
+
+                val maximizeButtonEnabled = resizable && !isFullscreen
+
                 if (OS.isWindows()) {
                     val saltWindowStyler = remember(window) {
                         SaltWindowStyler(
@@ -160,14 +167,16 @@ fun SaltWindow(
                                     minimizeButtonRect.contains(x, y) ->
                                         HitTestResult.HTREDUCE
 
-                                    maximizeButtonRect.contains(x, y) ->
+                                    maximizeButtonEnabled && maximizeButtonRect.contains(x, y) ->
                                         HitTestResult.HTMAXBUTTON
 
                                     closeButtonRect.contains(x, y) ->
                                         HitTestResult.HTCLOSE
 
                                     // Last hit test result is Caption
-                                    captionBarRect.contains(x, y) && isHitTestInCaptionBar.value ->
+                                    !isFullscreen &&
+                                        captionBarRect.contains(x, y) &&
+                                        isHitTestInCaptionBar.value ->
                                         HitTestResult.HTCAPTION
 
                                     else -> HitTestResult.HTCLIENT
@@ -269,7 +278,6 @@ fun SaltWindow(
                                         }
                                     }
                             ) {
-                                val windowState = LocalWindowState.current
                                 val iconFontFamily by rememberFontIconFamily()
                                 CaptionButtonMinimize(
                                     onClick = {
@@ -281,7 +289,7 @@ fun SaltWindow(
                                             minimizeButtonRect = it.boundsInWindow()
                                         }
                                 )
-                                val isMaximized = windowState.placement == WindowPlacement.Maximized
+
                                 CaptionButtonMaximize(
                                     onClick = {
                                         if (isMaximized) {
@@ -296,7 +304,7 @@ fun SaltWindow(
                                         .onGloballyPositioned {
                                             maximizeButtonRect = it.boundsInWindow()
                                         },
-                                    enabled = resizable
+                                    enabled = maximizeButtonEnabled
                                 )
                                 CaptionButtonClose(
                                     onClick = {
