@@ -28,9 +28,9 @@ import com.sun.jna.Structure
     "bottomBorderHeight"
 )
 internal open class WindowMargins : Structure() {
-    @JvmField var leftBorderWidth: Int = 0
+    @JvmField var leftBorderWidth: Int = -1
 
-    @JvmField var rightBorderWidth: Int = 0
+    @JvmField var rightBorderWidth: Int = -1
 
     @JvmField var topBorderHeight: Int = -1
 

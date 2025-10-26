@@ -21,7 +21,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.Color
-import com.moriafly.salt.core.os.OS
 import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.moriafly.salt.ui.platform.windows.WinUserConst.MFS_DISABLED
 import com.moriafly.salt.ui.platform.windows.WinUserConst.MFS_ENABLED
@@ -44,7 +43,6 @@ import com.moriafly.salt.ui.platform.windows.structure.MENUITEMINFO
 import com.moriafly.salt.ui.platform.windows.structure.WindowMargins
 import com.moriafly.salt.ui.util.findSkiaLayer
 import com.moriafly.salt.ui.util.hwnd
-import com.sun.jna.NativeLibrary
 import com.sun.jna.Pointer
 import com.sun.jna.platform.win32.Advapi32Util
 import com.sun.jna.platform.win32.WinDef
@@ -53,12 +51,10 @@ import com.sun.jna.platform.win32.WinDef.LPARAM
 import com.sun.jna.platform.win32.WinDef.LRESULT
 import com.sun.jna.platform.win32.WinDef.UINT
 import com.sun.jna.platform.win32.WinDef.WPARAM
-import com.sun.jna.platform.win32.WinNT
 import com.sun.jna.platform.win32.WinReg
 import com.sun.jna.platform.win32.WinUser
 import com.sun.jna.platform.win32.WinUser.WM_SIZE
 import com.sun.jna.platform.win32.WinUser.WS_SYSMENU
-import com.sun.jna.ptr.IntByReference
 import org.jetbrains.skiko.currentSystemTheme
 import java.awt.Window
 
@@ -166,6 +162,7 @@ internal class ComposeWindowProc(
                 padding =
                     User32Ex.INSTANCE.GetSystemMetricsForDpi(WinUser.SM_CXPADDEDBORDER, dpi)
                 isMaximized = User32Ex.INSTANCE.isWindowInMaximized(hwnd)
+
                 // Edge inset padding for non-client area
                 onWindowInsetUpdate(
                     WindowClientInsets(
@@ -350,35 +347,37 @@ internal class ComposeWindowProc(
      */
     @Suppress("SpellCheckingInspection")
     private fun enableBorderAndShadow() {
-        val dwmApi = "dwmapi"
-            .runCatching(NativeLibrary::getInstance)
-            .onFailure { println("Could not load dwmapi library") }
-            .getOrNull()
-        dwmApi
-            ?.runCatching { getFunction("DwmExtendFrameIntoClientArea") }
-            ?.onFailure {
-                println(
-                    "Could not enable window native decorations (border/shadow/rounded corners)"
-                )
-            }
-            ?.getOrNull()
-            ?.invoke(arrayOf(originalHwnd, marginsByReference))
+        Dwmapi.INSTANCE.DwmExtendFrameIntoClientArea(originalHwnd, marginsByReference)
+//        Dwmapi.INSTANCE.DwmExtendFrameIntoClientArea(
+//            originalHwnd,
+//            WindowMargins.ByReference().apply {
+//                leftBorderWidth = 0
+//                rightBorderWidth = 0
+//                topBorderHeight = 0
+//                bottomBorderHeight = 0
+//            }
+//        )
 
-        if (OS.ifWindows { it.isAtLeastWindows11() }) {
-            dwmApi?.getFunction("DwmSetWindowAttribute")?.apply {
-                invoke(
-                    WinNT.HRESULT::class.java,
-                    arrayOf(originalHwnd, 35, IntByReference((0xFFFFFFFE).toInt()), 4)
-                )
+//        if (OS.ifWindows { it.isAtLeastWindows11() }) {
+//            dwmApi?.getFunction("DwmSetWindowAttribute")?.apply {
+//                invoke(
+//                    WinNT.HRESULT::class.java,
+//                    arrayOf(originalHwnd, 35, IntByReference((0xFFFFFFFE).toInt()), 4)
+//                )
 //                invoke(
 //                    WinNT.HRESULT::class.java,
 //                    arrayOf(hwnd, 38, IntByReference(2), 4)
 //                )
-            }
-        }
+//            }
+//        }
     }
 
+    @Suppress("unused", "SpellCheckingInspection")
     companion object {
+        /**
+         * Windows 11 Build 22000
+         */
+        private const val DWMWA_CAPTION_COLOR = 35
         private const val DEFAULT_WINDOWS_11_ACCENT_COLOR_VALUE = 0xFFD47800
     }
 }
