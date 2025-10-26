@@ -40,7 +40,6 @@ import com.moriafly.salt.ui.platform.windows.WinUserConst.WM_NCMOUSEMOVE
 import com.moriafly.salt.ui.platform.windows.WinUserConst.WM_NCRBUTTONUP
 import com.moriafly.salt.ui.platform.windows.WinUserConst.WM_SETTINGCHANGE
 import com.moriafly.salt.ui.platform.windows.structure.MENUITEMINFO
-import com.moriafly.salt.ui.platform.windows.structure.WindowMargins
 import com.moriafly.salt.ui.util.findSkiaLayer
 import com.moriafly.salt.ui.util.hwnd
 import com.sun.jna.Pointer
@@ -55,6 +54,7 @@ import com.sun.jna.platform.win32.WinReg
 import com.sun.jna.platform.win32.WinUser
 import com.sun.jna.platform.win32.WinUser.WM_SIZE
 import com.sun.jna.platform.win32.WinUser.WS_SYSMENU
+import org.jetbrains.skiko.SkiaLayer
 import org.jetbrains.skiko.currentSystemTheme
 import java.awt.Window
 
@@ -64,9 +64,7 @@ internal class ComposeWindowProc(
     private val hitTest: (x: Float, y: Float) -> HitTestResult,
     private val onWindowInsetUpdate: (WindowClientInsets) -> Unit
 ) : BasicWindowProc(window.hwnd) {
-    private val skiaLayer = window.findSkiaLayer()!!
-
-    private val marginsByReference = WindowMargins.ByReference()
+    private val skiaLayer: SkiaLayer = window.findSkiaLayer()!!
 
     private var hitResult = HitTestResult.HTCLIENT
 
@@ -133,13 +131,10 @@ internal class ComposeWindowProc(
                 // Else hit test by user
                 else -> hitTest(x, y)
             }
+            println("$hitResult")
             hitResult
         }
     )
-
-    init {
-        enableBorderAndShadow()
-    }
 
     @OptIn(UnstableSaltUiApi::class)
     override fun callback(
@@ -289,31 +284,6 @@ internal class ComposeWindowProc(
         }
     }
 
-    // Force update window info that resolve the hit test result is incorrect when user moving window to another monitor.
-    private fun updateWindowInfo() {
-        dpi = User32Ex.INSTANCE.GetDpiForWindow(originalHwnd)
-        frameX = User32Ex.INSTANCE.GetSystemMetricsForDpi(WinUser.SM_CXFRAME, dpi)
-        frameY = User32Ex.INSTANCE.GetSystemMetricsForDpi(WinUser.SM_CYFRAME, dpi)
-
-        val rect = WinDef.RECT()
-        if (User32Ex.INSTANCE.GetWindowRect(originalHwnd, rect)) {
-            rect.read()
-            width = rect.right - rect.left
-            height = rect.bottom - rect.top
-        }
-        rect.clear()
-    }
-
-    private fun updateMenuItemInfo(
-        menu: HMENU,
-        menuItemInfo: MENUITEMINFO.ByReference,
-        item: Int,
-        enabled: Boolean
-    ) {
-        menuItemInfo.fState = if (enabled) MFS_ENABLED else MFS_DISABLED
-        User32Ex.INSTANCE.SetMenuItemInfo(menu, item, false, menuItemInfo)
-    }
-
     fun currentAccentColor(): Color =
         try {
             val value = Advapi32Util.registryGetIntValue(
@@ -342,34 +312,31 @@ internal class ComposeWindowProc(
         }
 
     /**
-     * To disable window border and shadow, pass (0, 0, 0, 0) as window margins
-     * (or, simply, don't call this function).
+     * Force update window info that resolve the hit test result is incorrect when user moving
+     * window to another monitor.
      */
-    @Suppress("SpellCheckingInspection")
-    private fun enableBorderAndShadow() {
-        Dwmapi.INSTANCE.DwmExtendFrameIntoClientArea(originalHwnd, marginsByReference)
-//        Dwmapi.INSTANCE.DwmExtendFrameIntoClientArea(
-//            originalHwnd,
-//            WindowMargins.ByReference().apply {
-//                leftBorderWidth = 0
-//                rightBorderWidth = 0
-//                topBorderHeight = 0
-//                bottomBorderHeight = 0
-//            }
-//        )
+    private fun updateWindowInfo() {
+        dpi = User32Ex.INSTANCE.GetDpiForWindow(originalHwnd)
+        frameX = User32Ex.INSTANCE.GetSystemMetricsForDpi(WinUser.SM_CXFRAME, dpi)
+        frameY = User32Ex.INSTANCE.GetSystemMetricsForDpi(WinUser.SM_CYFRAME, dpi)
 
-//        if (OS.ifWindows { it.isAtLeastWindows11() }) {
-//            dwmApi?.getFunction("DwmSetWindowAttribute")?.apply {
-//                invoke(
-//                    WinNT.HRESULT::class.java,
-//                    arrayOf(originalHwnd, 35, IntByReference((0xFFFFFFFE).toInt()), 4)
-//                )
-//                invoke(
-//                    WinNT.HRESULT::class.java,
-//                    arrayOf(hwnd, 38, IntByReference(2), 4)
-//                )
-//            }
-//        }
+        val rect = WinDef.RECT()
+        if (User32Ex.INSTANCE.GetWindowRect(originalHwnd, rect)) {
+            rect.read()
+            width = rect.right - rect.left
+            height = rect.bottom - rect.top
+        }
+        rect.clear()
+    }
+
+    private fun updateMenuItemInfo(
+        menu: HMENU,
+        menuItemInfo: MENUITEMINFO.ByReference,
+        item: Int,
+        enabled: Boolean
+    ) {
+        menuItemInfo.fState = if (enabled) MFS_ENABLED else MFS_DISABLED
+        User32Ex.INSTANCE.SetMenuItemInfo(menu, item, false, menuItemInfo)
     }
 
     @Suppress("unused", "SpellCheckingInspection")

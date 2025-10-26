@@ -35,6 +35,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
@@ -47,7 +48,6 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.input.key.KeyEvent
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.layout.onVisibilityChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.isSpecified
@@ -119,6 +119,8 @@ fun SaltDialogWindow(
         "Caption button height must be less than caption bar height"
     }
 
+    val currentProperties by rememberUpdatedState(properties)
+
     SaltWindowEnvironment {
         SwingDialog(
             onCloseRequest = onCloseRequest,
@@ -165,7 +167,8 @@ fun SaltDialogWindow(
                             window = window,
                             hitTest = { x, y ->
                                 when {
-                                    closeButtonRect.contains(x, y) ->
+                                    currentProperties.captionButtonsVisible &&
+                                        closeButtonRect.contains(x, y) ->
                                         HitTestResult.HTCLOSE
 
                                     // Last hit test result is Caption
@@ -178,7 +181,9 @@ fun SaltDialogWindow(
                             onWindowInsetUpdate = { windowInsets ->
                                 windowClientInsets.insets = windowInsets
                             }
-                        )
+                        ).apply {
+                            enableBorderAndShadow()
+                        }
                     }
 
                     LaunchedEffect(resizable) {
@@ -221,11 +226,11 @@ fun SaltDialogWindow(
                         }
 
                         override fun componentShown(e: ComponentEvent?) {
-                            properties.onVisibleChanged(window, true)
+                            currentProperties.onVisibleChanged(window, true)
                         }
 
                         override fun componentHidden(e: ComponentEvent?) {
-                            properties.onVisibleChanged(window, false)
+                            currentProperties.onVisibleChanged(window, false)
                         }
                     }
 
@@ -263,11 +268,6 @@ fun SaltDialogWindow(
                             Row(
                                 modifier = Modifier
                                     .align(Alignment.TopEnd)
-                                    .onVisibilityChanged { visible ->
-                                        if (!visible) {
-                                            closeButtonRect = Rect.Zero
-                                        }
-                                    }
                             ) {
                                 val iconFontFamily by rememberFontIconFamily()
                                 CaptionButtonClose(

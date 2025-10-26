@@ -37,6 +37,7 @@ import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
@@ -49,7 +50,6 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.input.key.KeyEvent
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.layout.onVisibilityChanged
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.isSpecified
@@ -110,6 +110,9 @@ fun SaltWindow(
         "Caption button height must be less than caption bar height"
     }
 
+    val currentResizable by rememberUpdatedState(resizable)
+    val currentProperties by rememberUpdatedState(properties)
+
     SaltWindowEnvironment {
         SwingWindow(
             onCloseRequest = onCloseRequest,
@@ -153,10 +156,6 @@ fun SaltWindow(
 
                 val windowState = LocalWindowState.current
                 val isMaximized = windowState.placement == WindowPlacement.Maximized
-                val isFullscreen =
-                    windowState.placement == WindowPlacement.Fullscreen
-
-                val maximizeButtonEnabled = resizable && !isFullscreen
 
                 if (OS.isWindows()) {
                     val saltWindowStyler = remember(window) {
@@ -164,17 +163,23 @@ fun SaltWindow(
                             window = window,
                             hitTest = { x, y ->
                                 when {
-                                    minimizeButtonRect.contains(x, y) ->
+                                    currentProperties.captionButtonsVisible &&
+                                        minimizeButtonRect.contains(x, y) ->
                                         HitTestResult.HTREDUCE
 
-                                    maximizeButtonEnabled && maximizeButtonRect.contains(x, y) ->
+                                    currentProperties.captionButtonsVisible &&
+                                        currentResizable &&
+                                        windowState.placement != WindowPlacement.Fullscreen &&
+                                        maximizeButtonRect.contains(x, y) -> {
                                         HitTestResult.HTMAXBUTTON
+                                    }
 
-                                    closeButtonRect.contains(x, y) ->
+                                    currentProperties.captionButtonsVisible &&
+                                        closeButtonRect.contains(x, y) ->
                                         HitTestResult.HTCLOSE
 
                                     // Last hit test result is Caption
-                                    !isFullscreen &&
+                                    windowState.placement != WindowPlacement.Fullscreen &&
                                         captionBarRect.contains(x, y) &&
                                         isHitTestInCaptionBar.value ->
                                         HitTestResult.HTCAPTION
@@ -190,6 +195,17 @@ fun SaltWindow(
 
                     LaunchedEffect(resizable) {
                         saltWindowStyler.updateIsResizable(resizable)
+                    }
+
+                    val isFullscreen =
+                        windowState.placement == WindowPlacement.Fullscreen
+
+                    LaunchedEffect(isFullscreen) {
+                        if (isFullscreen) {
+                            saltWindowStyler.disableBorderAndShadow()
+                        } else {
+                            saltWindowStyler.enableBorderAndShadow()
+                        }
                     }
                 }
 
@@ -228,11 +244,11 @@ fun SaltWindow(
                         }
 
                         override fun componentShown(e: ComponentEvent?) {
-                            properties.onVisibleChanged(window, true)
+                            currentProperties.onVisibleChanged(window, true)
                         }
 
                         override fun componentHidden(e: ComponentEvent?) {
-                            properties.onVisibleChanged(window, false)
+                            currentProperties.onVisibleChanged(window, false)
                         }
                     }
 
@@ -270,13 +286,6 @@ fun SaltWindow(
                             Row(
                                 modifier = Modifier
                                     .align(Alignment.TopEnd)
-                                    .onVisibilityChanged { visible ->
-                                        if (!visible) {
-                                            minimizeButtonRect = Rect.Zero
-                                            maximizeButtonRect = Rect.Zero
-                                            closeButtonRect = Rect.Zero
-                                        }
-                                    }
                             ) {
                                 val iconFontFamily by rememberFontIconFamily()
                                 CaptionButtonMinimize(
@@ -304,7 +313,8 @@ fun SaltWindow(
                                         .onGloballyPositioned {
                                             maximizeButtonRect = it.boundsInWindow()
                                         },
-                                    enabled = maximizeButtonEnabled
+                                    enabled = resizable &&
+                                        windowState.placement != WindowPlacement.Fullscreen
                                 )
                                 CaptionButtonClose(
                                     onClick = {

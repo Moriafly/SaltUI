@@ -19,10 +19,11 @@ package com.moriafly.salt.ui.window.internal
 
 import androidx.compose.foundation.layout.WindowInsets
 import com.moriafly.salt.ui.UnstableSaltUiApi
-import com.moriafly.salt.ui.platform.windows.BasicWindowProc
 import com.moriafly.salt.ui.platform.windows.ComposeWindowProc
+import com.moriafly.salt.ui.platform.windows.Dwmapi
 import com.moriafly.salt.ui.platform.windows.HitTestResult
 import com.moriafly.salt.ui.platform.windows.User32Ex
+import com.moriafly.salt.ui.platform.windows.structure.WindowMargins
 import com.moriafly.salt.ui.platform.windows.updateWindowStyle
 import com.moriafly.salt.ui.util.hwnd
 import com.moriafly.salt.ui.util.isUndecorated
@@ -34,7 +35,9 @@ internal class SaltWindowStyler(
     window: Window,
     private val hitTest: (Float, Float) -> HitTestResult,
     private val onWindowInsetUpdate: (WindowInsets) -> Unit
-) : BasicWindowProc(window.hwnd) {
+) {
+    private val hwnd = window.hwnd
+
     @Suppress("unused")
     private val composeWindowProc = ComposeWindowProc(
         window = window,
@@ -66,8 +69,39 @@ internal class SaltWindowStyler(
         composeWindowProc.isResizable = value
     }
 
+    /**
+     * To disable window border and shadow, pass (0, 0, 0, 0) as window margins
+     * (or, simply, don't call this function).
+     */
+    @Suppress("SpellCheckingInspection")
+    fun enableBorderAndShadow() {
+        Dwmapi.INSTANCE.DwmExtendFrameIntoClientArea(hwnd, WindowMargins.ByReference())
+//        if (OS.ifWindows { it.isAtLeastWindows11() }) {
+//            dwmApi?.getFunction("DwmSetWindowAttribute")?.apply {
+//                invoke(
+//                    WinNT.HRESULT::class.java,
+//                    arrayOf(originalHwnd, 35, IntByReference((0xFFFFFFFE).toInt()), 4)
+//                )
+//                invoke(
+//                    WinNT.HRESULT::class.java,
+//                    arrayOf(hwnd, 38, IntByReference(2), 4)
+//                )
+//            }
+//        }
+    }
+
+    fun disableBorderAndShadow() {
+        val pMarInset = WindowMargins.ByReference()
+            .apply {
+                leftBorderWidth = 0
+                rightBorderWidth = 0
+                topBorderHeight = 0
+                bottomBorderHeight = 0
+            }
+        Dwmapi.INSTANCE.DwmExtendFrameIntoClientArea(hwnd, pMarInset)
+    }
+
     init {
-        val hwnd = window.hwnd
         val isDecorated = !window.isUndecorated
 
         if (isDecorated) {

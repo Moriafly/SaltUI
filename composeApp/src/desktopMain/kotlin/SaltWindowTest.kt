@@ -21,7 +21,6 @@ fun main() {
             onCloseRequest = ::exitApplication,
             state = state,
             // decoration = WindowDecoration.Undecorated(),
-            alwaysOnTop = true,
             properties = SaltWindowProperties(
                 minSize = DpSize(200.dp, 200.dp)
             )
