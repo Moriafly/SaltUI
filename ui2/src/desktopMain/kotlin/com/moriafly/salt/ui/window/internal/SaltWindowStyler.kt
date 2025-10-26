@@ -30,7 +30,7 @@ import com.moriafly.salt.ui.util.isUndecorated
 import com.sun.jna.platform.win32.WinUser.WS_SYSMENU
 import java.awt.Window
 
-@OptIn(UnstableSaltUiApi::class)
+@UnstableSaltUiApi
 internal class SaltWindowStyler(
     window: Window,
     private val hitTest: (Float, Float) -> HitTestResult,
