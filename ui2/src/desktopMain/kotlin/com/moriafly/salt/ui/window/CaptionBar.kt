@@ -104,6 +104,45 @@ internal fun rememberFontIconFamily(): State<FontFamily?> {
     return fontIconFamily
 }
 
+/**
+ * TODO https://youtrack.jetbrains.com/issue/CMP-5141
+ */
+@UnstableSaltUiApi
+@Composable
+internal fun CaptionButtonFullscreen(
+    onClick: () -> Unit,
+    iconFontFamily: FontFamily?,
+    isFullscreen: Boolean,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true
+) {
+    val windowInfo = LocalWindowInfo.current
+    CaptionButton(
+        onClick = onClick,
+        iconGlyph = if (isFullscreen) {
+            CaptionButtonBackToWindowIconGlyph
+        } else {
+            CaptionButtonFullscreenIconGlyph
+        },
+        iconFontFamily = iconFontFamily,
+        colors = if (windowInfo.isWindowFocused) {
+            if (SaltTheme.configs.isDarkTheme) {
+                CaptionButtonColors.MinMaxDark
+            } else {
+                CaptionButtonColors.MinMaxLight
+            }
+        } else {
+            if (SaltTheme.configs.isDarkTheme) {
+                CaptionButtonColors.MinMaxInactiveDark
+            } else {
+                CaptionButtonColors.MinMaxInactiveLight
+            }
+        },
+        modifier = modifier,
+        enabled = enabled
+    )
+}
+
 @UnstableSaltUiApi
 @Composable
 internal fun CaptionButtonMinimize(
@@ -264,6 +303,7 @@ private class CaptionButtonColors(
 ) {
     companion object {
         private val TextLightDisabled = Color.Black.copy(alpha = 0.3614f)
+        private val TextDarkDisabled = Color.White.copy(alpha = 0.3628f)
 
         val MinMaxLight = CaptionButtonColors(
             rest = Color.Black.copy(alpha = 0.8956f),
@@ -280,7 +320,7 @@ private class CaptionButtonColors(
             hoverBackground = Color.White.copy(alpha = 0.0605f),
             pressed = Color.White.copy(alpha = 0.7860f),
             pressedBackground = Color.White.copy(alpha = 0.0419f),
-            disabled = TextLightDisabled
+            disabled = TextDarkDisabled
         )
 
         val MinMaxInactiveLight = CaptionButtonColors(
@@ -298,7 +338,7 @@ private class CaptionButtonColors(
             hoverBackground = Color.White.copy(alpha = 0.0605f),
             pressed = Color.White.copy(alpha = 0.5442f),
             pressedBackground = Color.White.copy(alpha = 0.0419f),
-            disabled = TextLightDisabled
+            disabled = TextDarkDisabled
         )
 
         val CloseLight = CaptionButtonColors(
@@ -316,7 +356,7 @@ private class CaptionButtonColors(
             hoverBackground = Color(0xFFC42B1C),
             pressed = Color.White.copy(alpha = 0.7f),
             pressedBackground = Color(0xFFC42B1C).copy(alpha = 0.9f),
-            disabled = TextLightDisabled
+            disabled = TextDarkDisabled
         )
 
         val CloseInactiveLight = CaptionButtonColors(
@@ -334,13 +374,15 @@ private class CaptionButtonColors(
             hoverBackground = Color(0xFFC42B1C),
             pressed = Color.White.copy(alpha = 0.7f),
             pressedBackground = Color(0xFFC42B1C).copy(alpha = 0.9f),
-            disabled = TextLightDisabled
+            disabled = TextDarkDisabled
         )
     }
 }
 
 internal val CaptionButtonWidth = 46.83f.dp
 
+private const val CaptionButtonFullscreenIconGlyph = '\uE92d'
+private const val CaptionButtonBackToWindowIconGlyph = '\uE92c'
 private const val CaptionButtonMinimizeIconGlyph = '\uE921'
 private const val CaptionButtonMaximizeIconGlyph = '\uE922'
 private const val CaptionButtonRestoreIconGlyph = '\uE923'

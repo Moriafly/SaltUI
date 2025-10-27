@@ -131,7 +131,6 @@ internal class ComposeWindowProc(
                 // Else hit test by user
                 else -> hitTest(x, y)
             }
-            println("$hitResult")
             hitResult
         }
     )

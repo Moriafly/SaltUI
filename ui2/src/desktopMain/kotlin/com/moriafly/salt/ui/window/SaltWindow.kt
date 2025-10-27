@@ -298,7 +298,6 @@ fun SaltWindow(
                                             minimizeButtonRect = it.boundsInWindow()
                                         }
                                 )
-
                                 CaptionButtonMaximize(
                                     onClick = {
                                         if (isMaximized) {
