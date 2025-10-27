@@ -165,14 +165,13 @@ fun SaltWindow(
                                 when {
                                     currentProperties.captionButtonsVisible &&
                                         minimizeButtonRect.contains(x, y) ->
-                                        HitTestResult.HTREDUCE
+                                        HitTestResult.HTMINBUTTON
 
                                     currentProperties.captionButtonsVisible &&
                                         currentResizable &&
                                         windowState.placement != WindowPlacement.Fullscreen &&
-                                        maximizeButtonRect.contains(x, y) -> {
+                                        maximizeButtonRect.contains(x, y) ->
                                         HitTestResult.HTMAXBUTTON
-                                    }
 
                                     currentProperties.captionButtonsVisible &&
                                         closeButtonRect.contains(x, y) ->

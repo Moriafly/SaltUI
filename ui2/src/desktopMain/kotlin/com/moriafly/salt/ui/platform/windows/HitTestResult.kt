@@ -84,9 +84,9 @@ internal enum class HitTestResult(
     HTVSCROLL(7),
 
     /**
-     * In a Minimize button.
+     * In a Minimize button (HTREDUCE).
      */
-    HTREDUCE(8),
+    HTMINBUTTON(8),
 
     /**
      * In a Maximize button.

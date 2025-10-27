@@ -57,7 +57,7 @@ internal class SkiaLayerWindowProc(
 
             when (hitResult) {
                 HitTestResult.HTCLIENT,
-                HitTestResult.HTREDUCE,
+                HitTestResult.HTMINBUTTON,
                 HitTestResult.HTMAXBUTTON,
                 HitTestResult.HTCLOSE -> hitResult.toLRESULT()
                 else -> HitTestResult.HTTRANSPARENT.toLRESULT()
@@ -69,7 +69,7 @@ internal class SkiaLayerWindowProc(
                 // Only forward move events to the window when located within the drawing area
                 HitTestResult.HTCLIENT,
                 HitTestResult.HTCAPTION,
-                HitTestResult.HTREDUCE,
+                HitTestResult.HTMINBUTTON,
                 HitTestResult.HTMAXBUTTON,
                 HitTestResult.HTCLOSE -> {
                     User32Ex.INSTANCE.SendMessage(originalHwnd, WM_MOUSEMOVE, wParam, lParam)
