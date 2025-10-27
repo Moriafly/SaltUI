@@ -163,6 +163,8 @@ fun SaltWindow(
                             window = window,
                             hitTest = { x, y ->
                                 when {
+                                    // Minimize button doesn't have a tooltip
+                                    // TODO https://github.com/microsoft/microsoft-ui-xaml/issues/9149
                                     currentProperties.captionButtonsVisible &&
                                         minimizeButtonRect.contains(x, y) ->
                                         HitTestResult.HTMINBUTTON
