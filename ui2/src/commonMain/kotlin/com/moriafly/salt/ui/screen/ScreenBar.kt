@@ -379,7 +379,7 @@ object TopScreenBarDefaults {
         canScroll: () -> Boolean = { true },
         // TODO Load the motionScheme tokens from the component tokens file
         snapAnimationSpec: AnimationSpec<Float>? = tween(easing = LinearEasing),
-        flingAnimationSpec: DecayAnimationSpec<Float>? = rememberSplineBasedDecay(),
+        flingAnimationSpec: DecayAnimationSpec<Float>? = rememberSplineBasedDecay()
     ): TopScreenBarScrollBehavior =
         remember(state, canScroll, snapAnimationSpec, flingAnimationSpec) {
             ExitUntilCollapsedScrollBehavior(
@@ -488,7 +488,7 @@ private class ExitUntilCollapsedScrollBehavior(
     override val state: TopScreenBarState,
     override val snapAnimationSpec: AnimationSpec<Float>?,
     override val flingAnimationSpec: DecayAnimationSpec<Float>?,
-    val canScroll: () -> Boolean = { true },
+    val canScroll: () -> Boolean = { true }
 ) : TopScreenBarScrollBehavior {
     override val isPinned: Boolean = false
     override var nestedScrollConnection =
@@ -498,7 +498,7 @@ private class ExitUntilCollapsedScrollBehavior(
                 if (!canScroll() || available.y > 0f) return Offset.Zero
 
                 val prevHeightOffset = state.heightOffset
-                state.heightOffset = state.heightOffset + available.y
+                state.heightOffset += available.y
                 return if (prevHeightOffset != state.heightOffset) {
                     // We're in the middle of top app bar collapse or expand.
                     // Consume only the scroll on the Y axis.
@@ -519,7 +519,7 @@ private class ExitUntilCollapsedScrollBehavior(
                 if (available.y < 0f || consumed.y < 0f) {
                     // When scrolling up, just update the state's height offset.
                     val oldHeightOffset = state.heightOffset
-                    state.heightOffset = state.heightOffset + consumed.y
+                    state.heightOffset += consumed.y
                     return Offset(0f, state.heightOffset - oldHeightOffset)
                 }
 
@@ -527,7 +527,7 @@ private class ExitUntilCollapsedScrollBehavior(
                     // Adjust the height offset in case the consumed delta Y is less than what was
                     // recorded as available delta Y in the pre-scroll.
                     val oldHeightOffset = state.heightOffset
-                    state.heightOffset = state.heightOffset + available.y
+                    state.heightOffset += available.y
                     return Offset(0f, state.heightOffset - oldHeightOffset)
                 }
                 return Offset.Zero
@@ -540,12 +540,8 @@ private class ExitUntilCollapsedScrollBehavior(
                     state.contentOffset = 0f
                 }
                 val superConsumed = super.onPostFling(consumed, available)
-                return superConsumed + settleAppBar(
-                    state,
-                    available.y,
-                    flingAnimationSpec,
-                    snapAnimationSpec
-                )
+                return superConsumed +
+                    settleAppBar(state, available.y, flingAnimationSpec, snapAnimationSpec)
             }
         }
 }
@@ -559,7 +555,7 @@ private suspend fun settleAppBar(
     state: TopScreenBarState,
     velocity: Float,
     flingAnimationSpec: DecayAnimationSpec<Float>?,
-    snapAnimationSpec: AnimationSpec<Float>?,
+    snapAnimationSpec: AnimationSpec<Float>?
 ): Velocity {
     // Check if the app bar is completely collapsed/expanded. If so, no need to settle the app bar,
     // and just return Zero Velocity.
@@ -595,7 +591,7 @@ private suspend fun settleAppBar(
                 } else {
                     state.heightOffsetLimit
                 },
-                animationSpec = snapAnimationSpec,
+                animationSpec = snapAnimationSpec
             ) {
                 state.heightOffset = value
             }
