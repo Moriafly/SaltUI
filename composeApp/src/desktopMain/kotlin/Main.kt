@@ -33,12 +33,14 @@ fun main() = application {
 
         CaptionBarHitTest()
 
-        Button(
-            onClick = {
-                captionButtonsVisible = !captionButtonsVisible
-            },
-            text = "Change Caption Buttons Visible"
-        )
+//        Button(
+//            onClick = {
+//                captionButtonsVisible = !captionButtonsVisible
+//            },
+//            text = "Change Caption Buttons Visible"
+//        )
+
+        BasicScreenSample()
 
 //        SaltDialogWindow(
 //            onCloseRequest = {

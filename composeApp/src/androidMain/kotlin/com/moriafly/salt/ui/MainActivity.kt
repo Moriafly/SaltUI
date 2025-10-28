@@ -17,8 +17,7 @@
 
 package com.moriafly.salt.ui
 
-import MainActivityContent
-import MaterialScreen
+import BasicScreenSample
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
