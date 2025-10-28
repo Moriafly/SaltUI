@@ -42,7 +42,9 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             // MaterialScreen()
-            MainActivityContent()
+            // MainActivityContent()
+            // NestedScrollTopBarContainer()
+            BasicScreenSample()
         }
     }
 }

@@ -17,6 +17,7 @@ kotlin {
 
         androidMain.dependencies {
             implementation(libs.activity.compose)
+            implementation(compose.material3)
         }
 
         commonMain.dependencies {
