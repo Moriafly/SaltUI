@@ -31,7 +31,6 @@ import androidx.compose.ui.layout.SubcomposeLayout
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import com.moriafly.salt.ui.Text
 import com.moriafly.salt.ui.UnstableSaltUiApi
 
 @UnstableSaltUiApi
@@ -40,40 +39,33 @@ fun BasicScreen(
     modifier: Modifier = Modifier,
     topBar: @Composable () -> Unit = {},
     collapsedTopBar: @Composable () -> Unit = {},
-    collapsedHeight: Dp = 56.dp,
+    collapsedHeight: Dp = TopScreenBarDefaults.CollapsedHeight,
     content: @Composable (PaddingValues) -> Unit
 ) {
     val scrollBehavior = TopScreenBarDefaults.exitUntilCollapsedScrollBehavior()
 
-    Box {
-        Column(
-            modifier = modifier
-                .nestedScroll(scrollBehavior.nestedScrollConnection)
-        ) {
-            CollapsedTopBar(
-                scrollBehavior = scrollBehavior,
-                collapsedHeight = collapsedHeight,
-                content = collapsedTopBar
-            )
-            BasicScreenLayout(
-                topBar = {
-                    TopScreenBar(
-                        scrollBehavior = scrollBehavior,
-                        content = topBar
-                    )
-                },
-                content = content
-            )
-        }
-
-        Column {
-            String
-            Text("heightOffset = ${scrollBehavior.state.heightOffset}")
-            Text("contentOffset = ${scrollBehavior.state.contentOffset}")
-        }
+    Column(
+        modifier = modifier
+            .nestedScroll(scrollBehavior.nestedScrollConnection)
+    ) {
+        CollapsedTopBar(
+            scrollBehavior = scrollBehavior,
+            collapsedHeight = collapsedHeight,
+            content = collapsedTopBar
+        )
+        BasicScreenLayout(
+            topBar = {
+                TopScreenBar(
+                    scrollBehavior = scrollBehavior,
+                    content = topBar
+                )
+            },
+            content = content
+        )
     }
 }
 
+@UnstableSaltUiApi
 @Composable
 private fun BasicScreenLayout(
     topBar: @Composable () -> Unit,
@@ -132,8 +124,8 @@ private fun BasicScreenLayout(
     }
 }
 
+@UnstableSaltUiApi
 private enum class BasicScreenContent {
     TopBar,
-    CollapsedTopBar,
     Body
 }

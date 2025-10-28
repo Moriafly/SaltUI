@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.moriafly.salt.ui.SaltTheme
@@ -29,6 +30,7 @@ fun BasicScreenSample() {
                     Text(
                         text = "TopScreenBar",
                         modifier = Modifier
+                            .background(Color.Green)
                             .outerPadding(),
                         fontSize = 48.sp
                     )
@@ -44,7 +46,6 @@ fun BasicScreenSample() {
             content = { innerPadding ->
                 LazyColumn(
                     contentPadding = innerPadding,
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     val list = (0..75).map { it.toString() }
                     items(count = list.size) {
@@ -52,6 +53,7 @@ fun BasicScreenSample() {
                             text = list[it],
                             modifier = Modifier
                                 .fillMaxWidth()
+                                .background(Color.Blue)
                                 .outerPadding()
                         )
                     }
