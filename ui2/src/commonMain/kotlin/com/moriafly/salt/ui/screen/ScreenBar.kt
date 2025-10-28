@@ -27,13 +27,9 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.animateTo
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.rememberSplineBasedDecay
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.derivedStateOf
@@ -46,10 +42,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
-import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
@@ -59,12 +52,10 @@ import androidx.compose.ui.layout.MeasurePolicy
 import androidx.compose.ui.layout.MeasureResult
 import androidx.compose.ui.layout.MeasureScope
 import androidx.compose.ui.layout.onSizeChanged
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
-import com.moriafly.salt.ui.Text
 import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.moriafly.salt.ui.internal.FloatProducer
 import com.moriafly.salt.ui.screen.TopScreenBarState.Companion.Saver
@@ -100,8 +91,6 @@ fun CollapsedTopBar(
     collapsedHeight: Dp = 56.dp,
     content: @Composable () -> Unit
 ) {
-    val density = LocalDensity.current
-
     val isCollapsed by remember {
         derivedStateOf {
             scrollBehavior.state.collapsedFraction > 0.9f
@@ -415,7 +404,7 @@ private class EnterAlwaysScrollBehavior(
     override val snapAnimationSpec: AnimationSpec<Float>?,
     override val flingAnimationSpec: DecayAnimationSpec<Float>?,
     val canScroll: () -> Boolean = { true },
-    val reverseLayout: Boolean = false,
+    val reverseLayout: Boolean = false
 ) : TopScreenBarScrollBehavior {
     override val isPinned: Boolean = false
     override var nestedScrollConnection =
@@ -513,6 +502,8 @@ private class ExitUntilCollapsedScrollBehavior(
                 available: Offset,
                 source: NestedScrollSource,
             ): Offset {
+                println("onPostScroll available.y: ${available.y}, consumed.y: ${consumed.y}")
+
                 if (!canScroll()) return Offset.Zero
                 state.contentOffset += consumed.y
 

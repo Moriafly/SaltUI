@@ -27,9 +27,9 @@ fun main() = application {
             captionButtonIsDarkTheme = isDarkTheme
         )
     ) {
-        MainActivityContent(
-            isDarkTheme = isDarkTheme
-        )
+//        MainActivityContent(
+//            isDarkTheme = isDarkTheme
+//        )
 
         CaptionBarHitTest()
 
