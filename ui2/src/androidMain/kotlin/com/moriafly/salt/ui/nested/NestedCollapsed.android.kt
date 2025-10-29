@@ -1,23 +1,21 @@
-/*
+/**
  * Salt UI
  * Copyright (C) 2025 Moriafly
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  */
 
 @file:Suppress("ktlint:standard:filename")
 
-package com.moriafly.salt.ui.screen
+package com.moriafly.salt.ui.nested
 
 import androidx.compose.animation.core.AnimationSpec
 import androidx.compose.animation.core.DecayAnimationSpec
@@ -28,12 +26,12 @@ import androidx.compose.ui.unit.Velocity
 import com.moriafly.salt.ui.UnstableSaltUiApi
 
 @UnstableSaltUiApi
-internal actual class DefaultTopScreenBarScrollBehavior actual constructor(
-    actual override val state: TopScreenBarState,
+internal actual class DefaultCollapsedScrollBehavior actual constructor(
+    actual override val state: CollapsedState,
     actual override val snapAnimationSpec: AnimationSpec<Float>?,
     actual override val flingAnimationSpec: DecayAnimationSpec<Float>?,
     actual val canScroll: () -> Boolean
-) : TopScreenBarScrollBehavior {
+) : CollapsedScrollBehavior {
     actual override val isPinned: Boolean = false
     actual override var nestedScrollConnection =
         object : NestedScrollConnection {
@@ -43,10 +41,10 @@ internal actual class DefaultTopScreenBarScrollBehavior actual constructor(
                     return Offset.Zero
                 }
 
-                val previousOffset = state.barOffset
-                state.barOffset += available.y
+                val previousOffset = state.collapsedOffset
+                state.collapsedOffset += available.y
 
-                val consumed = state.barOffset - previousOffset
+                val consumed = state.collapsedOffset - previousOffset
 
                 // Return only the delta that was *actually* consumed by the state
                 return Offset(0f, consumed)
@@ -62,17 +60,17 @@ internal actual class DefaultTopScreenBarScrollBehavior actual constructor(
 
                 if (available.y < 0f || consumed.y < 0f) {
                     // When scrolling up, just update the state's bar offset
-                    val oldBarOffset = state.barOffset
-                    state.barOffset += consumed.y
-                    return Offset(0f, state.barOffset - oldBarOffset)
+                    val oldBarOffset = state.collapsedOffset
+                    state.collapsedOffset += consumed.y
+                    return Offset(0f, state.collapsedOffset - oldBarOffset)
                 }
 
                 if (available.y > 0f) {
                     // Adjust the bar offset in case the consumed delta Y is less than what was
                     // recorded as available delta Y in the pre-scroll
-                    val oldBarOffset = state.barOffset
-                    state.barOffset += available.y
-                    return Offset(0f, state.barOffset - oldBarOffset)
+                    val oldBarOffset = state.collapsedOffset
+                    state.collapsedOffset += available.y
+                    return Offset(0f, state.collapsedOffset - oldBarOffset)
                 }
                 return Offset.Zero
             }
@@ -85,7 +83,7 @@ internal actual class DefaultTopScreenBarScrollBehavior actual constructor(
                 }
                 val superConsumed = super.onPostFling(consumed, available)
                 return superConsumed +
-                    settleAppBar(state, available.y, flingAnimationSpec, snapAnimationSpec)
+                    settleCollapsed(state, available.y, flingAnimationSpec, snapAnimationSpec)
             }
         }
 }
