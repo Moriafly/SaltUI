@@ -99,6 +99,8 @@ sealed class OS {
 
         fun isLinux(): Boolean = current is Linux
 
+        fun isDesktop(): Boolean = isMacOS() || isLinux() || isWindows()
+
         fun isIOS(): Boolean = current is IOS
 
         fun isUnknown(): Boolean = current is Unknown

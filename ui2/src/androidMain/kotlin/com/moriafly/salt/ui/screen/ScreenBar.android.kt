@@ -38,18 +38,18 @@ internal actual class DefaultTopScreenBarScrollBehavior actual constructor(
     actual override var nestedScrollConnection =
         object : NestedScrollConnection {
             override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
-                // Don't intercept if scrolling down
-                if (!canScroll() || available.y > 0f) return Offset.Zero
-
-                val prevHeightOffset = state.barOffset
-                state.barOffset += available.y
-                return if (prevHeightOffset != state.barOffset) {
-                    // We're in the middle of top app bar collapse or expand
-                    // Consume only the scroll on the Y axis
-                    available.copy(x = 0f)
-                } else {
-                    Offset.Zero
+                // Don't intercept if scrolling down.
+                if (!canScroll() || available.y > 0f) {
+                    return Offset.Zero
                 }
+
+                val previousOffset = state.barOffset
+                state.barOffset += available.y
+
+                val consumed = state.barOffset - previousOffset
+
+                // Return only the delta that was *actually* consumed by the state
+                return Offset(0f, consumed)
             }
 
             override fun onPostScroll(
@@ -61,24 +61,23 @@ internal actual class DefaultTopScreenBarScrollBehavior actual constructor(
                 state.contentOffset += consumed.y
 
                 if (available.y < 0f || consumed.y < 0f) {
-                    // When scrolling up, just update the state's height offset
-                    val oldHeightOffset = state.barOffset
+                    // When scrolling up, just update the state's bar offset
+                    val oldBarOffset = state.barOffset
                     state.barOffset += consumed.y
-                    return Offset(0f, state.barOffset - oldHeightOffset)
+                    return Offset(0f, state.barOffset - oldBarOffset)
                 }
 
                 if (available.y > 0f) {
-                    // Adjust the height offset in case the consumed delta Y is less than what was
+                    // Adjust the bar offset in case the consumed delta Y is less than what was
                     // recorded as available delta Y in the pre-scroll
-                    val oldHeightOffset = state.barOffset
+                    val oldBarOffset = state.barOffset
                     state.barOffset += available.y
-                    return Offset(0f, state.barOffset - oldHeightOffset)
+                    return Offset(0f, state.barOffset - oldBarOffset)
                 }
                 return Offset.Zero
             }
 
             override suspend fun onPostFling(consumed: Velocity, available: Velocity): Velocity {
-                println("available.y: ${available.y}")
                 if (available.y > 0) {
                     // Reset the total content offset to zero when scrolling all the way down. This
                     // will eliminate some float precision inaccuracies

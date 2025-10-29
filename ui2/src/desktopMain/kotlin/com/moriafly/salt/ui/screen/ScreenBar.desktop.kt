@@ -38,8 +38,12 @@ internal actual class DefaultTopScreenBarScrollBehavior actual constructor(
     actual override var nestedScrollConnection =
         object : NestedScrollConnection {
             override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
+                if (!canScroll()) {
+                    return Offset.Zero
+                }
+
                 state.contentOffset += available.y
-                state.barOffset = state.contentOffset
+                state.barOffset += available.y * 2f
 
                 return Offset.Zero
             }

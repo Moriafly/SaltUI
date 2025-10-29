@@ -52,6 +52,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
+import com.moriafly.salt.core.os.OS
 import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.moriafly.salt.ui.screen.TopScreenBarState.Companion.Saver
 import kotlin.math.abs
@@ -82,8 +83,13 @@ internal fun TopScreenBar(
 @UnstableSaltUiApi
 private fun Modifier.adjustHeightOffsetLimit(scrollBehavior: TopScreenBarScrollBehavior) =
     onSizeChanged { size ->
-        val offset = size.height.toFloat()
-        scrollBehavior.state.barOffsetLimit = -offset
+        // TODO There is an issue with event distribution in nested scrolling on the desktop, which
+        //      prevents pre-consumption of the scroll. Therefore, the barOffsetLimit is not
+        //      restricted here
+        if (!OS.isDesktop()) {
+            val offset = size.height.toFloat()
+            scrollBehavior.state.barOffsetLimit = -offset
+        }
     }
 
 @UnstableSaltUiApi

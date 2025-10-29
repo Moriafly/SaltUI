@@ -28,9 +28,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.SubcomposeLayout
-import androidx.compose.ui.layout.SubcomposeMeasureScope
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.unit.coerceAtLeast
 import androidx.compose.ui.unit.dp
 import com.moriafly.salt.ui.UnstableSaltUiApi
 
@@ -111,10 +111,8 @@ private fun BasicScreenLayout(
 
         contentPadding.paddingHolder =
             PaddingValues(
-                top = calcBasicScreenLayoutContentPaddingTop(
-                    topBarHeight = topBarPlaceable.height,
-                    scrollBehavior = scrollBehavior
-                )
+                top = (topBarPlaceable.height.toDp() + scrollBehavior.state.barOffset.toDp())
+                    .coerceAtLeast(0.dp)
             )
 
         val bodyContentPlaceable =
@@ -129,12 +127,6 @@ private fun BasicScreenLayout(
         }
     }
 }
-
-@UnstableSaltUiApi
-internal expect fun SubcomposeMeasureScope.calcBasicScreenLayoutContentPaddingTop(
-    topBarHeight: Int,
-    scrollBehavior: TopScreenBarScrollBehavior
-): Dp
 
 @UnstableSaltUiApi
 private enum class BasicScreenContent {
