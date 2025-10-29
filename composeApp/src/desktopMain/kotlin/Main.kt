@@ -27,18 +27,20 @@ fun main() = application {
             captionButtonIsDarkTheme = isDarkTheme
         )
     ) {
-        MainActivityContent(
-            isDarkTheme = isDarkTheme
-        )
+//        MainActivityContent(
+//            isDarkTheme = isDarkTheme
+//        )
 
         CaptionBarHitTest()
 
-        Button(
-            onClick = {
-                captionButtonsVisible = !captionButtonsVisible
-            },
-            text = "Change Caption Buttons Visible"
-        )
+//        Button(
+//            onClick = {
+//                captionButtonsVisible = !captionButtonsVisible
+//            },
+//            text = "Change Caption Buttons Visible"
+//        )
+
+        BasicScreenSample()
 
 //        SaltDialogWindow(
 //            onCloseRequest = {
