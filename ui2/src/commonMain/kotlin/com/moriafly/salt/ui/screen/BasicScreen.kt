@@ -28,6 +28,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.SubcomposeLayout
+import androidx.compose.ui.layout.SubcomposeMeasureScope
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
@@ -42,7 +43,7 @@ fun BasicScreen(
     collapsedHeight: Dp = TopScreenBarDefaults.CollapsedHeight,
     content: @Composable (PaddingValues) -> Unit
 ) {
-    val scrollBehavior = TopScreenBarDefaults.exitUntilCollapsedScrollBehavior()
+    val scrollBehavior = rememberDefaultTopScreenBarScrollBehavior()
 
     Column(
         modifier = modifier
@@ -60,6 +61,7 @@ fun BasicScreen(
                     content = topBar
                 )
             },
+            scrollBehavior = scrollBehavior,
             content = content
         )
     }
@@ -69,6 +71,7 @@ fun BasicScreen(
 @Composable
 private fun BasicScreenLayout(
     topBar: @Composable () -> Unit,
+    scrollBehavior: TopScreenBarScrollBehavior,
     content: @Composable (PaddingValues) -> Unit
 ) {
     // Create the backing value for the content padding
@@ -108,7 +111,10 @@ private fun BasicScreenLayout(
 
         contentPadding.paddingHolder =
             PaddingValues(
-                top = topBarPlaceable.height.toDp()
+                top = calcBasicScreenLayoutContentPaddingTop(
+                    topBarHeight = topBarPlaceable.height,
+                    scrollBehavior = scrollBehavior
+                )
             )
 
         val bodyContentPlaceable =
@@ -123,6 +129,12 @@ private fun BasicScreenLayout(
         }
     }
 }
+
+@UnstableSaltUiApi
+internal expect fun SubcomposeMeasureScope.calcBasicScreenLayoutContentPaddingTop(
+    topBarHeight: Int,
+    scrollBehavior: TopScreenBarScrollBehavior
+): Dp
 
 @UnstableSaltUiApi
 private enum class BasicScreenContent {
