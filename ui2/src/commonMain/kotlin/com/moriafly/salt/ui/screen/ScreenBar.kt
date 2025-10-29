@@ -20,6 +20,7 @@ package com.moriafly.salt.ui.screen
 import androidx.compose.animation.core.AnimationSpec
 import androidx.compose.animation.core.AnimationState
 import androidx.compose.animation.core.DecayAnimationSpec
+import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateDecay
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
@@ -266,7 +267,7 @@ internal fun rememberDefaultTopScreenBarScrollBehavior(
     state: TopScreenBarState = rememberTopScreenBarState(),
     canScroll: () -> Boolean = { true },
     // TODO Load the motionScheme tokens from the component tokens file
-    snapAnimationSpec: AnimationSpec<Float>? = tween(),
+    snapAnimationSpec: AnimationSpec<Float>? = tween(easing = LinearEasing),
     flingAnimationSpec: DecayAnimationSpec<Float>? = rememberSplineBasedDecay()
 ): TopScreenBarScrollBehavior =
     remember(
