@@ -39,19 +39,21 @@ import androidx.compose.ui.unit.sp
  * Build content interface title text, out of [RoundedColumn].
  */
 @Composable
-fun ItemOuterTitle(text: String) {
+fun ItemOuterTitle(
+    text: String,
+    modifier: Modifier = Modifier
+) {
     Text(
         text = text,
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .semantics(true) { }
             .padding(
                 start = SaltTheme.dimens.padding * 2,
                 top = SaltTheme.dimens.padding * 0.5f + SaltTheme.dimens.subPadding,
                 end = SaltTheme.dimens.padding * 2,
-                bottom = (SaltTheme.dimens.subPadding - SaltTheme.dimens.padding * 0.5f).coerceAtLeast(
-                    0.dp
-                )
+                bottom = (SaltTheme.dimens.subPadding - SaltTheme.dimens.padding * 0.5f)
+                    .coerceAtLeast(0.dp)
             ),
         color = SaltTheme.colors.subText,
         style = SaltTheme.textStyles.sub
@@ -72,6 +74,9 @@ fun ItemOuterTip(text: String) {
 /**
  * Can replace [ItemTitle].
  */
+@Deprecated(
+    "Use new ItemOuterLargeTitle function",
+)
 @UnstableSaltUiApi
 @Composable
 fun ItemOuterLargeTitle(
@@ -101,6 +106,26 @@ fun ItemOuterLargeTitle(
             style = SaltTheme.textStyles.paragraph
         )
     }
+}
+
+/**
+ * Large title text with outer padding.
+ *
+ * @param text The text to display.
+ * @param modifier The modifier to apply.
+ */
+@UnstableSaltUiApi
+@Composable
+fun ItemOuterLargeTitle(
+    text: String,
+    modifier: Modifier = Modifier
+) {
+    Text(
+        text = text,
+        modifier = modifier
+            .outerPadding(),
+        style = SaltTheme.textStyles.largeTitle
+    )
 }
 
 /**

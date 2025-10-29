@@ -28,27 +28,32 @@ import androidx.compose.ui.unit.sp
 class SaltTextStyles(
     val main: TextStyle,
     val sub: TextStyle,
-    val paragraph: TextStyle
+    val paragraph: TextStyle,
+    val largeTitle: TextStyle
 ) {
     fun copy(
         main: TextStyle = this.main,
         sub: TextStyle = this.sub,
-        paragraph: TextStyle = this.paragraph
+        paragraph: TextStyle = this.paragraph,
+        largeTitle: TextStyle = this.largeTitle
     ): SaltTextStyles = SaltTextStyles(
         main = main,
         sub = sub,
-        paragraph = paragraph
+        paragraph = paragraph,
+        largeTitle = largeTitle
     )
 }
 
 fun saltTextStyles(
     main: TextStyle = DefaultTextStyle,
     sub: TextStyle = SubTextStyle,
-    paragraph: TextStyle = ParagraphTextStyle
+    paragraph: TextStyle = ParagraphTextStyle,
+    largeTitle: TextStyle = LargeTitleTextStyle
 ): SaltTextStyles = SaltTextStyles(
     main = main,
     sub = sub,
-    paragraph = paragraph
+    paragraph = paragraph,
+    largeTitle = largeTitle
 )
 
 internal expect val DefaultTextStyle: TextStyle
@@ -62,4 +67,9 @@ private val ParagraphTextStyle: TextStyle
     get() = TextStyle(
         fontSize = 16.sp,
         lineHeight = 1.5f.em
+    )
+
+private val LargeTitleTextStyle: TextStyle
+    get() = TextStyle(
+        fontSize = 32.sp
     )
