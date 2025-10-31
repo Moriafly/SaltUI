@@ -21,6 +21,7 @@ package com.moriafly.salt.ui
 
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.em
 import androidx.compose.ui.unit.sp
 
@@ -71,5 +72,6 @@ private val ParagraphTextStyle: TextStyle
 
 private val LargeTitleTextStyle: TextStyle
     get() = TextStyle(
-        fontSize = 32.sp
+        fontSize = 24.sp,
+        fontWeight = FontWeight.SemiBold
     )

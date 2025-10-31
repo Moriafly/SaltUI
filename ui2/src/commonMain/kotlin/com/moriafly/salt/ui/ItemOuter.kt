@@ -29,11 +29,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 
 /**
  * Build content interface title text, out of [RoundedColumn].
@@ -61,7 +59,10 @@ fun ItemOuterTitle(
 }
 
 @Composable
-fun ItemOuterTip(text: String) {
+fun ItemOuterTip(
+    text: String,
+    modifier: Modifier = Modifier
+) {
     Text(
         text = text,
         modifier = Modifier
@@ -74,17 +75,15 @@ fun ItemOuterTip(text: String) {
 /**
  * Can replace [ItemTitle].
  */
-@Deprecated(
-    "Use new ItemOuterLargeTitle function",
-)
 @UnstableSaltUiApi
 @Composable
 fun ItemOuterLargeTitle(
     text: String,
-    sub: String
+    sub: String,
+    modifier: Modifier = Modifier
 ) {
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxWidth()
             .padding(
                 horizontal = SaltTheme.dimens.padding * 2,
@@ -95,9 +94,8 @@ fun ItemOuterLargeTitle(
     ) {
         Text(
             text = text,
-            fontSize = 24.sp,
-            fontWeight = FontWeight.Bold,
-            textAlign = TextAlign.Center
+            textAlign = TextAlign.Center,
+            style = SaltTheme.textStyles.largeTitle
         )
         Spacer(modifier = Modifier.height(SaltTheme.dimens.padding * 1.5f))
         Text(
@@ -106,26 +104,6 @@ fun ItemOuterLargeTitle(
             style = SaltTheme.textStyles.paragraph
         )
     }
-}
-
-/**
- * Large title text with outer padding.
- *
- * @param text The text to display.
- * @param modifier The modifier to apply.
- */
-@UnstableSaltUiApi
-@Composable
-fun ItemOuterLargeTitle(
-    text: String,
-    modifier: Modifier = Modifier
-) {
-    Text(
-        text = text,
-        modifier = modifier
-            .outerPadding(),
-        style = SaltTheme.textStyles.largeTitle
-    )
 }
 
 /**
@@ -175,6 +153,7 @@ fun ItemOuterEdit(
 /**
  * For Item Outer.
  */
+@Suppress("ktlint:compose:modifier-missing-check")
 @Composable
 fun ItemOuterTextButton(
     onClick: () -> Unit,
@@ -198,6 +177,7 @@ fun ItemOuterTextButton(
 /**
  * Build vertical spacing [SaltDimens.padding] for the Item Outer.
  */
+@Suppress("ktlint:compose:modifier-missing-check")
 @Composable
 fun ItemOuterSpacer() {
     Spacer(
@@ -209,6 +189,7 @@ fun ItemOuterSpacer() {
 /**
  * Build half vertical spacing for the Item Outer.
  */
+@Suppress("ktlint:compose:modifier-missing-check")
 @Composable
 fun ItemOuterHalfSpacer() {
     Spacer(
