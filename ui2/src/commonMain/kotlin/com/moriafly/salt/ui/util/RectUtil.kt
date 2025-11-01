@@ -20,4 +20,4 @@ package com.moriafly.salt.ui.util
 import androidx.compose.ui.geometry.Rect
 
 fun Rect.contains(x: Float, y: Float): Boolean =
-    x >= left && x < right && y >= top && y < bottom
+    x in left..right && y in top..bottom
