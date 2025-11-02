@@ -22,7 +22,7 @@ fun main() = application {
 //        decoration = WindowDecoration.Undecorated(),
 //        transparent = true,
         resizable = true,
-        properties = SaltWindowProperties(
+        properties = SaltWindowProperties.default(
             captionButtonsVisible = captionButtonsVisible,
             captionButtonIsDarkTheme = isDarkTheme
         )

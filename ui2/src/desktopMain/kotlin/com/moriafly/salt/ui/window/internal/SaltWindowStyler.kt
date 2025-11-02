@@ -18,6 +18,7 @@
 package com.moriafly.salt.ui.window.internal
 
 import androidx.compose.foundation.layout.WindowInsets
+import com.moriafly.salt.core.os.OS
 import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.moriafly.salt.ui.platform.windows.ComposeWindowProc
 import com.moriafly.salt.ui.platform.windows.Dwmapi
@@ -27,7 +28,9 @@ import com.moriafly.salt.ui.platform.windows.structure.WindowMargins
 import com.moriafly.salt.ui.platform.windows.updateWindowStyle
 import com.moriafly.salt.ui.util.hwnd
 import com.moriafly.salt.ui.util.isUndecorated
+import com.moriafly.salt.ui.window.SaltWindowBackgroundType
 import com.sun.jna.platform.win32.WinUser.WS_SYSMENU
+import com.sun.jna.ptr.IntByReference
 import java.awt.Window
 
 @UnstableSaltUiApi
@@ -65,29 +68,70 @@ internal class SaltWindowStyler(
         }
     )
 
+    init {
+        val isDecorated = !window.isUndecorated
+
+        if (isDecorated) {
+            User32Ex.INSTANCE.updateWindowStyle(hwnd) { oldStyle ->
+                // Remove the system menu and the minimize/maximize/close buttons
+                oldStyle and WS_SYSMENU.inv()
+            }
+        }
+
+        val os = OS.current
+        if (os is OS.Windows) {
+            if (os.windowsBuild >= OS.Windows.WINDOWS_11_21H2) {
+                // Set the CaptionBar color to transparent
+                // Since 0xFFFFFFFF represents DWMWA_COLOR_DEFAULT and uses the default theme color,
+                // 0xFFFFFFFE is used here
+                Dwmapi.INSTANCE.DwmSetWindowAttribute(
+                    hwnd = hwnd,
+                    attribute = DWMWA_CAPTION_COLOR,
+                    value = IntByReference((0xFFFFFFFE).toInt()),
+                    valueSize = 4
+                )
+            }
+        }
+    }
+
     fun updateIsResizable(value: Boolean) {
         composeWindowProc.isResizable = value
+    }
+
+    fun updateBackground(type: SaltWindowBackgroundType, isDarkTheme: Boolean) {
+        val os = OS.current
+        if (os is OS.Windows && os.windowsBuild >= OS.Windows.WINDOWS_11_22H2) {
+            // Set the light/dark mode first before setting the background to avoid a flicker
+            Dwmapi.INSTANCE.DwmSetWindowAttribute(
+                hwnd = hwnd,
+                attribute = DWMWA_USE_IMMERSIVE_DARK_MODE,
+                value = IntByReference(
+                    if (isDarkTheme) 1 else 0
+                ),
+                valueSize = 4
+            )
+            Dwmapi.INSTANCE.DwmSetWindowAttribute(
+                hwnd = hwnd,
+                attribute = DWMWA_SYSTEMBACKDROP_TYPE,
+                value = IntByReference(
+                    when (type) {
+                        SaltWindowBackgroundType.None -> 1
+                        SaltWindowBackgroundType.Mica -> 2
+                        SaltWindowBackgroundType.Acrylic -> 3
+                        SaltWindowBackgroundType.MicaAlt -> 4
+                    }
+                ),
+                valueSize = 4
+            )
+        }
     }
 
     /**
      * To disable window border and shadow, pass (0, 0, 0, 0) as window margins
      * (or, simply, don't call this function).
      */
-    @Suppress("SpellCheckingInspection")
     fun enableBorderAndShadow() {
         Dwmapi.INSTANCE.DwmExtendFrameIntoClientArea(hwnd, WindowMargins.ByReference())
-//        if (OS.ifWindows { it.isAtLeastWindows11() }) {
-//            dwmApi?.getFunction("DwmSetWindowAttribute")?.apply {
-//                invoke(
-//                    WinNT.HRESULT::class.java,
-//                    arrayOf(originalHwnd, 35, IntByReference((0xFFFFFFFE).toInt()), 4)
-//                )
-//                invoke(
-//                    WinNT.HRESULT::class.java,
-//                    arrayOf(hwnd, 38, IntByReference(2), 4)
-//                )
-//            }
-//        }
     }
 
     fun disableBorderAndShadow() {
@@ -101,14 +145,9 @@ internal class SaltWindowStyler(
         Dwmapi.INSTANCE.DwmExtendFrameIntoClientArea(hwnd, pMarInset)
     }
 
-    init {
-        val isDecorated = !window.isUndecorated
-
-        if (isDecorated) {
-            User32Ex.INSTANCE.updateWindowStyle(hwnd) { oldStyle ->
-                // Remove the system menu and the minimize/maximize/close buttons
-                oldStyle and WS_SYSMENU.inv()
-            }
-        }
+    companion object {
+        private const val DWMWA_USE_IMMERSIVE_DARK_MODE = 20
+        private const val DWMWA_CAPTION_COLOR = 35
+        private const val DWMWA_SYSTEMBACKDROP_TYPE = 38
     }
 }

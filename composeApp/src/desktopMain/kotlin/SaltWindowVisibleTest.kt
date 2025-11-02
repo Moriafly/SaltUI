@@ -29,9 +29,9 @@ fun main() {
         SaltWindow(
             onCloseRequest = ::exitApplication,
             visible = visible,
-            properties = SaltWindowProperties(
+            properties = SaltWindowProperties.default(
                 minSize = DpSize(200.dp, 200.dp),
-                onVisibleChanged = { window, isVisible ->
+                onVisibleChange = { window, isVisible ->
                     println("isVisible: $isVisible")
                 }
             )

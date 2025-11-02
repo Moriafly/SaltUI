@@ -109,7 +109,7 @@ fun SaltDialogWindow(
     focusable: Boolean = true,
     alwaysOnTop: Boolean = false,
     modalityType: DialogModalityType = DialogModalityType.DocumentModal,
-    properties: SaltWindowProperties<ComposeDialog> = SaltWindowProperties(),
+    properties: SaltWindowProperties<ComposeDialog> = SaltWindowProperties.default(),
     onPreviewKeyEvent: ((KeyEvent) -> Boolean) = { false },
     onKeyEvent: ((KeyEvent) -> Boolean) = { false },
     init: (ComposeDialog) -> Unit = {},
@@ -148,6 +148,7 @@ fun SaltDialogWindow(
                 LocalSaltWindowProperties provides properties as SaltWindowProperties<Window>,
                 LocalIsHitTestInCaptionBarState provides isHitTestInCaptionBar,
                 LocalSaltWindowInfo provides SaltWindowInfo(
+                    captionBarHeight = properties.captionBarHeight,
                     captionButtonsAlign = CaptionButtonsAlign.End,
                     captionButtonsFullWidth = CaptionButtonWidth
                 ),
@@ -189,6 +190,13 @@ fun SaltDialogWindow(
                     LaunchedEffect(resizable) {
                         saltWindowStyler.updateIsResizable(resizable)
                     }
+
+                    LaunchedEffect(properties.backgroundType, properties.backgroundIsDarkTheme) {
+                        saltWindowStyler.updateBackground(
+                            type = properties.backgroundType,
+                            isDarkTheme = properties.backgroundIsDarkTheme
+                        )
+                    }
                 }
 
                 val minSize = properties.minSize
@@ -226,11 +234,11 @@ fun SaltDialogWindow(
                         }
 
                         override fun componentShown(e: ComponentEvent?) {
-                            currentProperties.onVisibleChanged(window, true)
+                            currentProperties.onVisibleChange(window, true)
                         }
 
                         override fun componentHidden(e: ComponentEvent?) {
-                            currentProperties.onVisibleChanged(window, false)
+                            currentProperties.onVisibleChange(window, false)
                         }
                     }
 

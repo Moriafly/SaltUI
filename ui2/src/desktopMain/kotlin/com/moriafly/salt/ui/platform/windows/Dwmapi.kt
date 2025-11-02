@@ -15,14 +15,22 @@
  * limitations under the License.
  */
 
-@file:Suppress("unused", "ktlint:standard:function-naming", "FunctionName")
+@file:Suppress(
+    "unused",
+    "ktlint:standard:function-naming",
+    "FunctionName",
+    "SpellCheckingInspection"
+)
 
 package com.moriafly.salt.ui.platform.windows
 
 import com.moriafly.salt.ui.platform.windows.structure.WindowMargins
 import com.sun.jna.Native
+import com.sun.jna.PointerType
 import com.sun.jna.platform.win32.WinDef
+import com.sun.jna.platform.win32.WinDef.HWND
 import com.sun.jna.platform.win32.WinNT
+import com.sun.jna.platform.win32.WinNT.HRESULT
 import com.sun.jna.win32.StdCallLibrary
 import com.sun.jna.win32.W32APIOptions
 
@@ -34,6 +42,13 @@ internal interface Dwmapi : StdCallLibrary {
         hWnd: WinDef.HWND,
         pMarInset: WindowMargins.ByReference
     ): WinNT.HRESULT
+
+    fun DwmSetWindowAttribute(
+        hwnd: HWND,
+        attribute: Int,
+        value: PointerType?,
+        valueSize: Int
+    ): HRESULT
 
     companion object {
         val INSTANCE: Dwmapi = Native.load(

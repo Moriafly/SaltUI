@@ -33,7 +33,8 @@ fun BasicScreenSample() {
             },
             expandedTopBar = {
                 ItemOuterLargeTitle(
-                    text = "关于"
+                    text = "关于",
+                    sub = "Moriafly"
                 )
             },
             content = { innerPadding ->

@@ -15,28 +15,14 @@
  * limitations under the License.
  */
 
-@file:Suppress("unused")
-
 package com.moriafly.salt.ui.window
 
-import androidx.compose.runtime.staticCompositionLocalOf
-import androidx.compose.ui.unit.Dp
 import com.moriafly.salt.ui.UnstableSaltUiApi
 
 @UnstableSaltUiApi
-data class SaltWindowInfo(
-    val captionBarHeight: Dp,
-    val captionButtonsAlign: CaptionButtonsAlign,
-    val captionButtonsFullWidth: Dp
-)
-
-@UnstableSaltUiApi
-val LocalSaltWindowInfo = staticCompositionLocalOf<SaltWindowInfo> {
-    error("LocalSaltWindowInfo is not provided")
-}
-
-@UnstableSaltUiApi
-enum class CaptionButtonsAlign {
-    Start,
-    End
+enum class SaltWindowBackgroundType {
+    None,
+    Mica,
+    Acrylic,
+    MicaAlt
 }

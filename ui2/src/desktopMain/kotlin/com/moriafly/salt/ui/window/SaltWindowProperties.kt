@@ -17,10 +17,12 @@
 
 package com.moriafly.salt.ui.window
 
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
+import com.moriafly.salt.ui.SaltTheme
 import com.moriafly.salt.ui.UnstableSaltUiApi
 import java.awt.Window
 
@@ -28,7 +30,7 @@ import java.awt.Window
  * # Properties for SaltWindow
  *
  * @property minSize The minimum size of the window.
- * @property onVisibleChanged The callback to be invoked when the visibility of the window changes.
+ * @property onVisibleChange The callback to be invoked when the visibility of the window changes.
  * To replace obtaining the window isVisible state in Composable.
  *
  * Do **not** use this:
@@ -63,20 +65,51 @@ import java.awt.Window
  * Maximize, and Close). Similar to how apps like Windows 11,
  * [captionButtonHeight] <= [captionBarHeight].
  * @property captionButtonIsDarkTheme Whether the caption button is dark theme.
+ * @property backgroundType The background type.
+ * @property backgroundIsDarkTheme Whether the window background is dark theme.
  * @property extraDisplayScale The extra display scale.
  * @property extraFontScale The extra font scale.
  */
 @UnstableSaltUiApi
 data class SaltWindowProperties<T : Window>(
-    val minSize: DpSize = DpSize.Zero,
-    val onVisibleChanged: (T, Boolean) -> Unit = { _, _ -> },
-    val captionBarHeight: Dp = 40.dp,
-    val captionButtonsVisible: Boolean = true,
-    val captionButtonHeight: Dp = captionBarHeight,
-    val captionButtonIsDarkTheme: Boolean = false,
-    val extraDisplayScale: Float = 1.0f,
-    val extraFontScale: Float = 1.0f
-)
+    val minSize: DpSize,
+    val onVisibleChange: (T, Boolean) -> Unit,
+    val captionBarHeight: Dp,
+    val captionButtonsVisible: Boolean,
+    val captionButtonHeight: Dp,
+    val captionButtonIsDarkTheme: Boolean,
+    val backgroundType: SaltWindowBackgroundType,
+    val backgroundIsDarkTheme: Boolean,
+    val extraDisplayScale: Float,
+    val extraFontScale: Float
+) {
+    companion object {
+        @Composable
+        fun <T : Window> default(
+            minSize: DpSize = DpSize.Zero,
+            onVisibleChange: (T, Boolean) -> Unit = { _, _ -> },
+            captionBarHeight: Dp = 40.dp,
+            captionButtonsVisible: Boolean = true,
+            captionButtonHeight: Dp = captionBarHeight,
+            captionButtonIsDarkTheme: Boolean = SaltTheme.configs.isDarkTheme,
+            backgroundType: SaltWindowBackgroundType = SaltWindowBackgroundType.None,
+            backgroundIsDarkTheme: Boolean = SaltTheme.configs.isDarkTheme,
+            extraDisplayScale: Float = 1.0f,
+            extraFontScale: Float = 1.0f
+        ): SaltWindowProperties<T> = SaltWindowProperties(
+            minSize = minSize,
+            onVisibleChange = onVisibleChange,
+            captionBarHeight = captionBarHeight,
+            captionButtonsVisible = captionButtonsVisible,
+            captionButtonHeight = captionButtonHeight,
+            captionButtonIsDarkTheme = captionButtonIsDarkTheme,
+            backgroundType = backgroundType,
+            backgroundIsDarkTheme = backgroundIsDarkTheme,
+            extraDisplayScale = extraDisplayScale,
+            extraFontScale = extraFontScale
+        )
+    }
+}
 
 @UnstableSaltUiApi
 internal val LocalSaltWindowProperties = staticCompositionLocalOf<SaltWindowProperties<Window>> {

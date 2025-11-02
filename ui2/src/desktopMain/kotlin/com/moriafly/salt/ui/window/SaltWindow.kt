@@ -100,7 +100,7 @@ fun SaltWindow(
     enabled: Boolean = true,
     focusable: Boolean = true,
     alwaysOnTop: Boolean = false,
-    properties: SaltWindowProperties<ComposeWindow> = SaltWindowProperties(),
+    properties: SaltWindowProperties<ComposeWindow> = SaltWindowProperties.default(),
     onPreviewKeyEvent: (KeyEvent) -> Boolean = { false },
     onKeyEvent: (KeyEvent) -> Boolean = { false },
     init: (ComposeWindow) -> Unit = {},
@@ -139,6 +139,7 @@ fun SaltWindow(
                 LocalSaltWindowProperties provides properties as SaltWindowProperties<Window>,
                 LocalIsHitTestInCaptionBarState provides isHitTestInCaptionBar,
                 LocalSaltWindowInfo provides SaltWindowInfo(
+                    captionBarHeight = properties.captionBarHeight,
                     captionButtonsAlign = CaptionButtonsAlign.End,
                     captionButtonsFullWidth = CaptionButtonWidth * 3f
                 ),
@@ -208,6 +209,13 @@ fun SaltWindow(
                             saltWindowStyler.enableBorderAndShadow()
                         }
                     }
+
+                    LaunchedEffect(properties.backgroundType, properties.backgroundIsDarkTheme) {
+                        saltWindowStyler.updateBackground(
+                            type = properties.backgroundType,
+                            isDarkTheme = properties.backgroundIsDarkTheme
+                        )
+                    }
                 }
 
                 val minSize = properties.minSize
@@ -245,11 +253,11 @@ fun SaltWindow(
                         }
 
                         override fun componentShown(e: ComponentEvent?) {
-                            currentProperties.onVisibleChanged(window, true)
+                            currentProperties.onVisibleChange(window, true)
                         }
 
                         override fun componentHidden(e: ComponentEvent?) {
-                            currentProperties.onVisibleChanged(window, false)
+                            currentProperties.onVisibleChange(window, false)
                         }
                     }
 
