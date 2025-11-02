@@ -62,11 +62,12 @@ import java.awt.Window
  * @property captionButtonsVisible Whether the caption buttons are visible.
  * @property captionButtonHeight The height of the caption button, default is captionBarHeight.
  * You can also customize the height of the CaptionButton (window control buttons such as Minimize,
- * Maximize, and Close). Similar to how apps like Windows 11,
- * [captionButtonHeight] <= [captionBarHeight].
+ * Maximize, and Close). Similar to how apps like Windows 11, [captionButtonHeight] <=
+ * [captionBarHeight].
  * @property captionButtonIsDarkTheme Whether the caption button is dark theme.
- * @property backgroundType The background type.
- * @property backgroundIsDarkTheme Whether the window background is dark theme.
+ * @property backgroundType The background type. Support Windows 11 Build 22621 or later.
+ * @property backgroundIsDarkTheme Whether the window background is dark theme. Support Windows 11
+ * Build 22621 or later.
  * @property extraDisplayScale The extra display scale.
  * @property extraFontScale The extra font scale.
  */
