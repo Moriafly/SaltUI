@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+@file:Suppress("unused")
+
 package com.moriafly.salt.ui.gestures.cupertino
 
 import androidx.compose.animation.core.AnimationState
@@ -141,10 +143,11 @@ internal class CupertinoOverscrollEffect(
         get() = overscrollOffsetState.value.rubberBanded().round()
 
     override val isInProgress: Boolean
-        get() =
-            // If visible overscroll offset has at least one pixel
-            // this effect is considered to be in progress
-            visibleOverscrollOffset.toOffset().getDistance() > 0.5f
+        // TODO Better way to check
+        get() = false
+//            // If visible overscroll offset has at least one pixel
+//            // this effect is considered to be in progress
+//            visibleOverscrollOffset.toOffset().getDistance() > 0.5f
 
     private val overscrollNode = CupertinoOverscrollNode(
         offset = { visibleOverscrollOffset },
