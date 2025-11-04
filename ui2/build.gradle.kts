@@ -115,6 +115,8 @@ kotlin {
         val iosX64Main by getting
         val iosArm64Main by getting
         val iosSimulatorArm64Main by getting
+
+        @Suppress("unused")
         val iosMain by creating {
             dependsOn(commonMain)
             iosX64Main.dependsOn(this)
