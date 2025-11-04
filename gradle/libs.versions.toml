@@ -12,6 +12,7 @@ jna = "5.18.1"
 vanniktech = "0.34.0"
 kotlinx-atomicfu = "0.29.0"
 haze = "1.6.10"
+collection = "1.5.0"
 
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
@@ -24,6 +25,7 @@ jna = { group = "net.java.dev.jna", name = "jna", version.ref = "jna" }
 jna-platform = { group = "net.java.dev.jna", name = "jna-platform", version.ref = "jna" }
 haze = { group = "dev.chrisbanes.haze", name = "haze", version.ref = "haze"}
 haze-materials = { group = "dev.chrisbanes.haze", name = "haze-materials", version.ref = "haze"}
+collection = { group = "androidx.collection", name = "collection", version.ref = "collection" }
 
 [plugins]
 kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }

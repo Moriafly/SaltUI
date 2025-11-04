@@ -102,6 +102,7 @@ kotlin {
             implementation(compose.preview)
             implementation(libs.haze)
             implementation(libs.haze.materials)
+            implementation(libs.collection)
         }
 
         val desktopMain by getting
