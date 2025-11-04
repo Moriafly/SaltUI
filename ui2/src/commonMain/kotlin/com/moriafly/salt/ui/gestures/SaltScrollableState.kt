@@ -72,15 +72,14 @@ private class DefaultSaltScrollableState(
         scrollMutex.mutateWith(scrollScope, scrollPriority) {
             // TODO Pre-fix https://issuetracker.google.com/issues/456779479
             if (scrollPriority == MutatePriority.UserInput) {
+                isScrollingState.value = true
+                try {
+                    block()
+                } finally {
+                    isScrollingState.value = false
+                }
+            } else {
                 block()
-                return@mutateWith
-            }
-
-            isScrollingState.value = true
-            try {
-                block()
-            } finally {
-                isScrollingState.value = false
             }
         }
     }
