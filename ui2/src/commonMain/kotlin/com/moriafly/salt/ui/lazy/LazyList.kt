@@ -420,4 +420,4 @@ private fun CacheWindowLogic.keepAroundItems(
     }
 }
 
-@Composable internal fun defaultLazyListBeyondBoundsItemCount(): Int = 0
+@Composable internal expect fun defaultLazyListBeyondBoundsItemCount(): Int
