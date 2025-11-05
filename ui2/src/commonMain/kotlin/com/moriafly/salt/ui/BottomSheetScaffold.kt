@@ -416,7 +416,9 @@ private fun BottomSheet(
             .anchoredDraggable(
                 state = state.anchoredDraggableState,
                 orientation = Orientation.Vertical,
-                enabled = sheetGesturesEnabled
+                enabled = sheetGesturesEnabled,
+                // TODO Find a better way to handle events, respond drags but ignoring click events
+                startDragImmediately = false
             )
             .semantics {
                 // If we don't have anchors yet, or have only one anchor we don't want any
