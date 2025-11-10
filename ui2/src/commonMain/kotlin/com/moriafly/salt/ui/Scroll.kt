@@ -453,10 +453,10 @@ internal class ScrollNode(
         // measured size.
 
         // TODO https://github.com/Moriafly/SaltUI/issues/25
-        //      Here, adding 1 to maxValue is to trigger the Overscroll effect even when the content
-        //      is not fully filled. This solution is not ideal because it affects the default
-        //      canScrollForward. A better approach would be to implement special handling for cases
-        //      where the content is not fully filled, which involves modifying the ScrollingLogic
+        //      Restricting maxValue to at least 1 enables overscroll when content is underfilled.
+        //      This is suboptimal as it interferes with the default canScrollForward logic.
+        //      A better fix would be special handling for underfilled cases by modifying
+        //      ScrollingLogic
         state.maxValue = side.coerceAtLeast(1)
         state.viewportSize = if (isVertical) height else width
         state.contentSize = if (isVertical) placeable.height else placeable.width
