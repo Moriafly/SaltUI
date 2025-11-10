@@ -1,4 +1,6 @@
 /*
+ * Salt UI
+ * Copyright (C) 2024 Moriafly
  * Copyright 2023 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -24,6 +26,8 @@ import androidx.compose.animation.core.animateTo
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.OverscrollEffect
 import androidx.compose.foundation.OverscrollFactory
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.overscroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
@@ -51,11 +55,11 @@ import androidx.compose.ui.node.DrawModifierNode
 import androidx.compose.ui.node.LayoutAwareModifierNode
 import androidx.compose.ui.node.LayoutModifierNode
 import androidx.compose.ui.node.PointerInputModifierNode
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.round
 import androidx.compose.ui.unit.toOffset
@@ -68,43 +72,88 @@ import kotlinx.coroutines.isActive
 import kotlin.math.abs
 import kotlin.math.sign
 
+/**
+ * A factory for creating [CupertinoOverscrollEffect] instances.
+ *
+ * @param applyClip Whether the effect should apply clipping. Some consumers (like LazyList)
+ * apply clipping independently.
+ * @param allowTopOverscroll Whether to allow overscroll at the top edge.
+ * @param allowBottomOverscroll Whether to allow overscroll at the bottom edge.
+ * @param allowStartOverscroll Whether to allow overscroll at the start edge (Left in LTR, Right in RTL).
+ * @param allowEndOverscroll Whether to allow overscroll at the end edge (Right in LTR, Left in RTL).
+ */
 @UnstableSaltUiApi
 data class CupertinoOverscrollEffectFactory(
-    private val density: Density,
-    private val applyClip: Boolean = false
+    private val applyClip: Boolean = false,
+    private val allowTopOverscroll: Boolean = true,
+    private val allowBottomOverscroll: Boolean = true,
+    private val allowStartOverscroll: Boolean = true,
+    private val allowEndOverscroll: Boolean = true
 ) : OverscrollFactory {
     override fun createOverscrollEffect(): OverscrollEffect =
         CupertinoOverscrollEffect(
-            density = density.density,
-            applyClip = applyClip
+            applyClip = applyClip,
+            allowTopOverscroll = allowTopOverscroll,
+            allowBottomOverscroll = allowBottomOverscroll,
+            allowStartOverscroll = allowStartOverscroll,
+            allowEndOverscroll = allowEndOverscroll
         )
 }
 
+/**
+ * Creates and remembers a [CupertinoOverscrollEffect].
+ *
+ * @param applyClip Whether the effect should apply clipping. Some consumers (like LazyList)
+ * apply clipping independently.
+ * @param allowTopOverscroll Whether to allow overscroll at the top edge.
+ * @param allowBottomOverscroll Whether to allow overscroll at the bottom edge.
+ * @param allowStartOverscroll Whether to allow overscroll at the start edge (Left in LTR, Right in RTL).
+ * @param allowEndOverscroll Whether to allow overscroll at the end edge (Right in LTR, Left in RTL).
+ */
 @UnstableSaltUiApi
 @Composable
 fun rememberCupertinoOverscrollEffect(
-    applyClip: Boolean = false
-): OverscrollEffect {
-    val density = LocalDensity.current.density
-    return remember(density) {
-        CupertinoOverscrollEffect(density, applyClip)
+    applyClip: Boolean = false,
+    allowTopOverscroll: Boolean = true,
+    allowBottomOverscroll: Boolean = true,
+    allowStartOverscroll: Boolean = true,
+    allowEndOverscroll: Boolean = true
+): OverscrollEffect =
+    remember(
+        applyClip,
+        allowTopOverscroll,
+        allowBottomOverscroll,
+        allowStartOverscroll,
+        allowEndOverscroll
+    ) {
+        CupertinoOverscrollEffect(
+            applyClip,
+            allowTopOverscroll = allowTopOverscroll,
+            allowBottomOverscroll = allowBottomOverscroll,
+            allowStartOverscroll = allowStartOverscroll,
+            allowEndOverscroll = allowEndOverscroll
+        )
     }
-}
 
 /**
  * # CupertinoOverscrollEffect
  *
- * @param density to be taken into consideration during computations;
- * Cupertino formulas use DPs, and scroll machinery uses raw values.
  * @param applyClip Some consumers of overscroll effect apply clip by themselves and some don't,
  * thus this flag is needed to update our modifier chain and make the clipping correct in every case
  * while avoiding redundancy.
+ * @param allowTopOverscroll Whether to allow overscroll at the top edge.
+ * @param allowBottomOverscroll Whether to allow overscroll at the bottom edge.
+ * @param allowStartOverscroll Whether to allow overscroll at the start edge (Left in LTR, Right in RTL).
+ * @param allowEndOverscroll Whether to allow overscroll at the end edge (Right in LTR, Left in RTL).
  */
 internal class CupertinoOverscrollEffect(
-    private val density: Float,
-    val applyClip: Boolean
+    val applyClip: Boolean,
+    private val allowTopOverscroll: Boolean,
+    private val allowBottomOverscroll: Boolean,
+    private val allowStartOverscroll: Boolean,
+    private val allowEndOverscroll: Boolean
 ) : OverscrollEffect {
-    /*
+    /**
      * Direction of scrolling for this overscroll effect, derived from arguments during
      * [applyToScroll] calls. Technically this effect supports both dimensions, but current API requires
      * that different stages of animations spawned by this effect for both dimensions
@@ -116,12 +165,30 @@ internal class CupertinoOverscrollEffect(
      */
     private var direction: CupertinoOverscrollDirection = CupertinoOverscrollDirection.UNKNOWN
 
-    /*
+    /**
      * Size of container is taking into consideration when computing rubber banding
      */
     private var scrollSize: Size = Size.Zero
 
-    /*
+    /**
+     * The screen density.
+     *
+     * This value is updated by the [CupertinoOverscrollNode] during the measure pass.
+     * It defaults to 1.0f (a safe, non-zero value) to prevent divide-by-zero exceptions
+     * if [applyToFling] or other calculations are triggered programmatically
+     * before the first measure pass.
+     */
+    private var density: Float = 1.0f
+
+    /**
+     * The layout direction.
+     *
+     * This value is updated by the [CupertinoOverscrollNode] during the measure pass.
+     * It defaults to Ltr and is used to map Start/End semantics to internal Positive/Negative logic.
+     */
+    private var layoutDirection: LayoutDirection = LayoutDirection.Ltr
+
+    /**
      * Current offset in overscroll area
      * Negative for bottom-right
      * Positive for top-left
@@ -153,13 +220,15 @@ internal class CupertinoOverscrollEffect(
         offset = { visibleOverscrollOffset },
         onNodeRemeasured = { scrollSize = it.toSize() },
         onDraw = ::onDraw,
-        applyClip = applyClip
+        applyClip = applyClip,
+        onDensityChange = { density = it },
+        onLayoutDirectionChange = { layoutDirection = it }
     )
     override val node: DelegatableNode get() = overscrollNode
 
     private fun onDraw() {
-        // Fix an issue where scrolling was cancelled but the overscroll effect was not completed.
-        // Reset the overscroll effect when no ongoing animation or interaction is applied.
+        // Fix an issue where scrolling was cancelled but the overscroll effect was not completed
+        // Reset the overscroll effect when no ongoing animation or interaction is applied
         if (!drawCallScheduledByOffsetChange && isInProgress && overscrollNode.pointersDown == 0) {
             overscrollOffsetState.value = Offset.Zero
         }
@@ -174,7 +243,7 @@ internal class CupertinoOverscrollEffect(
             else -> null
         }
 
-    /*
+    /**
      * Takes input scroll delta, current overscroll value, and scroll source, return [CupertinoOverscrollAvailableDelta]
      */
     @Stable
@@ -193,23 +262,26 @@ internal class CupertinoOverscrollEffect(
         val newOverscroll = overscroll + delta
 
         return if (delta >= 0f && overscroll <= 0f) {
+            // Dragging Down/Right (delta > 0) [Positive]
             if (newOverscroll > 0f) {
                 CupertinoOverscrollAvailableDelta(newOverscroll, 0f)
             } else {
                 CupertinoOverscrollAvailableDelta(0f, newOverscroll)
             }
         } else if (delta <= 0f && overscroll >= 0f) {
+            // Dragging Up/Left (delta < 0) [Negative]
             if (newOverscroll < 0f) {
                 CupertinoOverscrollAvailableDelta(newOverscroll, 0f)
             } else {
                 CupertinoOverscrollAvailableDelta(0f, newOverscroll)
             }
         } else {
+            // Dragging within overscroll area or back towards content boundary
             CupertinoOverscrollAvailableDelta(0f, newOverscroll)
         }
     }
 
-    /*
+    /**
      * Returns the amount of scroll delta available after user performed scroll inside overscroll area
      * It will update [overscroll] resulting in visual change because of [Modifier.offset] depending on it
      */
@@ -222,7 +294,7 @@ internal class CupertinoOverscrollEffect(
         return Offset(x, y)
     }
 
-    /*
+    /**
      * Semantics of this method match the [OverscrollEffect.applyToScroll] one,
      * The only difference is NestedScrollSource being remapped to CupertinoScrollSource to narrow
      * processed states invariant
@@ -241,20 +313,48 @@ internal class CupertinoOverscrollEffect(
         // Delta which is left after `performScroll` was invoked with availableDelta
         val unconsumedDelta = deltaLeftForPerformScroll - deltaConsumedByPerformScroll
 
+        val (unconsumedX, unconsumedY) = unconsumedDelta.x to unconsumedDelta.y
+
+        // Map Start/End to Positive/Negative based on LayoutDirection
+        val (allowPositiveX, allowNegativeX) = if (layoutDirection == LayoutDirection.Ltr) {
+            allowStartOverscroll to allowEndOverscroll
+        } else {
+            allowEndOverscroll to allowStartOverscroll
+        }
+
+        // Filter X-axis
+        // Per the logic in availableDelta:
+        // unconsumedX > 0 -> Hit Positive (Start/Top) boundary
+        // unconsumedX < 0 -> Hit Negative (End/Bottom) boundary
+        val finalUnconsumedX = when {
+            (unconsumedX > 0 && !allowPositiveX) -> 0f
+            (unconsumedX < 0 && !allowNegativeX) -> 0f
+            else -> unconsumedX
+        }
+
+        // Filter Y-axis
+        val finalUnconsumedY = when {
+            (unconsumedY > 0 && !allowTopOverscroll) -> 0f
+            (unconsumedY < 0 && !allowBottomOverscroll) -> 0f
+            else -> unconsumedY
+        }
+
+        val finalUnconsumedDelta = Offset(finalUnconsumedX, finalUnconsumedY)
+
         return when (source) {
             CupertinoScrollSource.DRAG -> {
                 // [unconsumedDelta] is going into overscroll again in case a user drags and hits the
                 // overscroll->content->overscroll or content->overscroll scenario within single frame
-                overscrollOffset += unconsumedDelta
+                overscrollOffset += finalUnconsumedDelta // Use filtered value
                 lastFlingUnconsumedDelta = Offset.Zero
-                delta - unconsumedDelta
+                delta - finalUnconsumedDelta // Use filtered value
             }
 
             CupertinoScrollSource.FLING -> {
                 // If unconsumedDelta is not Zero, [CupertinoOverscrollEffect] will cancel fling and
                 // start spring animation instead
-                lastFlingUnconsumedDelta = unconsumedDelta
-                delta - unconsumedDelta
+                lastFlingUnconsumedDelta = finalUnconsumedDelta // Use filtered value
+                delta - finalUnconsumedDelta // Use filtered value
             }
         }
     }
@@ -324,12 +424,14 @@ internal class CupertinoOverscrollEffect(
             CupertinoOverscrollDirection.VERTICAL -> when (other) {
                 CupertinoOverscrollDirection.UNKNOWN, CupertinoOverscrollDirection.VERTICAL ->
                     CupertinoOverscrollDirection.VERTICAL
+
                 CupertinoOverscrollDirection.HORIZONTAL -> CupertinoOverscrollDirection.HORIZONTAL
             }
 
             CupertinoOverscrollDirection.HORIZONTAL -> when (other) {
                 CupertinoOverscrollDirection.UNKNOWN, CupertinoOverscrollDirection.HORIZONTAL ->
                     CupertinoOverscrollDirection.HORIZONTAL
+
                 CupertinoOverscrollDirection.VERTICAL -> CupertinoOverscrollDirection.VERTICAL
             }
         }
@@ -469,7 +571,9 @@ private class CupertinoOverscrollNode(
     val offset: Density.() -> IntOffset,
     val onNodeRemeasured: (IntSize) -> Unit,
     val onDraw: () -> Unit,
-    val applyClip: Boolean
+    val applyClip: Boolean,
+    val onDensityChange: (Float) -> Unit,
+    val onLayoutDirectionChange: (LayoutDirection) -> Unit
 ) : Modifier.Node(),
     LayoutModifierNode,
     LayoutAwareModifierNode,
@@ -520,6 +624,10 @@ private class CupertinoOverscrollNode(
         measurable: Measurable,
         constraints: Constraints
     ): MeasureResult {
+        // Update the effect instance with the current scope's density and layout direction
+        onDensityChange(this.density)
+        onLayoutDirectionChange(this.layoutDirection)
+
         val placeable = measurable.measure(constraints)
         return layout(placeable.width, placeable.height) {
             placeable.placeWithLayer(offset())

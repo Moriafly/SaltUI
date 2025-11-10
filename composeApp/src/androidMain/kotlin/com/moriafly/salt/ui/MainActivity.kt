@@ -49,7 +49,9 @@ class MainActivity : ComponentActivity() {
         setContent {
             val density = LocalDensity.current
             CompositionLocalProvider(
-                LocalOverscrollFactory provides CupertinoOverscrollEffectFactory(density)
+                LocalOverscrollFactory provides CupertinoOverscrollEffectFactory(
+                    allowBottomOverscroll = false
+                )
             ) {
                 // MaterialScreen()
                 MainActivityContent()
