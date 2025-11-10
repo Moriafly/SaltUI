@@ -165,7 +165,7 @@ class ScrollState(
 
     override suspend fun scroll(
         scrollPriority: MutatePriority,
-        block: suspend ScrollScope.() -> Unit,
+        block: suspend ScrollScope.() -> Unit
     ): Unit = scrollableState.scroll(scrollPriority, block)
 
     override fun dispatchRawDelta(delta: Float): Float = scrollableState.dispatchRawDelta(delta)
@@ -237,7 +237,7 @@ fun Modifier.verticalScroll(
     state: ScrollState,
     enabled: Boolean = true,
     flingBehavior: FlingBehavior? = null,
-    reverseScrolling: Boolean = false,
+    reverseScrolling: Boolean = false
 ) =
     scroll(
         state = state,
@@ -245,7 +245,7 @@ fun Modifier.verticalScroll(
         reverseScrolling = reverseScrolling,
         flingBehavior = flingBehavior,
         isVertical = true,
-        useLocalOverscrollFactory = true,
+        useLocalOverscrollFactory = true
     )
 
 /**
@@ -270,7 +270,7 @@ fun Modifier.verticalScroll(
     overscrollEffect: OverscrollEffect?,
     enabled: Boolean = true,
     flingBehavior: FlingBehavior? = null,
-    reverseScrolling: Boolean = false,
+    reverseScrolling: Boolean = false
 ) =
     scroll(
         state = state,
@@ -279,7 +279,7 @@ fun Modifier.verticalScroll(
         flingBehavior = flingBehavior,
         isVertical = true,
         useLocalOverscrollFactory = false,
-        overscrollEffect = overscrollEffect,
+        overscrollEffect = overscrollEffect
     )
 
 /**
@@ -302,7 +302,7 @@ fun Modifier.horizontalScroll(
     state: ScrollState,
     enabled: Boolean = true,
     flingBehavior: FlingBehavior? = null,
-    reverseScrolling: Boolean = false,
+    reverseScrolling: Boolean = false
 ) =
     scroll(
         state = state,
@@ -310,7 +310,7 @@ fun Modifier.horizontalScroll(
         reverseScrolling = reverseScrolling,
         flingBehavior = flingBehavior,
         isVertical = false,
-        useLocalOverscrollFactory = true,
+        useLocalOverscrollFactory = true
     )
 
 /**
@@ -335,7 +335,7 @@ fun Modifier.horizontalScroll(
     overscrollEffect: OverscrollEffect?,
     enabled: Boolean = true,
     flingBehavior: FlingBehavior? = null,
-    reverseScrolling: Boolean = false,
+    reverseScrolling: Boolean = false
 ) =
     scroll(
         state = state,
@@ -344,7 +344,7 @@ fun Modifier.horizontalScroll(
         flingBehavior = flingBehavior,
         isVertical = false,
         useLocalOverscrollFactory = false,
-        overscrollEffect = overscrollEffect,
+        overscrollEffect = overscrollEffect
     )
 
 private fun Modifier.scroll(
@@ -354,7 +354,7 @@ private fun Modifier.scroll(
     isScrollable: Boolean,
     isVertical: Boolean,
     useLocalOverscrollFactory: Boolean,
-    overscrollEffect: OverscrollEffect? = null,
+    overscrollEffect: OverscrollEffect? = null
 ): Modifier {
     val orientation = if (isVertical) Orientation.Vertical else Orientation.Horizontal
     val scrollableArea =
@@ -365,7 +365,7 @@ private fun Modifier.scroll(
                 interactionSource = state.internalInteractionSource,
                 enabled = isScrollable,
                 reverseScrolling = reverseScrolling,
-                flingBehavior = flingBehavior,
+                flingBehavior = flingBehavior
             )
         } else {
             scrollableArea(
@@ -375,7 +375,7 @@ private fun Modifier.scroll(
                 interactionSource = state.internalInteractionSource,
                 enabled = isScrollable,
                 reverseScrolling = reverseScrolling,
-                flingBehavior = flingBehavior,
+                flingBehavior = flingBehavior
             )
         }
     return scrollableArea.then(ScrollingLayoutElement(state, reverseScrolling, isVertical))
@@ -384,12 +384,12 @@ private fun Modifier.scroll(
 internal class ScrollingLayoutElement(
     val scrollState: ScrollState,
     val reverseScrolling: Boolean,
-    val isVertical: Boolean,
+    val isVertical: Boolean
 ) : ModifierNodeElement<ScrollNode>() {
     override fun create(): ScrollNode = ScrollNode(
         state = scrollState,
         reverseScrolling = reverseScrolling,
-        isVertical = isVertical,
+        isVertical = isVertical
     )
 
     override fun update(node: ScrollNode) {
@@ -423,23 +423,23 @@ internal class ScrollingLayoutElement(
 internal class ScrollNode(
     var state: ScrollState,
     var reverseScrolling: Boolean,
-    var isVertical: Boolean,
+    var isVertical: Boolean
 ) : Modifier.Node(),
     LayoutModifierNode,
     SemanticsModifierNode {
     override fun MeasureScope.measure(
         measurable: Measurable,
-        constraints: Constraints,
+        constraints: Constraints
     ): MeasureResult {
         checkScrollableContainerConstraints(
             constraints,
-            if (isVertical) Orientation.Vertical else Orientation.Horizontal,
+            if (isVertical) Orientation.Vertical else Orientation.Horizontal
         )
 
         val childConstraints =
             constraints.copy(
                 maxHeight = if (isVertical) Constraints.Infinity else constraints.maxHeight,
-                maxWidth = if (isVertical) constraints.maxWidth else Constraints.Infinity,
+                maxWidth = if (isVertical) constraints.maxWidth else Constraints.Infinity
             )
         val placeable = measurable.measure(childConstraints)
         val width = placeable.width.coerceAtMost(constraints.maxWidth)
@@ -471,22 +471,22 @@ internal class ScrollNode(
 
     override fun IntrinsicMeasureScope.minIntrinsicWidth(
         measurable: IntrinsicMeasurable,
-        height: Int,
+        height: Int
     ): Int = measurable.minIntrinsicWidth(if (isVertical) Constraints.Infinity else height)
 
     override fun IntrinsicMeasureScope.minIntrinsicHeight(
         measurable: IntrinsicMeasurable,
-        width: Int,
+        width: Int
     ): Int = measurable.minIntrinsicHeight(if (isVertical) width else Constraints.Infinity)
 
     override fun IntrinsicMeasureScope.maxIntrinsicWidth(
         measurable: IntrinsicMeasurable,
-        height: Int,
+        height: Int
     ): Int = measurable.maxIntrinsicWidth(if (isVertical) Constraints.Infinity else height)
 
     override fun IntrinsicMeasureScope.maxIntrinsicHeight(
         measurable: IntrinsicMeasurable,
-        width: Int,
+        width: Int
     ): Int = measurable.maxIntrinsicHeight(if (isVertical) width else Constraints.Infinity)
 
     override fun SemanticsPropertyReceiver.applySemantics() {
