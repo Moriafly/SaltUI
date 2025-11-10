@@ -18,11 +18,18 @@
 package com.moriafly.salt.ui
 
 import BasicScreenSample
+import MainActivityContent
+import MaterialScreen
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.LocalOverscrollFactory
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.platform.LocalDensity
 import com.moriafly.salt.ui.ext.edgeToEdge
+import com.moriafly.salt.ui.gestures.cupertino.CupertinoOverscrollEffectFactory
+import com.moriafly.salt.ui.gestures.cupertino.rememberCupertinoOverscrollEffect
 import com.moriafly.salt.ui.util.RomUtil
 
 class MainActivity : ComponentActivity() {
@@ -40,10 +47,15 @@ class MainActivity : ComponentActivity() {
         )
 
         setContent {
-            // MaterialScreen()
-            // MainActivityContent()
-            // NestedScrollTopBarContainer()
-            BasicScreenSample()
+            val density = LocalDensity.current
+            CompositionLocalProvider(
+                LocalOverscrollFactory provides CupertinoOverscrollEffectFactory(density)
+            ) {
+                // MaterialScreen()
+                MainActivityContent()
+                // NestedScrollTopBarContainer()
+                // BasicScreenSample()
+            }
         }
     }
 }

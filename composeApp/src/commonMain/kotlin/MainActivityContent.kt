@@ -10,6 +10,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import com.moriafly.salt.ui.BottomSheetScaffold
+import com.moriafly.salt.ui.SaltConfigs
 import com.moriafly.salt.ui.SaltDynamicColors
 import com.moriafly.salt.ui.SaltTheme
 import com.moriafly.salt.ui.Text
@@ -24,7 +25,7 @@ fun MainActivityContent(
     isDarkTheme: Boolean = isSystemInDarkTheme()
 ) {
     SaltTheme(
-        configs = saltConfigs(
+        configs = SaltConfigs.default(
             isDarkTheme = isDarkTheme
         ),
         dynamicColors = SaltDynamicColors.default()
