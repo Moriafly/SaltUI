@@ -451,7 +451,13 @@ internal class ScrollNode(
         // chained RemeasurementModifiers that try to perform scrolling based on the new
         // measurements inside onRemeasured are able to scroll to the new max based on the newly-
         // measured size.
-        state.maxValue = side
+
+        // TODO https://github.com/Moriafly/SaltUI/issues/25
+        //      Here, adding 1 to maxValue is to trigger the Overscroll effect even when the content
+        //      is not fully filled. This solution is not ideal because it affects the default
+        //      canScrollForward. A better approach would be to implement special handling for cases
+        //      where the content is not fully filled, which involves modifying the ScrollingLogic
+        state.maxValue = side.coerceAtLeast(1)
         state.viewportSize = if (isVertical) height else width
         state.contentSize = if (isVertical) placeable.height else placeable.width
         return layout(width, height) {
