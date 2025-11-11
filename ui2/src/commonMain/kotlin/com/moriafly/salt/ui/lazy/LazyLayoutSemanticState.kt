@@ -17,6 +17,8 @@
 package com.moriafly.salt.ui.lazy
 
 import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.semantics.CollectionInfo
 import com.moriafly.salt.ui.lazy.layout.LazyLayoutSemanticState
 import com.moriafly.salt.ui.lazy.layout.estimatedLazyMaxScrollOffset
@@ -27,6 +29,9 @@ internal fun LazyLayoutSemanticState(
     isVertical: Boolean,
 ): LazyLayoutSemanticState =
     object : LazyLayoutSemanticState {
+        // The total number of items in the list, derived from layout info
+        private val totalItemsCount by derivedStateOf { state.layoutInfo.totalItemsCount }
+
         override val scrollOffset: Float
             get() =
                 estimatedLazyScrollOffset(
@@ -48,9 +53,9 @@ internal fun LazyLayoutSemanticState(
 
         override fun collectionInfo(): CollectionInfo =
             if (isVertical) {
-                CollectionInfo(rowCount = state.layoutInfo.totalItemsCount, columnCount = 1)
+                CollectionInfo(rowCount = totalItemsCount, columnCount = 1)
             } else {
-                CollectionInfo(rowCount = 1, columnCount = state.layoutInfo.totalItemsCount)
+                CollectionInfo(rowCount = 1, columnCount = totalItemsCount)
             }
 
         override val viewport: Int

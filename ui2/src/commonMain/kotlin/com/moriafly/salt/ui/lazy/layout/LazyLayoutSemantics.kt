@@ -254,11 +254,12 @@ internal fun estimatedLazyMaxScrollOffset(
     firstVisibleItemIndex: Int,
     firstVisibleItemScrollOffset: Int,
     canScrollForward: Boolean,
-): Float = if (canScrollForward) {
-    // If we can scroll further, indicate that by setting it slightly higher than
-    // the current value
-    estimatedLazyScrollOffset(firstVisibleItemIndex, firstVisibleItemScrollOffset) + 100
-} else {
-    // If we can't scroll further, the current value is the max
-    estimatedLazyScrollOffset(firstVisibleItemIndex, firstVisibleItemScrollOffset)
-}
+): Float =
+    if (canScrollForward) {
+        // If we can scroll further, indicate that by setting it slightly higher than
+        // the current value
+        estimatedLazyScrollOffset(firstVisibleItemIndex, firstVisibleItemScrollOffset) + 100
+    } else {
+        // If we can't scroll further, the current value is the max
+        estimatedLazyScrollOffset(firstVisibleItemIndex, firstVisibleItemScrollOffset)
+    }
