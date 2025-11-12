@@ -24,7 +24,6 @@ import androidx.compose.foundation.gestures.FlingBehavior
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.ScrollableDefaults
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.scrollableArea
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
@@ -34,6 +33,7 @@ import androidx.compose.ui.unit.dp
 import com.moriafly.salt.ui.lazy.layout.LazyLayout
 import com.moriafly.salt.ui.lazy.layout.lazyLayoutBeyondBoundsModifier
 import com.moriafly.salt.ui.lazy.layout.lazyLayoutSemantics
+import com.moriafly.salt.ui.scrollableArea
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable

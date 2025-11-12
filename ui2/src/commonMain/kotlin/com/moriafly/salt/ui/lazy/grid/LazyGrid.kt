@@ -27,7 +27,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
-import androidx.compose.foundation.scrollableArea
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -54,6 +53,7 @@ import com.moriafly.salt.ui.lazy.layout.StickyItemsPlacement
 import com.moriafly.salt.ui.lazy.layout.calculateLazyLayoutPinnedIndices
 import com.moriafly.salt.ui.lazy.layout.lazyLayoutBeyondBoundsModifier
 import com.moriafly.salt.ui.lazy.layout.lazyLayoutSemantics
+import com.moriafly.salt.ui.scrollableArea
 import kotlinx.coroutines.CoroutineScope
 
 @OptIn(ExperimentalFoundationApi::class)

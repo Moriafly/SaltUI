@@ -30,4 +30,13 @@ object SaltUiFlags {
     @Suppress("MutableBareField")
     @JvmField
     var isDisableDefaultWindowExceptionHandler: Boolean = true
+
+    /**
+     * Always should dispatch overscroll.
+     *
+     * @see com.moriafly.salt.ui.gestures.ScrollingLogic.shouldDispatchOverscroll
+     */
+    @Suppress("MutableBareField")
+    @JvmField
+    var isAlwaysShouldDispatchOverscrollEnabled: Boolean = true
 }

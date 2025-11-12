@@ -31,7 +31,6 @@ import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.snapping.SnapPosition
 import androidx.compose.foundation.gestures.snapping.snapFlingBehavior
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.scrollableArea
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.referentialEqualityPolicy
@@ -61,6 +60,7 @@ import com.moriafly.salt.ui.lazy.layout.MutableIntervalList
 import com.moriafly.salt.ui.lazy.layout.NearestRangeKeyIndexMap
 import com.moriafly.salt.ui.lazy.layout.lazyLayoutBeyondBoundsModifier
 import com.moriafly.salt.ui.lazy.layout.lazyLayoutSemantics
+import com.moriafly.salt.ui.scrollableArea
 import kotlinx.coroutines.coroutineScope
 import kotlin.math.absoluteValue
 import kotlin.math.roundToInt

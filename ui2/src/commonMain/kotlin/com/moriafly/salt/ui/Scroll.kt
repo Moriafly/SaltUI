@@ -32,7 +32,6 @@ import androidx.compose.foundation.gestures.animateScrollBy
 import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.foundation.interaction.InteractionSource
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.scrollableArea
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.annotation.FrequentlyChangingValue
@@ -185,7 +184,7 @@ class ScrollState(
     override val lastScrolledBackward: Boolean
         get() = scrollableState.lastScrolledBackward
 
-    override val scrollIndicatorState: ScrollIndicatorState?
+    override val scrollIndicatorState: ScrollIndicatorState
         get() = _scrollIndicatorState
 
     /**
@@ -451,13 +450,7 @@ internal class ScrollNode(
         // chained RemeasurementModifiers that try to perform scrolling based on the new
         // measurements inside onRemeasured are able to scroll to the new max based on the newly-
         // measured size.
-
-        // TODO https://github.com/Moriafly/SaltUI/issues/25
-        //      Restricting maxValue to at least 1 enables overscroll when content is underfilled.
-        //      This is suboptimal as it interferes with the default canScrollForward logic.
-        //      A better fix would be special handling for underfilled cases by modifying
-        //      ScrollingLogic
-        state.maxValue = side.coerceAtLeast(1)
+        state.maxValue = side
         state.viewportSize = if (isVertical) height else width
         state.contentSize = if (isVertical) placeable.height else placeable.width
         return layout(width, height) {
