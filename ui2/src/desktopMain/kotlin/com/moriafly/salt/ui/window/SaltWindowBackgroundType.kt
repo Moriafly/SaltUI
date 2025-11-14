@@ -47,7 +47,7 @@ enum class SaltWindowBackgroundType {
     /**
      * Whether the background type is supported on the current OS.
      */
-    fun isSupport(): Boolean {
+    fun isSupported(): Boolean {
         val os = OS.current
         return when (this) {
             None -> true
