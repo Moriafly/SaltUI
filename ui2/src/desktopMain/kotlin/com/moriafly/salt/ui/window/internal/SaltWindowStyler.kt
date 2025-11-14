@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import com.moriafly.salt.core.os.OS
 import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.moriafly.salt.ui.platform.windows.ComposeWindowProc
+import com.moriafly.salt.ui.platform.windows.DwmWindowAttribute
 import com.moriafly.salt.ui.platform.windows.Dwmapi
 import com.moriafly.salt.ui.platform.windows.HitTestResult
 import com.moriafly.salt.ui.platform.windows.User32Ex
@@ -86,7 +87,7 @@ internal class SaltWindowStyler(
                 // 0xFFFFFFFE is used here
                 Dwmapi.INSTANCE.DwmSetWindowAttribute(
                     hwnd = hwnd,
-                    attribute = DWMWA_CAPTION_COLOR,
+                    attribute = DwmWindowAttribute.DWMWA_CAPTION_COLOR.value,
                     value = IntByReference((0xFFFFFFFE).toInt()),
                     valueSize = 4
                 )
@@ -100,29 +101,46 @@ internal class SaltWindowStyler(
 
     fun updateBackground(type: SaltWindowBackgroundType, isDarkTheme: Boolean) {
         val os = OS.current
-        if (os is OS.Windows && os.windowsBuild >= OS.Windows.WINDOWS_11_22H2) {
+        if (os is OS.Windows) {
             // Set the light/dark mode first before setting the background to avoid a flicker
-            Dwmapi.INSTANCE.DwmSetWindowAttribute(
-                hwnd = hwnd,
-                attribute = DWMWA_USE_IMMERSIVE_DARK_MODE,
-                value = IntByReference(
-                    if (isDarkTheme) 1 else 0
-                ),
-                valueSize = 4
-            )
-            Dwmapi.INSTANCE.DwmSetWindowAttribute(
-                hwnd = hwnd,
-                attribute = DWMWA_SYSTEMBACKDROP_TYPE,
-                value = IntByReference(
-                    when (type) {
-                        SaltWindowBackgroundType.None -> 1
-                        SaltWindowBackgroundType.Mica -> 2
-                        SaltWindowBackgroundType.Acrylic -> 3
-                        SaltWindowBackgroundType.MicaAlt -> 4
-                    }
-                ),
-                valueSize = 4
-            )
+            if (os.windowsBuild >= OS.Windows.WINDOWS_11_21H2) {
+                Dwmapi.INSTANCE.DwmSetWindowAttribute(
+                    hwnd = hwnd,
+                    attribute = DwmWindowAttribute.DWMWA_USE_IMMERSIVE_DARK_MODE.value,
+                    value = IntByReference(
+                        if (isDarkTheme) 1 else 0
+                    ),
+                    valueSize = 4
+                )
+            }
+
+            // Set the background type
+            when {
+                os.windowsBuild >= OS.Windows.WINDOWS_11_22H2 ->
+                    Dwmapi.INSTANCE.DwmSetWindowAttribute(
+                        hwnd = hwnd,
+                        attribute = DwmWindowAttribute.DWMWA_SYSTEMBACKDROP_TYPE.value,
+                        value = IntByReference(
+                            when (type) {
+                                SaltWindowBackgroundType.None -> 1
+                                SaltWindowBackgroundType.Mica -> 2
+                                SaltWindowBackgroundType.Acrylic -> 3
+                                SaltWindowBackgroundType.MicaAlt -> 4
+                            }
+                        ),
+                        valueSize = 4
+                    )
+
+                os.windowsBuild >= OS.Windows.WINDOWS_11_21H2 ->
+                    Dwmapi.INSTANCE.DwmSetWindowAttribute(
+                        hwnd = hwnd,
+                        attribute = DwmWindowAttribute.DWMWA_MICA_EFFECT.value,
+                        value = IntByReference(
+                            if (type == SaltWindowBackgroundType.Mica) 1 else 0
+                        ),
+                        valueSize = 4
+                    )
+            }
         }
     }
 
@@ -143,11 +161,5 @@ internal class SaltWindowStyler(
                 bottomBorderHeight = 0
             }
         Dwmapi.INSTANCE.DwmExtendFrameIntoClientArea(hwnd, pMarInset)
-    }
-
-    companion object {
-        private const val DWMWA_USE_IMMERSIVE_DARK_MODE = 20
-        private const val DWMWA_CAPTION_COLOR = 35
-        private const val DWMWA_SYSTEMBACKDROP_TYPE = 38
     }
 }

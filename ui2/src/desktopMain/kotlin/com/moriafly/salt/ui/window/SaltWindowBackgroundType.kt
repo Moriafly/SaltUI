@@ -15,14 +15,46 @@
  * limitations under the License.
  */
 
+@file:Suppress("unused")
+
 package com.moriafly.salt.ui.window
 
+import com.moriafly.salt.core.os.OS
 import com.moriafly.salt.ui.UnstableSaltUiApi
 
+/**
+ * Window background type.
+ */
 @UnstableSaltUiApi
 enum class SaltWindowBackgroundType {
     None,
+
+    /**
+     * Windows 11 22000+
+     */
     Mica,
+
+    /**
+     * Windows 11 22621+
+     */
     Acrylic,
-    MicaAlt
+
+    /**
+     * Windows 11 22621+
+     */
+    MicaAlt;
+
+    /**
+     * Whether the background type is supported on the current OS.
+     */
+    fun isSupport(): Boolean {
+        val os = OS.current
+        return when (this) {
+            None -> true
+            Mica if os is OS.Windows -> os.windowsBuild >= OS.Windows.WINDOWS_11_21H2
+            Acrylic if os is OS.Windows -> return os.windowsBuild >= OS.Windows.WINDOWS_11_22H2
+            MicaAlt if os is OS.Windows -> return os.windowsBuild >= OS.Windows.WINDOWS_11_22H2
+            else -> false
+        }
+    }
 }
