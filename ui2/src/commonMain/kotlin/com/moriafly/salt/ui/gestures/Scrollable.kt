@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-@file:Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "unused")
+@file:Suppress("unused", "INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
 
 package com.moriafly.salt.ui.gestures
 
@@ -32,7 +32,6 @@ import androidx.compose.foundation.gestures.DragEvent
 import androidx.compose.foundation.gestures.DragGestureNode
 import androidx.compose.foundation.gestures.FlingBehavior
 import androidx.compose.foundation.gestures.FlingCancellationException
-import androidx.compose.foundation.gestures.MouseWheelScrollingLogic
 import androidx.compose.foundation.gestures.NestedScrollScope
 import androidx.compose.foundation.gestures.OnScrollChangedDispatcher
 import androidx.compose.foundation.gestures.Orientation
@@ -695,4 +694,5 @@ private suspend fun ScrollingLogic.semanticsScrollBy(offset: Offset): Offset {
     return previousValue.toOffset()
 }
 
+@Suppress("ktlint:standard:property-naming")
 private const val VerticalAxisThresholdAngle = PI / 4
