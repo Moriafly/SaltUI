@@ -1,4 +1,6 @@
 /*
+ * Salt UI
+ * Copyright (C) 2025 Moriafly
  * Copyright 2020 The Android Open Source Project
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -36,16 +38,24 @@ import kotlinx.coroutines.coroutineScope
  * delta in pixels. The amount of scrolling delta consumed must be returned from this lambda to
  * ensure proper nested scrolling behaviour.
  *
+ * @param isScrollingStateForUserInputOnly whether this [ScrollableState] is only for
+ * [MutatePriority.UserInput]. TODO Pre-fix https://issuetracker.google.com/issues/456779479
  * @param consumeScrollDelta callback invoked when drag/fling/smooth scrolling occurs. The callback
- *   receives the delta in pixels. Callers should update their state in this lambda and return the
- *   amount of delta consumed
+ * receives the delta in pixels. Callers should update their state in this lambda and return the
+ * amount of delta consumed.
  */
 @Suppress("ktlint:standard:function-naming", "FunctionName")
 fun SaltScrollableState(
+    isScrollingStateForUserInputOnly: Boolean = false,
     consumeScrollDelta: (Float) -> Float
-): ScrollableState = DefaultSaltScrollableState(consumeScrollDelta)
+): ScrollableState =
+    DefaultSaltScrollableState(
+        onDelta = consumeScrollDelta,
+        isScrollingStateForUserInputOnly = isScrollingStateForUserInputOnly
+    )
 
 private class DefaultSaltScrollableState(
+    private val isScrollingStateForUserInputOnly: Boolean,
     val onDelta: (Float) -> Float
 ) : ScrollableState {
     private val scrollScope: ScrollScope =
@@ -70,8 +80,9 @@ private class DefaultSaltScrollableState(
         block: suspend ScrollScope.() -> Unit,
     ): Unit = coroutineScope {
         scrollMutex.mutateWith(scrollScope, scrollPriority) {
-            // TODO Pre-fix https://issuetracker.google.com/issues/456779479
-            if (scrollPriority == MutatePriority.UserInput) {
+            if (!isScrollingStateForUserInputOnly ||
+                scrollPriority == MutatePriority.UserInput
+            ) {
                 isScrollingState.value = true
                 try {
                     block()
