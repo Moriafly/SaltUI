@@ -339,7 +339,7 @@ internal class ScrollableNode(
 
     override fun onPreKeyEvent(event: KeyEvent) = false
 
-    // Forward all PointerInputModifierNode method calls to `mmouseWheelScrollNode.pointerInputNode`
+    // Forward all PointerInputModifierNode method calls to `mouseWheelScrollNode.pointerInputNode`
     // See explanation in `MouseWheelScrollNode.pointerInputNode`
 
     override fun onPointerEvent(
