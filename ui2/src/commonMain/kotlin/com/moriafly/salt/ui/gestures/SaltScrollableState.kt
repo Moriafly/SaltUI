@@ -80,18 +80,20 @@ private class DefaultSaltScrollableState(
         block: suspend ScrollScope.() -> Unit,
     ): Unit = coroutineScope {
         scrollMutex.mutateWith(scrollScope, scrollPriority) {
-            val shouldUpdateState =
-                (scrollPriority != MutatePriority.UserInput) || isScrollingStateForUserInput
+            when (scrollPriority) {
+                MutatePriority.Default -> block()
 
-            if (shouldUpdateState) {
-                isScrollingState.value = true
-                try {
-                    block()
-                } finally {
-                    isScrollingState.value = false
-                }
-            } else {
-                block()
+                MutatePriority.UserInput, MutatePriority.PreventUserInput ->
+                    if (isScrollingStateForUserInput) {
+                        isScrollingState.value = true
+                        try {
+                            block()
+                        } finally {
+                            isScrollingState.value = false
+                        }
+                    } else {
+                        block()
+                    }
             }
         }
     }
