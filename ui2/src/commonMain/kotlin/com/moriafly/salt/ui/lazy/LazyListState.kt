@@ -79,7 +79,7 @@ import androidx.annotation.IntRange as AndroidXIntRange
 fun rememberLazyListState(
     initialFirstVisibleItemIndex: Int = 0,
     initialFirstVisibleItemScrollOffset: Int = 0,
-): LazyListState = rememberSaveable(saver = LazyListState.Saver) {
+): LazyListState = rememberSaveable(saver = Saver) {
     LazyListState(initialFirstVisibleItemIndex, initialFirstVisibleItemScrollOffset)
 }
 
@@ -479,7 +479,7 @@ class LazyListState
         override val lastScrolledBackward: Boolean
             get() = scrollableState.lastScrolledBackward
 
-        override val scrollIndicatorState: ScrollIndicatorState?
+        override val scrollIndicatorState: ScrollIndicatorState
             get() = _scrollIndicatorState
 
         internal val placementScopeInvalidator = ObservableScopeInvalidator()
@@ -590,7 +590,7 @@ class LazyListState
         internal fun applyMeasureResult(
             result: LazyListMeasureResult,
             isLookingAhead: Boolean,
-            visibleItemsStayedTheSame: Boolean = false,
+            visibleItemsStayedTheSame: Boolean = false
         ) {
             // update the prefetch state with the number of nested prefetch items this layout
             // should use.
@@ -676,7 +676,7 @@ class LazyListState
                             firstVisibleItemIndex = it[0],
                             firstVisibleItemScrollOffset = it[1],
                         )
-                    },
+                    }
                 )
 
             /**
@@ -694,14 +694,16 @@ class LazyListState
                             firstVisibleItemScrollOffset = it[1],
                             prefetchStrategy,
                         )
-                    },
+                    }
                 )
 
             /**
              * A [Saver] implementation for [LazyListState] that handles setting a custom
              * [LazyLayoutCacheWindow].
              */
-            internal fun saver(cacheWindow: LazyLayoutCacheWindow): Saver<LazyListState, *> =
+            internal fun saver(
+                cacheWindow: LazyLayoutCacheWindow
+            ): Saver<LazyListState, *> =
                 listSaver(
                     save = { listOf(it.firstVisibleItemIndex, it.firstVisibleItemScrollOffset) },
                     restore = {
@@ -710,7 +712,7 @@ class LazyListState
                             firstVisibleItemScrollOffset = it[1],
                             cacheWindow = cacheWindow,
                         )
-                    },
+                    }
                 )
         }
     }
@@ -743,7 +745,7 @@ private val EmptyLazyListMeasureResult =
         remeasureNeeded = false,
         coroutineScope = CoroutineScope(EmptyCoroutineContext),
         density = Density(1f),
-        childConstraints = Constraints(),
+        childConstraints = Constraints()
     )
 
 @Suppress("ktlint:standard:property-naming")
