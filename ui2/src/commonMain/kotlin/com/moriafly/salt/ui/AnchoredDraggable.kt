@@ -727,13 +727,20 @@ internal suspend fun <T> AnchoredDraggableState<T>.animateTo(
         val targetOffset = anchors.positionOf(latestTarget)
         if (!targetOffset.isNaN()) {
             var prev = if (offset.isNaN()) 0f else offset
+
+            val min = anchors.minPosition()
+            val max = anchors.maxPosition()
+            // Only coerce if bounds are valid and defined
+            val canCoerce = !min.isNaN() && !max.isNaN()
+
             animate(prev, targetOffset, velocity, animationSpec) { value, velocity ->
-                // Our onDrag coerces the value within the bounds, but an animation may
-                // overshoot, for example a spring animation or an overshooting interpolator
-                // We respect the user's intention and allow the overshoot, but still use
-                // DraggableState's drag for its mutex
-                dragTo(value, velocity)
-                prev = value
+                // An animation spec (like Spring) can overshoot the target offset.
+                // This is especially true if start == end but velocity is non-zero,
+                // causing a "bounce" effect at the boundaries
+                // We manually coerce the animated value within bounds to prevent this
+                val coercedValue = if (canCoerce) value.coerceIn(min, max) else value
+                dragTo(coercedValue, velocity)
+                prev = coercedValue
             }
         }
     }
