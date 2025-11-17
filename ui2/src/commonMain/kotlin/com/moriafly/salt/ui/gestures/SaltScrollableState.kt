@@ -38,7 +38,7 @@ import kotlinx.coroutines.coroutineScope
  * delta in pixels. The amount of scrolling delta consumed must be returned from this lambda to
  * ensure proper nested scrolling behaviour.
  *
- * @param isScrollingStateForUserInput whether this [ScrollableState] is only for
+ * @param isScrollingStateForUserInputOnly whether this [ScrollableState] is only for
  * [MutatePriority.UserInput]. TODO Pre-fix https://issuetracker.google.com/issues/456779479
  * @param consumeScrollDelta callback invoked when drag/fling/smooth scrolling occurs. The callback
  * receives the delta in pixels. Callers should update their state in this lambda and return the
@@ -46,16 +46,16 @@ import kotlinx.coroutines.coroutineScope
  */
 @Suppress("ktlint:standard:function-naming", "FunctionName")
 fun SaltScrollableState(
-    isScrollingStateForUserInput: Boolean = true,
+    isScrollingStateForUserInputOnly: Boolean = false,
     consumeScrollDelta: (Float) -> Float
 ): ScrollableState =
     DefaultSaltScrollableState(
         onDelta = consumeScrollDelta,
-        isScrollingStateForUserInput = isScrollingStateForUserInput
+        isScrollingStateForUserInputOnly = isScrollingStateForUserInputOnly
     )
 
 private class DefaultSaltScrollableState(
-    private val isScrollingStateForUserInput: Boolean,
+    private val isScrollingStateForUserInputOnly: Boolean,
     val onDelta: (Float) -> Float
 ) : ScrollableState {
     private val scrollScope: ScrollScope =
@@ -80,20 +80,17 @@ private class DefaultSaltScrollableState(
         block: suspend ScrollScope.() -> Unit,
     ): Unit = coroutineScope {
         scrollMutex.mutateWith(scrollScope, scrollPriority) {
-            when (scrollPriority) {
-                MutatePriority.Default -> block()
-
-                MutatePriority.UserInput, MutatePriority.PreventUserInput ->
-                    if (isScrollingStateForUserInput) {
-                        isScrollingState.value = true
-                        try {
-                            block()
-                        } finally {
-                            isScrollingState.value = false
-                        }
-                    } else {
-                        block()
-                    }
+            if (!isScrollingStateForUserInputOnly ||
+                scrollPriority == MutatePriority.UserInput
+            ) {
+                isScrollingState.value = true
+                try {
+                    block()
+                } finally {
+                    isScrollingState.value = false
+                }
+            } else {
+                block()
             }
         }
     }

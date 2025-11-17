@@ -206,7 +206,7 @@ abstract class PagerState
          * The ScrollableController instance. We keep it as we need to call stopAnimation on it once we
          * reached the end of the list.
          */
-        private val scrollableState = SaltScrollableState(false) { performScroll(it) }
+        private val scrollableState = SaltScrollableState(true) { performScroll(it) }
 
         /**
          * Within the scrolling context we can use absolute positions to determine scroll deltas and max
