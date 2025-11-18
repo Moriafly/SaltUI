@@ -21,7 +21,6 @@ package com.moriafly.salt.ui.gestures
 import androidx.compose.foundation.ComposeFoundationFlags
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.MutatePriority
-import androidx.compose.foundation.gestures.BringIntoViewRequestPriorityQueue
 import androidx.compose.foundation.gestures.BringIntoViewSpec
 import androidx.compose.foundation.gestures.LocalBringIntoViewSpec
 import androidx.compose.foundation.gestures.Orientation
@@ -64,14 +63,16 @@ private const val DEBUG = false
 private const val TAG = "ContentInViewModifier"
 
 /** A minimum amount of delta that it is considered a valid scroll. */
+@Suppress("ktlint:standard:property-naming")
 private const val MinScrollThreshold = 0.5f
 
 /**
  * A [Modifier] to be placed on a scrollable container (i.e. [Modifier.scrollable]) that animates
  * the [ScrollableState] to handle [BringIntoViewRequester] requests and keep the currently-focused
  * child in view when the viewport shrinks.
+ *
+ * TODO(b/242732126) Make this logic reusable for TV's mario scrolling implementation
  */
-// TODO(b/242732126) Make this logic reusable for TV's mario scrolling implementation.
 @Suppress("DEPRECATION") // b/376080744
 @OptIn(ExperimentalFoundationApi::class)
 internal class ContentInViewNode(
@@ -80,12 +81,10 @@ internal class ContentInViewNode(
     private var reverseDirection: Boolean,
     private var bringIntoViewSpec: BringIntoViewSpec?,
     private var getFocusedRect: () -> Rect?,
-) :
-    Modifier.Node(),
+) : Modifier.Node(),
     androidx.compose.foundation.relocation.BringIntoViewResponder,
     CompositionLocalConsumerModifierNode,
     LayoutAwareModifierNode {
-
     override val shouldAutoInvalidate: Boolean = false
 
     /**
@@ -135,9 +134,8 @@ internal class ContentInViewNode(
         return computeDestination(localRect)
     }
 
-    private fun requireBringIntoViewSpec(): BringIntoViewSpec {
-        return bringIntoViewSpec ?: currentValueOf(LocalBringIntoViewSpec)
-    }
+    private fun requireBringIntoViewSpec(): BringIntoViewSpec =
+        bringIntoViewSpec ?: currentValueOf(LocalBringIntoViewSpec)
 
     override suspend fun bringChildIntoView(localRect: () -> Rect?) {
         // Avoid creating no-op requests and no-op animations if the request does not require
@@ -162,10 +160,11 @@ internal class ContentInViewNode(
             getFocusedChildBounds()?.let { focusedChild ->
                 if (DEBUG) println("[$TAG] focused child bounds: $focusedChild")
                 if (!focusedChild.isMaxVisible(viewportSize)) {
-                    if (DEBUG)
+                    if (DEBUG) {
                         println(
                             "[$TAG] focused child was clipped by viewport shrink: $focusedChild"
                         )
+                    }
                     trackingFocusedChild = true
                     launchAnimation()
                 }
@@ -224,10 +223,11 @@ internal class ContentInViewNode(
                     containerOffset = viewportAdjustmentForReverseScroll
                 )
             ) {
-                if (DEBUG)
+                if (DEBUG) {
                     println(
                         "[$TAG] focused child was clipped by viewport shrink: $focusedChildBounds"
                     )
+                }
                 trackingFocusedChild = true
                 launchAnimation(viewportAdjustmentForReverseScroll)
             }
@@ -291,10 +291,11 @@ internal class ContentInViewNode(
                 scrollingLogic.scroll(scrollPriority = MutatePriority.Default) {
                     animationState.value =
                         calculateScrollDelta(bringIntoViewSpec, viewportAdjustmentForReverseScroll)
-                    if (DEBUG)
+                    if (DEBUG) {
                         println(
                             "[$TAG] Starting scroll animation down from ${animationState.value}…"
                         )
+                    }
                     animationState.animateToZero(
                         // This lambda will be invoked on every frame, during the choreographer
                         // callback.
@@ -304,21 +305,22 @@ internal class ContentInViewNode(
                             // TODO(427897566): The above heuristic may not always be true.
                             val scrollMultiplier = if (reverseDirection) 1f else -1f
                             val adjustedDelta = scrollMultiplier * delta
-                            if (DEBUG)
+                            if (DEBUG) {
                                 println(
                                     "[$TAG] Scroll target changed by Δ$delta to " +
-                                            "${animationState.value}, scrolling by $adjustedDelta " +
-                                            "(reverseDirection=$reverseDirection)"
+                                        "${animationState.value}, scrolling by $adjustedDelta " +
+                                        "(reverseDirection=$reverseDirection)"
                                 )
+                            }
                             val consumedScroll =
                                 with(scrollingLogic) {
                                     scrollMultiplier *
-                                            scrollBy(
-                                                offset = adjustedDelta.toOffset().reverseIfNeeded(),
-                                                source = NestedScrollSource.UserInput,
-                                            )
-                                                .reverseIfNeeded()
-                                                .toFloat()
+                                        scrollBy(
+                                            offset = adjustedDelta.toOffset().reverseIfNeeded(),
+                                            source = NestedScrollSource.UserInput,
+                                        )
+                                            .reverseIfNeeded()
+                                            .toFloat()
                                 }
                             if (DEBUG) println("[$TAG] Consumed $consumedScroll of scroll")
                             if (consumedScroll.absoluteValue < delta.absoluteValue) {
@@ -331,7 +333,7 @@ internal class ContentInViewNode(
                                 // TODO(b/239671493) Should this trigger nested scrolling?
                                 animationJob.cancel(
                                     "Scroll animation cancelled because scroll was not consumed " +
-                                            "(${abs(consumedScroll)} < ${abs(delta)})"
+                                        "(${abs(consumedScroll)} < ${abs(delta)})"
                                 )
                             }
                         },
@@ -360,8 +362,9 @@ internal class ContentInViewNode(
                                 trackingFocusedChild &&
                                 getFocusedChildBounds()?.isMaxVisible() == true
                             ) {
-                                if (DEBUG)
+                                if (DEBUG) {
                                     println("[$TAG] Completed tracking focused child request")
+                                }
                                 trackingFocusedChild = false
                             }
 
@@ -369,8 +372,9 @@ internal class ContentInViewNode(
                             // replacements, or added/removed requests since the last frame.
                             animationState.value =
                                 calculateScrollDelta(bringIntoViewSpec, IntOffset.Zero)
-                            if (DEBUG)
+                            if (DEBUG) {
                                 println("[$TAG] scroll target after frame: ${animationState.value}")
+                            }
                         },
                     )
                 }
@@ -378,11 +382,12 @@ internal class ContentInViewNode(
                 // Complete any BIV requests if the animation didn't need to run, or if there were
                 // requests that were too large to satisfy. Note that if the animation was
                 // cancelled, this won't run, and the requests will be cancelled instead.
-                if (DEBUG)
+                if (DEBUG) {
                     println(
                         "[$TAG] animation completed successfully, resuming" +
-                                " ${bringIntoViewRequests.size} remaining BIV requests…"
+                            " ${bringIntoViewRequests.size} remaining BIV requests…"
                     )
+                }
                 bringIntoViewRequests.resumeAndRemoveAll()
             } catch (e: CancellationException) {
                 cancellationException = e
@@ -391,7 +396,7 @@ internal class ContentInViewNode(
                 if (DEBUG) {
                     println(
                         "[$TAG] animation completed with ${bringIntoViewRequests.size} " +
-                                "unsatisfied BIV requests"
+                            "unsatisfied BIV requests"
                     )
                     cancellationException?.printStackTrace()
                 }
@@ -463,16 +468,14 @@ internal class ContentInViewNode(
      *   view.
      * @return the destination rectangle.
      */
-    private fun computeDestination(childBounds: Rect): Rect {
-        return childBounds.translate(
-            offset =
-                -relocationOffset(
-                    childBounds = childBounds,
-                    containerSize = viewportSize,
-                    containerOffset = IntOffset.Zero,
-                )
-        )
-    }
+    private fun computeDestination(childBounds: Rect): Rect = childBounds.translate(
+        offset =
+            -relocationOffset(
+                childBounds = childBounds,
+                containerSize = viewportSize,
+                containerOffset = IntOffset.Zero,
+            )
+    )
 
     /**
      * Returns true if this [Rect] is as visible as it can be given the current [size] of the
@@ -485,7 +488,7 @@ internal class ContentInViewNode(
     ): Boolean {
         val relocationOffset = relocationOffset(this, size, containerOffset)
         return abs(relocationOffset.x) <= MinScrollThreshold &&
-                abs(relocationOffset.y) <= MinScrollThreshold
+            abs(relocationOffset.y) <= MinScrollThreshold
     }
 
     /**
@@ -567,9 +570,9 @@ internal class ContentInViewNode(
             // Include the coroutine name in the string, if present, to help debugging.
             val name = continuation.context[CoroutineName]?.name
             return "Request@${hashCode().toString(radix = 16)}" +
-                    (name?.let { "[$it](" } ?: "(") +
-                    "currentBounds()=${currentBounds()}, " +
-                    "continuation=$continuation)"
+                (name?.let { "[$it](" } ?: "(") +
+                "currentBounds()=${currentBounds()}, " +
+                "continuation=$continuation)"
         }
     }
 }
