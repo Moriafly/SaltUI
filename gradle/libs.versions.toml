@@ -11,7 +11,7 @@ hiddenapibypass = "6.1"
 jna = "5.18.1"
 vanniktech = "0.34.0"
 kotlinx-atomicfu = "0.29.0"
-haze = "1.6.10"
+haze = "1.7.0"
 collection = "1.5.0"
 
 [libraries]
