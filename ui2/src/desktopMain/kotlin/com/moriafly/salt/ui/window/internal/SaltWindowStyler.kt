@@ -144,21 +144,20 @@ internal class SaltWindowStyler(
         }
     }
 
-    /**
-     * To disable window border and shadow, pass (0, 0, 0, 0) as window margins
-     * (or, simply, don't call this function).
-     */
-    fun enableBorderAndShadow() {
-        Dwmapi.INSTANCE.DwmExtendFrameIntoClientArea(hwnd, WindowMargins.ByReference())
-    }
-
-    fun disableBorderAndShadow() {
-        val pMarInset = WindowMargins.ByReference()
-            .apply {
-                leftBorderWidth = 0
-                rightBorderWidth = 0
-                topBorderHeight = 0
-                bottomBorderHeight = 0
+    fun updateBorderAndShadow(value: Boolean) {
+        val pMarInset =
+            if (value) {
+                // Enable window border and shadow, (-1, -1, -1, -1)
+                WindowMargins.ByReference()
+            } else {
+                WindowMargins.ByReference()
+                    .apply {
+                        // To disable window border and shadow, pass (0, 0, 0, 0) as window margins
+                        leftBorderWidth = 0
+                        rightBorderWidth = 0
+                        topBorderHeight = 0
+                        bottomBorderHeight = 0
+                    }
             }
         Dwmapi.INSTANCE.DwmExtendFrameIntoClientArea(hwnd, pMarInset)
     }

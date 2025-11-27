@@ -204,9 +204,9 @@ fun SaltWindow(
 
                     LaunchedEffect(isFullscreen) {
                         if (isFullscreen) {
-                            saltWindowStyler.disableBorderAndShadow()
+                            saltWindowStyler.updateBorderAndShadow(false)
                         } else {
-                            saltWindowStyler.enableBorderAndShadow()
+                            saltWindowStyler.updateBorderAndShadow(true)
                         }
                     }
 

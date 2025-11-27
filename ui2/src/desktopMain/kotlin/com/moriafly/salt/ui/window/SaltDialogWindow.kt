@@ -183,7 +183,7 @@ fun SaltDialogWindow(
                                 windowClientInsets.insets = windowInsets
                             }
                         ).apply {
-                            enableBorderAndShadow()
+                            updateBorderAndShadow(true)
                         }
                     }
 
