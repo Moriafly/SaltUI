@@ -69,6 +69,7 @@ sealed class OS {
             const val WINDOWS_11_22H2 = 22621
             const val WINDOWS_11_23H2 = 22631
             const val WINDOWS_11_24H2 = 26100
+            const val WINDOWS_11_25H2 = 26200
         }
     }
 
