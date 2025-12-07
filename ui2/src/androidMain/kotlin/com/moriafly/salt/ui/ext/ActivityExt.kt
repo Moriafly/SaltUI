@@ -66,13 +66,10 @@ fun Activity.edgeToEdge() {
     window.clearFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION)
     window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
 
-    // If the app targets VANILLA_ICE_CREAM or above, the color will be transparent and cannot be
-    // changed
     @Suppress("DEPRECATION")
-    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.VANILLA_ICE_CREAM) {
-        window.statusBarColor = Color.TRANSPARENT
-        window.navigationBarColor = Color.TRANSPARENT
-    }
+    window.statusBarColor = Color.TRANSPARENT
+    @Suppress("DEPRECATION")
+    window.navigationBarColor = Color.TRANSPARENT
 
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
         // In the XML, it only requires O_MR1 API 27, I don't know why
