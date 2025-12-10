@@ -1,4 +1,4 @@
-/**
+/*
  * Salt UI
  * Copyright (C) 2023 Moriafly
  *
