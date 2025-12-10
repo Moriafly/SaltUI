@@ -110,11 +110,11 @@ kotlin {
         val commonMain by getting
         commonMain.dependencies {
             api(project(":core"))
-            implementation(compose.runtime)
-            implementation(compose.foundation)
-            implementation(compose.ui)
-            implementation(compose.components.resources)
-            implementation(compose.preview)
+            implementation(libs.compose.runtime)
+            implementation(libs.compose.foundation)
+            implementation(libs.compose.ui)
+            implementation(libs.compose.ui.tooling.preview)
+            implementation(libs.compose.components.resources)
             implementation(libs.haze)
             implementation(libs.haze.materials)
             implementation(libs.collection)
