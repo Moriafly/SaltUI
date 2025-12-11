@@ -20,7 +20,6 @@ package com.moriafly.salt.ui.window.internal
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.ExperimentalComposeUiApi
-import androidx.compose.ui.window.DefaultWindowExceptionHandlerFactory
 import androidx.compose.ui.window.LocalWindowExceptionHandlerFactory
 import com.moriafly.salt.ui.SaltUiFlags
 import com.moriafly.salt.ui.UnstableSaltUiApi
