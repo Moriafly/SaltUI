@@ -184,6 +184,7 @@ fun SaltDialogWindow(
                             }
                         ).apply {
                             updateBorderAndShadow(true)
+                            // Fix https://github.com/zeshipalace/Voxzen/issues/120
                             updateIsToolWindow(true)
                         }
                     }
