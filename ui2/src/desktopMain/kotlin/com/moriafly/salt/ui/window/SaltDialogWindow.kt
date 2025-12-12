@@ -184,6 +184,7 @@ fun SaltDialogWindow(
                             }
                         ).apply {
                             updateBorderAndShadow(true)
+                            updateIsToolWindow(true)
                         }
                     }
 

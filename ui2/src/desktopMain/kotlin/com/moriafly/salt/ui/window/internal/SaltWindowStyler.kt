@@ -25,7 +25,9 @@ import com.moriafly.salt.ui.platform.windows.DwmWindowAttribute
 import com.moriafly.salt.ui.platform.windows.Dwmapi
 import com.moriafly.salt.ui.platform.windows.HitTestResult
 import com.moriafly.salt.ui.platform.windows.User32Ex
+import com.moriafly.salt.ui.platform.windows.WinUserConst
 import com.moriafly.salt.ui.platform.windows.structure.WindowMargins
+import com.moriafly.salt.ui.platform.windows.updateWindowExStyle
 import com.moriafly.salt.ui.platform.windows.updateWindowStyle
 import com.moriafly.salt.ui.util.hwnd
 import com.moriafly.salt.ui.util.isUndecorated
@@ -34,6 +36,11 @@ import com.sun.jna.platform.win32.WinUser.WS_SYSMENU
 import com.sun.jna.ptr.IntByReference
 import java.awt.Window
 
+/**
+ * # SaltWindowStyler
+ *
+ * TODO Support Linux, macOS
+ */
 @UnstableSaltUiApi
 internal class SaltWindowStyler(
     window: Window,
@@ -160,5 +167,18 @@ internal class SaltWindowStyler(
                     }
             }
         Dwmapi.INSTANCE.DwmExtendFrameIntoClientArea(hwnd, pMarInset)
+    }
+
+    /**
+     * @see [WinUserConst.WS_EX_TOOLWINDOW]
+     */
+    fun updateIsToolWindow(value: Boolean) {
+        User32Ex.INSTANCE.updateWindowExStyle(hwnd) { oldStyle ->
+            if (value) {
+                oldStyle or WinUserConst.WS_EX_TOOLWINDOW
+            } else {
+                oldStyle and WinUserConst.WS_EX_TOOLWINDOW.inv()
+            }
+        }
     }
 }
