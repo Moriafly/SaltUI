@@ -21,7 +21,6 @@ package com.moriafly.salt.ui.nested
 
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.ScrollableDefaults
-import androidx.compose.foundation.gestures.ScrollableState
 import androidx.compose.foundation.gestures.rememberScrollableState
 import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.fillMaxSize
@@ -48,15 +47,9 @@ import kotlin.math.roundToInt
  * header or the content), the header collapses upward until it is completely hidden or reaches
  * its minimum size, at which point the content continues to scroll.
  *
- * To ensure seamless scrolling continuity when dragging the header, the [contentScrollState]
- * (e.g., the [androidx.compose.foundation.lazy.LazyListState] of the content) should be provided.
- *
  * @param header The composable content for the collapsible header.
  * @param modifier The modifier to be applied to the layout.
  * @param state The state object to be used to control or observe the header's offset.
- * @param contentScrollState The [ScrollableState] of the child content (e.g., LazyListState).
- * Providing this enables the header to drive the content's scrolling
- * when the header is fully collapsed or expanded.
  * @param content The primary scrollable content of the layout.
  */
 @UnstableSaltUiApi
@@ -65,11 +58,10 @@ fun NestedHeaderLayout(
     header: @Composable () -> Unit,
     modifier: Modifier = Modifier,
     state: NestedHeaderState = rememberNestedHeaderState(),
-    contentScrollState: ScrollableState? = null,
     content: @Composable () -> Unit
 ) {
     // Connection to handle nested scroll events from the child (e.g., LazyColumn)
-    val connection = remember(state, contentScrollState) {
+    val connection = remember(state) {
         object : NestedScrollConnection {
             override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
                 // When scrolling up (finger moves down), collapse the header first
@@ -97,7 +89,7 @@ fun NestedHeaderLayout(
     }
 
     // Scrollable state for the parent layout itself
-    // This ensures that dragging on the header area also drives the scrolling mechanism
+    // This ensures that dragging on the header area drives the header's collapse/expand
     val parentScrollableState = rememberScrollableState { delta ->
         // Phase 1: Pre-scroll (Header consumes delta if needed)
         val preConsumed = connection.onPreScroll(
@@ -105,26 +97,18 @@ fun NestedHeaderLayout(
             source = NestedScrollSource.UserInput
         )
 
-        // Phase 2: Dispatch remaining delta to the child content
-        // This acts as a bridge: if the header is fully collapsed, dragging the header
-        // should scroll the list below
-        val availableForContent = delta - preConsumed.y
-        var contentConsumed = 0f
-
-        if (availableForContent != 0f && contentScrollState != null) {
-            contentConsumed = contentScrollState.dispatchRawDelta(availableForContent)
-        }
-
-        // Phase 3: Post-scroll (Header consumes remaining delta if needed)
-        val availableForPost = availableForContent - contentConsumed
+        // Phase 2: Post-scroll (Header consumes remaining delta if needed)
+        // Since we removed the content bridge, any delta not consumed by the header
+        // when dragging the header itself effectively disappears here (stops scrolling)
+        val availableForPost = delta - preConsumed.y
         val postConsumed = connection.onPostScroll(
             consumed = Offset.Zero,
             available = Offset(0f, availableForPost),
             source = NestedScrollSource.UserInput
         )
 
-        // Return total consumed to keep the fling animation active
-        preConsumed.y + contentConsumed + postConsumed.y
+        // Return total consumed
+        preConsumed.y + postConsumed.y
     }
 
     SubcomposeLayout(
@@ -148,8 +132,6 @@ fun NestedHeaderLayout(
         state.updateBounds(minOffset = -headerHeight.toFloat(), maxOffset = 0f)
 
         // Measure the body content
-        // The content is forced to fill the maximum height of the parent to ensure
-        // there is no empty space at the bottom when the header scrolls away
         val contentConstraints = constraints.copy(
             minHeight = constraints.maxHeight,
             maxHeight = constraints.maxHeight
@@ -191,8 +173,7 @@ fun rememberNestedHeaderState(): NestedHeaderState = remember { NestedHeaderStat
 /**
  * State object for [NestedHeaderLayout].
  *
- * Handles the calculation of the header's offset and bounds, and provides
- * methods to programmatically scroll or fling the header.
+ * Handles the calculation of the header's offset and bounds.
  */
 @UnstableSaltUiApi
 @Stable
