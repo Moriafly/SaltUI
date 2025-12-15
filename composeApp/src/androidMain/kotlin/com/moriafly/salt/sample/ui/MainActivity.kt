@@ -15,11 +15,12 @@
  * limitations under the License.
  */
 
-package com.moriafly.salt.ui
+package com.moriafly.salt.sample.ui
 
 import BasicScreenSample
 import MainActivityContent
 import MaterialScreen
+import TextTypesetting
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
@@ -31,18 +32,27 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
+import com.moriafly.salt.ui.SaltTheme
+import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.moriafly.salt.ui.ext.edgeToEdge
+import com.moriafly.salt.ui.ext.safeMainIgnoringVisibilityPadding
 import com.moriafly.salt.ui.gestures.cupertino.CupertinoOverscrollEffectFactory
 import com.moriafly.salt.ui.gestures.cupertino.rememberCupertinoOverscrollEffect
 import com.moriafly.salt.ui.lazy.LazyColumn
+import com.moriafly.salt.ui.sample.ui.screen.NestedCollapsedLayoutScreen
+import com.moriafly.salt.ui.sample.ui.screen.NestedCollapsedScreen
 import com.moriafly.salt.ui.util.RomUtil
+import com.moriafly.salt.ui.util.WindowUtil
 
 class MainActivity : ComponentActivity() {
     @OptIn(UnstableSaltUiApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         edgeToEdge()
         super.onCreate(savedInstanceState)
+
+        WindowUtil.setStatusBarForegroundColor(window, WindowUtil.BarColor.Black)
 
         Log.d(
             "MainActivity",
@@ -75,18 +85,27 @@ class MainActivity : ComponentActivity() {
 //                        )
 //                    }
 //                }
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .background(SaltTheme.colors.background)
-                        .verticalScroll(rememberScrollState())
-                ) {
-                    Text(
-                        text = "Hello World",
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .outerPadding()
-                    )
+//                Column(
+//                    modifier = Modifier
+//                        .fillMaxSize()
+//                        .background(SaltTheme.colors.background)
+//                        .verticalScroll(rememberScrollState())
+//                ) {
+//                    Text(
+//                        text = "Hello World",
+//                        modifier = Modifier
+//                            .fillMaxWidth()
+//                            .outerPadding()
+//                    )
+//                }
+//                TextTypesetting(
+//                    modifier = Modifier
+//                        .background(Color.White)
+//                        .safeMainIgnoringVisibilityPadding()
+//                )
+                // NestedCollapsedScreen()
+                SaltTheme {
+                    NestedCollapsedLayoutScreen()
                 }
             }
         }
