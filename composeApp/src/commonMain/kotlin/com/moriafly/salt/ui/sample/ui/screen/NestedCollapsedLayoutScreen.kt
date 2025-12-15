@@ -8,11 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.derivedStateOf
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -30,7 +26,6 @@ import com.moriafly.salt.ui.nested.rememberNestedHeaderState
 import com.moriafly.salt.ui.pager.HorizontalPager
 import com.moriafly.salt.ui.pager.rememberPagerState
 import kotlinx.coroutines.launch
-import kotlin.math.absoluteValue
 import kotlin.math.roundToInt
 
 @Suppress("ktlint:compose:modifier-missing-check")
@@ -38,14 +33,6 @@ import kotlin.math.roundToInt
 @Composable
 fun NestedCollapsedLayoutScreen() {
     val nestedState = rememberNestedHeaderState()
-
-    // 计算 Header 的折叠进度 (0.0 -> 1.0)，用于控制 TopBar 变色
-    // 假设 Header 高度约为 300dp，我们在滚动 200dp 时完全变色
-    val toolbarAlpha by remember {
-        derivedStateOf {
-            (nestedState.offset.absoluteValue / 200f).coerceIn(0f, 1f)
-        }
-    }
 
     Box(modifier = Modifier.fillMaxSize().background(Color.Black)) {
         // 1. 嵌套滚动布局
