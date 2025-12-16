@@ -21,9 +21,7 @@
 package com.moriafly.salt.ui.gestures
 
 import androidx.compose.animation.core.animate
-import androidx.compose.foundation.ComposeFoundationFlags
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.FocusedBoundsObserverNode
 import androidx.compose.foundation.MutatePriority
 import androidx.compose.foundation.OverscrollEffect
 import androidx.compose.foundation.gestures.BringIntoViewSpec
@@ -153,12 +151,6 @@ internal class ScrollableNode(
 
         /** Focus scrolling */
         delegate(BringIntoViewResponderNode(contentInViewNode))
-        if (
-            @OptIn(ExperimentalFoundationApi::class)
-            !ComposeFoundationFlags.isKeepInViewFocusObservationChangeEnabled
-        ) {
-            delegate(FocusedBoundsObserverNode { contentInViewNode.onFocusBoundsChanged(it) })
-        }
     }
 
     override fun dispatchScrollDeltaInfo(delta: Offset) {

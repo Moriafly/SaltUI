@@ -20,6 +20,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.ui.unit.Density
 import com.moriafly.salt.ui.lazy.layout.CacheWindowLogic
 import com.moriafly.salt.ui.lazy.layout.CacheWindowScope
+import com.moriafly.salt.ui.lazy.layout.CachedItem
 import com.moriafly.salt.ui.lazy.layout.InvalidIndex
 import com.moriafly.salt.ui.lazy.layout.LazyLayoutCacheWindow
 import com.moriafly.salt.ui.lazy.layout.LazyLayoutPrefetchState
@@ -159,6 +160,31 @@ private class PagerCacheWindowScope(
                 .index
         }
         return InvalidIndex
+    }
+
+    override fun getVisibleLineKey(indexInVisibleLines: Int): Any {
+        val extraPagesBeforeCount = layoutInfo.extraPagesBefore.size
+
+        val visiblePagesCount = layoutInfo.visiblePagesInfo.size
+
+        if (indexInVisibleLines < extraPagesBeforeCount) {
+            return layoutInfo.extraPagesBefore[indexInVisibleLines].key
+        }
+
+        if (
+            indexInVisibleLines >= extraPagesBeforeCount &&
+            indexInVisibleLines < extraPagesBeforeCount + visiblePagesCount
+        ) {
+            return layoutInfo.visiblePagesInfo[indexInVisibleLines - extraPagesBeforeCount].key
+        }
+
+        if (indexInVisibleLines >= extraPagesBeforeCount + visiblePagesCount) {
+            return layoutInfo.extraPagesAfter[
+                indexInVisibleLines - extraPagesBeforeCount - visiblePagesCount
+            ]
+                .key
+        }
+        return CachedItem.NoKey
     }
 
     override fun getLastIndexInLine(lineIndex: Int): Int = lineIndex

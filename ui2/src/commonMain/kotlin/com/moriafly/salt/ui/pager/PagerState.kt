@@ -645,7 +645,9 @@ abstract class PagerState
         }
 
         private suspend fun awaitScrollDependencies() {
-            awaitLayoutModifier.waitForFirstLayout()
+            if (pagerLayoutInfoState.value === EmptyLayoutInfo) {
+                awaitLayoutModifier.waitForFirstLayout()
+            }
         }
 
         override suspend fun scroll(

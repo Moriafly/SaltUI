@@ -18,6 +18,9 @@
 
 package com.moriafly.salt.ui.lazy.staggeredgrid
 
+import androidx.collection.IntSet
+import androidx.collection.mutableIntObjectMapOf
+import androidx.collection.mutableIntSetOf
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.MutatePriority
 import androidx.compose.foundation.ScrollIndicatorState
@@ -78,7 +81,7 @@ fun rememberLazyStaggeredGridState(
     initialFirstVisibleItemIndex: Int = 0,
     initialFirstVisibleItemScrollOffset: Int = 0,
 ): LazyStaggeredGridState =
-    rememberSaveable(saver = Saver) {
+    rememberSaveable(saver = LazyStaggeredGridState.Saver) {
         LazyStaggeredGridState(initialFirstVisibleItemIndex, initialFirstVisibleItemScrollOffset)
     }
 
@@ -214,7 +217,6 @@ class LazyStaggeredGridState
 
         /** Only used for testing to disable prefetching when needed to test the main logic. */
         // @VisibleForTesting
-        @Suppress("ktlint:standard:no-consecutive-comments")
         internal var prefetchingEnabled: Boolean = true
 
         /** prefetch state used for precomputing items in the direction of scroll */
@@ -239,7 +241,7 @@ class LazyStaggeredGridState
 
         /** prefetch state */
         private var prefetchBaseIndex: Int = -1
-        private val currentItemPrefetchHandles = mutableMapOf<Int, PrefetchHandle>()
+        private val currentItemPrefetchHandles = mutableIntObjectMapOf<PrefetchHandle>()
 
         internal val laneCount
             get() = layoutInfoState.value.slots.sizes.size
@@ -276,7 +278,9 @@ class LazyStaggeredGridState
             scrollPriority: MutatePriority,
             block: suspend ScrollScope.() -> Unit,
         ) {
-            awaitLayoutModifier.waitForFirstLayout()
+            if (layoutInfoState.value === EmptyLazyStaggeredGridLayoutInfo) {
+                awaitLayoutModifier.waitForFirstLayout()
+            }
             scrollableState.scroll(scrollPriority, block)
         }
 
@@ -496,7 +500,7 @@ class LazyStaggeredGridState
                 }
                 prefetchBaseIndex = prefetchIndex
 
-                val prefetchHandlesUsed = mutableSetOf<Int>()
+                val prefetchHandlesUsed = mutableIntSetOf()
                 var targetIndex = prefetchIndex
                 val slots = info.slots
                 val laneCount = slots.sizes.size
@@ -555,14 +559,11 @@ class LazyStaggeredGridState
             }
         }
 
-        private fun clearLeftoverPrefetchHandles(prefetchHandlesUsed: Set<Int>) {
-            val iterator = currentItemPrefetchHandles.iterator()
-            while (iterator.hasNext()) {
-                val entry = iterator.next()
-                if (entry.key !in prefetchHandlesUsed) {
-                    entry.value.cancel()
-                    iterator.remove()
-                }
+        private fun clearLeftoverPrefetchHandles(prefetchHandlesUsed: IntSet) {
+            currentItemPrefetchHandles.removeIf { key, value ->
+                val used = key in prefetchHandlesUsed
+                if (!used) value.cancel()
+                !used
             }
         }
 
@@ -571,7 +572,7 @@ class LazyStaggeredGridState
             if (prefetchBaseIndex != -1 && items.isNotEmpty()) {
                 if (prefetchBaseIndex !in items.first().index..items.last().index) {
                     prefetchBaseIndex = -1
-                    currentItemPrefetchHandles.values.forEach { it.cancel() }
+                    currentItemPrefetchHandles.forEachValue { it.cancel() }
                     currentItemPrefetchHandles.clear()
                 }
             }
@@ -616,7 +617,6 @@ class LazyStaggeredGridState
         internal val scrollDeltaBetweenPasses: Float
             get() = _lazyLayoutScrollDeltaBetweenPasses.scrollDeltaBetweenPasses
 
-        @Suppress("ktlint:standard:backing-property-naming")
         private val _lazyLayoutScrollDeltaBetweenPasses = LazyLayoutScrollDeltaBetweenPasses()
 
         private fun fillNearestIndices(itemIndex: Int, laneCount: Int): IntArray {
