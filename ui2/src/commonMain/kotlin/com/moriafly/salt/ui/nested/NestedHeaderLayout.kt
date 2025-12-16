@@ -172,9 +172,7 @@ private enum class NestedHeaderSlots {
 @UnstableSaltUiApi
 @Composable
 fun rememberNestedHeaderState(): NestedHeaderState =
-    rememberSaveable(
-        saver = NestedHeaderState.Saver
-    ) {
+    rememberSaveable(saver = Saver) {
         NestedHeaderState()
     }
 
