@@ -23,21 +23,24 @@ import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.ScrollableDefaults
 import androidx.compose.foundation.gestures.rememberScrollableState
 import androidx.compose.foundation.gestures.scrollable
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.Saver
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.SubcomposeLayout
 import com.moriafly.salt.ui.UnstableSaltUiApi
+import com.moriafly.salt.ui.nested.NestedHeaderState.Companion.Saver
 import kotlin.math.roundToInt
 
 /**
@@ -113,7 +116,7 @@ fun NestedHeaderLayout(
 
     SubcomposeLayout(
         modifier = modifier
-            .fillMaxSize()
+            .clipToBounds()
             .nestedScroll(connection)
             .scrollable(
                 state = parentScrollableState,
@@ -168,7 +171,12 @@ private enum class NestedHeaderSlots {
  */
 @UnstableSaltUiApi
 @Composable
-fun rememberNestedHeaderState(): NestedHeaderState = remember { NestedHeaderState() }
+fun rememberNestedHeaderState(): NestedHeaderState =
+    rememberSaveable(
+        saver = NestedHeaderState.Saver
+    ) {
+        NestedHeaderState()
+    }
 
 /**
  * State object for [NestedHeaderLayout].
@@ -177,7 +185,9 @@ fun rememberNestedHeaderState(): NestedHeaderState = remember { NestedHeaderStat
  */
 @UnstableSaltUiApi
 @Stable
-class NestedHeaderState {
+class NestedHeaderState(
+    initialOffset: Float = 0f
+) {
     /**
      * The minimum offset the header can scroll to (usually negative header height).
      */
@@ -194,7 +204,7 @@ class NestedHeaderState {
      * The current vertical offset of the header in pixels.
      * 0 indicates fully expanded, [minOffset] indicates fully collapsed.
      */
-    var offset by mutableFloatStateOf(0f)
+    var offset by mutableFloatStateOf(initialOffset)
         private set
 
     /**
@@ -243,5 +253,15 @@ class NestedHeaderState {
      */
     fun expand() {
         offset = maxOffset
+    }
+
+    companion object {
+        /**
+         * The default [Saver] implementation for [NestedHeaderState].
+         */
+        val Saver: Saver<NestedHeaderState, Float> = Saver(
+            save = { it.offset },
+            restore = { NestedHeaderState(initialOffset = it) }
+        )
     }
 }
