@@ -23,11 +23,13 @@ import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.ScrollableDefaults
 import androidx.compose.foundation.gestures.rememberScrollableState
 import androidx.compose.foundation.gestures.scrollable
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -39,21 +41,26 @@ import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.SubcomposeLayout
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.unit.dp
 import com.moriafly.salt.ui.UnstableSaltUiApi
-import com.moriafly.salt.ui.nested.NestedHeaderState.Companion.Saver
 import kotlin.math.roundToInt
 
 /**
  * A layout that implements a collapsing header pattern with nested scrolling support.
  *
- * This layout positions a [header] above a [content] body. As the user scrolls (either on the
- * header or the content), the header collapses upward until it is completely hidden or reaches
- * its minimum size, at which point the content continues to scroll.
+ * This layout positions a [header] above a [content] body.
+ *
+ * Crucially, the [content] is always placed at the top-left (0,0) of the layout to ensure
+ * that the focus system and accessibility services perceive it as fully visible. To prevent
+ * the content from being obscured by the header, a [PaddingValues] is passed to the [content]
+ * lambda, which must be applied to the internal list (e.g., via `contentPadding`).
  *
  * @param header The composable content for the collapsible header.
  * @param modifier The modifier to be applied to the layout.
  * @param state The state object to be used to control or observe the header's offset.
- * @param content The primary scrollable content of the layout.
+ * @param content The primary scrollable content of the layout. Accepts [PaddingValues] to apply top padding.
  */
 @UnstableSaltUiApi
 @Composable
@@ -61,7 +68,7 @@ fun NestedHeaderLayout(
     header: @Composable () -> Unit,
     modifier: Modifier = Modifier,
     state: NestedHeaderState = rememberNestedHeaderState(),
-    content: @Composable () -> Unit
+    content: @Composable (PaddingValues) -> Unit
 ) {
     // Connection to handle nested scroll events from the child (e.g., LazyColumn)
     val connection = remember(state) {
@@ -114,6 +121,27 @@ fun NestedHeaderLayout(
         preConsumed.y + postConsumed.y
     }
 
+    // Create a mutable PaddingValues object that allows us to update the top padding
+    // during the measurement phase without causing a full recomposition loop
+    val contentPadding = remember {
+        object : PaddingValues {
+            var topPadding by mutableStateOf(0.dp)
+
+            override fun calculateLeftPadding(layoutDirection: LayoutDirection): Dp = 0.dp
+
+            override fun calculateTopPadding(): Dp = topPadding
+
+            override fun calculateRightPadding(layoutDirection: LayoutDirection): Dp = 0.dp
+
+            override fun calculateBottomPadding(): Dp = 0.dp
+        }
+    }
+
+    // Wrap the content lambda to inject our mutable padding
+    val contentWithPadding: @Composable () -> Unit = remember(content, contentPadding) {
+        { content(contentPadding) }
+    }
+
     SubcomposeLayout(
         modifier = modifier
             .clipToBounds()
@@ -126,33 +154,46 @@ fun NestedHeaderLayout(
     ) { constraints ->
         val looseConstraints = constraints.copy(minWidth = 0, minHeight = 0)
 
-        // Measure the header content
+        // 1. Measure Header
         val headerPlaceables = subcompose(NestedHeaderSlots.Header, header)
             .map { it.measure(looseConstraints) }
         val headerHeight = headerPlaceables.maxOfOrNull { it.height } ?: 0
 
-        // Update the scroll bounds in the state based on the measured header height
+        // 2. Update State & Padding
+        // We update the state bounds based on the measured header height
         state.updateBounds(minOffset = -headerHeight.toFloat(), maxOffset = 0f)
 
-        // Measure the body content
+        // KEY FIX: Calculate the visible height of the header and set it as top padding
+        // This pushes the *content items* down, but keeps the *content container* at (0,0)
+        val currentHeaderOffset = state.offset
+        val visibleHeaderHeight = (headerHeight + currentHeaderOffset).coerceAtLeast(0f).toDp()
+
+        // Update the backing value for PaddingValues directly
+        contentPadding.topPadding = visibleHeaderHeight
+
+        // 3. Measure Content
+        // Content gets the full height constraints since it starts at (0,0)
         val contentConstraints = constraints.copy(
             minHeight = constraints.maxHeight,
             maxHeight = constraints.maxHeight
         )
-        val contentPlaceables = subcompose(NestedHeaderSlots.Content, content)
+        val contentPlaceables = subcompose(NestedHeaderSlots.Content, contentWithPadding)
             .map { it.measure(contentConstraints) }
 
         layout(constraints.maxWidth, constraints.maxHeight) {
-            val currentOffset = state.offset.roundToInt()
+            val currentOffsetInt = state.offset.roundToInt()
 
-            // Place the header
-            headerPlaceables.forEach {
-                it.place(0, currentOffset)
+            // Place Content
+            // KEY FIX: Always place content at (0, 0)
+            // The contentPadding passed above handles the visual offset of the items
+            // This makes the Focus system believe the list is fully "In View"
+            contentPlaceables.forEach {
+                it.place(0, 0)
             }
 
-            // Place the content immediately below the header's current position
-            contentPlaceables.forEach {
-                it.place(0, headerHeight + currentOffset)
+            // Place Header (Moves up and down visually)
+            headerPlaceables.forEach {
+                it.place(0, currentOffsetInt)
             }
         }
     }
@@ -172,7 +213,9 @@ private enum class NestedHeaderSlots {
 @UnstableSaltUiApi
 @Composable
 fun rememberNestedHeaderState(): NestedHeaderState =
-    rememberSaveable(saver = Saver) {
+    rememberSaveable(
+        saver = NestedHeaderState.Saver
+    ) {
         NestedHeaderState()
     }
 
