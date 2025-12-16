@@ -26,7 +26,6 @@ import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -45,6 +44,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import com.moriafly.salt.ui.UnstableSaltUiApi
+import com.moriafly.salt.ui.nested.NestedHeaderState.Companion.Saver
 import kotlin.math.roundToInt
 
 /**
@@ -213,9 +213,7 @@ private enum class NestedHeaderSlots {
 @UnstableSaltUiApi
 @Composable
 fun rememberNestedHeaderState(): NestedHeaderState =
-    rememberSaveable(
-        saver = NestedHeaderState.Saver
-    ) {
+    rememberSaveable(saver = Saver) {
         NestedHeaderState()
     }
 
@@ -247,14 +245,6 @@ class NestedHeaderState(
      */
     var offset by mutableFloatStateOf(initialOffset)
         private set
-
-    /**
-     * A derived value representing the distance from the bottom of the collapsed state.
-     * Useful for calculating alpha or translation for floating elements.
-     */
-    val floatBottomOffset by derivedStateOf {
-        minOffset - offset
-    }
 
     /**
      * Updates the scroll bounds.
