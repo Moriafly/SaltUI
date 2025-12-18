@@ -19,15 +19,7 @@
 
 package com.moriafly.salt.ui.window
 
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.MutableWindowInsets
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
@@ -36,36 +28,26 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
-import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.awt.ComposeWindow
 import androidx.compose.ui.awt.SwingWindow
-import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.input.key.KeyEvent
-import androidx.compose.ui.layout.boundsInWindow
-import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.isSpecified
 import androidx.compose.ui.window.FrameWindowScope
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowDecoration
-import androidx.compose.ui.window.WindowPlacement
 import androidx.compose.ui.window.WindowState
 import androidx.compose.ui.window.rememberWindowState
 import com.moriafly.salt.core.os.OS
-import com.moriafly.salt.ui.ChangeSaltThemeIsDark
 import com.moriafly.salt.ui.UnstableSaltUiApi
-import com.moriafly.salt.ui.platform.windows.HitTestResult
-import com.moriafly.salt.ui.util.contains
+import com.moriafly.salt.ui.platform.macos.MacOSSaltWindowFrame
+import com.moriafly.salt.ui.platform.windows.WindowsSaltWindowFrame
 import com.moriafly.salt.ui.window.internal.SaltWindowEnvironment
-import com.moriafly.salt.ui.window.internal.SaltWindowStyler
 import java.awt.Dimension
 import java.awt.Window
 import java.awt.event.ComponentEvent
@@ -110,7 +92,6 @@ fun SaltWindow(
         "Caption button height must be less than caption bar height"
     }
 
-    val currentResizable by rememberUpdatedState(resizable)
     val currentProperties by rememberUpdatedState(properties)
 
     SaltWindowEnvironment {
@@ -130,94 +111,17 @@ fun SaltWindow(
             onKeyEvent = onKeyEvent,
             init = init
         ) {
-            val isHitTestInCaptionBar = remember { mutableStateOf(false) }
             val density = LocalDensity.current
 
             @Suppress("UNCHECKED_CAST")
             CompositionLocalProvider(
                 LocalWindowState provides state,
                 LocalSaltWindowProperties provides properties as SaltWindowProperties<Window>,
-                LocalIsHitTestInCaptionBarState provides isHitTestInCaptionBar,
-                LocalSaltWindowInfo provides SaltWindowInfo(
-                    captionBarHeight = properties.captionBarHeight,
-                    captionButtonsAlign = CaptionButtonsAlign.End,
-                    captionButtonsFullWidth = CaptionButtonWidth * 3f
-                ),
                 LocalDensity provides Density(
                     density = density.density * properties.extraDisplayScale,
                     fontScale = density.fontScale * properties.extraFontScale
                 )
             ) {
-                val windowClientInsets = remember { MutableWindowInsets() }
-
-                var captionBarRect by remember { mutableStateOf(Rect.Zero) }
-                var minimizeButtonRect by remember { mutableStateOf(Rect.Zero) }
-                var maximizeButtonRect by remember { mutableStateOf(Rect.Zero) }
-                var closeButtonRect by remember { mutableStateOf(Rect.Zero) }
-
-                val windowState = LocalWindowState.current
-                val isMaximized = windowState.placement == WindowPlacement.Maximized
-
-                if (OS.isWindows()) {
-                    val saltWindowStyler = remember(window) {
-                        SaltWindowStyler(
-                            window = window,
-                            hitTest = { x, y ->
-                                when {
-                                    // Minimize button doesn't have a tooltip
-                                    // TODO https://github.com/microsoft/microsoft-ui-xaml/issues/9149
-                                    currentProperties.captionButtonsVisible &&
-                                        minimizeButtonRect.contains(x, y) ->
-                                        HitTestResult.HTMINBUTTON
-
-                                    currentProperties.captionButtonsVisible &&
-                                        currentResizable &&
-                                        windowState.placement != WindowPlacement.Fullscreen &&
-                                        maximizeButtonRect.contains(x, y) ->
-                                        HitTestResult.HTMAXBUTTON
-
-                                    currentProperties.captionButtonsVisible &&
-                                        closeButtonRect.contains(x, y) ->
-                                        HitTestResult.HTCLOSE
-
-                                    // Last hit test result is Caption
-                                    windowState.placement != WindowPlacement.Fullscreen &&
-                                        captionBarRect.contains(x, y) &&
-                                        isHitTestInCaptionBar.value ->
-                                        HitTestResult.HTCAPTION
-
-                                    else -> HitTestResult.HTCLIENT
-                                }
-                            },
-                            onWindowInsetUpdate = { windowInsets ->
-                                windowClientInsets.insets = windowInsets
-                            }
-                        )
-                    }
-
-                    LaunchedEffect(resizable) {
-                        saltWindowStyler.updateIsResizable(resizable)
-                    }
-
-                    val isFullscreen =
-                        windowState.placement == WindowPlacement.Fullscreen
-
-                    LaunchedEffect(isFullscreen) {
-                        if (isFullscreen) {
-                            saltWindowStyler.updateBorderAndShadow(false)
-                        } else {
-                            saltWindowStyler.updateBorderAndShadow(true)
-                        }
-                    }
-
-                    LaunchedEffect(properties.backgroundType, properties.backgroundIsDarkTheme) {
-                        saltWindowStyler.updateBackground(
-                            type = properties.backgroundType,
-                            isDarkTheme = properties.backgroundIsDarkTheme
-                        )
-                    }
-                }
-
                 val minSize = properties.minSize
                 LaunchedEffect(minSize) {
                     require(minSize.width.isSpecified && minSize.height.isSpecified) {
@@ -272,72 +176,24 @@ fun SaltWindow(
                     }
                 }
 
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .windowInsetsPadding(windowClientInsets)
-                ) {
-                    Spacer(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(properties.captionBarHeight)
-                            .onGloballyPositioned {
-                                captionBarRect = it.boundsInWindow()
-                            }
-                    )
+                val os = OS.current
+                when (os) {
+                    is OS.Windows ->
+                        WindowsSaltWindowFrame(
+                            resizable = resizable,
+                            properties = properties,
+                            content = content
+                        )
 
-                    content()
+                    is OS.MacOS ->
+                        MacOSSaltWindowFrame(
+                            properties = properties,
+                            content = content
+                        )
 
-                    ChangeSaltThemeIsDark(
-                        isDarkTheme = properties.captionButtonIsDarkTheme
-                    ) {
-                        if (properties.captionButtonsVisible) {
-                            Row(
-                                modifier = Modifier
-                                    .align(Alignment.TopEnd)
-                            ) {
-                                val iconFontFamily by rememberFontIconFamily()
-                                CaptionButtonMinimize(
-                                    onClick = {
-                                        windowState.isMinimized = true
-                                    },
-                                    iconFontFamily = iconFontFamily,
-                                    modifier = Modifier
-                                        .onGloballyPositioned {
-                                            minimizeButtonRect = it.boundsInWindow()
-                                        }
-                                )
-                                CaptionButtonMaximize(
-                                    onClick = {
-                                        if (isMaximized) {
-                                            windowState.placement = WindowPlacement.Floating
-                                        } else {
-                                            windowState.placement = WindowPlacement.Maximized
-                                        }
-                                    },
-                                    iconFontFamily = iconFontFamily,
-                                    maximized = isMaximized,
-                                    modifier = Modifier
-                                        .onGloballyPositioned {
-                                            maximizeButtonRect = it.boundsInWindow()
-                                        },
-                                    enabled = resizable &&
-                                        windowState.placement != WindowPlacement.Fullscreen
-                                )
-                                CaptionButtonClose(
-                                    onClick = {
-                                        window.dispatchEvent(
-                                            WindowEvent(window, WindowEvent.WINDOW_CLOSING)
-                                        )
-                                    },
-                                    iconFontFamily = iconFontFamily,
-                                    modifier = Modifier
-                                        .onGloballyPositioned {
-                                            closeButtonRect = it.boundsInWindow()
-                                        }
-                                )
-                            }
-                        }
+                    else -> {
+                        // TODO Support Linux
+                        content()
                     }
                 }
             }
