@@ -48,6 +48,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.platform.FontLoadResult
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.moriafly.salt.core.os.OS
 import com.moriafly.salt.ui.SaltTheme
 import com.moriafly.salt.ui.Text
 import com.moriafly.salt.ui.UnstableSaltUiApi
@@ -64,19 +65,22 @@ import com.moriafly.salt.ui.UnstableSaltUiApi
 fun CaptionBarHitTest(
     modifier: Modifier = Modifier
 ) {
-    val saltWindowProperties = LocalSaltWindowProperties.current
-    val isHitTestInCaptionBarState = LocalIsHitTestInCaptionBarState.current
-    Spacer(
-        modifier = modifier
-            .fillMaxWidth()
-            .height(saltWindowProperties.captionBarHeight)
-            .onPointerEvent(PointerEventType.Enter) {
-                isHitTestInCaptionBarState.value = true
-            }
-            .onPointerEvent(PointerEventType.Exit) {
-                isHitTestInCaptionBarState.value = false
-            }
-    )
+    // TODO Only for Windows?
+    if (OS.isWindows()) {
+        val saltWindowProperties = LocalSaltWindowProperties.current
+        val isHitTestInCaptionBarState = LocalIsHitTestInCaptionBarState.current
+        Spacer(
+            modifier = modifier
+                .fillMaxWidth()
+                .height(saltWindowProperties.captionBarHeight)
+                .onPointerEvent(PointerEventType.Enter) {
+                    isHitTestInCaptionBarState.value = true
+                }
+                .onPointerEvent(PointerEventType.Exit) {
+                    isHitTestInCaptionBarState.value = false
+                }
+        )
+    }
 }
 
 @OptIn(ExperimentalTextApi::class)

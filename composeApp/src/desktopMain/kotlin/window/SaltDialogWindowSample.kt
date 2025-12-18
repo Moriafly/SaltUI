@@ -26,6 +26,7 @@ fun main() {
     application {
         SaltDialogWindow(
             onCloseRequest = ::exitApplication,
+            resizable = false
         ) {
             Text(
                 text = "Hello World"

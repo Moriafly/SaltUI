@@ -15,22 +15,16 @@
  * limitations under the License.
  */
 
-package com.moriafly.salt.ui.window.internal
+package com.moriafly.salt.ui.sample.ui.theme
 
-import com.moriafly.salt.ui.UnstableSaltUiApi
-import com.moriafly.salt.ui.platform.windows.WinUserConst
-import com.moriafly.salt.ui.window.SaltWindowBackgroundType
+import androidx.compose.runtime.Composable
+import com.moriafly.salt.ui.SaltTheme
 
-@UnstableSaltUiApi
-internal interface SaltWindowStyler {
-    fun updateIsResizable(value: Boolean)
-
-    fun updateBackground(type: SaltWindowBackgroundType, isDarkTheme: Boolean)
-
-    fun updateBorderAndShadow(value: Boolean)
-
-    /**
-     * @see [WinUserConst.WS_EX_TOOLWINDOW]
-     */
-    fun updateIsToolWindow(value: Boolean)
+@Composable
+fun AppTheme(
+    content: @Composable () -> Unit
+) {
+    SaltTheme(
+        content = content
+    )
 }
