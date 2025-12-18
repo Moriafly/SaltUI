@@ -40,7 +40,7 @@ internal fun FrameWindowScope.MacOSSaltWindowFrame(
         LocalSaltWindowInfo provides SaltWindowInfo(
             captionBarHeight = properties.captionBarHeight,
             captionButtonsAlign = CaptionButtonsAlign.Start,
-            captionButtonsFullWidth = MacOSSaltWindowFrameDefaults.CaptionButtonsFullWidth
+            captionButtonsFullWidth = 80.dp
         )
     ) {
         val styler = remember(window) {
@@ -53,8 +53,4 @@ internal fun FrameWindowScope.MacOSSaltWindowFrame(
 
         content()
     }
-}
-
-private object MacOSSaltWindowFrameDefaults {
-    val CaptionButtonsFullWidth = 80.dp
 }

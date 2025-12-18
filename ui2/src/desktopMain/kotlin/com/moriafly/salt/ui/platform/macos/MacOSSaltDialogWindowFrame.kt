@@ -40,7 +40,7 @@ internal fun DialogWindowScope.MacOSSaltDialogWindowFrame(
         LocalSaltWindowInfo provides SaltWindowInfo(
             captionBarHeight = properties.captionBarHeight,
             captionButtonsAlign = CaptionButtonsAlign.Start,
-            captionButtonsFullWidth = MacOSSaltDialogWindowFrameDefaults.CaptionButtonsFullWidth
+            captionButtonsFullWidth = 80.dp
         )
     ) {
         val styler = remember(window) {
@@ -53,8 +53,4 @@ internal fun DialogWindowScope.MacOSSaltDialogWindowFrame(
 
         content()
     }
-}
-
-private object MacOSSaltDialogWindowFrameDefaults {
-    val CaptionButtonsFullWidth = 80.dp
 }
