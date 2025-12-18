@@ -28,6 +28,7 @@ import androidx.compose.ui.window.application
 import com.moriafly.salt.ui.SaltTheme
 import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.moriafly.salt.ui.sample.ui.theme.AppTheme
+import com.moriafly.salt.ui.window.CaptionBarHitTest
 import com.moriafly.salt.ui.window.CaptionButtonsAlign
 import com.moriafly.salt.ui.window.LocalSaltWindowInfo
 import com.moriafly.salt.ui.window.SaltWindow
@@ -45,6 +46,8 @@ fun main() {
                         .fillMaxSize()
                         .background(SaltTheme.colors.background)
                 ) {
+                    CaptionBarHitTest()
+
                     Spacer(
                         modifier = Modifier
                             .align(
