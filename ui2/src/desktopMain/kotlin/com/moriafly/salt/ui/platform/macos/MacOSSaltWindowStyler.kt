@@ -32,23 +32,17 @@ internal class MacOSSaltWindowStyler(
 ) : SaltWindowStyler {
     private val skiaLayer = window.findSkiaLayer()
 
-    init {
-        when (window) {
-            is ComposeWindow -> {
-                window.rootPane.rootPane.apply {
-                    putClientProperty("apple.awt.fullWindowContent", true)
-                    putClientProperty("apple.awt.transparentTitleBar", true)
-                    putClientProperty("apple.awt.windowTitleVisible", false)
-                }
-            }
+    private val rootPane = when (window) {
+        is ComposeWindow -> window.rootPane
+        is ComposeDialog -> window.rootPane
+        else -> error("Unsupported window, window must be ComposeWindow or ComposeDialog")
+    }
 
-            is ComposeDialog -> {
-                window.rootPane.rootPane.apply {
-                    putClientProperty("apple.awt.fullWindowContent", true)
-                    putClientProperty("apple.awt.transparentTitleBar", true)
-                    putClientProperty("apple.awt.windowTitleVisible", false)
-                }
-            }
+    init {
+        rootPane.apply {
+            putClientProperty("apple.awt.fullWindowContent", true)
+            putClientProperty("apple.awt.transparentTitleBar", true)
+            putClientProperty("apple.awt.windowTitleVisible", false)
         }
     }
 
@@ -57,7 +51,14 @@ internal class MacOSSaltWindowStyler(
     }
 
     override fun updateBackground(type: SaltWindowBackgroundType, isDarkTheme: Boolean) {
-        TODO("Not yet implemented")
+        // TODO Support type
+        val windowAppearance =
+            if (isDarkTheme) {
+                "NSAppearanceNameVibrantDark"
+            } else {
+                "NSAppearanceNameVibrantLight"
+            }
+        rootPane.putClientProperty("apple.awt.windowAppearance", windowAppearance)
     }
 
     override fun updateBorderAndShadow(value: Boolean) {

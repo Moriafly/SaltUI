@@ -27,6 +27,7 @@ import androidx.compose.ui.window.FrameWindowScope
 import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.moriafly.salt.ui.window.CaptionButtonsAlign
 import com.moriafly.salt.ui.window.LocalSaltWindowInfo
+import com.moriafly.salt.ui.window.SaltWindowBackgroundType
 import com.moriafly.salt.ui.window.SaltWindowInfo
 import com.moriafly.salt.ui.window.SaltWindowProperties
 
@@ -45,6 +46,13 @@ internal fun FrameWindowScope.MacOSSaltWindowFrame(
     ) {
         val styler = remember(window) {
             MacOSSaltWindowStyler(window)
+        }
+
+        LaunchedEffect(properties.backgroundIsDarkTheme) {
+            styler.updateBackground(
+                type = SaltWindowBackgroundType.None,
+                isDarkTheme = properties.backgroundIsDarkTheme
+            )
         }
 
         LaunchedEffect(properties.captionBarHeight) {
