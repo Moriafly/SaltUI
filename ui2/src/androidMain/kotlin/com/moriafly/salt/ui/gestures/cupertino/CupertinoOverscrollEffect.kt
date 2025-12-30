@@ -354,7 +354,17 @@ internal class CupertinoOverscrollEffect(
                 // If unconsumedDelta is not Zero, [CupertinoOverscrollEffect] will cancel fling and
                 // start spring animation instead
                 lastFlingUnconsumedDelta = finalUnconsumedDelta // Use filtered value
-                delta - finalUnconsumedDelta // Use filtered value
+
+                // FIX: When flinging, we must report the actual physical consumption (delta - unconsumedDelta)
+                // rather than the filtered consumption (delta - finalUnconsumedDelta)
+                //
+                // If an edge is disabled (finalUnconsumedDelta == 0), reporting the filtered value would
+                // incorrectly signal to the Fling engine that the delta was fully consumed, causing it to
+                // continue the fling loop endlessly and locking the scroll state
+                //
+                // By reporting the actual unconsumed amount, the Fling engine correctly detects the collision
+                // and terminates, releasing the isScrollInProgress lock immediately
+                delta - unconsumedDelta
             }
         }
     }
