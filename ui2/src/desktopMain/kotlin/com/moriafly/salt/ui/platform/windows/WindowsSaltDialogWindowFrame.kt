@@ -37,12 +37,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.awt.ComposeDialog
-import androidx.compose.ui.awt.ComposeWindow
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.window.DialogWindowScope
-import androidx.compose.ui.window.FrameWindowScope
 import com.moriafly.salt.ui.ChangeSaltThemeIsDark
 import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.moriafly.salt.ui.util.contains
@@ -91,7 +89,9 @@ internal fun DialogWindowScope.WindowsSaltDialogWindowFrame(
                             HitTestResult.HTCLOSE
 
                         // Last hit test result is Caption
-                        captionBarRect.contains(x, y) && isHitTestInCaptionBar.value ->
+                        currentProperties.moveable &&
+                            captionBarRect.contains(x, y) &&
+                            isHitTestInCaptionBar.value ->
                             HitTestResult.HTCAPTION
 
                         else -> HitTestResult.HTCLIENT

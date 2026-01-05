@@ -70,6 +70,11 @@ import java.awt.Window
  * Build 22621 or later.
  * @property extraDisplayScale The extra display scale.
  * @property extraFontScale The extra font scale.
+ * @property minimizeButtonEnabled Whether the minimize button is enabled, only used for
+ * [SaltWindow]. TODO Support macOS.
+ * @property maximizeOrRestoreButtonEnabled Whether the maximize/restore button is enabled, only
+ * used for [SaltWindow]. TODO Support macOS.
+ * @property moveable Whether the window is moveable. TODO Support macOS.
  */
 @UnstableSaltUiApi
 data class SaltWindowProperties<T : Window>(
@@ -82,7 +87,10 @@ data class SaltWindowProperties<T : Window>(
     val backgroundType: SaltWindowBackgroundType,
     val backgroundIsDarkTheme: Boolean,
     val extraDisplayScale: Float,
-    val extraFontScale: Float
+    val extraFontScale: Float,
+    val minimizeButtonEnabled: Boolean,
+    val maximizeOrRestoreButtonEnabled: Boolean,
+    val moveable: Boolean
 ) {
     companion object {
         @Composable
@@ -96,7 +104,10 @@ data class SaltWindowProperties<T : Window>(
             backgroundType: SaltWindowBackgroundType = SaltWindowBackgroundType.None,
             backgroundIsDarkTheme: Boolean = SaltTheme.configs.isDarkTheme,
             extraDisplayScale: Float = 1.0f,
-            extraFontScale: Float = 1.0f
+            extraFontScale: Float = 1.0f,
+            minimizeButtonEnabled: Boolean = true,
+            maximizeOrRestoreButtonEnabled: Boolean = true,
+            moveable: Boolean = true
         ): SaltWindowProperties<T> = SaltWindowProperties(
             minSize = minSize,
             onVisibleChange = onVisibleChange,
@@ -107,7 +118,10 @@ data class SaltWindowProperties<T : Window>(
             backgroundType = backgroundType,
             backgroundIsDarkTheme = backgroundIsDarkTheme,
             extraDisplayScale = extraDisplayScale,
-            extraFontScale = extraFontScale
+            extraFontScale = extraFontScale,
+            minimizeButtonEnabled = minimizeButtonEnabled,
+            maximizeOrRestoreButtonEnabled = maximizeOrRestoreButtonEnabled,
+            moveable = moveable
         )
     }
 }

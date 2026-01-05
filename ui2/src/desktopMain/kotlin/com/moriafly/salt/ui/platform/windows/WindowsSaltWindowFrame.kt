@@ -110,7 +110,8 @@ internal fun FrameWindowScope.WindowsSaltWindowFrame(
                             HitTestResult.HTCLOSE
 
                         // Last hit test result is Caption
-                        windowState.placement != WindowPlacement.Fullscreen &&
+                        currentProperties.moveable &&
+                            windowState.placement != WindowPlacement.Fullscreen &&
                             captionBarRect.contains(x, y) &&
                             isHitTestInCaptionBar.value ->
                             HitTestResult.HTCAPTION
@@ -179,7 +180,8 @@ internal fun FrameWindowScope.WindowsSaltWindowFrame(
                             modifier = Modifier
                                 .onGloballyPositioned {
                                     minimizeButtonRect = it.boundsInWindow()
-                                }
+                                },
+                            enabled = properties.minimizeButtonEnabled
                         )
                         val isMaximized = windowState.placement == WindowPlacement.Maximized
                         CaptionButtonMaximize(
@@ -196,7 +198,8 @@ internal fun FrameWindowScope.WindowsSaltWindowFrame(
                                 .onGloballyPositioned {
                                     maximizeButtonRect = it.boundsInWindow()
                                 },
-                            enabled = resizable &&
+                            enabled = properties.maximizeOrRestoreButtonEnabled &&
+                                resizable &&
                                 windowState.placement != WindowPlacement.Fullscreen
                         )
                         CaptionButtonClose(
