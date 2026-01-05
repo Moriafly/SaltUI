@@ -38,6 +38,11 @@ object WinUserConst {
     const val WM_NCHITTEST = 0x0084
 
     /**
+     * Non client area activate message.
+     */
+    const val WM_NCACTIVATE = 0x0086
+
+    /**
      * Command message.
      */
     const val WM_COMMAND = 0x0111

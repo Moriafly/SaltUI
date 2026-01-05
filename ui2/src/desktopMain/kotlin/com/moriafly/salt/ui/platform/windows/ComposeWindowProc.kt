@@ -34,6 +34,7 @@ import com.moriafly.salt.ui.platform.windows.WinUserConst.TPM_RETURNCMD
 import com.moriafly.salt.ui.platform.windows.WinUserConst.WA_INACTIVE
 import com.moriafly.salt.ui.platform.windows.WinUserConst.WINT_MAX
 import com.moriafly.salt.ui.platform.windows.WinUserConst.WM_ACTIVATE
+import com.moriafly.salt.ui.platform.windows.WinUserConst.WM_NCACTIVATE
 import com.moriafly.salt.ui.platform.windows.WinUserConst.WM_NCCALCSIZE
 import com.moriafly.salt.ui.platform.windows.WinUserConst.WM_NCHITTEST
 import com.moriafly.salt.ui.platform.windows.WinUserConst.WM_NCMOUSEMOVE
@@ -188,6 +189,21 @@ internal class ComposeWindowProc(
 
         WM_NCHITTEST -> {
             hitResult.toLRESULT()
+        }
+
+        WM_NCACTIVATE -> {
+            // Processing WM_NCACTIVATE with lParam set to -1 triggers a specific behavior
+            // in DefWindowProc: it updates the internal visual state (active/inactive),
+            // which is required for DWM effects like Mica/Acrylic to switch correctly,
+            // but it suppresses the GDI repainting of the standard window caption
+            // This preserves the custom background while preventing the "ghost" title bar
+            User32Ex.INSTANCE.CallWindowProc(
+                originalWindowProc,
+                hwnd,
+                uMsg,
+                wParam,
+                LPARAM(-1)
+            )
         }
 
         WM_SIZE -> {
