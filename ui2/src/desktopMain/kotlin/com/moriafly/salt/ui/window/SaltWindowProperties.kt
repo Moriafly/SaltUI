@@ -127,6 +127,6 @@ data class SaltWindowProperties<T : Window>(
 }
 
 @UnstableSaltUiApi
-internal val LocalSaltWindowProperties = staticCompositionLocalOf<SaltWindowProperties<Window>> {
+val LocalSaltWindowProperties = staticCompositionLocalOf<SaltWindowProperties<Window>> {
     error("SaltWindowProperties is not provided")
 }
