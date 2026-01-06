@@ -354,7 +354,7 @@ internal class ComposeWindowProc(
         User32Ex.INSTANCE.SetMenuItemInfo(menu, item, false, menuItemInfo)
     }
 
-    @Suppress("unused", "SpellCheckingInspection")
+    @Suppress("unused")
     companion object {
         /**
          * Windows 11 Build 22000
