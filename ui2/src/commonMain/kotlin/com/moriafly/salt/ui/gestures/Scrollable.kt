@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-@file:Suppress("unused", "INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
+@file:Suppress("unused", "INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "ktlint:standard:kdoc")
 
 package com.moriafly.salt.ui.gestures
 
@@ -290,7 +290,7 @@ internal class ScrollableNode(
     ) {
         val scrollAmount: Offset =
             if (scrollingLogic.isVertical()) {
-                val viewportHeight = contentInViewNode.viewportSize.height
+                val viewportHeight = contentInViewNode.viewportSizeOrZero.height
 
                 val yAmount =
                     if (event.key == Key.PageUp) {
@@ -301,7 +301,7 @@ internal class ScrollableNode(
 
                 Offset(0f, yAmount)
             } else {
-                val viewportWidth = contentInViewNode.viewportSize.width
+                val viewportWidth = contentInViewNode.viewportSizeOrZero.width
 
                 val xAmount =
                     if (event.key == Key.PageUp) {
