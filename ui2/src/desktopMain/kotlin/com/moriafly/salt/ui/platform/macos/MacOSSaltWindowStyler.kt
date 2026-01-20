@@ -26,6 +26,7 @@ import com.moriafly.salt.ui.window.internal.SaltWindowStyler
 import org.jetbrains.skiko.disableTitleBar
 import java.awt.Window
 
+// TODO macos 26 https://github.com/electron/electron/issues/47514
 @UnstableSaltUiApi
 internal class MacOSSaltWindowStyler(
     window: Window
