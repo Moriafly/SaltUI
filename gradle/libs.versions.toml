@@ -13,6 +13,8 @@ maven-publish = "0.36.0"
 kotlinx-atomicfu = "0.29.0"
 haze = "1.7.1"
 collection = "1.5.0"
+navigation3="1.0.0-alpha06"
+navigationevent = "1.0.0"
 
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
@@ -31,12 +33,15 @@ jna-platform = { group = "net.java.dev.jna", name = "jna-platform", version.ref 
 haze = { group = "dev.chrisbanes.haze", name = "haze", version.ref = "haze"}
 haze-materials = { group = "dev.chrisbanes.haze", name = "haze-materials", version.ref = "haze"}
 collection = { group = "androidx.collection", name = "collection", version.ref = "collection" }
+androidx-navigation3-ui = { module = "org.jetbrains.androidx.navigation3:navigation3-ui", version.ref = "navigation3" }
+androidx-navigationevent-compose = { module = "org.jetbrains.androidx.navigationevent:navigationevent-compose", version.ref = "navigationevent" }
 
 [plugins]
 kotlin-multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-plugin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+kotlin-plugin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 android-application = { id = "com.android.application", version.ref = "agp" }
 android-kotlin-multiplatform-library = { id = "com.android.kotlin.multiplatform.library", version.ref = "agp" }
 compose-multiplatform = { id = "org.jetbrains.compose", version.ref = "compose-multiplatform" }

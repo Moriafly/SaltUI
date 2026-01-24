@@ -18,6 +18,7 @@ import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
     alias(libs.plugins.kotlin.plugin.compose)
+    alias(libs.plugins.kotlin.plugin.serialization)
     alias(libs.plugins.android.application)
     alias(libs.plugins.compose.multiplatform)
 }
@@ -43,6 +44,8 @@ kotlin {
             implementation(libs.compose.ui.tooling.preview)
             implementation(libs.compose.components.resources)
             implementation(libs.haze)
+            implementation(libs.androidx.navigation3.ui)
+            implementation(libs.androidx.navigationevent.compose)
 
             implementation(project(":ui2"))
         }
