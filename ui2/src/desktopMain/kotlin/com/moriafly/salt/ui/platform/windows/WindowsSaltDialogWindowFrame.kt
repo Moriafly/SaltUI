@@ -99,7 +99,8 @@ internal fun DialogWindowScope.WindowsSaltDialogWindowFrame(
                 },
                 onWindowInsetUpdate = { windowInsets ->
                     windowClientInsets.insets = windowInsets
-                }
+                },
+                onResizeEdgeChange = currentProperties.onResizeEdgeChange
             ).apply {
                 updateBorderAndShadow(true)
                 // Fix https://github.com/zeshipalace/Voxzen/issues/120

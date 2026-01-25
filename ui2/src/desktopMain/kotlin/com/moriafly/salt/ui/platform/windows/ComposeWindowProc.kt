@@ -37,10 +37,13 @@ import com.moriafly.salt.ui.platform.windows.WinUserConst.WM_ACTIVATE
 import com.moriafly.salt.ui.platform.windows.WinUserConst.WM_NCACTIVATE
 import com.moriafly.salt.ui.platform.windows.WinUserConst.WM_NCCALCSIZE
 import com.moriafly.salt.ui.platform.windows.WinUserConst.WM_NCHITTEST
+import com.moriafly.salt.ui.platform.windows.WinUserConst.WM_MOUSELEAVE
+import com.moriafly.salt.ui.platform.windows.WinUserConst.WM_NCMOUSELEAVE
 import com.moriafly.salt.ui.platform.windows.WinUserConst.WM_NCMOUSEMOVE
 import com.moriafly.salt.ui.platform.windows.WinUserConst.WM_NCRBUTTONUP
 import com.moriafly.salt.ui.platform.windows.WinUserConst.WM_SETTINGCHANGE
 import com.moriafly.salt.ui.platform.windows.structure.MENUITEMINFO
+import com.moriafly.salt.ui.platform.windows.structure.TRACKMOUSEEVENT
 import com.moriafly.salt.ui.util.findSkiaLayer
 import com.moriafly.salt.ui.util.hwnd
 import com.sun.jna.Pointer
@@ -58,16 +61,19 @@ import com.sun.jna.platform.win32.WinUser.WS_SYSMENU
 import org.jetbrains.skiko.SkiaLayer
 import org.jetbrains.skiko.currentSystemTheme
 import java.awt.Window
+import com.moriafly.salt.ui.window.WindowResizeEdge
 
 @UnstableSaltUiApi
 internal class ComposeWindowProc(
     window: Window,
     private val hitTest: (x: Float, y: Float) -> HitTestResult,
-    private val onWindowInsetUpdate: (WindowClientInsets) -> Unit
+    private val onWindowInsetUpdate: (WindowClientInsets) -> Unit,
+    private val onResizeEdgeChange: (WindowResizeEdge) -> Unit
 ) : BasicWindowProc(window.hwnd) {
     private val skiaLayer: SkiaLayer = window.findSkiaLayer()!!
 
     private var hitResult = HitTestResult.HTCLIENT
+    private var lastResizeEdge = WindowResizeEdge.None
 
     private var dpi = UINT(0)
     private var width = 0
@@ -132,6 +138,26 @@ internal class ComposeWindowProc(
                 // Else hit test by user
                 else -> hitTest(x, y)
             }
+
+            // Notify resize edge change if changed
+            val currentResizeEdge = hitResult.toWindowResizeEdge()
+            if (currentResizeEdge != lastResizeEdge) {
+                // When entering a resize edge, start tracking mouse leave
+                if (currentResizeEdge != WindowResizeEdge.None && lastResizeEdge == WindowResizeEdge.None) {
+                    val trackMouseEvent = TRACKMOUSEEVENT.ByReference().apply {
+                        cbSize = WinDef.DWORD(size().toLong())
+                        dwFlags = WinDef.DWORD(
+                            (TRACKMOUSEEVENT.TME_LEAVE or TRACKMOUSEEVENT.TME_NONCLIENT).toLong()
+                        )
+                        hwndTrack = originalHwnd
+                        dwHoverTime = WinDef.DWORD(0)
+                    }
+                    User32Ex.INSTANCE.TrackMouseEvent(trackMouseEvent)
+                }
+                lastResizeEdge = currentResizeEdge
+                onResizeEdgeChange(currentResizeEdge)
+            }
+
             hitResult
         }
     )
@@ -286,11 +312,25 @@ internal class ComposeWindowProc(
 
         WM_ACTIVATE -> {
             isWindowActive = wParam.toInt() != WA_INACTIVE
+            // Reset resize edge to None when window becomes inactive
+            if (!isWindowActive && lastResizeEdge != WindowResizeEdge.None) {
+                lastResizeEdge = WindowResizeEdge.None
+                onResizeEdgeChange(WindowResizeEdge.None)
+            }
             super.callback(hwnd, uMsg, wParam, lParam)
         }
 
         WM_NCMOUSEMOVE -> {
             User32Ex.INSTANCE.PostMessage(skiaLayerProc.originalHwnd, uMsg, wParam, lParam)
+            super.callback(hwnd, uMsg, wParam, lParam)
+        }
+
+        WM_NCMOUSELEAVE, WM_MOUSELEAVE -> {
+            // Reset resize edge to None when mouse leaves the window
+            if (lastResizeEdge != WindowResizeEdge.None) {
+                lastResizeEdge = WindowResizeEdge.None
+                onResizeEdgeChange(WindowResizeEdge.None)
+            }
             super.callback(hwnd, uMsg, wParam, lParam)
         }
 

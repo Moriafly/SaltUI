@@ -20,6 +20,7 @@
 package com.moriafly.salt.ui.platform.windows
 
 import com.moriafly.salt.ui.UnstableSaltUiApi
+import com.moriafly.salt.ui.window.WindowResizeEdge
 import com.sun.jna.platform.win32.WinDef.LRESULT
 
 /**
@@ -155,3 +156,24 @@ internal enum class HitTestResult(
 
     fun toLRESULT(): LRESULT = LRESULT(value.toLong())
 }
+
+/**
+ * Converts a [HitTestResult] to a [WindowResizeEdge].
+ *
+ * @return The corresponding WindowResizeEdge, or WindowResizeEdge.None if the hit test result
+ * is not a resize edge.
+ */
+@UnstableSaltUiApi
+internal fun HitTestResult.toWindowResizeEdge(): WindowResizeEdge =
+    when (this) {
+        HitTestResult.HTLEFT -> WindowResizeEdge.Left
+        HitTestResult.HTRIGHT -> WindowResizeEdge.Right
+        HitTestResult.HTTOP -> WindowResizeEdge.Top
+        HitTestResult.HTBOTTOM -> WindowResizeEdge.Bottom
+        HitTestResult.HTTOPLEFT -> WindowResizeEdge.TopLeft
+        HitTestResult.HTTOPRIGHT -> WindowResizeEdge.TopRight
+        HitTestResult.HTBOTTOMLEFT -> WindowResizeEdge.BottomLeft
+        HitTestResult.HTBOTTOMRIGHT -> WindowResizeEdge.BottomRight
+        else -> WindowResizeEdge.None
+    }
+

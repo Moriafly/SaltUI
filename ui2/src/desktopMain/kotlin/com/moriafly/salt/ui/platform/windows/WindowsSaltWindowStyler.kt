@@ -24,6 +24,7 @@ import com.moriafly.salt.ui.platform.windows.structure.WindowMargins
 import com.moriafly.salt.ui.util.hwnd
 import com.moriafly.salt.ui.util.isUndecorated
 import com.moriafly.salt.ui.window.SaltWindowBackgroundType
+import com.moriafly.salt.ui.window.WindowResizeEdge
 import com.moriafly.salt.ui.window.internal.SaltWindowStyler
 import com.sun.jna.platform.win32.WinUser
 import com.sun.jna.ptr.IntByReference
@@ -33,7 +34,8 @@ import java.awt.Window
 internal class WindowsSaltWindowStyler(
     window: Window,
     private val hitTest: (Float, Float) -> HitTestResult,
-    private val onWindowInsetUpdate: (WindowInsets) -> Unit
+    private val onWindowInsetUpdate: (WindowInsets) -> Unit,
+    private val onResizeEdgeChange: (WindowResizeEdge) -> Unit
 ) : SaltWindowStyler {
     private val hwnd = window.hwnd
 
@@ -61,7 +63,8 @@ internal class WindowsSaltWindowStyler(
                 )
             }
             onWindowInsetUpdate(windowInsets)
-        }
+        },
+        onResizeEdgeChange = onResizeEdgeChange
     )
 
     init {

@@ -75,6 +75,9 @@ import java.awt.Window
  * @property maximizeOrRestoreButtonEnabled Whether the maximize/restore button is enabled, only
  * used for [SaltWindow]. TODO Support macOS.
  * @property moveable Whether the window is moveable. TODO Support macOS.
+ * @property onResizeEdgeChange The callback to be invoked when the pointer moves to or away from
+ * a resize edge of the window. The callback receives the [WindowResizeEdge] indicating which edge
+ * the pointer is on, or [WindowResizeEdge.None] if not on any resize edge.
  */
 @UnstableSaltUiApi
 data class SaltWindowProperties<T : Window>(
@@ -90,7 +93,8 @@ data class SaltWindowProperties<T : Window>(
     val extraFontScale: Float,
     val minimizeButtonEnabled: Boolean,
     val maximizeOrRestoreButtonEnabled: Boolean,
-    val moveable: Boolean
+    val moveable: Boolean,
+    val onResizeEdgeChange: (WindowResizeEdge) -> Unit
 ) {
     companion object {
         @Composable
@@ -107,7 +111,8 @@ data class SaltWindowProperties<T : Window>(
             extraFontScale: Float = 1.0f,
             minimizeButtonEnabled: Boolean = true,
             maximizeOrRestoreButtonEnabled: Boolean = true,
-            moveable: Boolean = true
+            moveable: Boolean = true,
+            onResizeEdgeChange: (WindowResizeEdge) -> Unit = {}
         ): SaltWindowProperties<T> = SaltWindowProperties(
             minSize = minSize,
             onVisibleChange = onVisibleChange,
@@ -121,7 +126,8 @@ data class SaltWindowProperties<T : Window>(
             extraFontScale = extraFontScale,
             minimizeButtonEnabled = minimizeButtonEnabled,
             maximizeOrRestoreButtonEnabled = maximizeOrRestoreButtonEnabled,
-            moveable = moveable
+            moveable = moveable,
+            onResizeEdgeChange = onResizeEdgeChange
         )
     }
 }
