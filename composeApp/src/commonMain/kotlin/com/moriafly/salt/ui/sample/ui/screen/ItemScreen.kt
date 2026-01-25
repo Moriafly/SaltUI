@@ -7,6 +7,5 @@ fun ItemScreen() {
     BasicScreenColumn(
         title = "Item"
     ) {
-
     }
 }

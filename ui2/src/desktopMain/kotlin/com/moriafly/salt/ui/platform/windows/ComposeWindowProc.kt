@@ -127,7 +127,7 @@ internal class ComposeWindowProc(
                         hitTest(x, y)
                     } else {
                         hitTestResizeSide
-                        // Else hit test by user
+                            // Else hit test by user
                             ?: hitTest(x, y)
                     }
                 }
@@ -362,24 +362,24 @@ internal class ComposeWindowProc(
     ): HitTestResult? =
         when {
             x <= horizontalPadding &&
-                    y > verticalPadding &&
-                    y < height - verticalPadding -> HitTestResult.HTLEFT
+                y > verticalPadding &&
+                y < height - verticalPadding -> HitTestResult.HTLEFT
             x <= horizontalPadding && y <= verticalPadding -> HitTestResult.HTTOPLEFT
             x <= horizontalPadding -> HitTestResult.HTBOTTOMLEFT
             y <= verticalPadding &&
-                    x > horizontalPadding &&
-                    x < width - horizontalPadding -> HitTestResult.HTTOP
+                x > horizontalPadding &&
+                x < width - horizontalPadding -> HitTestResult.HTTOP
             y <= verticalPadding && x <= horizontalPadding -> HitTestResult.HTTOPLEFT
             y <= verticalPadding -> HitTestResult.HTTOPRIGHT
             x >= width - horizontalPadding &&
-                    y > verticalPadding &&
-                    y < height - verticalPadding -> HitTestResult.HTRIGHT
+                y > verticalPadding &&
+                y < height - verticalPadding -> HitTestResult.HTRIGHT
             x >= width - horizontalPadding && y <= verticalPadding ->
                 HitTestResult.HTTOPRIGHT
             x >= width - horizontalPadding -> HitTestResult.HTBOTTOMRIGHT
             y >= height - verticalPadding &&
-                    x > horizontalPadding &&
-                    x < width - horizontalPadding -> HitTestResult.HTBOTTOM
+                x > horizontalPadding &&
+                x < width - horizontalPadding -> HitTestResult.HTBOTTOM
             y >= height - verticalPadding && x <= horizontalPadding ->
                 HitTestResult.HTBOTTOMLEFT
             y >= height - verticalPadding -> HitTestResult.HTBOTTOMRIGHT
