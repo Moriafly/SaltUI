@@ -160,6 +160,9 @@ internal class ComposeWindowProc(
                 }
             }
             hitResult
+        },
+        onMouseLeave = {
+            onResizeEdgeChange(WindowResizeEdge.None)
         }
     )
 

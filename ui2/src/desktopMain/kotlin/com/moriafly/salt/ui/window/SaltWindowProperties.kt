@@ -32,6 +32,9 @@ import java.awt.Window
  * @property minSize The minimum size of the window.
  * @property onVisibleChange The callback to be invoked when the visibility of the window changes.
  * To replace obtaining the window isVisible state in Composable.
+ * @property onResizeEdgeChange The callback to be invoked when the pointer moves to or away from
+ * a resize edge of the window. The callback receives the [WindowResizeEdge] indicating which edge
+ * the pointer is on, or [WindowResizeEdge.None] if not on any resize edge.
  *
  * Do **not** use this:
  * ```
