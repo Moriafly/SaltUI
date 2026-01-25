@@ -20,6 +20,8 @@ package com.moriafly.salt.ui.platform.windows
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.awt.ComposeDialog
+import androidx.compose.ui.awt.ComposeWindow
 import androidx.compose.ui.graphics.Color
 import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.moriafly.salt.ui.platform.windows.WinUserConst.MFS_DISABLED
@@ -98,8 +100,26 @@ internal class ComposeWindowProc(
         skiaLayer = skiaLayer,
         hitTest = { x, y ->
             updateWindowInfo()
-            val horizontalPadding = if (window.isUndecorated) 0 else frameX
-            val verticalPadding = if (window.isUndecorated) 0 else frameY
+            val horizontalPadding =
+                if (window.isUndecorated) {
+                    when (window) {
+                        is ComposeWindow -> window.undecoratedResizerThickness.value.toInt()
+                        is ComposeDialog -> window.undecoratedResizerThickness.value.toInt()
+                        else -> error("Unsupported window type")
+                    }
+                } else {
+                    frameX
+                }
+            val verticalPadding =
+                if (window.isUndecorated) {
+                    when (window) {
+                        is ComposeWindow -> window.undecoratedResizerThickness.value.toInt()
+                        is ComposeDialog -> window.undecoratedResizerThickness.value.toInt()
+                        else -> error("Unsupported window type")
+                    }
+                } else {
+                    frameY
+                }
 
             // Hit test for resizer border
             hitResult = when {
@@ -124,7 +144,11 @@ internal class ComposeWindowProc(
 
                     if (window.isUndecorated) {
                         // Ignore hitTestResizeSide, Handled by UndecoratedWindowResizer
-                        hitTest(x, y)
+                        if (hitTestResizeSide != null) {
+                            HitTestResult.HTCLIENT
+                        } else {
+                            hitTest(x, y)
+                        }
                     } else {
                         hitTestResizeSide
                             // Else hit test by user
