@@ -70,6 +70,13 @@ internal class ComposeWindowProc(
 ) : BasicWindowProc(window.hwnd) {
     private val skiaLayer: SkiaLayer = window.findSkiaLayer()!!
 
+    private val undecoratedResizerThickness =
+        when (window) {
+            is ComposeWindow -> window.undecoratedResizerThickness
+            is ComposeDialog -> window.undecoratedResizerThickness
+            else -> error("Unsupported window type")
+        }
+
     private var hitResult = HitTestResult.HTCLIENT
 
     private var dpi = UINT(0)
@@ -102,21 +109,13 @@ internal class ComposeWindowProc(
             updateWindowInfo()
             val horizontalPadding =
                 if (window.isUndecorated) {
-                    when (window) {
-                        is ComposeWindow -> window.undecoratedResizerThickness.value.toInt()
-                        is ComposeDialog -> window.undecoratedResizerThickness.value.toInt()
-                        else -> error("Unsupported window type")
-                    }
+                    undecoratedResizerThickness.value.toInt()
                 } else {
                     frameX
                 }
             val verticalPadding =
                 if (window.isUndecorated) {
-                    when (window) {
-                        is ComposeWindow -> window.undecoratedResizerThickness.value.toInt()
-                        is ComposeDialog -> window.undecoratedResizerThickness.value.toInt()
-                        else -> error("Unsupported window type")
-                    }
+                    undecoratedResizerThickness.value.toInt()
                 } else {
                     frameY
                 }
