@@ -195,4 +195,9 @@ object WinUserConst {
      * bar. However, you can display the system menu by right-clicking or by typing ALT+SPACE.
      */
     const val WS_EX_TOOLWINDOW = 0x00000080
+
+    /**
+     * Sent to a window if the mouse causes the cursor to move within a window and mouse input is not captured.
+     */
+    const val WM_SETCURSOR = 0x0020
 }

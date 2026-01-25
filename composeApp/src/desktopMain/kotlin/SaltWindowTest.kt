@@ -56,7 +56,7 @@ fun main() {
             SaltWindow(
                 onCloseRequest = ::exitApplication,
                 state = state,
-                // decoration = WindowDecoration.Undecorated(),
+                decoration = WindowDecoration.Undecorated(0.dp),
                 properties = SaltWindowProperties.default(
                     minSize = DpSize(200.dp, 200.dp),
                     backgroundType = backgroundType,

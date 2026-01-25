@@ -26,6 +26,8 @@ import com.sun.jna.Native
 import com.sun.jna.Pointer
 import com.sun.jna.platform.win32.BaseTSD.LONG_PTR
 import com.sun.jna.platform.win32.User32
+import com.sun.jna.platform.win32.WinDef.HCURSOR
+import com.sun.jna.platform.win32.WinDef.HINSTANCE
 import com.sun.jna.platform.win32.WinDef.HMENU
 import com.sun.jna.platform.win32.WinDef.HWND
 import com.sun.jna.platform.win32.WinDef.LPARAM
@@ -90,6 +92,10 @@ interface User32Ex : User32 {
      * https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-trackmouseevent
      */
     fun TrackMouseEvent(lpEventTrack: TRACKMOUSEEVENT.ByReference): Boolean
+
+    fun LoadCursor(hInstance: HINSTANCE?, lpCursorName: Int): HCURSOR?
+
+    fun SetCursor(hCursor: HCURSOR?): HCURSOR?
 
     companion object {
         val INSTANCE: User32Ex = Native.load(

@@ -34,18 +34,22 @@ import com.moriafly.salt.ui.platform.windows.WinUserConst.TPM_RETURNCMD
 import com.moriafly.salt.ui.platform.windows.WinUserConst.WA_INACTIVE
 import com.moriafly.salt.ui.platform.windows.WinUserConst.WINT_MAX
 import com.moriafly.salt.ui.platform.windows.WinUserConst.WM_ACTIVATE
+import com.moriafly.salt.ui.platform.windows.WinUserConst.WM_MOUSELEAVE
 import com.moriafly.salt.ui.platform.windows.WinUserConst.WM_NCACTIVATE
 import com.moriafly.salt.ui.platform.windows.WinUserConst.WM_NCCALCSIZE
 import com.moriafly.salt.ui.platform.windows.WinUserConst.WM_NCHITTEST
-import com.moriafly.salt.ui.platform.windows.WinUserConst.WM_MOUSELEAVE
+import com.moriafly.salt.ui.platform.windows.WinUserConst.WM_NCLBUTTONDOWN
 import com.moriafly.salt.ui.platform.windows.WinUserConst.WM_NCMOUSELEAVE
 import com.moriafly.salt.ui.platform.windows.WinUserConst.WM_NCMOUSEMOVE
 import com.moriafly.salt.ui.platform.windows.WinUserConst.WM_NCRBUTTONUP
+import com.moriafly.salt.ui.platform.windows.WinUserConst.WM_SETCURSOR
 import com.moriafly.salt.ui.platform.windows.WinUserConst.WM_SETTINGCHANGE
 import com.moriafly.salt.ui.platform.windows.structure.MENUITEMINFO
 import com.moriafly.salt.ui.platform.windows.structure.TRACKMOUSEEVENT
 import com.moriafly.salt.ui.util.findSkiaLayer
 import com.moriafly.salt.ui.util.hwnd
+import com.moriafly.salt.ui.util.isUndecorated
+import com.moriafly.salt.ui.window.WindowResizeEdge
 import com.sun.jna.Pointer
 import com.sun.jna.platform.win32.Advapi32Util
 import com.sun.jna.platform.win32.WinDef
@@ -61,11 +65,10 @@ import com.sun.jna.platform.win32.WinUser.WS_SYSMENU
 import org.jetbrains.skiko.SkiaLayer
 import org.jetbrains.skiko.currentSystemTheme
 import java.awt.Window
-import com.moriafly.salt.ui.window.WindowResizeEdge
 
 @UnstableSaltUiApi
 internal class ComposeWindowProc(
-    window: Window,
+    private val window: Window,
     private val hitTest: (x: Float, y: Float) -> HitTestResult,
     private val onWindowInsetUpdate: (WindowClientInsets) -> Unit,
     private val onResizeEdgeChange: (WindowResizeEdge) -> Unit
@@ -110,30 +113,36 @@ internal class ComposeWindowProc(
             hitResult = when {
                 // Skip resizer border hit test
                 isMaximized ||
-                    !isResizable ||
-                    skiaLayer.fullscreen -> hitTest(x, y)
+                        !isResizable ||
+                        skiaLayer.fullscreen -> hitTest(x, y)
 
                 x <= horizontalPadding &&
-                    y > verticalPadding &&
-                    y < height - verticalPadding -> HitTestResult.HTLEFT
+                        y > verticalPadding &&
+                        y < height - verticalPadding -> HitTestResult.HTLEFT
+
                 x <= horizontalPadding && y <= verticalPadding -> HitTestResult.HTTOPLEFT
                 x <= horizontalPadding -> HitTestResult.HTBOTTOMLEFT
                 y <= verticalPadding &&
-                    x > horizontalPadding &&
-                    x < width - horizontalPadding -> HitTestResult.HTTOP
+                        x > horizontalPadding &&
+                        x < width - horizontalPadding -> HitTestResult.HTTOP
+
                 y <= verticalPadding && x <= horizontalPadding -> HitTestResult.HTTOPLEFT
                 y <= verticalPadding -> HitTestResult.HTTOPRIGHT
                 x >= width - horizontalPadding &&
-                    y > verticalPadding &&
-                    y < height - verticalPadding -> HitTestResult.HTRIGHT
+                        y > verticalPadding &&
+                        y < height - verticalPadding -> HitTestResult.HTRIGHT
+
                 x >= width - horizontalPadding && y <= verticalPadding ->
                     HitTestResult.HTTOPRIGHT
+
                 x >= width - horizontalPadding -> HitTestResult.HTBOTTOMRIGHT
                 y >= height - verticalPadding &&
-                    x > horizontalPadding &&
-                    x < width - horizontalPadding -> HitTestResult.HTBOTTOM
+                        x > horizontalPadding &&
+                        x < width - horizontalPadding -> HitTestResult.HTBOTTOM
+
                 y >= height - verticalPadding && x <= horizontalPadding ->
                     HitTestResult.HTBOTTOMLEFT
+
                 y >= height - verticalPadding -> HitTestResult.HTBOTTOMRIGHT
                 // Else hit test by user
                 else -> hitTest(x, y)
@@ -242,6 +251,49 @@ internal class ComposeWindowProc(
                 wParam,
                 lParam
             )
+        }
+
+        WM_NCLBUTTONDOWN -> {
+            if (window.isUndecorated) {
+                val hitTest = wParam.toInt()
+                if (hitTest in 10..17) {
+                    val direction = hitTest - 9
+                    User32Ex.INSTANCE.SendMessage(
+                        hwnd,
+                        WinUser.WM_SYSCOMMAND,
+                        WPARAM((SC_SIZE + direction).toLong()),
+                        lParam
+                    )
+                    LRESULT(0)
+                } else {
+                    super.callback(hwnd, uMsg, wParam, lParam)
+                }
+            } else {
+                super.callback(hwnd, uMsg, wParam, lParam)
+            }
+        }
+
+        WM_SETCURSOR -> {
+            if (window.isUndecorated) {
+                val hitTest = lParam.toInt() and 0xFFFF
+                val cursorId = when (hitTest) {
+                    HitTestResult.HTLEFT.value, HitTestResult.HTRIGHT.value -> WinUser.IDC_SIZEWE // 或 32644
+                    HitTestResult.HTTOP.value, HitTestResult.HTBOTTOM.value -> WinUser.IDC_SIZENS // 或 32645
+                    HitTestResult.HTTOPLEFT.value, HitTestResult.HTBOTTOMRIGHT.value -> WinUser.IDC_SIZENWSE // 或 32642
+                    HitTestResult.HTTOPRIGHT.value, HitTestResult.HTBOTTOMLEFT.value -> WinUser.IDC_SIZENESW // 或 32643
+                    else -> null
+                }
+
+                if (cursorId != null) {
+                    val cursor = User32Ex.INSTANCE.LoadCursor(null, cursorId)
+                    User32Ex.INSTANCE.SetCursor(cursor)
+                    LRESULT(1)
+                } else {
+                    super.callback(hwnd, uMsg, wParam, lParam)
+                }
+            } else {
+                super.callback(hwnd, uMsg, wParam, lParam)
+            }
         }
 
         WM_NCRBUTTONUP -> {
