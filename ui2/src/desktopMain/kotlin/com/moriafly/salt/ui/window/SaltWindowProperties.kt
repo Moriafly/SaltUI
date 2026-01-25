@@ -80,6 +80,7 @@ import java.awt.Window
 data class SaltWindowProperties<T : Window>(
     val minSize: DpSize,
     val onVisibleChange: (T, Boolean) -> Unit,
+    val onResizeEdgeChange: (T, WindowResizeEdge) -> Unit,
     val captionBarHeight: Dp,
     val captionButtonsVisible: Boolean,
     val captionButtonHeight: Dp,
@@ -97,6 +98,7 @@ data class SaltWindowProperties<T : Window>(
         fun <T : Window> default(
             minSize: DpSize = DpSize.Zero,
             onVisibleChange: (T, Boolean) -> Unit = { _, _ -> },
+            onResizeEdgeChange: (T, WindowResizeEdge) -> Unit = { _, _ -> },
             captionBarHeight: Dp = 40.dp,
             captionButtonsVisible: Boolean = true,
             captionButtonHeight: Dp = captionBarHeight,
@@ -111,6 +113,7 @@ data class SaltWindowProperties<T : Window>(
         ): SaltWindowProperties<T> = SaltWindowProperties(
             minSize = minSize,
             onVisibleChange = onVisibleChange,
+            onResizeEdgeChange = onResizeEdgeChange,
             captionBarHeight = captionBarHeight,
             captionButtonsVisible = captionButtonsVisible,
             captionButtonHeight = captionButtonHeight,

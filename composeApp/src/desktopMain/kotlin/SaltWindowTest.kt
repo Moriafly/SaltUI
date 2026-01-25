@@ -17,6 +17,7 @@ import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
 import com.moriafly.salt.ui.ItemButton
 import com.moriafly.salt.ui.ItemCheck
+import com.moriafly.salt.ui.ItemTip
 import com.moriafly.salt.ui.RoundedColumn
 import com.moriafly.salt.ui.SaltConfigs
 import com.moriafly.salt.ui.SaltTheme
@@ -27,6 +28,7 @@ import com.moriafly.salt.ui.window.LocalSaltWindowInfo
 import com.moriafly.salt.ui.window.SaltWindow
 import com.moriafly.salt.ui.window.SaltWindowBackgroundType
 import com.moriafly.salt.ui.window.SaltWindowProperties
+import com.moriafly.salt.ui.window.WindowResizeEdge
 import java.awt.AlphaComposite
 import java.awt.BorderLayout
 import java.awt.Component
@@ -44,6 +46,7 @@ fun main() {
     application {
         var isDarkTheme by remember { mutableStateOf(false) }
         var backgroundType by remember { mutableStateOf(SaltWindowBackgroundType.None) }
+        var resizeEdge by remember { mutableStateOf(WindowResizeEdge.None) }
         SaltTheme(
             configs = SaltConfigs.default(
                 isDarkTheme = isDarkTheme
@@ -56,7 +59,10 @@ fun main() {
                 decoration = WindowDecoration.Undecorated(),
                 properties = SaltWindowProperties.default(
                     minSize = DpSize(200.dp, 200.dp),
-                    backgroundType = backgroundType
+                    backgroundType = backgroundType,
+                    onResizeEdgeChange = { _, edge ->
+                        resizeEdge = edge
+                    }
                 ),
                 init = { window ->
                     window.background = java.awt.Color.BLACK
@@ -97,6 +103,12 @@ fun main() {
                                     text = type.name
                                 )
                             }
+                        }
+
+                        RoundedColumn {
+                            ItemTip(
+                                text = "ResizeEdge: ${resizeEdge.name}"
+                            )
                         }
                     }
                 }

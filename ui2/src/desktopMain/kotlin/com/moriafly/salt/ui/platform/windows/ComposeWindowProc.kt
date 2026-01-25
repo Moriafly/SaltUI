@@ -36,9 +36,11 @@ import com.moriafly.salt.ui.platform.windows.WinUserConst.TPM_RETURNCMD
 import com.moriafly.salt.ui.platform.windows.WinUserConst.WA_INACTIVE
 import com.moriafly.salt.ui.platform.windows.WinUserConst.WINT_MAX
 import com.moriafly.salt.ui.platform.windows.WinUserConst.WM_ACTIVATE
+import com.moriafly.salt.ui.platform.windows.WinUserConst.WM_MOUSELEAVE
 import com.moriafly.salt.ui.platform.windows.WinUserConst.WM_NCACTIVATE
 import com.moriafly.salt.ui.platform.windows.WinUserConst.WM_NCCALCSIZE
 import com.moriafly.salt.ui.platform.windows.WinUserConst.WM_NCHITTEST
+import com.moriafly.salt.ui.platform.windows.WinUserConst.WM_NCMOUSELEAVE
 import com.moriafly.salt.ui.platform.windows.WinUserConst.WM_NCMOUSEMOVE
 import com.moriafly.salt.ui.platform.windows.WinUserConst.WM_NCRBUTTONUP
 import com.moriafly.salt.ui.platform.windows.WinUserConst.WM_SETTINGCHANGE
@@ -46,6 +48,7 @@ import com.moriafly.salt.ui.platform.windows.structure.MENUITEMINFO
 import com.moriafly.salt.ui.util.findSkiaLayer
 import com.moriafly.salt.ui.util.hwnd
 import com.moriafly.salt.ui.util.isUndecorated
+import com.moriafly.salt.ui.window.WindowResizeEdge
 import com.sun.jna.Pointer
 import com.sun.jna.platform.win32.Advapi32Util
 import com.sun.jna.platform.win32.WinDef
@@ -66,7 +69,8 @@ import java.awt.Window
 internal class ComposeWindowProc(
     window: Window,
     private val hitTest: (x: Float, y: Float) -> HitTestResult,
-    private val onWindowInsetUpdate: (WindowClientInsets) -> Unit
+    private val onWindowInsetUpdate: (WindowClientInsets) -> Unit,
+    private val onResizeEdgeChange: (WindowResizeEdge) -> Unit
 ) : BasicWindowProc(window.hwnd) {
     private val skiaLayer: SkiaLayer = window.findSkiaLayer()!!
 
@@ -136,9 +140,9 @@ internal class ComposeWindowProc(
                     )
 
                     if (hitTestResizeSide != null) {
-                        // TODO In resize side
+                        onResizeEdgeChange(hitTestResizeSide.toWindowResizeEdge())
                     } else {
-                        // TODO Not in resize side
+                        onResizeEdgeChange(WindowResizeEdge.None)
                     }
 
                     if (window.isUndecorated) {
@@ -309,6 +313,12 @@ internal class ComposeWindowProc(
 
         WM_ACTIVATE -> {
             isWindowActive = wParam.toInt() != WA_INACTIVE
+            super.callback(hwnd, uMsg, wParam, lParam)
+        }
+
+        WM_MOUSELEAVE,
+        WM_NCMOUSELEAVE -> {
+            onResizeEdgeChange(WindowResizeEdge.None)
             super.callback(hwnd, uMsg, wParam, lParam)
         }
 
