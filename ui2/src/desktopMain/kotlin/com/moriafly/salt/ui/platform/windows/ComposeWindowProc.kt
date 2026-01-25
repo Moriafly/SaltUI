@@ -327,7 +327,8 @@ internal class ComposeWindowProc(
 
         WM_NCMOUSELEAVE, WM_MOUSELEAVE -> {
             // Reset resize edge to None when mouse leaves the window
-            if (lastResizeEdge != WindowResizeEdge.None) {
+            val isLButtonDown = (User32Ex.INSTANCE.GetKeyState(0x01).toInt() and 0x8000) != 0
+            if (!isLButtonDown && lastResizeEdge != WindowResizeEdge.None) {
                 lastResizeEdge = WindowResizeEdge.None
                 onResizeEdgeChange(WindowResizeEdge.None)
             }

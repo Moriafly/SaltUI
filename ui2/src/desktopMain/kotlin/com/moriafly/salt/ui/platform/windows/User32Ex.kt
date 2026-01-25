@@ -62,6 +62,8 @@ interface User32Ex : User32 {
 
     fun GetSystemMenu(hWnd: HWND, bRevert: Boolean): HMENU?
 
+    fun GetKeyState(nVirtKey: Int): Short
+
     /**
      * https://learn.microsoft.com/zh-cn/windows/win32/api/winuser/nf-winuser-setmenuiteminfow
      */
