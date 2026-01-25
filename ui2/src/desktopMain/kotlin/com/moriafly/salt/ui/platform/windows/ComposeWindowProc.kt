@@ -43,6 +43,7 @@ import com.moriafly.salt.ui.platform.windows.WinUserConst.WM_SETTINGCHANGE
 import com.moriafly.salt.ui.platform.windows.structure.MENUITEMINFO
 import com.moriafly.salt.ui.util.findSkiaLayer
 import com.moriafly.salt.ui.util.hwnd
+import com.moriafly.salt.ui.util.isUndecorated
 import com.sun.jna.Pointer
 import com.sun.jna.platform.win32.Advapi32Util
 import com.sun.jna.platform.win32.WinDef
@@ -97,8 +98,8 @@ internal class ComposeWindowProc(
         skiaLayer = skiaLayer,
         hitTest = { x, y ->
             updateWindowInfo()
-            val horizontalPadding = frameX
-            val verticalPadding = frameY
+            val horizontalPadding = if (window.isUndecorated) 0 else frameX
+            val verticalPadding = if (window.isUndecorated) 0 else frameY
 
             // Hit test for resizer border
             hitResult = when {
@@ -107,30 +108,29 @@ internal class ComposeWindowProc(
                     !isResizable ||
                     skiaLayer.fullscreen -> hitTest(x, y)
 
-                x <= horizontalPadding &&
-                    y > verticalPadding &&
-                    y < height - verticalPadding -> HitTestResult.HTLEFT
-                x <= horizontalPadding && y <= verticalPadding -> HitTestResult.HTTOPLEFT
-                x <= horizontalPadding -> HitTestResult.HTBOTTOMLEFT
-                y <= verticalPadding &&
-                    x > horizontalPadding &&
-                    x < width - horizontalPadding -> HitTestResult.HTTOP
-                y <= verticalPadding && x <= horizontalPadding -> HitTestResult.HTTOPLEFT
-                y <= verticalPadding -> HitTestResult.HTTOPRIGHT
-                x >= width - horizontalPadding &&
-                    y > verticalPadding &&
-                    y < height - verticalPadding -> HitTestResult.HTRIGHT
-                x >= width - horizontalPadding && y <= verticalPadding ->
-                    HitTestResult.HTTOPRIGHT
-                x >= width - horizontalPadding -> HitTestResult.HTBOTTOMRIGHT
-                y >= height - verticalPadding &&
-                    x > horizontalPadding &&
-                    x < width - horizontalPadding -> HitTestResult.HTBOTTOM
-                y >= height - verticalPadding && x <= horizontalPadding ->
-                    HitTestResult.HTBOTTOMLEFT
-                y >= height - verticalPadding -> HitTestResult.HTBOTTOMRIGHT
-                // Else hit test by user
-                else -> hitTest(x, y)
+                else -> {
+                    val hitTestResizeSide = tryHitTestResizeSide(
+                        x = x,
+                        y = y,
+                        horizontalPadding = horizontalPadding,
+                        verticalPadding = verticalPadding
+                    )
+
+                    if (hitTestResizeSide != null) {
+                        // TODO In resize side
+                    } else {
+                        // TODO Not in resize side
+                    }
+
+                    if (window.isUndecorated) {
+                        // Ignore hitTestResizeSide, Handled by UndecoratedWindowResizer
+                        hitTest(x, y)
+                    } else {
+                        hitTestResizeSide
+                        // Else hit test by user
+                            ?: hitTest(x, y)
+                    }
+                }
             }
             hitResult
         }
@@ -353,6 +353,38 @@ internal class ComposeWindowProc(
         menuItemInfo.fState = if (enabled) MFS_ENABLED else MFS_DISABLED
         User32Ex.INSTANCE.SetMenuItemInfo(menu, item, false, menuItemInfo)
     }
+
+    private fun tryHitTestResizeSide(
+        x: Float,
+        y: Float,
+        horizontalPadding: Int,
+        verticalPadding: Int
+    ): HitTestResult? =
+        when {
+            x <= horizontalPadding &&
+                    y > verticalPadding &&
+                    y < height - verticalPadding -> HitTestResult.HTLEFT
+            x <= horizontalPadding && y <= verticalPadding -> HitTestResult.HTTOPLEFT
+            x <= horizontalPadding -> HitTestResult.HTBOTTOMLEFT
+            y <= verticalPadding &&
+                    x > horizontalPadding &&
+                    x < width - horizontalPadding -> HitTestResult.HTTOP
+            y <= verticalPadding && x <= horizontalPadding -> HitTestResult.HTTOPLEFT
+            y <= verticalPadding -> HitTestResult.HTTOPRIGHT
+            x >= width - horizontalPadding &&
+                    y > verticalPadding &&
+                    y < height - verticalPadding -> HitTestResult.HTRIGHT
+            x >= width - horizontalPadding && y <= verticalPadding ->
+                HitTestResult.HTTOPRIGHT
+            x >= width - horizontalPadding -> HitTestResult.HTBOTTOMRIGHT
+            y >= height - verticalPadding &&
+                    x > horizontalPadding &&
+                    x < width - horizontalPadding -> HitTestResult.HTBOTTOM
+            y >= height - verticalPadding && x <= horizontalPadding ->
+                HitTestResult.HTBOTTOMLEFT
+            y >= height - verticalPadding -> HitTestResult.HTBOTTOMRIGHT
+            else -> null
+        }
 
     @Suppress("unused")
     companion object {

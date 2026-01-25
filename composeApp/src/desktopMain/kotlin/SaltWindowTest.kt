@@ -12,6 +12,7 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.WindowDecoration
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
 import com.moriafly.salt.ui.ItemButton
@@ -52,7 +53,7 @@ fun main() {
             SaltWindow(
                 onCloseRequest = ::exitApplication,
                 state = state,
-                // decoration = WindowDecoration.Undecorated(),
+                decoration = WindowDecoration.Undecorated(),
                 properties = SaltWindowProperties.default(
                     minSize = DpSize(200.dp, 200.dp),
                     backgroundType = backgroundType
