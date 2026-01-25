@@ -200,4 +200,9 @@ object WinUserConst {
      * Sent to a window if the mouse causes the cursor to move within a window and mouse input is not captured.
      */
     const val WM_SETCURSOR = 0x0020
+
+    /**
+     * Sent one time to a window, after it has exited the moving or sizing modal loop.
+     */
+    const val WM_EXITSIZEMOVE = 0x0232
 }

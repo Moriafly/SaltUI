@@ -34,6 +34,7 @@ import com.moriafly.salt.ui.platform.windows.WinUserConst.TPM_RETURNCMD
 import com.moriafly.salt.ui.platform.windows.WinUserConst.WA_INACTIVE
 import com.moriafly.salt.ui.platform.windows.WinUserConst.WINT_MAX
 import com.moriafly.salt.ui.platform.windows.WinUserConst.WM_ACTIVATE
+import com.moriafly.salt.ui.platform.windows.WinUserConst.WM_EXITSIZEMOVE
 import com.moriafly.salt.ui.platform.windows.WinUserConst.WM_MOUSELEAVE
 import com.moriafly.salt.ui.platform.windows.WinUserConst.WM_NCACTIVATE
 import com.moriafly.salt.ui.platform.windows.WinUserConst.WM_NCCALCSIZE
@@ -271,6 +272,14 @@ internal class ComposeWindowProc(
             } else {
                 super.callback(hwnd, uMsg, wParam, lParam)
             }
+        }
+
+        WM_EXITSIZEMOVE -> {
+            if (lastResizeEdge != WindowResizeEdge.None) {
+                lastResizeEdge = WindowResizeEdge.None
+                onResizeEdgeChange(WindowResizeEdge.None)
+            }
+            super.callback(hwnd, uMsg, wParam, lParam)
         }
 
         WM_SETCURSOR -> {
