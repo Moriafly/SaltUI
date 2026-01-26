@@ -57,18 +57,18 @@ fun AppNavigation(
                             initialContentExit = ExitTransition.None
                         )
                     } +
-                    NavDisplay.popTransitionSpec {
-                        ContentTransform(
-                            targetContentEnter = EnterTransition.None,
-                            initialContentExit = ExitTransition.None
-                        )
-                    } +
-                    NavDisplay.predictivePopTransitionSpec {
-                        ContentTransform(
-                            targetContentEnter = EnterTransition.None,
-                            initialContentExit = ExitTransition.None
-                        )
-                    }
+                        NavDisplay.popTransitionSpec {
+                            ContentTransform(
+                                targetContentEnter = EnterTransition.None,
+                                initialContentExit = ExitTransition.None
+                            )
+                        } +
+                        NavDisplay.predictivePopTransitionSpec {
+                            ContentTransform(
+                                targetContentEnter = EnterTransition.None,
+                                initialContentExit = ExitTransition.None
+                            )
+                        }
             ) {
                 MainScreen()
             }
@@ -80,18 +80,18 @@ fun AppNavigation(
                             initialContentExit = ExitTransition.None
                         )
                     } +
-                    NavDisplay.popTransitionSpec {
-                        ContentTransform(
-                            targetContentEnter = EnterTransition.None,
-                            initialContentExit = ExitTransition.None
-                        )
-                    } +
-                    NavDisplay.predictivePopTransitionSpec {
-                        ContentTransform(
-                            targetContentEnter = EnterTransition.None,
-                            initialContentExit = ExitTransition.None
-                        )
-                    }
+                        NavDisplay.popTransitionSpec {
+                            ContentTransform(
+                                targetContentEnter = EnterTransition.None,
+                                initialContentExit = ExitTransition.None
+                            )
+                        } +
+                        NavDisplay.predictivePopTransitionSpec {
+                            ContentTransform(
+                                targetContentEnter = EnterTransition.None,
+                                initialContentExit = ExitTransition.None
+                            )
+                        }
             ) {
                 AboutScreen()
             }
@@ -101,7 +101,7 @@ fun AppNavigation(
 }
 
 private fun <T : Any> defaultTransitionSpec():
-        AnimatedContentTransitionScope<Scene<T>>.() -> ContentTransform = {
+    AnimatedContentTransitionScope<Scene<T>>.() -> ContentTransform = {
     ContentTransform(
         targetContentEnter = slideIntoContainer(
             towards = AnimatedContentTransitionScope.SlideDirection.Left,
@@ -115,7 +115,7 @@ private fun <T : Any> defaultTransitionSpec():
 }
 
 private fun <T : Any> defaultPopTransitionSpec():
-        AnimatedContentTransitionScope<Scene<T>>.() -> ContentTransform = {
+    AnimatedContentTransitionScope<Scene<T>>.() -> ContentTransform = {
     ContentTransform(
         targetContentEnter = slideIntoContainer(
             towards = AnimatedContentTransitionScope.SlideDirection.Right,
@@ -129,7 +129,7 @@ private fun <T : Any> defaultPopTransitionSpec():
 }
 
 private fun <T : Any> defaultPredictivePopTransitionSpec():
-        AnimatedContentTransitionScope<Scene<T>>.(@SwipeEdge Int) -> ContentTransform = {
+    AnimatedContentTransitionScope<Scene<T>>.(@SwipeEdge Int) -> ContentTransform = {
     ContentTransform(
         targetContentEnter = slideIntoContainer(
             towards = AnimatedContentTransitionScope.SlideDirection.Right,

@@ -121,6 +121,9 @@ internal fun FrameWindowScope.WindowsSaltWindowFrame(
                 },
                 onWindowInsetUpdate = { windowInsets ->
                     windowClientInsets.insets = windowInsets
+                },
+                onResizeEdgeChange = { edge ->
+                    currentProperties.onResizeEdgeChange(window, edge)
                 }
             )
         }

@@ -195,4 +195,9 @@ object WinUserConst {
      * bar. However, you can display the system menu by right-clicking or by typing ALT+SPACE.
      */
     const val WS_EX_TOOLWINDOW = 0x00000080
+
+    /**
+     * Sent one time to a window, after it has exited the moving or sizing modal loop.
+     */
+    const val WM_EXITSIZEMOVE = 0x0232
 }

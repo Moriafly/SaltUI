@@ -18,7 +18,7 @@ package com.moriafly.salt.ui.sample.ui.navigation
 import androidx.navigation3.runtime.NavKey
 import kotlinx.serialization.Serializable
 
-sealed class ScreenRoute: NavKey {
+sealed class ScreenRoute : NavKey {
     @Serializable
     data object Main : ScreenRoute()
 

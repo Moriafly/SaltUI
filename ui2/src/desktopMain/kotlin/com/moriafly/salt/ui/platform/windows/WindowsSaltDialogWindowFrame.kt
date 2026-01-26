@@ -99,6 +99,9 @@ internal fun DialogWindowScope.WindowsSaltDialogWindowFrame(
                 },
                 onWindowInsetUpdate = { windowInsets ->
                     windowClientInsets.insets = windowInsets
+                },
+                onResizeEdgeChange = { edge ->
+                    properties.onResizeEdgeChange(window, edge)
                 }
             ).apply {
                 updateBorderAndShadow(true)
