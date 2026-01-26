@@ -112,15 +112,16 @@ internal class ComposeWindowProc(
         skiaLayer = skiaLayer,
         hitTest = { x, y ->
             updateWindowInfo()
+            val density = dpi.toInt() / 96f
             val horizontalPadding =
                 if (window.isUndecorated) {
-                    undecoratedResizerThickness.value.roundToInt()
+                    (undecoratedResizerThickness.value * density).roundToInt()
                 } else {
                     frameX
                 }
             val verticalPadding =
                 if (window.isUndecorated) {
-                    undecoratedResizerThickness.value.roundToInt()
+                    (undecoratedResizerThickness.value * density).roundToInt()
                 } else {
                     frameY
                 }
