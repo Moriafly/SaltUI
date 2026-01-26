@@ -397,32 +397,25 @@ internal class ComposeWindowProc(
         y: Float,
         horizontalPadding: Int,
         verticalPadding: Int
-    ): HitTestResult? =
-        when {
-            x <= horizontalPadding &&
-                y > verticalPadding &&
-                y < height - verticalPadding -> HitTestResult.HTLEFT
-            x <= horizontalPadding && y <= verticalPadding -> HitTestResult.HTTOPLEFT
-            x <= horizontalPadding -> HitTestResult.HTBOTTOMLEFT
-            y <= verticalPadding &&
-                x > horizontalPadding &&
-                x < width - horizontalPadding -> HitTestResult.HTTOP
-            y <= verticalPadding && x <= horizontalPadding -> HitTestResult.HTTOPLEFT
-            y <= verticalPadding -> HitTestResult.HTTOPRIGHT
-            x >= width - horizontalPadding &&
-                y > verticalPadding &&
-                y < height - verticalPadding -> HitTestResult.HTRIGHT
-            x >= width - horizontalPadding && y <= verticalPadding ->
-                HitTestResult.HTTOPRIGHT
-            x >= width - horizontalPadding -> HitTestResult.HTBOTTOMRIGHT
-            y >= height - verticalPadding &&
-                x > horizontalPadding &&
-                x < width - horizontalPadding -> HitTestResult.HTBOTTOM
-            y >= height - verticalPadding && x <= horizontalPadding ->
-                HitTestResult.HTBOTTOMLEFT
-            y >= height - verticalPadding -> HitTestResult.HTBOTTOMRIGHT
+    ): HitTestResult? {
+        val isLeft = x <= horizontalPadding
+        val isRight = x >= width - horizontalPadding
+
+        val isTop = y <= verticalPadding
+        val isBottom = y >= height - verticalPadding
+
+        return when {
+            isTop && isLeft -> HitTestResult.HTTOPLEFT
+            isTop && isRight -> HitTestResult.HTTOPRIGHT
+            isBottom && isLeft -> HitTestResult.HTBOTTOMLEFT
+            isBottom && isRight -> HitTestResult.HTBOTTOMRIGHT
+            isTop -> HitTestResult.HTTOP
+            isBottom -> HitTestResult.HTBOTTOM
+            isLeft -> HitTestResult.HTLEFT
+            isRight -> HitTestResult.HTRIGHT
             else -> null
         }
+    }
 
     @Suppress("unused")
     companion object {
