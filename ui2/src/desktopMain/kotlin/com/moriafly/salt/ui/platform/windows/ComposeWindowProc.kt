@@ -64,6 +64,7 @@ import com.sun.jna.platform.win32.WinUser.WS_SYSMENU
 import org.jetbrains.skiko.SkiaLayer
 import org.jetbrains.skiko.currentSystemTheme
 import java.awt.Window
+import kotlin.math.roundToInt
 
 @UnstableSaltUiApi
 internal class ComposeWindowProc(
@@ -113,13 +114,13 @@ internal class ComposeWindowProc(
             updateWindowInfo()
             val horizontalPadding =
                 if (window.isUndecorated) {
-                    undecoratedResizerThickness.value.toInt()
+                    undecoratedResizerThickness.value.roundToInt()
                 } else {
                     frameX
                 }
             val verticalPadding =
                 if (window.isUndecorated) {
-                    undecoratedResizerThickness.value.toInt()
+                    undecoratedResizerThickness.value.roundToInt()
                 } else {
                     frameY
                 }
@@ -132,28 +133,28 @@ internal class ComposeWindowProc(
                     skiaLayer.fullscreen -> hitTest(x, y)
 
                 else -> {
-                    val hitTestResizeSide = tryHitTestResizeSide(
+                    val hitTestResizeEdge = tryHitTestResizeEdge(
                         x = x,
                         y = y,
                         horizontalPadding = horizontalPadding,
                         verticalPadding = verticalPadding
                     )
 
-                    if (hitTestResizeSide != null) {
-                        onResizeEdgeChange(hitTestResizeSide.toWindowResizeEdge())
+                    if (hitTestResizeEdge != null) {
+                        onResizeEdgeChange(hitTestResizeEdge.toWindowResizeEdge())
                     } else {
                         onResizeEdgeChange(WindowResizeEdge.None)
                     }
 
                     if (window.isUndecorated) {
-                        // Ignore hitTestResizeSide, Handled by UndecoratedWindowResizer
-                        if (hitTestResizeSide != null) {
+                        // Ignore hitTestResizeEdge, Handled by UndecoratedWindowResizer
+                        if (hitTestResizeEdge != null) {
                             HitTestResult.HTCLIENT
                         } else {
                             hitTest(x, y)
                         }
                     } else {
-                        hitTestResizeSide
+                        hitTestResizeEdge
                             // Else hit test by user
                             ?: hitTest(x, y)
                     }
@@ -390,7 +391,7 @@ internal class ComposeWindowProc(
         User32Ex.INSTANCE.SetMenuItemInfo(menu, item, false, menuItemInfo)
     }
 
-    private fun tryHitTestResizeSide(
+    private fun tryHitTestResizeEdge(
         x: Float,
         y: Float,
         horizontalPadding: Int,

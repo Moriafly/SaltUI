@@ -72,8 +72,7 @@ internal class SkiaLayerWindowProc(
             if (!isTrackingMouseLeave) {
                 val tme = TRACKMOUSEEVENT.ByReference().apply {
                     cbSize = WinDef.DWORD(size().toLong())
-                    dwFlags =
-                        WinDef.DWORD(TRACKMOUSEEVENT.TME_LEAVE.toLong())
+                    dwFlags = WinDef.DWORD(TRACKMOUSEEVENT.TME_LEAVE.toLong())
                     hwndTrack = hwnd
                 }
                 User32Ex.INSTANCE.TrackMouseEvent(tme)

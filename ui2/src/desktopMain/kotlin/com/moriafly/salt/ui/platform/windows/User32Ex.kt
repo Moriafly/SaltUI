@@ -38,12 +38,8 @@ import com.sun.jna.platform.win32.WinUser
 import com.sun.jna.platform.win32.WinUser.WindowProc
 import com.sun.jna.win32.W32APIOptions
 
-/**
- * TODO Test 1
- * TODO internal
- */
 @UnstableSaltUiApi
-interface User32Ex : User32 {
+internal interface User32Ex : User32 {
     fun SetWindowLongPtr(hWnd: HWND, nIndex: Int, wndProc: WindowProc): LONG_PTR
 
     fun CallWindowProc(
