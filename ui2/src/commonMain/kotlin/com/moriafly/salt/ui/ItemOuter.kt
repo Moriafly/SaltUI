@@ -56,6 +56,11 @@ fun ItemOuterTitle(
     )
 }
 
+/**
+ * A hint text component designed for use outside of a [RoundedColumn].
+ *
+ * Provides standard styling and spacing for external descriptive text.
+ */
 @Composable
 fun ItemOuterTip(
     text: String,
@@ -64,7 +69,11 @@ fun ItemOuterTip(
     Text(
         text = text,
         modifier = Modifier
-            .outerPadding(),
+            .outerPadding()
+            .padding(
+                horizontal = SaltTheme.dimens.padding * 2f,
+                vertical = SaltTheme.dimens.padding * 0.5f
+            ),
         color = SaltTheme.colors.subText,
         style = SaltTheme.textStyles.sub
     )
