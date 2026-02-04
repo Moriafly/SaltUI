@@ -30,6 +30,7 @@ import androidx.navigation3.ui.NavDisplay
 import androidx.navigationevent.NavigationEvent.SwipeEdge
 import com.moriafly.salt.ui.sample.ui.screen.AboutScreen
 import com.moriafly.salt.ui.sample.ui.screen.LicenseScreen
+import com.moriafly.salt.ui.sample.ui.screen.ListScreen
 import com.moriafly.salt.ui.sample.ui.screen.MainScreen
 
 val LocalNavBackStack = compositionLocalOf<NavBackStack<NavKey>> {
@@ -96,6 +97,7 @@ fun AppNavigation(
                 AboutScreen()
             }
             entry<ScreenRoute.License> { LicenseScreen() }
+            entry<ScreenRoute.List> { ListScreen() }
         }
     )
 }

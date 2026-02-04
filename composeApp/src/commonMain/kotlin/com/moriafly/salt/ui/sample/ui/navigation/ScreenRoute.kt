@@ -27,4 +27,7 @@ sealed class ScreenRoute : NavKey {
 
     @Serializable
     data object License : ScreenRoute()
+
+    @Serializable
+    data object List : ScreenRoute()
 }

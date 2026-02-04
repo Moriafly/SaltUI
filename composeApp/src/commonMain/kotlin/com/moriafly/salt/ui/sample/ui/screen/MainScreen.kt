@@ -16,10 +16,13 @@
 package com.moriafly.salt.ui.sample.ui.screen
 
 import androidx.compose.runtime.Composable
+import com.moriafly.salt.ui.Item
 import com.moriafly.salt.ui.ItemOuterLargeTitle
 import com.moriafly.salt.ui.ItemSwitcher
 import com.moriafly.salt.ui.RoundedColumn
 import com.moriafly.salt.ui.UnstableSaltUiApi
+import com.moriafly.salt.ui.sample.ui.navigation.LocalNavBackStack
+import com.moriafly.salt.ui.sample.ui.navigation.ScreenRoute
 import com.moriafly.salt.ui.sample.util.AppConfig
 
 @OptIn(UnstableSaltUiApi::class)
@@ -41,6 +44,16 @@ fun MainScreen() {
                     AppConfig.updateIsDarkTheme(it)
                 },
                 text = "Dark Theme"
+            )
+        }
+
+        RoundedColumn {
+            val navBackStack = LocalNavBackStack.current
+            Item(
+                onClick = {
+                    navBackStack.add(ScreenRoute.List)
+                },
+                text = "List"
             )
         }
     }

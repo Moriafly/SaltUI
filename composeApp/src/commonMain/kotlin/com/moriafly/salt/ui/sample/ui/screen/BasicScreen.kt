@@ -15,6 +15,8 @@
 
 package com.moriafly.salt.ui.sample.ui.screen
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Spacer
@@ -33,6 +35,7 @@ import com.moriafly.salt.ui.rememberScrollState
 import com.moriafly.salt.ui.sample.ui.navigation.LocalNavBackStack
 import com.moriafly.salt.ui.verticalScroll
 
+@Suppress("ktlint:compose:modifier-missing-check")
 @OptIn(UnstableSaltUiApi::class)
 @Composable
 fun BasicScreenColumn(
@@ -67,6 +70,42 @@ fun BasicScreenColumn(
             content()
 
             Spacer(Modifier.windowInsetsBottomHeight(WindowInsets.safeMainCompat))
+        }
+    }
+}
+
+@Suppress("ktlint:compose:modifier-missing-check")
+@OptIn(UnstableSaltUiApi::class)
+@Composable
+fun BasicScreenBox(
+    title: String,
+    showBackBtn: Boolean = true,
+    content: @Composable BoxScope.() -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .windowInsetsPadding(
+                WindowInsets.safeMainCompat
+                    .only(WindowInsetsSides.Horizontal + WindowInsetsSides.Top)
+            )
+    ) {
+        val navBackStack = LocalNavBackStack.current
+        TitleBar(
+            onBack = {
+                if (navBackStack.size > 1) {
+                    navBackStack.removeLastOrNull()
+                }
+            },
+            text = title,
+            showBackBtn = showBackBtn
+        )
+
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+        ) {
+            content()
         }
     }
 }

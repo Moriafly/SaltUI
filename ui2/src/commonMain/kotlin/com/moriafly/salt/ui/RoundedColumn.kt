@@ -83,3 +83,60 @@ fun RoundedColumn(
         content = content
     )
 }
+
+/**
+ * A specialized version of [RoundedColumn] that uses predefined padding configurations.
+ * This overload simplifies usage by providing common padding presets based on the
+ * layout context (e.g., standard grouping vs. nested list items).
+ *
+ * @param type The preset type that determines the [PaddingValues] to be applied.
+ * @param modifier The modifier to be applied to the layout.
+ * @param color The background color of the container.
+ * @param content The composable content within the column.
+ */
+@UnstableSaltUiApi
+@Composable
+fun RoundedColumn(
+    type: RoundedColumnType,
+    modifier: Modifier = Modifier,
+    color: Color = SaltTheme.colors.subBackground,
+    content: @Composable ColumnScope.() -> Unit
+) {
+    RoundedColumn(
+        modifier = modifier,
+        paddingValues = when (type) {
+            RoundedColumnType.Default -> PaddingValues(
+                horizontal = SaltTheme.dimens.padding,
+                vertical = SaltTheme.dimens.padding * 0.5f
+            )
+
+            RoundedColumnType.InList -> PaddingValues(
+                horizontal = SaltTheme.dimens.padding,
+                vertical = SaltDimens.RoundedColumnInListItemPadding
+            )
+        },
+        color = color,
+        content = content
+    )
+}
+
+/**
+ * Defines the layout behavior and spacing presets for a [RoundedColumn].
+ */
+@UnstableSaltUiApi
+enum class RoundedColumnType {
+    /**
+     * Standard layout with balanced horizontal and vertical padding.
+     * Suitable for independent card-like sections.
+     * Mainly used for building standard settings screens.
+     */
+    Default,
+
+    /**
+     * Optimized for use within list containers (e.g., LazyColumn).
+     * Applies specific vertical compensation for better alignment with list edges.
+     * Mainly used for constructing items in lists without large rounded corner hierarchies inside,
+     * such as folder lists.
+     */
+    InList
+}
