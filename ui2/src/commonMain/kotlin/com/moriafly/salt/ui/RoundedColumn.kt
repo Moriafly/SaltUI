@@ -137,6 +137,8 @@ enum class RoundedColumnType {
      * Applies specific vertical compensation for better alignment with list edges.
      * Mainly used for constructing items in lists without large rounded corner hierarchies inside,
      * such as folder lists.
+     *
+     * @see SaltDimens.RoundedColumnInListEdgePadding
      */
     InList
 }
