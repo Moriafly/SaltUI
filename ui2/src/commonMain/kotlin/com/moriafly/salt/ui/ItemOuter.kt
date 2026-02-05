@@ -69,7 +69,6 @@ fun ItemOuterTip(
     Text(
         text = text,
         modifier = Modifier
-            .outerPadding()
             .padding(
                 horizontal = SaltTheme.dimens.padding * 2f,
                 vertical = SaltTheme.dimens.padding * 0.5f
