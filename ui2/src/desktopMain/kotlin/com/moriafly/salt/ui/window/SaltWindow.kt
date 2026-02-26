@@ -45,6 +45,7 @@ import androidx.compose.ui.window.WindowState
 import androidx.compose.ui.window.rememberWindowState
 import com.moriafly.salt.core.os.OS
 import com.moriafly.salt.ui.UnstableSaltUiApi
+import com.moriafly.salt.ui.platform.linux.LinuxSaltWindowFrame
 import com.moriafly.salt.ui.platform.macos.MacOSSaltWindowFrame
 import com.moriafly.salt.ui.platform.windows.WindowsSaltWindowFrame
 import com.moriafly.salt.ui.window.internal.SaltWindowEnvironment
@@ -94,6 +95,13 @@ fun SaltWindow(
 
     val currentProperties by rememberUpdatedState(properties)
 
+    // Linux 需要设置 Undecorated 才能隐藏自带的标题栏
+    val effectiveDecoration = if (OS.current is OS.Linux) {
+        WindowDecoration.Undecorated()
+    } else {
+        decoration
+    }
+
     SaltWindowEnvironment {
         SwingWindow(
             onCloseRequest = onCloseRequest,
@@ -101,7 +109,7 @@ fun SaltWindow(
             visible = visible,
             title = title,
             icon = icon,
-            decoration = decoration,
+            decoration = effectiveDecoration,
             transparent = transparent,
             resizable = resizable,
             enabled = enabled,
@@ -191,8 +199,14 @@ fun SaltWindow(
                             content = content
                         )
 
+                    is OS.Linux -> {
+                        LinuxSaltWindowFrame(
+                            properties = properties,
+                            content = content
+                        )
+                    }
+
                     else -> {
-                        // TODO Support Linux
                         content()
                     }
                 }

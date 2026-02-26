@@ -65,8 +65,7 @@ import com.moriafly.salt.ui.UnstableSaltUiApi
 fun CaptionBarHitTest(
     modifier: Modifier = Modifier
 ) {
-    // TODO Only for Windows?
-    if (OS.isWindows()) {
+    if (OS.isWindows() || OS.isLinux()) {
         val saltWindowProperties = LocalSaltWindowProperties.current
         val isHitTestInCaptionBarState = LocalIsHitTestInCaptionBarState.current
         Spacer(
@@ -124,9 +123,9 @@ internal fun CaptionButtonFullscreen(
     CaptionButton(
         onClick = onClick,
         iconGlyph = if (isFullscreen) {
-            CaptionButtonBackToWindowIconGlyph
+            if (iconFontFamily != null) CaptionButtonBackToWindowIconGlyph else LinuxCaptionButtonRestoreIconGlyph
         } else {
-            CaptionButtonFullscreenIconGlyph
+            if (iconFontFamily != null) CaptionButtonFullscreenIconGlyph else LinuxCaptionButtonFullscreenIconGlyph
         },
         iconFontFamily = iconFontFamily,
         colors = if (windowInfo.isWindowFocused) {
@@ -158,7 +157,7 @@ internal fun CaptionButtonMinimize(
     val windowInfo = LocalWindowInfo.current
     CaptionButton(
         onClick = onClick,
-        iconGlyph = CaptionButtonMinimizeIconGlyph,
+        iconGlyph = if (iconFontFamily != null) CaptionButtonMinimizeIconGlyph else LinuxCaptionButtonMinimizeIconGlyph,
         iconFontFamily = iconFontFamily,
         colors = if (windowInfo.isWindowFocused) {
             if (SaltTheme.configs.isDarkTheme) {
@@ -191,9 +190,9 @@ internal fun CaptionButtonMaximize(
     CaptionButton(
         onClick = onClick,
         iconGlyph = if (maximized) {
-            CaptionButtonRestoreIconGlyph
+            if (iconFontFamily != null) CaptionButtonRestoreIconGlyph else LinuxCaptionButtonRestoreIconGlyph
         } else {
-            CaptionButtonMaximizeIconGlyph
+            if (iconFontFamily != null) CaptionButtonMaximizeIconGlyph else LinuxCaptionButtonMaximizeIconGlyph
         },
         iconFontFamily = iconFontFamily,
         colors = if (windowInfo.isWindowFocused) {
@@ -225,7 +224,7 @@ internal fun CaptionButtonClose(
     val windowInfo = LocalWindowInfo.current
     CaptionButton(
         onClick = onClick,
-        iconGlyph = CaptionButtonCloseIconGlyph,
+        iconGlyph = if (iconFontFamily != null) CaptionButtonCloseIconGlyph else LinuxCaptionButtonCloseIconGlyph,
         iconFontFamily = iconFontFamily,
         colors = if (windowInfo.isWindowFocused) {
             if (SaltTheme.configs.isDarkTheme) {
@@ -291,7 +290,7 @@ private fun CaptionButton(
             modifier = Modifier
                 .align(Alignment.Center),
             color = color,
-            fontSize = 10.sp,
+            fontSize = if (iconFontFamily == null) 16.sp else 10.sp,
             fontFamily = iconFontFamily
         )
     }
@@ -391,3 +390,9 @@ private const val CaptionButtonMinimizeIconGlyph = '\uE921'
 private const val CaptionButtonMaximizeIconGlyph = '\uE922'
 private const val CaptionButtonRestoreIconGlyph = '\uE923'
 private const val CaptionButtonCloseIconGlyph = '\uE8BB'
+
+private const val LinuxCaptionButtonFullscreenIconGlyph = '\u2610'
+private const val LinuxCaptionButtonMinimizeIconGlyph = '\u2014'
+private const val LinuxCaptionButtonMaximizeIconGlyph = '\u25A1'
+private const val LinuxCaptionButtonRestoreIconGlyph = '\u29C9'
+private const val LinuxCaptionButtonCloseIconGlyph = '\u2715'
