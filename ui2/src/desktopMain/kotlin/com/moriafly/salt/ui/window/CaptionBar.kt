@@ -58,10 +58,3 @@ fun CaptionBarHitTest(
         )
     }
 }
-
-// TODO
-// private const val LinuxCaptionButtonFullscreenIconGlyph = '\u2610'
-// private const val LinuxCaptionButtonMinimizeIconGlyph = '\u2014'
-// private const val LinuxCaptionButtonMaximizeIconGlyph = '\u25A1'
-// private const val LinuxCaptionButtonRestoreIconGlyph = '\u29C9'
-// private const val LinuxCaptionButtonCloseIconGlyph = '\u2715'
