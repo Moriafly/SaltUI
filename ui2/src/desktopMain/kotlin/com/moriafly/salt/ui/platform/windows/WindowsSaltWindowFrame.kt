@@ -45,17 +45,12 @@ import androidx.compose.ui.window.WindowPlacement
 import com.moriafly.salt.ui.ChangeSaltThemeIsDark
 import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.moriafly.salt.ui.util.contains
-import com.moriafly.salt.ui.window.CaptionButtonClose
-import com.moriafly.salt.ui.window.CaptionButtonMaximize
-import com.moriafly.salt.ui.window.CaptionButtonMinimize
-import com.moriafly.salt.ui.window.CaptionButtonWidth
 import com.moriafly.salt.ui.window.CaptionButtonsAlign
 import com.moriafly.salt.ui.window.LocalIsHitTestInCaptionBarState
 import com.moriafly.salt.ui.window.LocalSaltWindowInfo
 import com.moriafly.salt.ui.window.LocalWindowState
 import com.moriafly.salt.ui.window.SaltWindowInfo
 import com.moriafly.salt.ui.window.SaltWindowProperties
-import com.moriafly.salt.ui.window.rememberFontIconFamily
 import java.awt.event.WindowEvent
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -75,7 +70,7 @@ internal fun FrameWindowScope.WindowsSaltWindowFrame(
         LocalSaltWindowInfo provides SaltWindowInfo(
             captionBarHeight = properties.captionBarHeight,
             captionButtonsAlign = CaptionButtonsAlign.End,
-            captionButtonsFullWidth = CaptionButtonWidth * 3f
+            captionButtonsFullWidth = WindowsCaptionButtonWidth * 3f
         ),
         LocalIsHitTestInCaptionBarState provides isHitTestInCaptionBar,
     ) {
@@ -174,8 +169,8 @@ internal fun FrameWindowScope.WindowsSaltWindowFrame(
                         modifier = Modifier
                             .align(Alignment.TopEnd)
                     ) {
-                        val iconFontFamily by rememberFontIconFamily()
-                        CaptionButtonMinimize(
+                        val iconFontFamily by rememberWindowsCaptionBarFontIconFamily()
+                        WindowsCaptionButtonMinimize(
                             onClick = {
                                 windowState.isMinimized = true
                             },
@@ -187,7 +182,7 @@ internal fun FrameWindowScope.WindowsSaltWindowFrame(
                             enabled = properties.minimizeButtonEnabled
                         )
                         val isMaximized = windowState.placement == WindowPlacement.Maximized
-                        CaptionButtonMaximize(
+                        WindowsCaptionButtonMaximize(
                             onClick = {
                                 if (isMaximized) {
                                     windowState.placement = WindowPlacement.Floating
@@ -205,7 +200,7 @@ internal fun FrameWindowScope.WindowsSaltWindowFrame(
                                 resizable &&
                                 windowState.placement != WindowPlacement.Fullscreen
                         )
-                        CaptionButtonClose(
+                        WindowsCaptionButtonClose(
                             onClick = {
                                 window.dispatchEvent(
                                     WindowEvent(window, WindowEvent.WINDOW_CLOSING)

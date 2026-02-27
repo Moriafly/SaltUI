@@ -1,6 +1,6 @@
 /*
  * Salt UI
- * Copyright (C) 2025 Moriafly
+ * Copyright (C) 2026 Moriafly
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,13 +19,11 @@ package com.moriafly.salt.ui.platform.linux
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.MutableWindowInsets
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
@@ -40,23 +38,18 @@ import androidx.compose.ui.window.FrameWindowScope
 import androidx.compose.ui.window.WindowPlacement
 import com.moriafly.salt.ui.ChangeSaltThemeIsDark
 import com.moriafly.salt.ui.UnstableSaltUiApi
-import com.moriafly.salt.ui.window.CaptionButtonClose
-import com.moriafly.salt.ui.window.CaptionButtonMaximize
-import com.moriafly.salt.ui.window.CaptionButtonMinimize
-import com.moriafly.salt.ui.window.CaptionButtonWidth
+import com.moriafly.salt.ui.platform.windows.WindowsCaptionButtonWidth
 import com.moriafly.salt.ui.window.CaptionButtonsAlign
 import com.moriafly.salt.ui.window.LocalIsHitTestInCaptionBarState
 import com.moriafly.salt.ui.window.LocalSaltWindowInfo
 import com.moriafly.salt.ui.window.LocalWindowState
 import com.moriafly.salt.ui.window.SaltWindowInfo
 import com.moriafly.salt.ui.window.SaltWindowProperties
-import com.moriafly.salt.ui.window.rememberFontIconFamily
 import java.awt.Cursor
 import java.awt.Point
 import java.awt.event.MouseAdapter
 import java.awt.event.MouseEvent
 import java.awt.event.MouseMotionAdapter
-import java.awt.event.WindowEvent
 
 @OptIn(ExperimentalLayoutApi::class)
 @UnstableSaltUiApi
@@ -65,20 +58,22 @@ internal fun FrameWindowScope.LinuxSaltWindowFrame(
     properties: SaltWindowProperties<ComposeWindow>,
     content: @Composable FrameWindowScope.() -> Unit
 ) {
-    val isHitTestInCaptionBar = remember { mutableStateOf(false) }
     val currentProperties by rememberUpdatedState(properties)
+
+    val isHitTestInCaptionBar = remember { mutableStateOf(false) }
 
     CompositionLocalProvider(
         LocalSaltWindowInfo provides SaltWindowInfo(
             captionBarHeight = properties.captionBarHeight,
             captionButtonsAlign = CaptionButtonsAlign.End,
-            captionButtonsFullWidth = CaptionButtonWidth * 3f
+            // TODO Linux
+            captionButtonsFullWidth = WindowsCaptionButtonWidth * 3f
         ),
         LocalIsHitTestInCaptionBarState provides isHitTestInCaptionBar,
     ) {
         val windowState = LocalWindowState.current
-        val windowClientInsets = remember { MutableWindowInsets() }
 
+        // TODO 抽离
         DisposableEffect(window) {
             var dragStartScreenPos: Point? = null
             var dragStartWindowPos: Point? = null
@@ -166,7 +161,6 @@ internal fun FrameWindowScope.LinuxSaltWindowFrame(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .windowInsetsPadding(windowClientInsets)
         ) {
             Spacer(
                 modifier = Modifier
@@ -184,36 +178,7 @@ internal fun FrameWindowScope.LinuxSaltWindowFrame(
                         modifier = Modifier
                             .align(Alignment.TopEnd)
                     ) {
-                        val iconFontFamily by rememberFontIconFamily()
-                        CaptionButtonMinimize(
-                            onClick = {
-                                windowState.isMinimized = true
-                            },
-                            iconFontFamily = iconFontFamily,
-                            enabled = properties.minimizeButtonEnabled
-                        )
-                        val isMaximized = windowState.placement == WindowPlacement.Maximized
-                        CaptionButtonMaximize(
-                            onClick = {
-                                if (isMaximized) {
-                                    windowState.placement = WindowPlacement.Floating
-                                } else {
-                                    windowState.placement = WindowPlacement.Maximized
-                                }
-                            },
-                            iconFontFamily = iconFontFamily,
-                            maximized = isMaximized,
-                            enabled = properties.maximizeOrRestoreButtonEnabled &&
-                                windowState.placement != WindowPlacement.Fullscreen
-                        )
-                        CaptionButtonClose(
-                            onClick = {
-                                window.dispatchEvent(
-                                    WindowEvent(window, WindowEvent.WINDOW_CLOSING)
-                                )
-                            },
-                            iconFontFamily = iconFontFamily,
-                        )
+                        // TODO Linux Caption Bar
                     }
                 }
             }

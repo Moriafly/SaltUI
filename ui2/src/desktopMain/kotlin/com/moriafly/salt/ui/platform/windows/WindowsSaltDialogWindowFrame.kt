@@ -44,14 +44,11 @@ import androidx.compose.ui.window.DialogWindowScope
 import com.moriafly.salt.ui.ChangeSaltThemeIsDark
 import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.moriafly.salt.ui.util.contains
-import com.moriafly.salt.ui.window.CaptionButtonClose
-import com.moriafly.salt.ui.window.CaptionButtonWidth
 import com.moriafly.salt.ui.window.CaptionButtonsAlign
 import com.moriafly.salt.ui.window.LocalIsHitTestInCaptionBarState
 import com.moriafly.salt.ui.window.LocalSaltWindowInfo
 import com.moriafly.salt.ui.window.SaltWindowInfo
 import com.moriafly.salt.ui.window.SaltWindowProperties
-import com.moriafly.salt.ui.window.rememberFontIconFamily
 import java.awt.event.WindowEvent
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -70,7 +67,7 @@ internal fun DialogWindowScope.WindowsSaltDialogWindowFrame(
         LocalSaltWindowInfo provides SaltWindowInfo(
             captionBarHeight = properties.captionBarHeight,
             captionButtonsAlign = CaptionButtonsAlign.End,
-            captionButtonsFullWidth = CaptionButtonWidth
+            captionButtonsFullWidth = WindowsCaptionButtonWidth
         ),
         LocalIsHitTestInCaptionBarState provides isHitTestInCaptionBar
     ) {
@@ -145,8 +142,8 @@ internal fun DialogWindowScope.WindowsSaltDialogWindowFrame(
                         modifier = Modifier
                             .align(Alignment.TopEnd)
                     ) {
-                        val iconFontFamily by rememberFontIconFamily()
-                        CaptionButtonClose(
+                        val iconFontFamily by rememberWindowsCaptionBarFontIconFamily()
+                        WindowsCaptionButtonClose(
                             onClick = {
                                 window.dispatchEvent(
                                     WindowEvent(window, WindowEvent.WINDOW_CLOSING)
