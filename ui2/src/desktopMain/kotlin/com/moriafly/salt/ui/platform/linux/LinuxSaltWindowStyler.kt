@@ -33,26 +33,14 @@ import java.awt.Window
 internal class LinuxSaltWindowStyler(
     window: Window
 ) : SaltWindowStyler {
-    private val skiaLayer = try {
-        window.findSkiaLayer()
-    } catch (_: Throwable) {
-        null
-    }
+    private val skiaLayer = window.findSkiaLayer()
 
     override fun updateIsResizable(value: Boolean) {
         // No-op on Linux for now.
     }
 
     override fun updateBackground(type: SaltWindowBackgroundType, isDarkTheme: Boolean) {
-        // Best-effort: try to enable/disable transparency on Skia layer depending on background type.
-        try {
-            when (type) {
-                SaltWindowBackgroundType.None -> skiaLayer?.transparency = true
-                else -> skiaLayer?.transparency = false
-            }
-        } catch (_: Throwable) {
-            // Ignore on failure.
-        }
+        // TODO Support type
     }
 
     override fun updateBorderAndShadow(value: Boolean) {
