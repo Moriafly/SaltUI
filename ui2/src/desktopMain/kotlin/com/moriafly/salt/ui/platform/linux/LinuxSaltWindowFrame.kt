@@ -29,7 +29,6 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -37,7 +36,6 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.awt.ComposeWindow
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.FrameWindowScope
 import androidx.compose.ui.window.WindowPlacement
 import com.moriafly.salt.ui.ChangeSaltThemeIsDark
@@ -50,7 +48,6 @@ import com.moriafly.salt.ui.window.CaptionButtonsAlign
 import com.moriafly.salt.ui.window.LocalIsHitTestInCaptionBarState
 import com.moriafly.salt.ui.window.LocalSaltWindowInfo
 import com.moriafly.salt.ui.window.LocalWindowState
-import com.moriafly.salt.ui.window.SaltWindowBackgroundType
 import com.moriafly.salt.ui.window.SaltWindowInfo
 import com.moriafly.salt.ui.window.SaltWindowProperties
 import com.moriafly.salt.ui.window.rememberFontIconFamily
@@ -81,9 +78,6 @@ internal fun FrameWindowScope.LinuxSaltWindowFrame(
     ) {
         val windowState = LocalWindowState.current
         val windowClientInsets = remember { MutableWindowInsets() }
-        val styler = remember(window) {
-            LinuxSaltWindowStyler(window)
-        }
 
         DisposableEffect(window) {
             var dragStartScreenPos: Point? = null
@@ -97,8 +91,10 @@ internal fun FrameWindowScope.LinuxSaltWindowFrame(
                     if (!currentProperties.moveable) return
                     if (windowState.placement == WindowPlacement.Fullscreen) return
 
-                    val captionBarHeightPx = (currentProperties.captionBarHeight.value *
-                        window.graphicsConfiguration.defaultTransform.scaleY).toInt()
+                    val captionBarHeightPx = (
+                        currentProperties.captionBarHeight.value *
+                            window.graphicsConfiguration.defaultTransform.scaleY
+                    ).toInt()
                     if (e.y > captionBarHeightPx) return
 
                     // Drag from maximized: restore first, reposition proportionally
@@ -132,8 +128,10 @@ internal fun FrameWindowScope.LinuxSaltWindowFrame(
                     if (e.clickCount != 2) return
                     if (!isHitTestInCaptionBar.value) return
 
-                    val captionBarHeightPx = (currentProperties.captionBarHeight.value *
-                        window.graphicsConfiguration.defaultTransform.scaleY).toInt()
+                    val captionBarHeightPx = (
+                        currentProperties.captionBarHeight.value *
+                            window.graphicsConfiguration.defaultTransform.scaleY
+                    ).toInt()
                     if (e.y > captionBarHeightPx) return
 
                     if (windowState.placement == WindowPlacement.Maximized) {
@@ -163,17 +161,6 @@ internal fun FrameWindowScope.LinuxSaltWindowFrame(
                 window.removeMouseListener(mouseListener)
                 window.removeMouseMotionListener(mouseMotionListener)
             }
-        }
-
-        LaunchedEffect(properties.backgroundIsDarkTheme) {
-            styler.updateBackground(
-                type = SaltWindowBackgroundType.None,
-                isDarkTheme = properties.backgroundIsDarkTheme
-            )
-        }
-
-        LaunchedEffect(properties.captionBarHeight) {
-            styler.disableTitleBar(properties.captionBarHeight.value)
         }
 
         Box(
@@ -217,7 +204,7 @@ internal fun FrameWindowScope.LinuxSaltWindowFrame(
                             iconFontFamily = iconFontFamily,
                             maximized = isMaximized,
                             enabled = properties.maximizeOrRestoreButtonEnabled &&
-                                    windowState.placement != WindowPlacement.Fullscreen
+                                windowState.placement != WindowPlacement.Fullscreen
                         )
                         CaptionButtonClose(
                             onClick = {

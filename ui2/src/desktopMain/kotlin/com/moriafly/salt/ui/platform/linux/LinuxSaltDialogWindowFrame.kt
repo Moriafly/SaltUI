@@ -1,6 +1,6 @@
 /*
  * Salt UI
- * Copyright (C) 2025 Moriafly
+ * Copyright (C) 2026 Moriafly
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,13 +25,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.awt.ComposeDialog
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogWindowScope
 import com.moriafly.salt.ui.ChangeSaltThemeIsDark
 import com.moriafly.salt.ui.UnstableSaltUiApi
@@ -39,7 +37,6 @@ import com.moriafly.salt.ui.window.CaptionButtonClose
 import com.moriafly.salt.ui.window.CaptionButtonWidth
 import com.moriafly.salt.ui.window.CaptionButtonsAlign
 import com.moriafly.salt.ui.window.LocalSaltWindowInfo
-import com.moriafly.salt.ui.window.SaltWindowBackgroundType
 import com.moriafly.salt.ui.window.SaltWindowInfo
 import com.moriafly.salt.ui.window.SaltWindowProperties
 import com.moriafly.salt.ui.window.rememberFontIconFamily
@@ -60,16 +57,7 @@ internal fun DialogWindowScope.LinuxSaltDialogWindowFrame(
         )
     ) {
         val windowClientInsets = remember { MutableWindowInsets() }
-        val styler = remember(window) {
-            LinuxSaltWindowStyler(window)
-        }
 
-        LaunchedEffect(properties.backgroundIsDarkTheme) {
-            styler.updateBackground(
-                type = SaltWindowBackgroundType.None,
-                isDarkTheme = properties.backgroundIsDarkTheme
-            )
-        }
         Box(
             modifier = Modifier
                 .fillMaxSize()
