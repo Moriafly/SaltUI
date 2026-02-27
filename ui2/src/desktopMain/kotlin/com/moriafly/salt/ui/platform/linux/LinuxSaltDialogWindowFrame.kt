@@ -33,11 +33,12 @@ import androidx.compose.ui.awt.ComposeDialog
 import androidx.compose.ui.window.DialogWindowScope
 import com.moriafly.salt.ui.ChangeSaltThemeIsDark
 import com.moriafly.salt.ui.UnstableSaltUiApi
-import com.moriafly.salt.ui.platform.windows.WindowsCaptionButtonWidth
 import com.moriafly.salt.ui.window.CaptionButtonsAlign
+import com.moriafly.salt.ui.window.LocalIsHitTestInCaptionBarState
 import com.moriafly.salt.ui.window.LocalSaltWindowInfo
 import com.moriafly.salt.ui.window.SaltWindowInfo
 import com.moriafly.salt.ui.window.SaltWindowProperties
+import java.awt.event.WindowEvent
 
 @OptIn(ExperimentalLayoutApi::class)
 @UnstableSaltUiApi
@@ -47,17 +48,25 @@ internal fun DialogWindowScope.LinuxSaltDialogWindowFrame(
     content: @Composable DialogWindowScope.() -> Unit
 ) {
     val currentProperties by rememberUpdatedState(properties)
-
     val isHitTestInCaptionBar = remember { mutableStateOf(false) }
 
     CompositionLocalProvider(
         LocalSaltWindowInfo provides SaltWindowInfo(
             captionBarHeight = properties.captionBarHeight,
             captionButtonsAlign = CaptionButtonsAlign.End,
-            // TODO Linux
-            captionButtonsFullWidth = WindowsCaptionButtonWidth
-        )
+            captionButtonsFullWidth = LinuxCaptionButtonWidth
+        ),
+        LocalIsHitTestInCaptionBarState provides isHitTestInCaptionBar
     ) {
+        if (currentProperties.moveable) {
+            LinuxCaptionBarDragHandler(
+                window = window,
+                captionBarHeight = properties.captionBarHeight,
+                isMoveable = properties.moveable,
+                isHitTestInCaptionBar = isHitTestInCaptionBar.value
+            )
+        }
+
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -72,7 +81,13 @@ internal fun DialogWindowScope.LinuxSaltDialogWindowFrame(
                         modifier = Modifier
                             .align(Alignment.TopEnd)
                     ) {
-                        // TODO
+                        LinuxCaptionButtonClose(
+                            onClick = {
+                                window.dispatchEvent(
+                                    WindowEvent(window, WindowEvent.WINDOW_CLOSING)
+                                )
+                            }
+                        )
                     }
                 }
             }

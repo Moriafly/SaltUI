@@ -20,13 +20,9 @@ package com.moriafly.salt.ui.platform.linux
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -38,18 +34,13 @@ import androidx.compose.ui.window.FrameWindowScope
 import androidx.compose.ui.window.WindowPlacement
 import com.moriafly.salt.ui.ChangeSaltThemeIsDark
 import com.moriafly.salt.ui.UnstableSaltUiApi
-import com.moriafly.salt.ui.platform.windows.WindowsCaptionButtonWidth
 import com.moriafly.salt.ui.window.CaptionButtonsAlign
 import com.moriafly.salt.ui.window.LocalIsHitTestInCaptionBarState
 import com.moriafly.salt.ui.window.LocalSaltWindowInfo
 import com.moriafly.salt.ui.window.LocalWindowState
 import com.moriafly.salt.ui.window.SaltWindowInfo
 import com.moriafly.salt.ui.window.SaltWindowProperties
-import java.awt.Cursor
-import java.awt.Point
-import java.awt.event.MouseAdapter
-import java.awt.event.MouseEvent
-import java.awt.event.MouseMotionAdapter
+import java.awt.event.WindowEvent
 
 @OptIn(ExperimentalLayoutApi::class)
 @UnstableSaltUiApi
@@ -59,115 +50,33 @@ internal fun FrameWindowScope.LinuxSaltWindowFrame(
     content: @Composable FrameWindowScope.() -> Unit
 ) {
     val currentProperties by rememberUpdatedState(properties)
-
     val isHitTestInCaptionBar = remember { mutableStateOf(false) }
 
     CompositionLocalProvider(
         LocalSaltWindowInfo provides SaltWindowInfo(
             captionBarHeight = properties.captionBarHeight,
             captionButtonsAlign = CaptionButtonsAlign.End,
-            // TODO Linux
-            captionButtonsFullWidth = WindowsCaptionButtonWidth * 3f
+            captionButtonsFullWidth = LinuxCaptionButtonWidth * 3f
         ),
         LocalIsHitTestInCaptionBarState provides isHitTestInCaptionBar,
     ) {
         val windowState = LocalWindowState.current
 
-        // TODO 抽离
-        DisposableEffect(window) {
-            var dragStartScreenPos: Point? = null
-            var dragStartWindowPos: Point? = null
-            var isDragging = false
-
-            val mouseListener = object : MouseAdapter() {
-                override fun mousePressed(e: MouseEvent) {
-                    if (e.button != MouseEvent.BUTTON1) return
-                    if (!isHitTestInCaptionBar.value) return
-                    if (!currentProperties.moveable) return
-                    if (windowState.placement == WindowPlacement.Fullscreen) return
-
-                    val captionBarHeightPx = (
-                        currentProperties.captionBarHeight.value *
-                            window.graphicsConfiguration.defaultTransform.scaleY
-                    ).toInt()
-                    if (e.y > captionBarHeightPx) return
-
-                    // Drag from maximized: restore first, reposition proportionally
-                    if (windowState.placement == WindowPlacement.Maximized) {
-                        val oldWidth = window.width
-                        val ratio = e.x.toFloat() / oldWidth
-                        windowState.placement = WindowPlacement.Floating
-                        window.setLocation(
-                            (e.xOnScreen - window.width * ratio).toInt(),
-                            e.yOnScreen - e.y
-                        )
-                    }
-
-                    dragStartScreenPos = Point(e.xOnScreen, e.yOnScreen)
-                    dragStartWindowPos = window.location
-                    isDragging = true
-                }
-
-                override fun mouseReleased(e: MouseEvent) {
-                    if (e.button != MouseEvent.BUTTON1) return
-                    if (isDragging) {
-                        window.cursor = Cursor.getDefaultCursor()
-                    }
-                    isDragging = false
-                    dragStartScreenPos = null
-                    dragStartWindowPos = null
-                }
-
-                override fun mouseClicked(e: MouseEvent) {
-                    if (e.button != MouseEvent.BUTTON1) return
-                    if (e.clickCount != 2) return
-                    if (!isHitTestInCaptionBar.value) return
-
-                    val captionBarHeightPx = (
-                        currentProperties.captionBarHeight.value *
-                            window.graphicsConfiguration.defaultTransform.scaleY
-                    ).toInt()
-                    if (e.y > captionBarHeightPx) return
-
-                    if (windowState.placement == WindowPlacement.Maximized) {
-                        windowState.placement = WindowPlacement.Floating
-                    } else {
-                        windowState.placement = WindowPlacement.Maximized
-                    }
-                }
-            }
-
-            val mouseMotionListener = object : MouseMotionAdapter() {
-                override fun mouseDragged(e: MouseEvent) {
-                    if (!isDragging) return
-                    val startScreen = dragStartScreenPos ?: return
-                    val startWindow = dragStartWindowPos ?: return
-                    window.setLocation(
-                        startWindow.x + e.xOnScreen - startScreen.x,
-                        startWindow.y + e.yOnScreen - startScreen.y
-                    )
-                }
-            }
-
-            window.addMouseListener(mouseListener)
-            window.addMouseMotionListener(mouseMotionListener)
-
-            onDispose {
-                window.removeMouseListener(mouseListener)
-                window.removeMouseMotionListener(mouseMotionListener)
-            }
+        if (currentProperties.moveable) {
+            LinuxCaptionBarDragHandler(
+                window = window,
+                captionBarHeight = properties.captionBarHeight,
+                isMoveable = properties.moveable,
+                isHitTestInCaptionBar = isHitTestInCaptionBar.value,
+                canDrag = windowState.placement != WindowPlacement.Fullscreen,
+                windowState = windowState,
+            )
         }
 
         Box(
             modifier = Modifier
                 .fillMaxSize()
         ) {
-            Spacer(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(properties.captionBarHeight)
-            )
-
             content()
 
             ChangeSaltThemeIsDark(
@@ -178,7 +87,32 @@ internal fun FrameWindowScope.LinuxSaltWindowFrame(
                         modifier = Modifier
                             .align(Alignment.TopEnd)
                     ) {
-                        // TODO Linux Caption Bar
+                        LinuxCaptionButtonMinimize(
+                            onClick = {
+                                windowState.isMinimized = true
+                            },
+                            enabled = properties.minimizeButtonEnabled
+                        )
+                        val isMaximized = windowState.placement == WindowPlacement.Maximized
+                        LinuxCaptionButtonMaximize(
+                            onClick = {
+                                if (isMaximized) {
+                                    windowState.placement = WindowPlacement.Floating
+                                } else {
+                                    windowState.placement = WindowPlacement.Maximized
+                                }
+                            },
+                            maximized = isMaximized,
+                            enabled = properties.maximizeOrRestoreButtonEnabled &&
+                                windowState.placement != WindowPlacement.Fullscreen
+                        )
+                        LinuxCaptionButtonClose(
+                            onClick = {
+                                window.dispatchEvent(
+                                    WindowEvent(window, WindowEvent.WINDOW_CLOSING)
+                                )
+                            }
+                        )
                     }
                 }
             }
