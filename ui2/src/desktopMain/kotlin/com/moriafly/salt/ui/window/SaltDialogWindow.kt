@@ -47,6 +47,7 @@ import com.moriafly.salt.ui.platform.linux.LinuxSaltDialogWindowFrame
 import com.moriafly.salt.ui.platform.macos.MacOSSaltDialogWindowFrame
 import com.moriafly.salt.ui.platform.windows.WindowsSaltDialogWindowFrame
 import com.moriafly.salt.ui.window.internal.SaltWindowEnvironment
+import com.moriafly.salt.ui.window.internal.resolveForPlatform
 import java.awt.Dialog.ModalityType
 import java.awt.Dimension
 import java.awt.Window
@@ -104,12 +105,7 @@ fun SaltDialogWindow(
 
     val currentProperties by rememberUpdatedState(properties)
 
-    // Linux 需要设置 Undecorated 才能隐藏自带的标题栏
-    val effectiveDecoration = if (OS.current is OS.Linux) {
-        WindowDecoration.Undecorated()
-    } else {
-        decoration
-    }
+    val resolvedDecoration = decoration.resolveForPlatform()
 
     SaltWindowEnvironment {
         SwingDialog(
@@ -118,7 +114,7 @@ fun SaltDialogWindow(
             visible = visible,
             title = title,
             icon = icon,
-            decoration = effectiveDecoration,
+            decoration = resolvedDecoration,
             transparent = transparent,
             resizable = resizable,
             enabled = enabled,

@@ -49,6 +49,7 @@ import com.moriafly.salt.ui.platform.linux.LinuxSaltWindowFrame
 import com.moriafly.salt.ui.platform.macos.MacOSSaltWindowFrame
 import com.moriafly.salt.ui.platform.windows.WindowsSaltWindowFrame
 import com.moriafly.salt.ui.window.internal.SaltWindowEnvironment
+import com.moriafly.salt.ui.window.internal.resolveForPlatform
 import java.awt.Dimension
 import java.awt.Window
 import java.awt.event.ComponentEvent
@@ -95,12 +96,7 @@ fun SaltWindow(
 
     val currentProperties by rememberUpdatedState(properties)
 
-    // Linux 需要设置 Undecorated 才能隐藏自带的标题栏
-    val effectiveDecoration = if (OS.current is OS.Linux) {
-        WindowDecoration.Undecorated()
-    } else {
-        decoration
-    }
+    val resolvedDecoration = decoration.resolveForPlatform()
 
     SaltWindowEnvironment {
         SwingWindow(
@@ -109,7 +105,7 @@ fun SaltWindow(
             visible = visible,
             title = title,
             icon = icon,
-            decoration = effectiveDecoration,
+            decoration = resolvedDecoration,
             transparent = transparent,
             resizable = resizable,
             enabled = enabled,
@@ -184,8 +180,7 @@ fun SaltWindow(
                     }
                 }
 
-                val os = OS.current
-                when (os) {
+                when (OS.current) {
                     is OS.Windows ->
                         WindowsSaltWindowFrame(
                             resizable = resizable,
@@ -199,16 +194,14 @@ fun SaltWindow(
                             content = content
                         )
 
-                    is OS.Linux -> {
+                    is OS.Linux ->
                         LinuxSaltWindowFrame(
                             properties = properties,
                             content = content
                         )
-                    }
 
-                    else -> {
+                    else ->
                         content()
-                    }
                 }
             }
         }
