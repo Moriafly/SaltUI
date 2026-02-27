@@ -104,6 +104,13 @@ fun SaltDialogWindow(
 
     val currentProperties by rememberUpdatedState(properties)
 
+    // Linux 需要设置 Undecorated 才能隐藏自带的标题栏
+    val effectiveDecoration = if (OS.current is OS.Linux) {
+        WindowDecoration.Undecorated()
+    } else {
+        decoration
+    }
+
     SaltWindowEnvironment {
         SwingDialog(
             onCloseRequest = onCloseRequest,
@@ -111,7 +118,7 @@ fun SaltDialogWindow(
             visible = visible,
             title = title,
             icon = icon,
-            decoration = decoration,
+            decoration = effectiveDecoration,
             transparent = transparent,
             resizable = resizable,
             enabled = enabled,

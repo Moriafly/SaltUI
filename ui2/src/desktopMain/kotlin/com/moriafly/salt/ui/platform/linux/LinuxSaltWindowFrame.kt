@@ -45,6 +45,7 @@ import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.moriafly.salt.ui.window.CaptionButtonClose
 import com.moriafly.salt.ui.window.CaptionButtonMaximize
 import com.moriafly.salt.ui.window.CaptionButtonMinimize
+import com.moriafly.salt.ui.window.CaptionButtonWidth
 import com.moriafly.salt.ui.window.CaptionButtonsAlign
 import com.moriafly.salt.ui.window.LocalIsHitTestInCaptionBarState
 import com.moriafly.salt.ui.window.LocalSaltWindowInfo
@@ -74,7 +75,7 @@ internal fun FrameWindowScope.LinuxSaltWindowFrame(
         LocalSaltWindowInfo provides SaltWindowInfo(
             captionBarHeight = properties.captionBarHeight,
             captionButtonsAlign = CaptionButtonsAlign.End,
-            captionButtonsFullWidth = 80.dp
+            captionButtonsFullWidth = CaptionButtonWidth * 3f
         ),
         LocalIsHitTestInCaptionBarState provides isHitTestInCaptionBar,
     ) {

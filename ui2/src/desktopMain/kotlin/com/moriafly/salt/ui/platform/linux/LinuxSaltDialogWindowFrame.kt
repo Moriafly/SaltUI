@@ -17,20 +17,35 @@
 
 package com.moriafly.salt.ui.platform.linux
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.MutableWindowInsets
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.awt.ComposeDialog
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogWindowScope
+import com.moriafly.salt.ui.ChangeSaltThemeIsDark
 import com.moriafly.salt.ui.UnstableSaltUiApi
+import com.moriafly.salt.ui.window.CaptionButtonClose
+import com.moriafly.salt.ui.window.CaptionButtonWidth
 import com.moriafly.salt.ui.window.CaptionButtonsAlign
 import com.moriafly.salt.ui.window.LocalSaltWindowInfo
 import com.moriafly.salt.ui.window.SaltWindowBackgroundType
 import com.moriafly.salt.ui.window.SaltWindowInfo
 import com.moriafly.salt.ui.window.SaltWindowProperties
+import com.moriafly.salt.ui.window.rememberFontIconFamily
+import java.awt.event.WindowEvent
 
+@OptIn(ExperimentalLayoutApi::class)
 @UnstableSaltUiApi
 @Composable
 internal fun DialogWindowScope.LinuxSaltDialogWindowFrame(
@@ -41,9 +56,10 @@ internal fun DialogWindowScope.LinuxSaltDialogWindowFrame(
         LocalSaltWindowInfo provides SaltWindowInfo(
             captionBarHeight = properties.captionBarHeight,
             captionButtonsAlign = CaptionButtonsAlign.End,
-            captionButtonsFullWidth = 80.dp
+            captionButtonsFullWidth = CaptionButtonWidth
         )
     ) {
+        val windowClientInsets = remember { MutableWindowInsets() }
         val styler = remember(window) {
             LinuxSaltWindowStyler(window)
         }
@@ -54,7 +70,33 @@ internal fun DialogWindowScope.LinuxSaltDialogWindowFrame(
                 isDarkTheme = properties.backgroundIsDarkTheme
             )
         }
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .windowInsetsPadding(windowClientInsets)
+        ) {
+            content()
 
-        content()
+            ChangeSaltThemeIsDark(
+                isDarkTheme = properties.captionButtonIsDarkTheme
+            ) {
+                if (properties.captionButtonsVisible) {
+                    Row(
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                    ) {
+                        val iconFontFamily by rememberFontIconFamily()
+                        CaptionButtonClose(
+                            onClick = {
+                                window.dispatchEvent(
+                                    WindowEvent(window, WindowEvent.WINDOW_CLOSING)
+                                )
+                            },
+                            iconFontFamily = iconFontFamily
+                        )
+                    }
+                }
+            }
+        }
     }
 }
