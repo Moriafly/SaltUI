@@ -17,6 +17,7 @@
 
 package com.moriafly.salt.ui.platform.linux
 
+import com.moriafly.salt.ui.UnstableSaltUiApi
 import java.awt.Cursor
 import java.awt.Point
 import java.awt.Window
@@ -26,8 +27,8 @@ import java.awt.event.MouseEvent
  * Fallback window mover using AWT mouse events.
  *
  * From `androidx.compose.foundation.window.StandardMoveHandler`
- *
  */
+@UnstableSaltUiApi
 internal class LinuxFallbackWindowMover(
     private val window: Window
 ) {

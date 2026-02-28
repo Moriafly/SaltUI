@@ -63,10 +63,11 @@ internal fun LinuxCaptionBarDragHandler(
     DisposableEffect(window) {
         val fallbackMover = LinuxFallbackWindowMover(window)
 
-        // 首次拖拽尝试原生，失败后切换为 false
+        // Attempt native drag on the first attempt, disable if it fails
         var useNativeDrag = true
 
-        // 非最大化时的窗口宽度，用于从最大化拖出时恢复
+        // Window width when not maximized,
+        // used to restore size when dragging out of maximized state
         var restoreWidth = window.width
 
         val componentListener = object : java.awt.event.ComponentAdapter() {
@@ -88,7 +89,7 @@ internal fun LinuxCaptionBarDragHandler(
                     val startEvent = pendingDragEvent ?: e
                     pendingDragEvent = null
 
-                    // 如果窗口处于最大化状态，先恢复窗口
+                    // Restore the window if it is currently in a maximized state
                     val state = currentWindowState
                     if (state != null && state.placement == WindowPlacement.Maximized) {
                         val oldWidth = window.width
@@ -105,7 +106,7 @@ internal fun LinuxCaptionBarDragHandler(
                             e.consume()
                             return
                         }
-                        // 原生方案失败
+                        // The native method failed
                         useNativeDrag = false
                     }
 
@@ -133,7 +134,8 @@ internal fun LinuxCaptionBarDragHandler(
 
             override fun mouseReleased(e: MouseEvent) {
                 if (e.button != MouseEvent.BUTTON1) return
-                // 单击等情况取消 pending 状态，避免误触发拖动
+                // Cancel the pending state on click or similar events to prevent accidental drag
+                // triggers
                 pendingDrag = false
                 pendingDragEvent = null
                 if (fallbackMover.dragging) e.consume()

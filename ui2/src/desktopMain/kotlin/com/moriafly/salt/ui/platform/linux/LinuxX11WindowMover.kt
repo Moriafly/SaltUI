@@ -17,6 +17,7 @@
 
 package com.moriafly.salt.ui.platform.linux
 
+import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.sun.jna.Native
 import com.sun.jna.NativeLong
 import com.sun.jna.platform.unix.X11
@@ -31,6 +32,7 @@ import java.awt.Window
  * Delegates window dragging to the window manager, providing smooth movement
  * and native features like window snapping.
  */
+@UnstableSaltUiApi
 internal object LinuxX11WindowMover {
     private const val NET_WM_MOVERESIZE_MOVE = 8L
 
@@ -72,7 +74,7 @@ internal object LinuxX11WindowMover {
                 mouseY = mouseY
             )
 
-            // 释放 AWT 对鼠标的独占锁定，让窗口管理器接管
+            // Release AWT exclusive mouse lock to allow window manager takeover
             x11.XUngrabPointer(display, NativeLong(0))
 
             val mask = NativeLong(
@@ -129,11 +131,16 @@ internal object LinuxX11WindowMover {
         clientMsg.format = 32
 
         clientMsg.data.setType("l")
-        clientMsg.data.l[0] = NativeLong(mouseX.toLong()) // x_root
-        clientMsg.data.l[1] = NativeLong(mouseY.toLong()) // y_root
-        clientMsg.data.l[2] = NativeLong(NET_WM_MOVERESIZE_MOVE) // direction
-        clientMsg.data.l[3] = NativeLong(1) // button (左键)
-        clientMsg.data.l[4] = NativeLong(1) // source indication (普通应用)
+        // x_root
+        clientMsg.data.l[0] = NativeLong(mouseX.toLong())
+        // y_root
+        clientMsg.data.l[1] = NativeLong(mouseY.toLong())
+        // Direction
+        clientMsg.data.l[2] = NativeLong(NET_WM_MOVERESIZE_MOVE)
+        // Button (Left click)
+        clientMsg.data.l[3] = NativeLong(1)
+        // Source indication (Normal application)
+        clientMsg.data.l[4] = NativeLong(1)
 
         return event
     }
@@ -141,10 +148,12 @@ internal object LinuxX11WindowMover {
 
 /**
  * JNA's default X11 interface is missing some methods.
- * We extend it here to bind the missing `XUngrabPointer` function.
+ *
+ * This interface extends it to bind the missing XUngrabPointer function.
  */
+@UnstableSaltUiApi
+@Suppress("FunctionName")
 internal interface X11Ext : X11 {
-    @Suppress("ktlint:standard:function-naming")
     fun XUngrabPointer(display: X11.Display?, time: NativeLong?): Int
 
     companion object {
