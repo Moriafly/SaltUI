@@ -21,6 +21,7 @@
 package com.moriafly.salt.ui.gestures
 
 import androidx.compose.animation.core.animate
+import androidx.compose.foundation.ComposeFoundationFlags.isDelayPressesUsingGestureConsumptionEnabled
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.MutatePriority
 import androidx.compose.foundation.OverscrollEffect
@@ -84,6 +85,7 @@ import kotlin.math.PI
 import kotlin.math.absoluteValue
 import kotlin.math.atan2
 
+@OptIn(ExperimentalFoundationApi::class)
 internal class ScrollableNode(
     state: ScrollableState,
     private var overscrollEffect: OverscrollEffect?,
@@ -105,8 +107,6 @@ internal class ScrollableNode(
     override val shouldAutoInvalidate: Boolean = false
 
     private val nestedScrollDispatcher = NestedScrollDispatcher()
-
-    private val scrollableContainerNode = delegate(ScrollableContainerNode(enabled))
 
     // Place holder fling behavior, we'll initialize it when the density is available.
     private val defaultFlingBehavior = platformScrollableDefaultFlingBehavior()
@@ -145,12 +145,18 @@ internal class ScrollableNode(
 
     private var mouseWheelScrollingLogic: MouseWheelScrollingLogic? = null
 
+    private var scrollableContainerNode: ScrollableContainerNode? = null
+
     init {
         /** Nested scrolling */
         delegate(nestedScrollModifierNode(nestedScrollConnection, nestedScrollDispatcher))
 
         /** Focus scrolling */
         delegate(BringIntoViewResponderNode(contentInViewNode))
+
+        if (!isDelayPressesUsingGestureConsumptionEnabled) {
+            scrollableContainerNode = delegate(ScrollableContainerNode(enabled))
+        }
     }
 
     override fun dispatchScrollDeltaInfo(delta: Offset) {
@@ -229,7 +235,7 @@ internal class ScrollableNode(
         var shouldInvalidateSemantics = false
         if (this.enabled != enabled) { // enabled changed
             nestedScrollConnection.enabled = enabled
-            scrollableContainerNode.update(enabled)
+            scrollableContainerNode?.update(enabled)
             shouldInvalidateSemantics = true
         }
         // a new fling behavior was set, change the resolved one.
@@ -342,8 +348,14 @@ internal class ScrollableNode(
         if (pointerEvent.changes.fastAny { canDrag.invoke(it.type) }) {
             super.onPointerEvent(pointerEvent, pass, bounds)
         }
+        initializeGestureCoordination()
         if (enabled) {
-            if (pass == PointerEventPass.Initial && pointerEvent.type == PointerEventType.Scroll) {
+            if (pass == PointerEventPass.Initial &&
+                (
+                    pointerEvent.type == PointerEventType.Scroll ||
+                        pointerEvent.type == PointerEventType.Pan
+                )
+            ) {
                 ensureMouseWheelScrollNodeInitialized()
             }
             mouseWheelScrollingLogic?.onPointerEvent(pointerEvent, pass, bounds)
