@@ -54,7 +54,7 @@ internal fun DialogWindowScope.LinuxSaltDialogWindowFrame(
 ) {
     val currentProperties by rememberUpdatedState(properties)
     val isHitTestInCaptionBar = remember { mutableStateOf(false) }
-    val undecoratedWindowResizer = UndecoratedWindowResizer(window)
+    val undecoratedWindowResizer = remember { UndecoratedWindowResizer(window) }
 
     CompositionLocalProvider(
         LocalSaltWindowInfo provides SaltWindowInfo(
