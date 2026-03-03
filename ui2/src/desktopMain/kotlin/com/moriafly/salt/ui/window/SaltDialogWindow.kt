@@ -66,6 +66,8 @@ import java.awt.event.WindowEvent
  * Dialog is a modal window. It means it blocks the parent [SaltWindow] / [SaltDialogWindow] in
  * which composition context it was created.
  *
+ * Note: On Linux, the dialog is always undecorated regardless of the [decoration] parameter.
+ *
  * @param properties [SaltWindowProperties]
  * @param init https://youtrack.jetbrains.com/issue/CMP-8719
  * ```
@@ -205,17 +207,14 @@ fun SaltDialogWindow(
                             content = content
                         )
 
-                    is OS.Linux -> {
+                    is OS.Linux ->
                         LinuxSaltDialogWindowFrame(
                             resizable = resizable,
                             properties = properties,
                             content = content
                         )
-                    }
 
-                    else -> {
-                        content()
-                    }
+                    else -> content()
                 }
             }
         }

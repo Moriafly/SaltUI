@@ -24,12 +24,14 @@ import com.moriafly.salt.core.os.OS
 import com.moriafly.salt.ui.UnstableSaltUiApi
 
 /**
- * Resolves the appropriate window decoration based on the target platform and user preference.
+ * Resolves the appropriate window decoration based on the target platform.
  *
- * On Linux environments, [WindowDecoration.SystemDefault] implicitly renders the native
- * desktop environment's title bar. To maintain a unified custom window appearance
- * across all platforms, this gracefully falls back to an undecorated window when the
- * system default is requested on Linux.
+ * On Linux environments, the window is always forced to [WindowDecoration.Undecorated]
+ * regardless of the requested decoration, because [WindowDecoration.SystemDefault]
+ * implicitly renders the native desktop environment's title bar, which conflicts
+ * with the unified custom window appearance across all platforms.
+ *
+ * On other platforms, the original decoration is returned as-is.
  */
 @UnstableSaltUiApi
 @OptIn(ExperimentalComposeUiApi::class)

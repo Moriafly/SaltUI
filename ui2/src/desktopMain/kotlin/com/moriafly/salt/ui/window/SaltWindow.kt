@@ -64,6 +64,8 @@ import java.awt.event.WindowEvent
  * a new platform window will be created and receive focus. When [SaltWindow] leaves the composition,
  * the window will be disposed and closed.
  *
+ * Note: On Linux, the dialog is always undecorated regardless of the [decoration] parameter.
+ *
  * @see [Window]
  * @see [SwingWindow]
  * @see [SaltWindowProperties]
