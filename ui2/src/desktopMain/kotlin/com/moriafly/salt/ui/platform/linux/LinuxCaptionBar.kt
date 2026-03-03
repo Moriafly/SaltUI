@@ -42,8 +42,8 @@ import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.moriafly.salt.ui.window.LocalSaltWindowProperties
 
 /**
- * TODO 临时方案，后续需要重构为用 icon 来显示
- *  字符显示可能会有兼容性问题
+ * TODO Temporary solution; this should later be refactored to use an icon for display.
+ * Character glyph rendering may have compatibility issues.
  */
 @UnstableSaltUiApi
 @Composable

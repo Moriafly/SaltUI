@@ -20,13 +20,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.ExperimentalComposeUiApi
-import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.isPrimaryPressed
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.Measurable
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
@@ -49,7 +49,7 @@ internal class UndecoratedWindowResizer(
     private var initialWindowSize = Dimension()
 
     @Composable
-    fun Content(modifier: Modifier) {
+    fun Content(modifier: Modifier = Modifier) {
         if (!enabled) return
 
         Layout(
@@ -66,6 +66,7 @@ internal class UndecoratedWindowResizer(
             modifier = modifier,
             measurePolicy = { measurables, constraints ->
                 val b = resizerThickness.roundToPx()
+
                 fun Measurable.measureSide(width: Int, height: Int) = measure(
                     Constraints.fixed(width.coerceAtLeast(0), height.coerceAtLeast(0))
                 )
@@ -148,14 +149,14 @@ internal class UndecoratedWindowResizer(
             newWidth = newWidth.coerceAtLeast(window.minimumSize.width)
             newXPos = initialWindowPos.x + initialWindowSize.width - newWidth
         } else if (sides.contains(Side.Right)) {
-            newWidth = initialWindowSize.width + diffX
+            newWidth = (initialWindowSize.width + diffX).coerceAtLeast(window.minimumSize.width)
         }
         if (sides.contains(Side.Top)) {
             newHeight = initialWindowSize.height - diffY
             newHeight = newHeight.coerceAtLeast(window.minimumSize.height)
             newYPos = initialWindowPos.y + initialWindowSize.height - newHeight
         } else if (sides.contains(Side.Bottom)) {
-            newHeight = initialWindowSize.height + diffY
+            newHeight = (initialWindowSize.height + diffY).coerceAtLeast(window.minimumSize.height)
         }
         window.setLocation(newXPos, newYPos)
         window.setSize(newWidth, newHeight)
