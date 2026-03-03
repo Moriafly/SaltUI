@@ -61,6 +61,7 @@ internal object LinuxX11WindowMover {
 
             val rootWindow = queryRootWindow(x11, display, xWindow) ?: return false
             val netWmMoveresize = x11.XInternAtom(display, "_NET_WM_MOVERESIZE", false)
+            if (netWmMoveresize == null || netWmMoveresize.toLong() == 0L) return false
 
             val pointerInfo = MouseInfo.getPointerInfo() ?: return false
             val mouseX = pointerInfo.location.x
