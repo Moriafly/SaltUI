@@ -80,8 +80,8 @@ internal fun FrameWindowScope.LinuxSaltWindowFrame(
         }
 
         LaunchedEffect(window.undecoratedResizerThickness) {
-            require(window.undecoratedResizerThickness == 0.dp) {
-                "Does not support reset undecoratedResizerThickness, ${window.undecoratedResizerThickness} is not valid"
+            if (window.undecoratedResizerThickness != 0.dp) {
+                window.undecoratedResizerThickness = 0.dp
             }
         }
 
