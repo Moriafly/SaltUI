@@ -18,6 +18,7 @@
 package com.moriafly.salt.ui.window.internal
 
 import androidx.compose.ui.ExperimentalComposeUiApi
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.WindowDecoration
 import com.moriafly.salt.core.os.OS
 import com.moriafly.salt.ui.UnstableSaltUiApi
@@ -33,6 +34,6 @@ import com.moriafly.salt.ui.UnstableSaltUiApi
 @UnstableSaltUiApi
 @OptIn(ExperimentalComposeUiApi::class)
 internal fun WindowDecoration.resolveForPlatform(): WindowDecoration {
-    val requiresUndecorated = OS.isLinux() && this == WindowDecoration.SystemDefault
-    return if (requiresUndecorated) WindowDecoration.Undecorated() else this
+    val requiresUndecorated = OS.isLinux()
+    return if (requiresUndecorated) WindowDecoration.Undecorated(0.dp) else this
 }

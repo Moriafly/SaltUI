@@ -207,6 +207,7 @@ fun SaltDialogWindow(
 
                     is OS.Linux -> {
                         LinuxSaltDialogWindowFrame(
+                            resizable = resizable,
                             properties = properties,
                             content = content
                         )

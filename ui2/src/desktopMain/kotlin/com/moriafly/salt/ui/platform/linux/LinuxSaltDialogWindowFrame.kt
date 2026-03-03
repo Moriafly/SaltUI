@@ -23,13 +23,17 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.awt.ComposeDialog
+import androidx.compose.ui.layout.layoutId
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogWindowScope
 import com.moriafly.salt.ui.ChangeSaltThemeIsDark
 import com.moriafly.salt.ui.UnstableSaltUiApi
@@ -40,15 +44,17 @@ import com.moriafly.salt.ui.window.SaltWindowInfo
 import com.moriafly.salt.ui.window.SaltWindowProperties
 import java.awt.event.WindowEvent
 
-@OptIn(ExperimentalLayoutApi::class)
+@OptIn(ExperimentalLayoutApi::class, ExperimentalComposeUiApi::class)
 @UnstableSaltUiApi
 @Composable
 internal fun DialogWindowScope.LinuxSaltDialogWindowFrame(
+    resizable: Boolean,
     properties: SaltWindowProperties<ComposeDialog>,
     content: @Composable DialogWindowScope.() -> Unit
 ) {
     val currentProperties by rememberUpdatedState(properties)
     val isHitTestInCaptionBar = remember { mutableStateOf(false) }
+    val undecoratedWindowResizer = UndecoratedWindowResizer(window)
 
     CompositionLocalProvider(
         LocalSaltWindowInfo provides SaltWindowInfo(
@@ -65,6 +71,16 @@ internal fun DialogWindowScope.LinuxSaltDialogWindowFrame(
                 isMoveable = properties.moveable,
                 isHitTestInCaptionBar = isHitTestInCaptionBar.value
             )
+        }
+
+        LaunchedEffect(window.undecoratedResizerThickness) {
+            require(window.undecoratedResizerThickness == 0.dp) {
+                "Does not support reset undecoratedResizerThickness, ${window.undecoratedResizerThickness} is not valid"
+            }
+        }
+
+        LaunchedEffect(resizable) {
+            undecoratedWindowResizer.enabled = resizable
         }
 
         Box(
@@ -91,6 +107,10 @@ internal fun DialogWindowScope.LinuxSaltDialogWindowFrame(
                     }
                 }
             }
+
+            undecoratedWindowResizer.Content(
+                modifier = Modifier.layoutId("UndecoratedWindowResizer")
+            )
         }
     }
 }

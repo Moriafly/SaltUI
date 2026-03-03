@@ -96,6 +96,7 @@ fun SaltWindow(
 
     val currentProperties by rememberUpdatedState(properties)
 
+    // On Linux the window is always undecorated.
     val resolvedDecoration = decoration.resolveForPlatform()
 
     SaltWindowEnvironment {
@@ -196,6 +197,7 @@ fun SaltWindow(
 
                     is OS.Linux ->
                         LinuxSaltWindowFrame(
+                            resizable = resizable,
                             properties = properties,
                             content = content
                         )
