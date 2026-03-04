@@ -45,9 +45,11 @@ import androidx.compose.ui.window.WindowState
 import androidx.compose.ui.window.rememberWindowState
 import com.moriafly.salt.core.os.OS
 import com.moriafly.salt.ui.UnstableSaltUiApi
+import com.moriafly.salt.ui.platform.linux.LinuxSaltWindowFrame
 import com.moriafly.salt.ui.platform.macos.MacOSSaltWindowFrame
 import com.moriafly.salt.ui.platform.windows.WindowsSaltWindowFrame
 import com.moriafly.salt.ui.window.internal.SaltWindowEnvironment
+import com.moriafly.salt.ui.window.internal.resolveForPlatform
 import java.awt.Dimension
 import java.awt.Window
 import java.awt.event.ComponentEvent
@@ -61,6 +63,8 @@ import java.awt.event.WindowEvent
  * Composes platform window in the current composition. When [SaltWindow] enters the composition,
  * a new platform window will be created and receive focus. When [SaltWindow] leaves the composition,
  * the window will be disposed and closed.
+ *
+ * Note: On Linux, the window is always undecorated regardless of the [decoration] parameter.
  *
  * @see [Window]
  * @see [SwingWindow]
@@ -94,6 +98,9 @@ fun SaltWindow(
 
     val currentProperties by rememberUpdatedState(properties)
 
+    // On Linux the window is always undecorated.
+    val resolvedDecoration = decoration.resolveForPlatform()
+
     SaltWindowEnvironment {
         SwingWindow(
             onCloseRequest = onCloseRequest,
@@ -101,7 +108,7 @@ fun SaltWindow(
             visible = visible,
             title = title,
             icon = icon,
-            decoration = decoration,
+            decoration = resolvedDecoration,
             transparent = transparent,
             resizable = resizable,
             enabled = enabled,
@@ -176,8 +183,7 @@ fun SaltWindow(
                     }
                 }
 
-                val os = OS.current
-                when (os) {
+                when (OS.current) {
                     is OS.Windows ->
                         WindowsSaltWindowFrame(
                             resizable = resizable,
@@ -191,10 +197,15 @@ fun SaltWindow(
                             content = content
                         )
 
-                    else -> {
-                        // TODO Support Linux
+                    is OS.Linux ->
+                        LinuxSaltWindowFrame(
+                            resizable = resizable,
+                            properties = properties,
+                            content = content
+                        )
+
+                    else ->
                         content()
-                    }
                 }
             }
         }

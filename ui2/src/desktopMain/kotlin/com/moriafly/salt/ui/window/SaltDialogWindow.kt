@@ -43,9 +43,11 @@ import androidx.compose.ui.window.WindowDecoration
 import androidx.compose.ui.window.rememberDialogState
 import com.moriafly.salt.core.os.OS
 import com.moriafly.salt.ui.UnstableSaltUiApi
+import com.moriafly.salt.ui.platform.linux.LinuxSaltDialogWindowFrame
 import com.moriafly.salt.ui.platform.macos.MacOSSaltDialogWindowFrame
 import com.moriafly.salt.ui.platform.windows.WindowsSaltDialogWindowFrame
 import com.moriafly.salt.ui.window.internal.SaltWindowEnvironment
+import com.moriafly.salt.ui.window.internal.resolveForPlatform
 import java.awt.Dialog.ModalityType
 import java.awt.Dimension
 import java.awt.Window
@@ -63,6 +65,8 @@ import java.awt.event.WindowEvent
  *
  * Dialog is a modal window. It means it blocks the parent [SaltWindow] / [SaltDialogWindow] in
  * which composition context it was created.
+ *
+ * Note: On Linux, the dialog is always undecorated regardless of the [decoration] parameter.
  *
  * @param properties [SaltWindowProperties]
  * @param init https://youtrack.jetbrains.com/issue/CMP-8719
@@ -103,6 +107,8 @@ fun SaltDialogWindow(
 
     val currentProperties by rememberUpdatedState(properties)
 
+    val resolvedDecoration = decoration.resolveForPlatform()
+
     SaltWindowEnvironment {
         SwingDialog(
             onCloseRequest = onCloseRequest,
@@ -110,7 +116,7 @@ fun SaltDialogWindow(
             visible = visible,
             title = title,
             icon = icon,
-            decoration = decoration,
+            decoration = resolvedDecoration,
             transparent = transparent,
             resizable = resizable,
             enabled = enabled,
@@ -201,10 +207,14 @@ fun SaltDialogWindow(
                             content = content
                         )
 
-                    else -> {
-                        // TODO Support Linux
-                        content()
-                    }
+                    is OS.Linux ->
+                        LinuxSaltDialogWindowFrame(
+                            resizable = resizable,
+                            properties = properties,
+                            content = content
+                        )
+
+                    else -> content()
                 }
             }
         }
