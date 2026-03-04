@@ -42,8 +42,9 @@ import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.moriafly.salt.ui.window.LocalSaltWindowProperties
 
 /**
- * TODO Temporary solution; this should later be refactored to use an icon for display.
  * Character glyph rendering may have compatibility issues.
+ *
+ * TODO Temporary solution; this should later be refactored to use an icon for display.
  */
 @UnstableSaltUiApi
 @Composable
@@ -311,7 +312,9 @@ internal val LinuxCaptionButtonWidth = 46.83f.dp
 
 private const val CaptionButtonFullscreenIconGlyph = '\u2610'
 private const val CaptionButtonMinimizeIconGlyph = '\u2014'
-private const val CaptionButtonBackToWindowIconGlyph = '\u25A1' // TODO Temporarily reusing the maximize icon glyph for "back to window".
+
+// TODO Temporarily reusing the maximize icon glyph for "back to window".
+private const val CaptionButtonBackToWindowIconGlyph = '\u25A1'
 private const val CaptionButtonMaximizeIconGlyph = '\u25A1'
 private const val CaptionButtonRestoreIconGlyph = '\u29C9'
 private const val CaptionButtonCloseIconGlyph = '\u2715'

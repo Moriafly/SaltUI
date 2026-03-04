@@ -83,6 +83,7 @@ internal fun LinuxCaptionBarDragHandler(
         var pendingDragEvent: MouseEvent? = null
 
         val mouseMotionListener = object : MouseMotionAdapter() {
+            @Suppress("AssignedValueIsNeverRead")
             override fun mouseDragged(e: MouseEvent) {
                 if (pendingDrag) {
                     pendingDrag = false
