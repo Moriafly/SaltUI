@@ -32,15 +32,18 @@ import androidx.compose.ui.layout.Measurable
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.window.WindowDecorationDefaults
+import com.moriafly.salt.ui.UnstableSaltUiApi
+import com.moriafly.salt.ui.window.WindowResizeEdge
 import java.awt.Cursor
 import java.awt.Dimension
 import java.awt.MouseInfo
 import java.awt.Point
 import java.awt.Window
 
-@OptIn(ExperimentalComposeUiApi::class)
+@OptIn(ExperimentalComposeUiApi::class, UnstableSaltUiApi::class)
 internal class UndecoratedWindowResizer(
     private val window: Window,
+    private val onResizeEdgeChange: (WindowResizeEdge) -> Unit
 ) {
     var enabled: Boolean by mutableStateOf(false)
     var resizerThickness: Dp by mutableStateOf(WindowDecorationDefaults.ResizerThickness)
@@ -114,6 +117,14 @@ internal class UndecoratedWindowResizer(
                     isResizing = false
                 }
 
+                if (event.type == PointerEventType.Enter) {
+                    onResizeEdgeChange(sides.toWindowResizeEdge())
+                }
+
+                if (event.type == PointerEventType.Exit) {
+                    onResizeEdgeChange(WindowResizeEdge.None)
+                }
+
                 if ((event.type == PointerEventType.Move) && (mouseLocation != null)) {
                     if (isResizing) {
                         resize(sides, mouseLocation)
@@ -134,6 +145,25 @@ internal class UndecoratedWindowResizer(
 
     private fun Modifier.cursor(awtCursorId: Int) =
         pointerHoverIcon(PointerIcon(Cursor(awtCursorId)))
+
+    private fun Int.toWindowResizeEdge(): WindowResizeEdge {
+        fun Int.contains(value: Int) = this and value == value
+        val hasLeft = contains(Side.Left)
+        val hasRight = contains(Side.Right)
+        val hasTop = contains(Side.Top)
+        val hasBottom = contains(Side.Bottom)
+        return when {
+            hasLeft && hasTop -> WindowResizeEdge.TopLeft
+            hasRight && hasTop -> WindowResizeEdge.TopRight
+            hasLeft && hasBottom -> WindowResizeEdge.BottomLeft
+            hasRight && hasBottom -> WindowResizeEdge.BottomRight
+            hasLeft -> WindowResizeEdge.Left
+            hasRight -> WindowResizeEdge.Right
+            hasTop -> WindowResizeEdge.Top
+            hasBottom -> WindowResizeEdge.Bottom
+            else -> WindowResizeEdge.None
+        }
+    }
 
     private fun resize(sides: Int, pointPos: Point) {
         val diffX = pointPos.x - initialPointPos.x

@@ -56,7 +56,14 @@ internal fun FrameWindowScope.LinuxSaltWindowFrame(
 ) {
     val currentProperties by rememberUpdatedState(properties)
     val isHitTestInCaptionBar = remember { mutableStateOf(false) }
-    val undecoratedWindowResizer = remember { UndecoratedWindowResizer(window) }
+    val undecoratedWindowResizer = remember {
+        UndecoratedWindowResizer(
+            window = window,
+            onResizeEdgeChange = { edge ->
+                properties.onResizeEdgeChange(window, edge)
+            }
+        )
+    }
 
     CompositionLocalProvider(
         LocalSaltWindowInfo provides SaltWindowInfo(
