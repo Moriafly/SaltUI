@@ -54,6 +54,7 @@ Salt UI performs operations related to internal ART APIs. Please refer to the fo
 
 | Salt UI        | Compose Multiplatform | Jetpack Compose |
 |----------------|-----------------------|-----------------|
+| 2.9.0-beta01+  | 1.11.0-beta01         | 1.11.0-beta01   |
 | 2.9.0-alpha08+ | 1.11.0-alpha04        | 1.11.0-alpha06  |
 | 2.9.0-alpha07+ | 1.11.0-alpha03        | 1.11.0-alpha05  |
 | 2.9.0-alpha05+ | 1.11.0-alpha02        | 1.11.0-alpha03  |
