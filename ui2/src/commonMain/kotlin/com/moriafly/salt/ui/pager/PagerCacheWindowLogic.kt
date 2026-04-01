@@ -20,6 +20,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.ui.unit.Density
 import com.moriafly.salt.ui.lazy.layout.CacheWindowLogic
 import com.moriafly.salt.ui.lazy.layout.CacheWindowScope
+import com.moriafly.salt.ui.lazy.layout.CachedItem
 import com.moriafly.salt.ui.lazy.layout.InvalidIndex
 import com.moriafly.salt.ui.lazy.layout.LazyLayoutCacheWindow
 import com.moriafly.salt.ui.lazy.layout.LazyLayoutPrefetchState
@@ -71,6 +72,7 @@ private class PagerCacheWindowScope(
      */
     override val mainAxisExtraSpaceStart: Int
         get() {
+            if (layoutInfo.visiblePagesInfo.isEmpty()) return 0
             val firstVisibleItem = layoutInfo.visiblePagesInfo.first()
             // how much of the first item is peeking out of view at the start of the layout.
             val firstItemOverflowOffset =
@@ -81,7 +83,7 @@ private class PagerCacheWindowScope(
 
     override val mainAxisExtraSpaceEnd: Int
         get() {
-
+            if (layoutInfo.visiblePagesInfo.isEmpty()) return 0
             val lastVisibleItem = layoutInfo.visiblePagesInfo.last()
             // how much of the last item is peeking out of view at the end of the layout
             val lastItemOverflowOffset =
@@ -93,6 +95,7 @@ private class PagerCacheWindowScope(
 
     override val firstVisibleLineIndex: Int
         get() {
+            if (layoutInfo.visiblePagesInfo.isEmpty()) return InvalidIndex
             val itemIndex =
                 layoutInfo.visiblePagesInfo.first().index.toLong() -
                     layoutInfo.beyondViewportPageCount.toLong()
@@ -101,6 +104,7 @@ private class PagerCacheWindowScope(
 
     override val lastVisibleLineIndex: Int
         get() {
+            if (layoutInfo.visiblePagesInfo.isEmpty()) return InvalidIndex
             val itemIndex =
                 (
                     layoutInfo.visiblePagesInfo.last().index.toLong() +
@@ -161,10 +165,35 @@ private class PagerCacheWindowScope(
         return InvalidIndex
     }
 
+    override fun getVisibleLineKey(indexInVisibleLines: Int): Any {
+        val extraPagesBeforeCount = layoutInfo.extraPagesBefore.size
+
+        val visiblePagesCount = layoutInfo.visiblePagesInfo.size
+
+        if (indexInVisibleLines < extraPagesBeforeCount) {
+            return layoutInfo.extraPagesBefore[indexInVisibleLines].key
+        }
+
+        if (
+            indexInVisibleLines >= extraPagesBeforeCount &&
+            indexInVisibleLines < extraPagesBeforeCount + visiblePagesCount
+        ) {
+            return layoutInfo.visiblePagesInfo[indexInVisibleLines - extraPagesBeforeCount].key
+        }
+
+        if (indexInVisibleLines >= extraPagesBeforeCount + visiblePagesCount) {
+            return layoutInfo.extraPagesAfter[
+                indexInVisibleLines - extraPagesBeforeCount - visiblePagesCount
+            ]
+                .key
+        }
+        return CachedItem.NoKey
+    }
+
     override fun getLastIndexInLine(lineIndex: Int): Int = lineIndex
 
     override fun getLastLineIndex(): Int {
-        if (totalItemsCount == 0) return InvalidIndex
+        if (layoutInfo.visiblePagesInfo.isEmpty()) return InvalidIndex
         return totalItemsCount - 1
     }
 }

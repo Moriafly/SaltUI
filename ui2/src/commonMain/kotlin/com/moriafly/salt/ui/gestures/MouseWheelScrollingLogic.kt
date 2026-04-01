@@ -19,7 +19,8 @@
     "INVISIBLE_MEMBER",
     "INVISIBLE_REFERENCE",
     "ktlint:standard:filename",
-    "ktlint:standard:property-naming"
+    "ktlint:standard:property-naming",
+    "ktlint:standard:kdoc"
 )
 
 package com.moriafly.salt.ui.gestures
@@ -30,87 +31,62 @@ import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.animateTo
 import androidx.compose.animation.core.copy
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.ComposeFoundationFlags.isMouseWheel1DAxisLockingEnabled
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.MutatePriority
 import androidx.compose.foundation.gestures.NestedScrollScope
 import androidx.compose.foundation.gestures.ScrollConfig
-import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.pointer.PointerEvent
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.PointerEventType
-import androidx.compose.ui.input.pointer.util.VelocityTracker1D
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.util.fastAny
-import androidx.compose.ui.util.fastForEach
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.supervisorScope
 import kotlinx.coroutines.withTimeoutOrNull
 import kotlin.math.abs
 import kotlin.math.roundToInt
 import kotlin.math.sign
 
 internal class MouseWheelScrollingLogic(
-    private val scrollingLogic: ScrollingLogic,
+    scrollingLogic: ScrollingLogic,
     private val mouseWheelScrollConfig: ScrollConfig,
-    private val onScrollStopped: suspend (velocity: Velocity) -> Unit,
-    private var density: Density,
-) {
-    fun updateDensity(density: Density) {
-        this.density = density
-    }
+    onScrollStopped: suspend (velocity: Velocity) -> Unit,
+    density: Density,
+) : NonTouchScrollingLogic(scrollingLogic, onScrollStopped, density) {
+    override fun onPointerEvent(
+        pointerEvent: PointerEvent,
+        pass: PointerEventPass,
+        bounds: IntSize,
+    ) {
+        if (pointerEvent.type != PointerEventType.Scroll) return
+        if (pointerEvent.isConsumed) return
+        /**
+         * If this scrollable is already scrolling from a previous interaction, consume immediately
+         * to give it priority.
+         */
+        if (pass == PointerEventPass.Initial && isScrolling) {
+            onMouseWheel(pointerEvent, bounds)
+            pointerEvent.consume()
+        }
 
-    @OptIn(ExperimentalFoundationApi::class)
-    fun onPointerEvent(pointerEvent: PointerEvent, pass: PointerEventPass, bounds: IntSize) {
-        if (isMouseWheel1DAxisLockingEnabled) {
-            if (pointerEvent.type != PointerEventType.Scroll) return
-            if (pointerEvent.isConsumed) return
-            /**
-             * If this scrollable is already scrolling from a previous interaction, consume
-             * immediately to give it priority.
-             */
-            if (pass == PointerEventPass.Initial && isScrolling) {
-                onMouseWheel(pointerEvent, bounds)
+        /**
+         * During the main pass. If this scrollable is not scrolling, decide if it should based on
+         * the consumption. If the scrollable is scrolling we don't need to worry because it
+         * consumed during the initial pass.
+         */
+        if (pass == PointerEventPass.Main && !isScrolling) {
+            val consumed = onMouseWheel(pointerEvent, bounds)
+            if (consumed) {
                 pointerEvent.consume()
-            }
-
-            /**
-             * During the main pass. If this scrollable is not scrolling, decide if it should based
-             * on the consumption. If the scrollable is scrolling we don't need to worry because it
-             * consumed during the initial pass.
-             */
-            if (pass == PointerEventPass.Main && !isScrolling) {
-                val consumed = onMouseWheel(pointerEvent, bounds)
-                if (consumed) {
-                    pointerEvent.consume()
-                }
-            }
-        } else {
-            if (pass == PointerEventPass.Main && pointerEvent.type == PointerEventType.Scroll) {
-                if (!pointerEvent.isConsumed) {
-                    val consumed = onMouseWheel(pointerEvent, bounds)
-                    if (consumed) {
-                        pointerEvent.consume()
-                    }
-                }
             }
         }
     }
-
-    private inline val PointerEvent.isConsumed: Boolean
-        get() = changes.fastAny { it.isConsumed }
-
-    private fun PointerEvent.consume() = changes.fastForEach { it.consume() }
 
     private data class MouseWheelScrollDelta(
         val value: Offset,
@@ -130,11 +106,10 @@ internal class MouseWheelScrollingLogic(
     }
 
     private val channel = Channel<MouseWheelScrollDelta>(capacity = Channel.UNLIMITED)
-    private var isScrolling = false
 
     private var receivingMouseWheelEventsJob: Job? = null
 
-    fun startReceivingMouseWheelEvents(coroutineScope: CoroutineScope) {
+    override fun startReceivingEvents(coroutineScope: CoroutineScope) {
         if (receivingMouseWheelEventsJob == null) {
             receivingMouseWheelEventsJob =
                 coroutineScope.launch {
@@ -150,13 +125,6 @@ internal class MouseWheelScrollingLogic(
                     }
                 }
         }
-    }
-
-    private suspend fun ScrollingLogic.userScroll(block: suspend NestedScrollScope.() -> Unit) {
-        isScrolling = true
-        // Run it in supervisorScope to ignore cancellations from scrolls with higher MutatePriority
-        supervisorScope { scroll(MutatePriority.UserInput, block) }
-        isScrolling = false
     }
 
     private fun onMouseWheel(pointerEvent: PointerEvent, bounds: IntSize): Boolean {
@@ -193,43 +161,13 @@ internal class MouseWheelScrollingLogic(
         return sum
     }
 
-    /**
-     * Replacement of regular [Channel.receive] that schedules an invalidation each frame. It avoids
-     * entering an idle state while waiting for [ScrollProgressTimeout]. It's important for tests
-     * that attempt to trigger another scroll after a mouse wheel event.
-     */
-    private suspend fun Channel<MouseWheelScrollDelta>.busyReceive() = coroutineScope {
-        val job = launch {
-            while (coroutineContext.isActive) {
-                withFrameNanos {}
-            }
-        }
-        try {
-            receive()
-        } finally {
-            job.cancel()
-        }
-    }
-
-    private fun <E> untilNull(builderAction: () -> E?) =
-        sequence<E> {
-            do {
-                val element = builderAction()?.also { yield(it) }
-            } while (element != null)
-        }
-
     @OptIn(ExperimentalFoundationApi::class)
     private fun ScrollingLogic.canConsumeDelta(scrollDelta: Offset): Boolean {
-        val delta =
-            if (isMouseWheel1DAxisLockingEnabled) {
-                /**
-                 * Mouse wheel scroll deltas may come as 2 dimensional values. We use the angle to
-                 * decide which axis in the delta is more important and should be triggered.
-                 */
-                scrollDelta.reverseIfNeeded().toSingleAxisDeltaFromAngle()
-            } else {
-                scrollDelta.reverseIfNeeded().toFloat() // Use only current axis
-            }
+        /**
+         * Mouse wheel scroll deltas may come as 2 dimensional values. We use the angle to decide
+         * which axis in the delta is more important and should be triggered.
+         */
+        val delta = scrollDelta.reverseIfNeeded().toSingleAxisDeltaFromAngle()
         return if (delta == 0f) {
             false // It means that it's for another axis and cannot be consumed
         } else if (delta > 0f) {
@@ -238,8 +176,6 @@ internal class MouseWheelScrollingLogic(
             scrollableState.canScrollBackward
         }
     }
-
-    private val velocityTracker = MouseWheelVelocityTracker()
 
     private fun trackVelocity(scrollDelta: MouseWheelScrollDelta) {
         velocityTracker.addDelta(scrollDelta.timeMillis, scrollDelta.value)
@@ -283,11 +219,7 @@ internal class MouseWheelScrollingLogic(
                     targetScrollDelta =
                         it.copy(shouldApplyImmediately = previousDeltaShouldApplyImmediately)
                     targetValue =
-                        if (isMouseWheel1DAxisLockingEnabled) {
-                            targetScrollDelta.value.reverseIfNeeded().toSingleAxisDeltaFromAngle()
-                        } else {
-                            targetScrollDelta.value.reverseIfNeeded().toFloat()
-                        }
+                        targetScrollDelta.value.reverseIfNeeded().toSingleAxisDeltaFromAngle()
                     animationState = AnimationState(0f) // Reset previous animation leftover
                     trackVelocity(it)
 
@@ -328,13 +260,9 @@ internal class MouseWheelScrollingLogic(
                             trackVelocity(nextScrollDelta)
                             targetScrollDelta += nextScrollDelta
                             targetValue =
-                                if (isMouseWheel1DAxisLockingEnabled) {
-                                    targetScrollDelta.value
-                                        .reverseIfNeeded()
-                                        .toSingleAxisDeltaFromAngle()
-                                } else {
-                                    targetScrollDelta.value.reverseIfNeeded().toFloat()
-                                }
+                                targetScrollDelta.value
+                                    .reverseIfNeeded()
+                                    .toSingleAxisDeltaFromAngle()
 
                             requiredAnimation = !(targetValue - lastValue).isLowScrollingDelta()
                         }
@@ -386,29 +314,12 @@ internal class MouseWheelScrollingLogic(
         }
     }
 
-    @Suppress("UnusedReceiverParameter")
     private fun NestedScrollScope.dispatchMouseWheelScroll(delta: Float) =
         with(scrollingLogic) {
             val offset = delta.reverseIfNeeded().toOffset()
             val consumed = scrollBy(offset, NestedScrollSource.UserInput)
             consumed.reverseIfNeeded().toFloat()
         }
-}
-
-private class MouseWheelVelocityTracker {
-    private val xVelocityTracker = VelocityTracker1D(isDataDifferential = true)
-    private val yVelocityTracker = VelocityTracker1D(isDataDifferential = true)
-
-    fun addDelta(timeMillis: Long, delta: Offset) {
-        xVelocityTracker.addDataPoint(timeMillis, delta.x)
-        yVelocityTracker.addDataPoint(timeMillis, delta.y)
-    }
-
-    fun calculateVelocity(): Velocity {
-        val velocityX = xVelocityTracker.calculateVelocity(Float.MAX_VALUE)
-        val velocityY = yVelocityTracker.calculateVelocity(Float.MAX_VALUE)
-        return Velocity(velocityX, velocityY)
-    }
 }
 
 /*
@@ -418,8 +329,6 @@ private class MouseWheelVelocityTracker {
 private fun Float.isLowScrollingDelta(): Boolean = isNaN() || abs(this) < 0.5f
 
 private val AnimationThreshold = 6.dp // (AnimationSpeed * MaxAnimationDuration) / (1000ms / 60Hz)
-private val AnimationSpeed = 1.dp
-
-// dp / ms
+private val AnimationSpeed = 1.dp // dp / ms
 private const val MaxAnimationDuration = 100 // ms
 private const val ScrollProgressTimeout = 50L // ms

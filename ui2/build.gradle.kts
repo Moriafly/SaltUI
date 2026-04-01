@@ -13,10 +13,14 @@
  * Lesser General Public License for more details.
  */
 
+import com.android.build.api.dsl.androidLibrary
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinAndroidTarget
+
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
     alias(libs.plugins.kotlin.plugin.compose)
-    alias(libs.plugins.android.library)
+    alias(libs.plugins.android.kotlin.multiplatform.library)
     alias(libs.plugins.compose.multiplatform)
     alias(libs.plugins.vanniktech.maven.publish)
     `maven-publish`
@@ -74,17 +78,32 @@ kotlin {
         )
     }
 
-    withSourcesJar(publish = false)
+    withSourcesJar(false)
 
-    androidTarget {
-        publishLibraryVariants("release")
-        // publishLibraryVariantsGroupedByFlavor = true
+    @Suppress("UnstableApiUsage")
+    androidLibrary {
+        namespace = "com.moriafly.salt.ui"
+        compileSdk = 36
+        minSdk = 23
+
+        androidResources {
+            enable = true
+        }
+
+        compilerOptions {
+            jvmTarget.set(JvmTarget.JVM_21)
+        }
+
+        packaging {
+            resources {
+                excludes += "/META-INF/{AL2.0,LGPL2.1}"
+            }
+        }
     }
 
     jvm("desktop")
 
     listOf(
-        iosX64(),
         iosArm64(),
         iosSimulatorArm64()
     ).forEach { iosTarget ->
@@ -127,49 +146,18 @@ kotlin {
             implementation(libs.jna.platform)
         }
 
-        val iosX64Main by getting
         val iosArm64Main by getting
         val iosSimulatorArm64Main by getting
 
         @Suppress("unused")
         val iosMain by creating {
             dependsOn(commonMain)
-            iosX64Main.dependsOn(this)
             iosArm64Main.dependsOn(this)
             iosSimulatorArm64Main.dependsOn(this)
         }
     }
-}
 
-android {
-    namespace = "com.moriafly.salt.ui"
-    compileSdk = 36
-
-    sourceSets["main"].manifest.srcFile("src/androidMain/AndroidManifest.xml")
-    sourceSets["main"].res.srcDirs("src/androidMain/res")
-    sourceSets["main"].resources.srcDirs("src/commonMain/resources")
-
-    defaultConfig {
-        minSdk = 23
-    }
-
-    packaging {
-        resources {
-            excludes += "/META-INF/{AL2.0,LGPL2.1}"
-        }
-    }
-
-    buildTypes {
-        getByName("release") {
-            isMinifyEnabled = false
-        }
-    }
-
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_21
-        targetCompatibility = JavaVersion.VERSION_21
-    }
-
-    dependencies {
+    targets.withType<KotlinAndroidTarget>().configureEach {
+        publishLibraryVariants("release")
     }
 }

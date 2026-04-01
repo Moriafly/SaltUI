@@ -20,11 +20,13 @@ package com.moriafly.salt.ui.platform.windows
 import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.moriafly.salt.ui.platform.windows.WinUserConst.WM_LBUTTONDOWN
 import com.moriafly.salt.ui.platform.windows.WinUserConst.WM_LBUTTONUP
+import com.moriafly.salt.ui.platform.windows.WinUserConst.WM_MOUSELEAVE
 import com.moriafly.salt.ui.platform.windows.WinUserConst.WM_MOUSEMOVE
 import com.moriafly.salt.ui.platform.windows.WinUserConst.WM_NCHITTEST
 import com.moriafly.salt.ui.platform.windows.WinUserConst.WM_NCLBUTTONDOWN
 import com.moriafly.salt.ui.platform.windows.WinUserConst.WM_NCLBUTTONUP
 import com.moriafly.salt.ui.platform.windows.WinUserConst.WM_NCMOUSEMOVE
+import com.moriafly.salt.ui.platform.windows.structure.TRACKMOUSEEVENT
 import com.sun.jna.Native
 import com.sun.jna.Pointer
 import com.sun.jna.platform.win32.WinDef
@@ -36,10 +38,12 @@ import org.jetbrains.skiko.SkiaLayer
 @UnstableSaltUiApi
 internal class SkiaLayerWindowProc(
     skiaLayer: SkiaLayer,
-    private val hitTest: (x: Float, y: Float) -> HitTestResult
+    private val hitTest: (x: Float, y: Float) -> HitTestResult,
+    private val onMouseLeave: () -> Unit
 ) : BasicWindowProc(HWND(skiaLayer.canvas.let(Native::getComponentPointer))) {
     private val skiaLayerHwnd = HWND(Pointer(skiaLayer.windowHandle))
     private var hitResult = HitTestResult.HTCLIENT
+    private var isTrackingMouseLeave = false
 
     override fun callback(
         hwnd: HWND,
@@ -62,6 +66,25 @@ internal class SkiaLayerWindowProc(
                 HitTestResult.HTCLOSE -> hitResult.toLRESULT()
                 else -> HitTestResult.HTTRANSPARENT.toLRESULT()
             }
+        }
+
+        WM_MOUSEMOVE -> {
+            if (!isTrackingMouseLeave) {
+                val tme = TRACKMOUSEEVENT.ByReference().apply {
+                    cbSize = WinDef.DWORD(size().toLong())
+                    dwFlags = WinDef.DWORD(TRACKMOUSEEVENT.TME_LEAVE.toLong())
+                    hwndTrack = hwnd
+                }
+                User32Ex.INSTANCE.TrackMouseEvent(tme)
+                isTrackingMouseLeave = true
+            }
+            super.callback(hwnd, uMsg, wParam, lParam)
+        }
+
+        WM_MOUSELEAVE -> {
+            isTrackingMouseLeave = false
+            onMouseLeave()
+            super.callback(hwnd, uMsg, wParam, lParam)
         }
 
         WM_NCMOUSEMOVE -> {

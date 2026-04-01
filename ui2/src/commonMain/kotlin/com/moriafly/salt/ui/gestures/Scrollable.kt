@@ -16,14 +16,13 @@
  * limitations under the License.
  */
 
-@file:Suppress("unused", "INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
+@file:Suppress("unused", "INVISIBLE_MEMBER", "INVISIBLE_REFERENCE", "ktlint:standard:kdoc")
 
 package com.moriafly.salt.ui.gestures
 
 import androidx.compose.animation.core.animate
-import androidx.compose.foundation.ComposeFoundationFlags
+import androidx.compose.foundation.ComposeFoundationFlags.isDelayPressesUsingGestureConsumptionEnabled
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.FocusedBoundsObserverNode
 import androidx.compose.foundation.MutatePriority
 import androidx.compose.foundation.OverscrollEffect
 import androidx.compose.foundation.gestures.BringIntoViewSpec
@@ -86,6 +85,7 @@ import kotlin.math.PI
 import kotlin.math.absoluteValue
 import kotlin.math.atan2
 
+@OptIn(ExperimentalFoundationApi::class)
 internal class ScrollableNode(
     state: ScrollableState,
     private var overscrollEffect: OverscrollEffect?,
@@ -107,8 +107,6 @@ internal class ScrollableNode(
     override val shouldAutoInvalidate: Boolean = false
 
     private val nestedScrollDispatcher = NestedScrollDispatcher()
-
-    private val scrollableContainerNode = delegate(ScrollableContainerNode(enabled))
 
     // Place holder fling behavior, we'll initialize it when the density is available.
     private val defaultFlingBehavior = platformScrollableDefaultFlingBehavior()
@@ -146,6 +144,9 @@ internal class ScrollableNode(
     private var scrollByOffsetAction: (suspend (Offset) -> Offset)? = null
 
     private var mouseWheelScrollingLogic: MouseWheelScrollingLogic? = null
+    private var trackpadScrollingLogic: TrackpadScrollingLogic? = null
+
+    private var scrollableContainerNode: ScrollableContainerNode? = null
 
     init {
         /** Nested scrolling */
@@ -153,11 +154,9 @@ internal class ScrollableNode(
 
         /** Focus scrolling */
         delegate(BringIntoViewResponderNode(contentInViewNode))
-        if (
-            @OptIn(ExperimentalFoundationApi::class)
-            !ComposeFoundationFlags.isKeepInViewFocusObservationChangeEnabled
-        ) {
-            delegate(FocusedBoundsObserverNode { contentInViewNode.onFocusBoundsChanged(it) })
+
+        if (!isDelayPressesUsingGestureConsumptionEnabled) {
+            scrollableContainerNode = delegate(ScrollableContainerNode(enabled))
         }
     }
 
@@ -208,9 +207,15 @@ internal class ScrollableNode(
         }
     }
 
+    private fun onTrackpadScrollStopped(velocity: Velocity) {
+        nestedScrollDispatcher.coroutineScope.launch {
+            scrollingLogic.onScrollStopped(velocity, isMouseWheel = false)
+        }
+    }
+
     override fun startDragImmediately(): Boolean = scrollingLogic.shouldScrollImmediately()
 
-    private fun ensureMouseWheelScrollNodeInitialized() {
+    private fun ensureMouseWheelScrollingLogicInitialized() {
         if (mouseWheelScrollingLogic == null) {
             mouseWheelScrollingLogic =
                 MouseWheelScrollingLogic(
@@ -221,7 +226,20 @@ internal class ScrollableNode(
                 )
         }
 
-        mouseWheelScrollingLogic?.startReceivingMouseWheelEvents(coroutineScope)
+        mouseWheelScrollingLogic?.startReceivingEvents(coroutineScope)
+    }
+
+    private fun ensureTrackpadScrollingLogicInitialized() {
+        if (trackpadScrollingLogic == null) {
+            trackpadScrollingLogic =
+                TrackpadScrollingLogic(
+                    scrollingLogic = scrollingLogic,
+                    onScrollStopped = ::onTrackpadScrollStopped,
+                    density = requireDensity(),
+                )
+        }
+
+        trackpadScrollingLogic?.startReceivingEvents(coroutineScope)
     }
 
     fun update(
@@ -237,7 +255,7 @@ internal class ScrollableNode(
         var shouldInvalidateSemantics = false
         if (this.enabled != enabled) { // enabled changed
             nestedScrollConnection.enabled = enabled
-            scrollableContainerNode.update(enabled)
+            scrollableContainerNode?.update(enabled)
             shouldInvalidateSemantics = true
         }
         // a new fling behavior was set, change the resolved one.
@@ -275,6 +293,7 @@ internal class ScrollableNode(
     override fun onAttach() {
         updateDefaultFlingBehavior()
         mouseWheelScrollingLogic?.updateDensity(requireDensity())
+        trackpadScrollingLogic?.updateDensity(requireDensity())
     }
 
     private fun updateDefaultFlingBehavior() {
@@ -287,6 +306,7 @@ internal class ScrollableNode(
         onCancelPointerInput()
         updateDefaultFlingBehavior()
         mouseWheelScrollingLogic?.updateDensity(requireDensity())
+        trackpadScrollingLogic?.updateDensity(requireDensity())
     }
 
     // Key handler for Page up/down scrolling behavior.
@@ -298,7 +318,7 @@ internal class ScrollableNode(
     ) {
         val scrollAmount: Offset =
             if (scrollingLogic.isVertical()) {
-                val viewportHeight = contentInViewNode.viewportSize.height
+                val viewportHeight = contentInViewNode.viewportSizeOrZero.height
 
                 val yAmount =
                     if (event.key == Key.PageUp) {
@@ -309,7 +329,7 @@ internal class ScrollableNode(
 
                 Offset(0f, yAmount)
             } else {
-                val viewportWidth = contentInViewNode.viewportSize.width
+                val viewportWidth = contentInViewNode.viewportSizeOrZero.width
 
                 val xAmount =
                     if (event.key == Key.PageUp) {
@@ -350,11 +370,23 @@ internal class ScrollableNode(
         if (pointerEvent.changes.fastAny { canDrag.invoke(it.type) }) {
             super.onPointerEvent(pointerEvent, pass, bounds)
         }
+        initializeGestureCoordination()
         if (enabled) {
             if (pass == PointerEventPass.Initial && pointerEvent.type == PointerEventType.Scroll) {
-                ensureMouseWheelScrollNodeInitialized()
+                ensureMouseWheelScrollingLogicInitialized()
             }
             mouseWheelScrollingLogic?.onPointerEvent(pointerEvent, pass, bounds)
+
+            if (pass == PointerEventPass.Initial &&
+                (
+                    pointerEvent.type == PointerEventType.PanStart ||
+                        pointerEvent.type == PointerEventType.PanMove ||
+                        pointerEvent.type == PointerEventType.PanEnd
+                )
+            ) {
+                ensureTrackpadScrollingLogicInitialized()
+            }
+            trackpadScrollingLogic?.onPointerEvent(pointerEvent, pass, bounds)
         }
     }
 

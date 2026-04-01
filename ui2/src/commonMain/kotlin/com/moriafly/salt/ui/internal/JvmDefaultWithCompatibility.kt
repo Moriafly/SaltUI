@@ -16,4 +16,6 @@
 
 package com.moriafly.salt.ui.internal
 
+@OptIn(ExperimentalMultiplatform::class)
+@OptionalExpectation
 internal expect annotation class JvmDefaultWithCompatibility()

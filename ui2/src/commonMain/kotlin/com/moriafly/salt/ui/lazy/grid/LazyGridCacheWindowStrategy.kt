@@ -27,6 +27,7 @@ import com.moriafly.salt.ui.gestures.snapping.offsetOnMainAxis
 import com.moriafly.salt.ui.gestures.snapping.sizeOnMainAxis
 import com.moriafly.salt.ui.lazy.layout.CacheWindowLogic
 import com.moriafly.salt.ui.lazy.layout.CacheWindowScope
+import com.moriafly.salt.ui.lazy.layout.CachedItem
 import com.moriafly.salt.ui.lazy.layout.InvalidIndex
 import com.moriafly.salt.ui.lazy.layout.LazyLayoutCacheWindow
 import com.moriafly.salt.ui.lazy.layout.LazyLayoutPrefetchState.PrefetchHandle
@@ -140,6 +141,15 @@ private class LazyGridCacheWindowScope : CacheWindowScope {
             }
 
         return tallestItemSize
+    }
+
+    override fun getVisibleLineKey(indexInVisibleLines: Int): Any {
+        // using the first item key to represent this line.
+        val laneIndex = indexInVisibleLines + firstVisibleLineIndex
+        return layoutInfo.visibleItemsInfo
+            .fastFilter { it.lineIndex == laneIndex }
+            .firstOrNull()
+            ?.key ?: CachedItem.NoKey
     }
 
     override fun getVisibleItemLine(indexInVisibleLines: Int): Int =

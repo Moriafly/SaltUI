@@ -38,6 +38,11 @@ object WinUserConst {
     const val WM_NCHITTEST = 0x0084
 
     /**
+     * Non client area activate message.
+     */
+    const val WM_NCACTIVATE = 0x0086
+
+    /**
      * Command message.
      */
     const val WM_COMMAND = 0x0111
@@ -190,4 +195,9 @@ object WinUserConst {
      * bar. However, you can display the system menu by right-clicking or by typing ALT+SPACE.
      */
     const val WS_EX_TOOLWINDOW = 0x00000080
+
+    /**
+     * Sent one time to a window, after it has exited the moving or sizing modal loop.
+     */
+    const val WM_EXITSIZEMOVE = 0x0232
 }

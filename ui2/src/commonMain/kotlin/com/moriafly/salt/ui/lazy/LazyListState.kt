@@ -456,7 +456,9 @@ class LazyListState
             scrollPriority: MutatePriority,
             block: suspend ScrollScope.() -> Unit,
         ) {
-            awaitLayoutModifier.waitForFirstLayout()
+            if (layoutInfoState.value === EmptyLazyListMeasureResult) {
+                awaitLayoutModifier.waitForFirstLayout()
+            }
             scrollableState.scroll(scrollPriority, block)
         }
 

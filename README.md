@@ -4,30 +4,6 @@
 
 Salt UI is UI components based on [Compose Multiplatform](https://github.com/JetBrains/compose-multiplatform). The 1.0 version is derived from some UI components of [Salt Player](https://github.com/Moriafly/SaltPlayerSource). Currently, Salt UI is used in Salt Player, Emo Scroll, Qinalt and other App to serve hundreds of thousands of users.
 
-## Compatibility
-
-| Salt UI        | Compose Multiplatform | Jetpack Compose |
-|----------------|-----------------------|-----------------|
-| 2.8.1+         | 1.10.0-rc02           | 1.10.0          |
-| 2.8.0+         | 1.10.0-rc01           | 1.10.0-rc01     |
-| 2.8.0-rc02+    | 1.10.0-beta02         | 1.10.0-beta02   |
-| 2.8.0-beta01+  | 1.10.0-beta01         | 1.10.0-beta01   |
-| 2.8.0-alpha09+ | 1.10.0-alpha03        | 1.10.0-alpha05  |
-| 2.8.0-alpha01+ | 1.10.0-alpha02        | 1.10.0-alpha04  |
-| 2.7.0-alpha01+ | 1.10.0-alpha01        | 1.10.0-alpha02  |
-| 2.6.0-beta02+  | 1.9.0-rc01            | 1.9.0           |
-| 2.6.0-beta01+  | 1.9.0-beta03          | 1.9.0-rc01      |
-| 2.5.0-alpha05+ | 1.8.2                 | 1.8.2           |
-| 2.4.0+         | 1.8.0                 | 1.8.0           |
-| 2.3.1+         | 1.7.3                 | 1.7.6           |
-| 2.3.0-alpha02+ | 1.7.1                 | 1.7.5           |
-| 2.2.0+         | 1.7.0                 | 1.7.1           |
-| 2.2.0-beta01+  | 1.7.0-rc01            | 1.7.0           |
-| 2.2.0-alpha01+ | 1.7.0-beta02          |                 |
-| 2.0.7+         | 1.7.0-alpha03         |                 |
-| 2.0.4+         | 1.7.0-alpha02         |                 |
-| < 2.0.4        | 1.6.11                |                 |
-
 ## Get started
 
 Add dependency:
@@ -73,6 +49,35 @@ Salt UI performs operations related to internal ART APIs. Please refer to the fo
 >      }
 >  }
 >  ```
+
+## Compatibility
+
+| Salt UI        | Compose Multiplatform | Jetpack Compose |
+|----------------|-----------------------|-----------------|
+| 2.9.0-beta01+  | 1.11.0-beta01         | 1.11.0-beta01   |
+| 2.9.0-alpha08+ | 1.11.0-alpha04        | 1.11.0-alpha06  |
+| 2.9.0-alpha07+ | 1.11.0-alpha03        | 1.11.0-alpha05  |
+| 2.9.0-alpha05+ | 1.11.0-alpha02        | 1.11.0-alpha03  |
+| 2.9.0-alpha01+ | 1.11.0-alpha01        | 1.11.0-alpha01  |
+| 2.8.1+         | 1.10.0-rc02           | 1.10.0          |
+| 2.8.0+         | 1.10.0-rc01           | 1.10.0-rc01     |
+| 2.8.0-rc02+    | 1.10.0-beta02         | 1.10.0-beta02   |
+| 2.8.0-beta01+  | 1.10.0-beta01         | 1.10.0-beta01   |
+| 2.8.0-alpha09+ | 1.10.0-alpha03        | 1.10.0-alpha05  |
+| 2.8.0-alpha01+ | 1.10.0-alpha02        | 1.10.0-alpha04  |
+| 2.7.0-alpha01+ | 1.10.0-alpha01        | 1.10.0-alpha02  |
+| 2.6.0-beta02+  | 1.9.0-rc01            | 1.9.0           |
+| 2.6.0-beta01+  | 1.9.0-beta03          | 1.9.0-rc01      |
+| 2.5.0-alpha05+ | 1.8.2                 | 1.8.2           |
+| 2.4.0+         | 1.8.0                 | 1.8.0           |
+| 2.3.1+         | 1.7.3                 | 1.7.6           |
+| 2.3.0-alpha02+ | 1.7.1                 | 1.7.5           |
+| 2.2.0+         | 1.7.0                 | 1.7.1           |
+| 2.2.0-beta01+  | 1.7.0-rc01            | 1.7.0           |
+| 2.2.0-alpha01+ | 1.7.0-beta02          |                 |
+| 2.0.7+         | 1.7.0-alpha03         |                 |
+| 2.0.4+         | 1.7.0-alpha02         |                 |
+| < 2.0.4        | 1.6.11                |                 |
 
 ## License
 

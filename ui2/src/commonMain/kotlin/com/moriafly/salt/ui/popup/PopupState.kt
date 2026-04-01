@@ -1,4 +1,4 @@
-/**
+/*
  * Salt UI
  * Copyright (C) 2023 Moriafly
  *
@@ -28,13 +28,12 @@ import androidx.compose.runtime.setValue
 @Composable
 fun rememberPopupState(
     initialExpend: Boolean = false
-): PopupState {
-    return rememberSaveable(saver = PopupState.Saver) {
+): PopupState =
+    rememberSaveable(saver = PopupState.Saver) {
         PopupState(
             initialExpend = initialExpend
         )
     }
-}
 
 /**
  * The state of PopupMenu.

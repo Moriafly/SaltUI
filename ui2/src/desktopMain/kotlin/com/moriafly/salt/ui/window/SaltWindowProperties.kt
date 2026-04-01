@@ -57,6 +57,10 @@ import java.awt.Window
  *     // ...
  * }
  * ```
+ *
+ * @property onResizeEdgeChange The callback to be invoked when the pointer moves to or away from
+ * a resize edge of the window. The callback receives the [WindowResizeEdge] indicating which edge
+ * the pointer is on, or [WindowResizeEdge.None] if not on any resize edge.
  * @property captionBarHeight The height of the caption bar, default is 40.dp, also usually 30.dp on
  * Windows.
  * @property captionButtonsVisible Whether the caption buttons are visible.
@@ -70,11 +74,17 @@ import java.awt.Window
  * Build 22621 or later.
  * @property extraDisplayScale The extra display scale.
  * @property extraFontScale The extra font scale.
+ * @property minimizeButtonEnabled Whether the minimize button is enabled, only used for
+ * [SaltWindow]. TODO Support macOS.
+ * @property maximizeOrRestoreButtonEnabled Whether the maximize/restore button is enabled, only
+ * used for [SaltWindow]. TODO Support macOS.
+ * @property moveable Whether the window is moveable. TODO Support macOS.
  */
 @UnstableSaltUiApi
 data class SaltWindowProperties<T : Window>(
     val minSize: DpSize,
     val onVisibleChange: (T, Boolean) -> Unit,
+    val onResizeEdgeChange: (T, WindowResizeEdge) -> Unit,
     val captionBarHeight: Dp,
     val captionButtonsVisible: Boolean,
     val captionButtonHeight: Dp,
@@ -82,13 +92,17 @@ data class SaltWindowProperties<T : Window>(
     val backgroundType: SaltWindowBackgroundType,
     val backgroundIsDarkTheme: Boolean,
     val extraDisplayScale: Float,
-    val extraFontScale: Float
+    val extraFontScale: Float,
+    val minimizeButtonEnabled: Boolean,
+    val maximizeOrRestoreButtonEnabled: Boolean,
+    val moveable: Boolean
 ) {
     companion object {
         @Composable
         fun <T : Window> default(
             minSize: DpSize = DpSize.Zero,
             onVisibleChange: (T, Boolean) -> Unit = { _, _ -> },
+            onResizeEdgeChange: (T, WindowResizeEdge) -> Unit = { _, _ -> },
             captionBarHeight: Dp = 40.dp,
             captionButtonsVisible: Boolean = true,
             captionButtonHeight: Dp = captionBarHeight,
@@ -96,10 +110,14 @@ data class SaltWindowProperties<T : Window>(
             backgroundType: SaltWindowBackgroundType = SaltWindowBackgroundType.None,
             backgroundIsDarkTheme: Boolean = SaltTheme.configs.isDarkTheme,
             extraDisplayScale: Float = 1.0f,
-            extraFontScale: Float = 1.0f
+            extraFontScale: Float = 1.0f,
+            minimizeButtonEnabled: Boolean = true,
+            maximizeOrRestoreButtonEnabled: Boolean = true,
+            moveable: Boolean = true
         ): SaltWindowProperties<T> = SaltWindowProperties(
             minSize = minSize,
             onVisibleChange = onVisibleChange,
+            onResizeEdgeChange = onResizeEdgeChange,
             captionBarHeight = captionBarHeight,
             captionButtonsVisible = captionButtonsVisible,
             captionButtonHeight = captionButtonHeight,
@@ -107,12 +125,15 @@ data class SaltWindowProperties<T : Window>(
             backgroundType = backgroundType,
             backgroundIsDarkTheme = backgroundIsDarkTheme,
             extraDisplayScale = extraDisplayScale,
-            extraFontScale = extraFontScale
+            extraFontScale = extraFontScale,
+            minimizeButtonEnabled = minimizeButtonEnabled,
+            maximizeOrRestoreButtonEnabled = maximizeOrRestoreButtonEnabled,
+            moveable = moveable
         )
     }
 }
 
 @UnstableSaltUiApi
-internal val LocalSaltWindowProperties = staticCompositionLocalOf<SaltWindowProperties<Window>> {
+val LocalSaltWindowProperties = staticCompositionLocalOf<SaltWindowProperties<Window>> {
     error("SaltWindowProperties is not provided")
 }

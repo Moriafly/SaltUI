@@ -105,6 +105,35 @@ class SaltDimens(
         padding = padding,
         subPadding = subPadding
     )
+
+    /**
+     * Here, some hard-coded values defined in the Salt UI are included.
+     * In actual design and development, certain values (such as padding) do not require additional
+     * customization, which is also a common practice in most UI frameworks.
+     */
+    companion object {
+        @UnstableSaltUiApi
+        internal val RoundedColumnInListItemPadding = 3.dp
+
+        /**
+         * When using a [RoundedColumn] with the type [RoundedColumnType.InList], this parameter is
+         * used to add spacing at the beginning and end for visual compensation.
+         *
+         * ```kotlin
+         * LazyColumn(
+         *     contentPadding = PaddingValues(
+         *         vertical = RoundedColumnInListEdgePadding
+         *     )
+         * )
+         * ```
+         *
+         * ```kotlin
+         * Spacer(Modifier.height(RoundedColumnInListEdgePadding))
+         * ```
+         */
+        @UnstableSaltUiApi
+        val RoundedColumnInListEdgePadding = 5.dp
+    }
 }
 
 fun saltDimens(

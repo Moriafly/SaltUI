@@ -63,7 +63,8 @@ object SaltHazeStyles {
                         )
                     )
                 },
-                blurRadius = 45.dp
+                blurRadius = 45.dp,
+                noiseFactor = 0.01f
             )
 
         MaterialLayer.SubBackground ->
@@ -99,7 +100,8 @@ object SaltHazeStyles {
                         )
                     )
                 },
-                blurRadius = 45.dp
+                blurRadius = 45.dp,
+                noiseFactor = 0.01f
             )
     }
 
