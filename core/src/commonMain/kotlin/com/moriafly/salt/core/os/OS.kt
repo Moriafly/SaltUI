@@ -88,9 +88,11 @@ sealed class OS {
      * macOS platform.
      *
      * @property version macOS version string (e.g., "14.2.1" for Sonoma)
+     * @property build macOS build string (e.g., "23D56"), empty if unavailable
      */
     data class MacOS(
-        val version: String
+        val version: String,
+        val build: String
     ) : OS()
 
     object Linux : OS()
