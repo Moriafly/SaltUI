@@ -20,9 +20,15 @@
 package com.moriafly.salt.core.os
 
 /**
- * Operating System.
+ * Represents the operating system platform and its version information.
+ * Use [OS.current] to get the current platform.
  */
 sealed class OS {
+    /**
+     * Android platform with API level (SDK Int).
+     *
+     * @property versionSdk Android API level, e.g., 35 for Android 15
+     */
     data class Android(
         val versionSdk: Int
     ) : OS() {
@@ -44,6 +50,11 @@ sealed class OS {
         }
     }
 
+    /**
+     * Windows platform with build number.
+     *
+     * @property windowsBuild Windows build number (e.g., 22631 for Windows 11 23H2)
+     */
     data class Windows(
         val windowsBuild: Int
     ) : OS() {
@@ -73,6 +84,11 @@ sealed class OS {
         }
     }
 
+    /**
+     * macOS platform.
+     *
+     * @property version macOS version string (e.g., "14.2.1" for Sonoma)
+     */
     data class MacOS(
         val version: String
     ) : OS()
@@ -84,6 +100,9 @@ sealed class OS {
     object Unknown : OS()
 
     companion object {
+        /**
+         * The current operating system platform. Detected lazily on first access.
+         */
         val current: OS by lazy { os() }
 
         @Deprecated(
@@ -92,35 +111,74 @@ sealed class OS {
         )
         val os: OS = current
 
+        /**
+         * Returns true if current platform is Android.
+         */
         fun isAndroid(): Boolean = current is Android
 
+        /**
+         * Returns true if current platform is Windows.
+         */
         fun isWindows(): Boolean = current is Windows
 
+        /**
+         * Returns true if current platform is macOS.
+         */
         fun isMacOS(): Boolean = current is MacOS
 
+        /**
+         * Returns true if current platform is Linux.
+         */
         fun isLinux(): Boolean = current is Linux
 
+        /**
+         * Returns true if current platform is a desktop OS (Windows, macOS, or Linux).
+         */
         fun isDesktop(): Boolean = isMacOS() || isLinux() || isWindows()
 
+        /**
+         * Returns true if current platform is iOS.
+         */
         fun isIOS(): Boolean = current is IOS
 
+        /**
+         * Returns true if current platform is unknown.
+         */
         fun isUnknown(): Boolean = current is Unknown
 
+        /**
+         * Executes [value] if current platform is Android and returns its result, otherwise false.
+         */
         fun ifAndroid(value: (Android) -> Boolean): Boolean =
             current is Android && value(current as Android)
 
+        /**
+         * Executes [value] if current platform is Windows and returns its result, otherwise false.
+         */
         fun ifWindows(value: (Windows) -> Boolean): Boolean =
             current is Windows && value(current as Windows)
 
+        /**
+         * Executes [value] if current platform is macOS and returns its result, otherwise false.
+         */
         fun ifMacOS(value: (MacOS) -> Boolean): Boolean =
             current is MacOS && value(current as MacOS)
 
+        /**
+         * Executes [value] if current platform is Linux and returns its result, otherwise false.
+         */
         fun ifLinux(value: (Linux) -> Boolean): Boolean =
             current is Linux && value(current as Linux)
 
+        /**
+         * Executes [value] if current platform is iOS and returns its result, otherwise false.
+         */
         fun ifIOS(value: (IOS) -> Boolean): Boolean =
             current is IOS && value(current as IOS)
 
+        /**
+         * Executes [value] if current platform is Unknown and returns its result, otherwise false.
+         */
         fun ifUnknown(value: (Unknown) -> Boolean): Boolean =
             current is Unknown && value(current as Unknown)
     }
