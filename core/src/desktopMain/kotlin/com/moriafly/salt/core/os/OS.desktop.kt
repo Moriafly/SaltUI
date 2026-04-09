@@ -15,21 +15,30 @@
 
 package com.moriafly.salt.core.os
 
+import com.moriafly.salt.core.os.macos.MacOSVersionInfo
 import com.sun.jna.platform.win32.Kernel32
 import com.sun.jna.platform.win32.WinNT
 
 actual fun os(): OS {
     val osName = System.getProperty("os.name")
     return when {
-        // macOS product version
-        osName == "Mac OS X" -> OS.MacOS(System.getProperty("os.version"))
+        // macOS product version and build via JNA
+        osName == "Mac OS X" -> {
+            OS.MacOS(
+                version = System.getProperty("os.version"),
+                build = MacOSVersionInfo.getBuildVersion()
+            )
+        }
+
         osName.startsWith("Win") -> {
             // https://learn.microsoft.com/en-us/windows-hardware/drivers/install/inf-manufacturer-section
             val osVersionInfoEx = WinNT.OSVERSIONINFOEX()
             Kernel32.INSTANCE.GetVersionEx(osVersionInfoEx)
             OS.Windows(osVersionInfoEx.buildNumber)
         }
+
         osName == "Linux" -> OS.Linux
+
         else -> throw Error("Unknown Desktop OS $osName")
     }
 }
