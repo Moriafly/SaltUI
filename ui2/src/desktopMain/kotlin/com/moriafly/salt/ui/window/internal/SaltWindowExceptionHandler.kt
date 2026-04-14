@@ -17,17 +17,22 @@
 
 package com.moriafly.salt.ui.window.internal
 
-import androidx.compose.ui.ExperimentalComposeUiApi
-import androidx.compose.ui.window.WindowExceptionHandler
-import androidx.compose.ui.window.WindowExceptionHandlerFactory
 import com.moriafly.salt.ui.UnstableSaltUiApi
-import java.awt.Window
 
+/**
+ * Handler for exceptions caught inside [com.moriafly.salt.ui.window.SaltWindow]
+ * and [com.moriafly.salt.ui.window.SaltDialogWindow].
+ *
+ * By default the exception is rethrown. The caller application can override
+ * [onException] to redirect exceptions to its own logging or crash-reporting
+ * system. When overridden, the exception is considered handled and will not be
+ * propagated to the AWT event loop.
+ */
 @UnstableSaltUiApi
-@ExperimentalComposeUiApi
-internal object SaltWindowExceptionHandlerFactory : WindowExceptionHandlerFactory {
-    override fun exceptionHandler(window: Window): WindowExceptionHandler =
-        WindowExceptionHandler { throwable ->
-            SaltWindowExceptionHandler.onException(throwable)
-        }
+object SaltWindowExceptionHandler {
+    /**
+     * Called synchronously on the UI thread (AWT Event Dispatch Thread)
+     * when an uncaught exception occurs inside a Salt window.
+     */
+    var onException: (Throwable) -> Unit = { throw it }
 }
