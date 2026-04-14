@@ -15,6 +15,7 @@
 
 package com.moriafly.salt.core.os
 
+import com.moriafly.salt.core.os.linux.LinuxDistributionInfo
 import com.moriafly.salt.core.os.macos.MacOSVersionInfo
 import com.sun.jna.platform.win32.Kernel32
 import com.sun.jna.platform.win32.WinNT
@@ -37,8 +38,12 @@ actual fun os(): OS {
             OS.Windows(osVersionInfoEx.buildNumber)
         }
 
-        osName == "Linux" -> OS.Linux
-
+        osName == "Linux" -> {
+            OS.Linux(
+                version = System.getProperty("os.version"),
+                distro = LinuxDistributionInfo.getDistributionInfo()
+            )
+        }
         else -> throw Error("Unknown Desktop OS $osName")
     }
 }
