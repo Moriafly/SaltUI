@@ -95,7 +95,16 @@ sealed class OS {
         val build: String
     ) : OS()
 
-    object Linux : OS()
+    /**
+     * Linux platform.
+     *
+     * @property version Linux kernel version string (e.g., "5.15.0-78-generic")
+     * @property distro Optional Linux distribution name (e.g., "Ubuntu 22.04"), empty if unavailable
+     */
+    data class Linux(
+        val version: String,
+        val distro: String
+    ) : OS()
 
     object IOS : OS()
 
