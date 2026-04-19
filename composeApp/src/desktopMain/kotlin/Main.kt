@@ -1,13 +1,27 @@
+/*
+ * Salt UI
+ * Copyright (C) 2026 Moriafly
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ */
+
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.window.application
-import com.moriafly.salt.ui.Button
 import com.moriafly.salt.ui.UnstableSaltUiApi
+import com.moriafly.salt.ui.sample.ui.MainContent
 import com.moriafly.salt.ui.window.CaptionBarHitTest
-import com.moriafly.salt.ui.window.SaltDialogWindow
 import com.moriafly.salt.ui.window.SaltWindow
 import com.moriafly.salt.ui.window.SaltWindowProperties
 
@@ -19,35 +33,14 @@ fun main() = application {
     SaltWindow(
         onCloseRequest = ::exitApplication,
         title = "Salt UI",
-//        decoration = WindowDecoration.Undecorated(),
-//        transparent = true,
         resizable = true,
         properties = SaltWindowProperties.default(
             captionButtonsVisible = captionButtonsVisible,
             captionButtonIsDarkTheme = isDarkTheme
         )
     ) {
-//        MainActivityContent(
-//            isDarkTheme = isDarkTheme
-//        )
-
         CaptionBarHitTest()
 
-//        Button(
-//            onClick = {
-//                captionButtonsVisible = !captionButtonsVisible
-//            },
-//            text = "Change Caption Buttons Visible"
-//        )
-
-        BasicScreenSample()
-
-//        SaltDialogWindow(
-//            onCloseRequest = {
-//            },
-//            title = "Dialog",
-//        ) {
-//            CaptionBarHitTest()
-//        }
+        MainContent()
     }
 }
