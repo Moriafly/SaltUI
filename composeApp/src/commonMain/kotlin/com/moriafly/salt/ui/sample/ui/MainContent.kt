@@ -54,6 +54,7 @@ private val navBackStackConfig = SavedStateConfiguration {
     }
 }
 
+@Suppress("ktlint:compose:modifier-missing-check")
 @OptIn(UnstableSaltUiApi::class)
 @Composable
 fun MainContent() {
