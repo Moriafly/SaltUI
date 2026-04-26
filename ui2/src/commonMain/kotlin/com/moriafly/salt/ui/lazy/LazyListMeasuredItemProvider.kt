@@ -17,6 +17,7 @@
 package com.moriafly.salt.ui.lazy
 
 import androidx.collection.IntList
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.ui.layout.Placeable
 import androidx.compose.ui.unit.Constraints
 import com.moriafly.salt.ui.lazy.layout.LazyLayoutKeyIndexMap
@@ -54,8 +55,11 @@ internal abstract class LazyListMeasuredItemProvider(
         return createItem(index, key, contentType, placeables, constraints)
     }
 
+    @OptIn(ExperimentalFoundationApi::class)
     fun keepAround(index: Int) {
-        measureScope.compose(index)
+        if (index in 0 until itemProvider.itemCount) {
+            measureScope.compose(index)
+        }
     }
 
     /**
