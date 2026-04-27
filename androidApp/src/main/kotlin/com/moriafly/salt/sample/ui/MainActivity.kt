@@ -17,7 +17,6 @@
 
 package com.moriafly.salt.sample.ui
 
-import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -46,23 +45,13 @@ class MainActivity : ComponentActivity() {
 
             val isDarkTheme = AppConfig.isDarkTheme
             LaunchedEffect(isDarkTheme) {
-                if (isDarkTheme) {
-                    WindowUtil.setStatusBarForegroundColor(window, WindowUtil.BarColor.White)
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                        WindowUtil.setNavigationBarForegroundColor(
-                            window,
-                            WindowUtil.BarColor.White
-                        )
-                    }
+                val barColor = if (isDarkTheme) {
+                    WindowUtil.BarColor.White
                 } else {
-                    WindowUtil.setStatusBarForegroundColor(window, WindowUtil.BarColor.Black)
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                        WindowUtil.setNavigationBarForegroundColor(
-                            window,
-                            WindowUtil.BarColor.Black
-                        )
-                    }
+                    WindowUtil.BarColor.Black
                 }
+                WindowUtil.setStatusBarForegroundColor(window, barColor)
+                WindowUtil.setNavigationBarForegroundColor(window, barColor)
             }
         }
     }

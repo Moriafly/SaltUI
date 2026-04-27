@@ -22,7 +22,6 @@ package com.moriafly.salt.ui.util
 import android.os.Build
 import android.view.View
 import android.view.Window
-import androidx.annotation.RequiresApi
 import com.moriafly.salt.ui.UnstableSaltUiApi
 
 @UnstableSaltUiApi
@@ -42,9 +41,15 @@ object WindowUtil {
 
     /**
      * Set the navigation bar foreground color.
+     *
+     * No-op on devices running Android versions below Oreo (API 26),
+     * where the light navigation bar flag is not supported.
      */
-    @RequiresApi(Build.VERSION_CODES.O)
     fun setNavigationBarForegroundColor(window: Window, color: BarColor) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+            return
+        }
+
         val decorView = window.decorView
         var systemUiVisibility = decorView.systemUiVisibility
         systemUiVisibility = when (color) {
