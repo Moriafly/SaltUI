@@ -21,12 +21,10 @@ package com.moriafly.salt.ui.app
 
 import android.app.Application
 import androidx.annotation.Keep
-import com.moriafly.salt.ui.UnstableSaltUiApi
 
 /**
  * Base [Application] class for Salt UI-powered applications.
  */
-@UnstableSaltUiApi
 abstract class SaltApplication : Application() {
     /**
      * Disables the MEIZU Flyme's automatic color inversion algorithm in night mode for the app.
