@@ -27,7 +27,7 @@ fun App() {
 }
 ```
 
-See demo: [composeApp](https://github.com/Moriafly/SaltUI/tree/main/composeApp).
+See demo: [shared](https://github.com/Moriafly/SaltUI/tree/main/shared).
 
 ## Text Description and Translation Standards
 

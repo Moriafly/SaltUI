@@ -13,7 +13,6 @@
  * Lesser General Public License for more details.
  */
 
-import com.android.build.api.dsl.androidLibrary
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinAndroidTarget
 
@@ -80,8 +79,7 @@ kotlin {
 
     withSourcesJar(false)
 
-    @Suppress("UnstableApiUsage")
-    androidLibrary {
+    android {
         namespace = "com.moriafly.salt.ui"
         compileSdk = 36
         minSdk = 23
