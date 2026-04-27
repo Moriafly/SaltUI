@@ -16,7 +16,7 @@
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.window.application
 import com.moriafly.salt.ui.UnstableSaltUiApi
-import com.moriafly.salt.ui.sample.ui.MainContent
+import com.moriafly.salt.ui.sample.ui.AppContent
 import com.moriafly.salt.ui.sample.util.AppConfig
 import com.moriafly.salt.ui.window.CaptionBarHitTest
 import com.moriafly.salt.ui.window.SaltWindow
@@ -29,11 +29,12 @@ fun main() = application {
         title = "Salt UI",
         resizable = true,
         properties = SaltWindowProperties.default(
-            captionButtonIsDarkTheme = AppConfig.isDarkTheme
+            captionButtonIsDarkTheme = AppConfig.isDarkTheme,
+            backgroundIsDarkTheme = AppConfig.isDarkTheme
         )
     ) {
         CaptionBarHitTest()
 
-        MainContent()
+        AppContent()
     }
 }

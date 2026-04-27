@@ -18,6 +18,7 @@ package com.moriafly.salt.ui.sample.ui
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
@@ -41,6 +42,7 @@ import com.moriafly.salt.ui.icons.Success
 import com.moriafly.salt.ui.sample.ui.navigation.AppNavigation
 import com.moriafly.salt.ui.sample.ui.navigation.LocalNavBackStack
 import com.moriafly.salt.ui.sample.ui.navigation.ScreenRoute
+import com.moriafly.salt.ui.sidebar.SideBar
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
 
@@ -67,9 +69,14 @@ fun MainContent() {
             modifier = Modifier
                 .fillMaxSize()
         ) {
-            AppNavigation(
-                navBackStack = navBackStack
-            )
+            Row {
+                SideBar {
+                }
+
+                AppNavigation(
+                    navBackStack = navBackStack
+                )
+            }
 
             Column(
                 modifier = Modifier

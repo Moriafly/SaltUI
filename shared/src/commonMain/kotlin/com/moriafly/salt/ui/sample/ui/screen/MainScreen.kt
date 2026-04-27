@@ -18,15 +18,14 @@ package com.moriafly.salt.ui.sample.ui.screen
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.unit.dp
-import com.moriafly.salt.ui.Icon
 import com.moriafly.salt.ui.Item
-import com.moriafly.salt.ui.ItemContainer
 import com.moriafly.salt.ui.ItemOuterLargeTitle
 import com.moriafly.salt.ui.ItemSwitcher
 import com.moriafly.salt.ui.RoundedColumn
@@ -34,88 +33,157 @@ import com.moriafly.salt.ui.SaltTheme
 import com.moriafly.salt.ui.Text
 import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.moriafly.salt.ui.button.PillButton
-import com.moriafly.salt.ui.icons.SaltIcons
-import com.moriafly.salt.ui.icons.Success
 import com.moriafly.salt.ui.outerPadding
+import com.moriafly.salt.ui.rememberScrollState
 import com.moriafly.salt.ui.sample.ui.navigation.LocalNavBackStack
 import com.moriafly.salt.ui.sample.ui.navigation.ScreenRoute
 import com.moriafly.salt.ui.sample.util.AppConfig
+import com.moriafly.salt.ui.screen.BasicScreen
+import com.moriafly.salt.ui.verticalScroll
 
 @Suppress("ktlint:compose:modifier-missing-check")
 @OptIn(UnstableSaltUiApi::class)
 @Composable
 fun MainScreen() {
-    BasicScreenColumn(
-        title = "",
-        showBackBtn = false
-    ) {
-        ItemOuterLargeTitle(
-            text = "Salt UI",
-            sub = "UI Components for Compose Multiplatform (Android/Desktop/iOS)"
-        )
-
-        RoundedColumn {
-            ItemSwitcher(
-                state = AppConfig.isDarkTheme,
-                onChange = {
-                    AppConfig.updateIsDarkTheme(it)
-                },
-                text = "Dark Theme"
-            )
-        }
-
-        RoundedColumn {
-            val navBackStack = LocalNavBackStack.current
-            Item(
-                onClick = {
-                    navBackStack.add(ScreenRoute.List)
-                },
-                text = "List"
-            )
-        }
-
-        FlowRow(
+    BasicScreen(
+        onBack = {
+        },
+        title = "Main"
+    ) { contentPaddingValues ->
+        Column(
             modifier = Modifier
-                .outerPadding(),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                .verticalScroll(rememberScrollState())
         ) {
-            PillButton(
-                onClick = {
-                }
-            ) {
-                Box(
-                    modifier = Modifier
-                        .border(1.dp, SaltTheme.colors.subText)
+            Spacer(Modifier.height(contentPaddingValues.calculateTopPadding()))
+
+            ItemOuterLargeTitle(
+                text = "Salt UI",
+                sub = "UI Components for Compose Multiplatform (Android/Desktop/iOS)"
+            )
+
+            RoundedColumn {
+                ItemSwitcher(
+                    state = AppConfig.isDarkTheme,
+                    onChange = {
+                        AppConfig.updateIsDarkTheme(it)
+                    },
+                    text = "Dark Theme"
                 )
             }
-            PillButton(
-                onClick = {
-                },
-                text = {
-                    Text(
-                        text = "你好"
-                    )
-                }
-            ) {
-                Box(
-                    modifier = Modifier
-                        .border(1.dp, SaltTheme.colors.subText)
+
+            RoundedColumn {
+                val navBackStack = LocalNavBackStack.current
+                Item(
+                    onClick = {
+                        navBackStack.add(ScreenRoute.List)
+                    },
+                    text = "List"
+                )
+                Item(
+                    onClick = {
+                        navBackStack.add(ScreenRoute.List)
+                    },
+                    text = "List"
+                )
+                Item(
+                    onClick = {
+                        navBackStack.add(ScreenRoute.List)
+                    },
+                    text = "List"
+                )
+                Item(
+                    onClick = {
+                        navBackStack.add(ScreenRoute.List)
+                    },
+                    text = "List"
+                )
+                Item(
+                    onClick = {
+                        navBackStack.add(ScreenRoute.List)
+                    },
+                    text = "List"
+                )
+                Item(
+                    onClick = {
+                        navBackStack.add(ScreenRoute.List)
+                    },
+                    text = "List"
+                )
+                Item(
+                    onClick = {
+                        navBackStack.add(ScreenRoute.List)
+                    },
+                    text = "List"
+                )
+                Item(
+                    onClick = {
+                        navBackStack.add(ScreenRoute.List)
+                    },
+                    text = "List"
+                )
+                Item(
+                    onClick = {
+                        navBackStack.add(ScreenRoute.List)
+                    },
+                    text = "List"
+                )
+                Item(
+                    onClick = {
+                        navBackStack.add(ScreenRoute.List)
+                    },
+                    text = "List"
+                )
+                Item(
+                    onClick = {
+                        navBackStack.add(ScreenRoute.List)
+                    },
+                    text = "List"
                 )
             }
-            PillButton(
-                onClick = {
-                },
-                text = {
-                    Text(
-                        text = "禁用"
-                    )
-                },
-                enabled = false
+
+            FlowRow(
+                modifier = Modifier
+                    .outerPadding(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                Box(
-                    modifier = Modifier
-                        .border(1.dp, SaltTheme.colors.subText)
-                )
+                PillButton(
+                    onClick = {
+                    }
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .border(1.dp, SaltTheme.colors.subText)
+                    )
+                }
+                PillButton(
+                    onClick = {
+                    },
+                    text = {
+                        Text(
+                            text = "你好"
+                        )
+                    }
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .border(1.dp, SaltTheme.colors.subText)
+                    )
+                }
+                PillButton(
+                    onClick = {
+                    },
+                    text = {
+                        Text(
+                            text = "禁用"
+                        )
+                    },
+                    enabled = false
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .border(1.dp, SaltTheme.colors.subText)
+                    )
+                }
             }
         }
     }

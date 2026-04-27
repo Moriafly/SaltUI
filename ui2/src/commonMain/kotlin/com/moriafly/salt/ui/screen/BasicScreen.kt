@@ -17,35 +17,100 @@
 
 package com.moriafly.salt.ui.screen
 
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.CompositingStrategy
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.moriafly.salt.ui.Icon
+import com.moriafly.salt.ui.Text
 import com.moriafly.salt.ui.UnstableSaltUiApi
-import com.moriafly.salt.ui.nested.NestedCollapsed
-import com.moriafly.salt.ui.nested.rememberCollapsedState
+import com.moriafly.salt.ui.button.PillButton
+import com.moriafly.salt.ui.button.PillButtonDefaults
+import com.moriafly.salt.ui.icons.ArrowBack
+import com.moriafly.salt.ui.icons.SaltIcons
+import com.moriafly.salt.ui.verticalEdge
 
 @UnstableSaltUiApi
 @Composable
 fun BasicScreen(
+    onBack: () -> Unit,
     modifier: Modifier = Modifier,
-    collapsedTopBar: @Composable () -> Unit = {},
-    expandedTopBar: @Composable () -> Unit = {},
-    content: @Composable (PaddingValues) -> Unit
+    title: String? = null,
+    content: @Composable BoxScope.(PaddingValues) -> Unit
 ) {
-    Column(
+    Box(
         modifier = modifier
+            .fillMaxSize()
     ) {
-        val state = rememberCollapsedState()
-        ScreenTopBarCollapsed(
-            state = state,
-            content = collapsedTopBar
-        )
+        val contentPaddingTop = PillButtonDefaults.Height + 32.dp
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .graphicsLayer {
+                    compositingStrategy = CompositingStrategy.Offscreen
+                }
+                .verticalEdge(top = contentPaddingTop)
+        ) {
+            val contentPaddingValues = remember {
+                PaddingValues(
+                    top = contentPaddingTop
+                )
+            }
+            content(contentPaddingValues)
+        }
 
-        NestedCollapsed(
-            collapsed = expandedTopBar,
-            state = state,
-            content = content
+        TitleBar(
+            onBack = onBack,
+            title = title
         )
+    }
+}
+
+@UnstableSaltUiApi
+@Composable
+private fun TitleBar(
+    onBack: () -> Unit,
+    modifier: Modifier = Modifier,
+    title: String? = null
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        PillButton(
+            onClick = onBack
+        ) {
+            Icon(
+                painter = rememberVectorPainter(SaltIcons.ArrowBack),
+                contentDescription = null
+            )
+        }
+
+        Spacer(Modifier.width(8.dp))
+
+        if (title != null) {
+            Text(
+                text = title,
+                fontWeight = FontWeight.Medium,
+                fontSize = 16.sp
+            )
+        }
     }
 }
