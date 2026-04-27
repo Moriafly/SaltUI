@@ -101,6 +101,14 @@ fun PillButton(
 @UnstableSaltUiApi
 expect object PillButtonDefaults {
     /**
+     * The recommended icon size for content inside a [PillButton].
+     *
+     * - Mobile (Android/iOS): 20.dp
+     * - Desktop: 16.dp
+     */
+    val IconSize: Dp
+
+    /**
      * The default height of a [PillButton].
      *
      * - Mobile (Android/iOS): 48.dp
@@ -109,12 +117,10 @@ expect object PillButtonDefaults {
     internal val Height: Dp
 
     /**
-     * The recommended icon size for content inside a [PillButton].
+     * The default horizontal content padding for a pill-shaped [PillButton].
      *
-     * - Mobile (Android/iOS): 20.dp
-     * - Desktop: 16.dp
+     * - Mobile (Android/iOS): 16.dp
+     * - Desktop: 10.dp
      */
-    val IconSize: Dp
-
     internal val HorizontalPadding: Dp
 }

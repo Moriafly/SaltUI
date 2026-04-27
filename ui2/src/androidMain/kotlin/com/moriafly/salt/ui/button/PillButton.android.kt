@@ -21,7 +21,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
 actual object PillButtonDefaults {
-    internal actual val Height: Dp = 48.dp
     actual val IconSize: Dp = 20.dp
+    internal actual val Height: Dp = 48.dp
     internal actual val HorizontalPadding: Dp = 16.dp
 }
