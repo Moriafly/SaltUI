@@ -19,6 +19,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -86,7 +87,12 @@ fun PillButton(
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        icon()
+        Box(
+            modifier = Modifier.size(PillButtonDefaults.IconSize),
+            contentAlignment = Alignment.Center
+        ) {
+            icon()
+        }
 
         if (text != null) {
             Spacer(Modifier.width(4.dp))
@@ -106,7 +112,7 @@ expect object PillButtonDefaults {
      * - Mobile (Android/iOS): 20.dp
      * - Desktop: 16.dp
      */
-    val IconSize: Dp
+    internal val IconSize: Dp
 
     /**
      * The default height of a [PillButton].

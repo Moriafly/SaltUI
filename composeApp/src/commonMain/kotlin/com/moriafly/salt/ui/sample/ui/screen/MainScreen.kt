@@ -34,7 +34,6 @@ import com.moriafly.salt.ui.SaltTheme
 import com.moriafly.salt.ui.Text
 import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.moriafly.salt.ui.button.PillButton
-import com.moriafly.salt.ui.button.PillButtonDefaults
 import com.moriafly.salt.ui.icons.SaltIcons
 import com.moriafly.salt.ui.icons.Success
 import com.moriafly.salt.ui.outerPadding
@@ -86,7 +85,6 @@ fun MainScreen() {
             ) {
                 Box(
                     modifier = Modifier
-                        .size(PillButtonDefaults.IconSize)
                         .border(1.dp, SaltTheme.colors.subText)
                 )
             }
@@ -101,7 +99,6 @@ fun MainScreen() {
             ) {
                 Box(
                     modifier = Modifier
-                        .size(PillButtonDefaults.IconSize)
                         .border(1.dp, SaltTheme.colors.subText)
                 )
             }
@@ -117,7 +114,6 @@ fun MainScreen() {
             ) {
                 Box(
                     modifier = Modifier
-                        .size(PillButtonDefaults.IconSize)
                         .border(1.dp, SaltTheme.colors.subText)
                 )
             }
