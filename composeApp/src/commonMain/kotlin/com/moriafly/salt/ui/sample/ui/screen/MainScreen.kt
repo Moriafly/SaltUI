@@ -15,16 +15,34 @@
 
 package com.moriafly.salt.ui.sample.ui.screen
 
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
+import androidx.compose.ui.unit.dp
+import com.moriafly.salt.ui.Icon
 import com.moriafly.salt.ui.Item
+import com.moriafly.salt.ui.ItemContainer
 import com.moriafly.salt.ui.ItemOuterLargeTitle
 import com.moriafly.salt.ui.ItemSwitcher
 import com.moriafly.salt.ui.RoundedColumn
+import com.moriafly.salt.ui.SaltTheme
+import com.moriafly.salt.ui.Text
 import com.moriafly.salt.ui.UnstableSaltUiApi
+import com.moriafly.salt.ui.button.PillButton
+import com.moriafly.salt.ui.button.PillButtonDefaults
+import com.moriafly.salt.ui.icons.SaltIcons
+import com.moriafly.salt.ui.icons.Success
+import com.moriafly.salt.ui.outerPadding
 import com.moriafly.salt.ui.sample.ui.navigation.LocalNavBackStack
 import com.moriafly.salt.ui.sample.ui.navigation.ScreenRoute
 import com.moriafly.salt.ui.sample.util.AppConfig
 
+@Suppress("ktlint:compose:modifier-missing-check")
 @OptIn(UnstableSaltUiApi::class)
 @Composable
 fun MainScreen() {
@@ -55,6 +73,38 @@ fun MainScreen() {
                 },
                 text = "List"
             )
+        }
+
+        FlowRow(
+            modifier = Modifier
+                .outerPadding(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            PillButton(
+                onClick = {
+                }
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(PillButtonDefaults.IconSize)
+                        .border(1.dp, SaltTheme.colors.subText)
+                )
+            }
+            PillButton(
+                onClick = {
+                },
+                text = {
+                    Text(
+                        text = "你好"
+                    )
+                }
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(PillButtonDefaults.IconSize)
+                        .border(1.dp, SaltTheme.colors.subText)
+                )
+            }
         }
     }
 }
