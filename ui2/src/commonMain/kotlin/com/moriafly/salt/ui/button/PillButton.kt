@@ -18,8 +18,8 @@ package com.moriafly.salt.ui.button
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -88,7 +88,8 @@ fun PillButton(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Box(
-            modifier = Modifier.size(PillButtonDefaults.IconSize),
+            modifier = Modifier
+                .size(PillButtonDefaults.IconSize),
             contentAlignment = Alignment.Center,
             propagateMinConstraints = true
         ) {
