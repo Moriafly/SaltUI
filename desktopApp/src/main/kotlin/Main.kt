@@ -13,30 +13,23 @@
  * Lesser General Public License for more details.
  */
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.window.application
 import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.moriafly.salt.ui.sample.ui.MainContent
+import com.moriafly.salt.ui.sample.util.AppConfig
 import com.moriafly.salt.ui.window.CaptionBarHitTest
 import com.moriafly.salt.ui.window.SaltWindow
 import com.moriafly.salt.ui.window.SaltWindowProperties
 
 @OptIn(ExperimentalComposeUiApi::class, UnstableSaltUiApi::class)
 fun main() = application {
-    val isDarkTheme = false
-
-    var captionButtonsVisible by remember { mutableStateOf(true) }
     SaltWindow(
         onCloseRequest = ::exitApplication,
         title = "Salt UI",
         resizable = true,
         properties = SaltWindowProperties.default(
-            captionButtonsVisible = captionButtonsVisible,
-            captionButtonIsDarkTheme = isDarkTheme
+            captionButtonIsDarkTheme = AppConfig.isDarkTheme
         )
     ) {
         CaptionBarHitTest()

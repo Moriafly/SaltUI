@@ -15,15 +15,16 @@
 
 package com.moriafly.salt.ui.sample.ui
 
-import AppTheme
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.moriafly.salt.ui.SaltTheme
 import com.moriafly.salt.ui.UnstableSaltUiApi
+import com.moriafly.salt.ui.sample.ui.theme.AppTheme
 import com.moriafly.salt.ui.sample.util.AppConfig
 
+@Suppress("ktlint:compose:modifier-missing-check")
 @OptIn(UnstableSaltUiApi::class)
 @Composable
 fun AppContent() {

@@ -17,15 +17,18 @@
 
 package com.moriafly.salt.sample.ui
 
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.LocalOverscrollFactory
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.moriafly.salt.ui.ext.edgeToEdge
 import com.moriafly.salt.ui.gestures.cupertino.CupertinoOverscrollEffectFactory
 import com.moriafly.salt.ui.sample.ui.AppContent
+import com.moriafly.salt.ui.sample.util.AppConfig
 import com.moriafly.salt.ui.util.WindowUtil
 
 class MainActivity : ComponentActivity() {
@@ -34,13 +37,32 @@ class MainActivity : ComponentActivity() {
         edgeToEdge()
         super.onCreate(savedInstanceState)
 
-        WindowUtil.setStatusBarForegroundColor(window, WindowUtil.BarColor.Black)
-
         setContent {
             CompositionLocalProvider(
                 LocalOverscrollFactory provides CupertinoOverscrollEffectFactory()
             ) {
                 AppContent()
+            }
+
+            val isDarkTheme = AppConfig.isDarkTheme
+            LaunchedEffect(isDarkTheme) {
+                if (isDarkTheme) {
+                    WindowUtil.setStatusBarForegroundColor(window, WindowUtil.BarColor.White)
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        WindowUtil.setNavigationBarForegroundColor(
+                            window,
+                            WindowUtil.BarColor.White
+                        )
+                    }
+                } else {
+                    WindowUtil.setStatusBarForegroundColor(window, WindowUtil.BarColor.Black)
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        WindowUtil.setNavigationBarForegroundColor(
+                            window,
+                            WindowUtil.BarColor.Black
+                        )
+                    }
+                }
             }
         }
     }
