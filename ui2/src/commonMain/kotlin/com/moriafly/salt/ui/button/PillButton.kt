@@ -89,7 +89,8 @@ fun PillButton(
     ) {
         Box(
             modifier = Modifier.size(PillButtonDefaults.IconSize),
-            contentAlignment = Alignment.Center
+            contentAlignment = Alignment.Center,
+            propagateMinConstraints = true
         ) {
             icon()
         }
