@@ -105,6 +105,22 @@ fun MainScreen() {
                         .border(1.dp, SaltTheme.colors.subText)
                 )
             }
+            PillButton(
+                onClick = {
+                },
+                text = {
+                    Text(
+                        text = "禁用"
+                    )
+                },
+                enabled = false
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(PillButtonDefaults.IconSize)
+                        .border(1.dp, SaltTheme.colors.subText)
+                )
+            }
         }
     }
 }
