@@ -80,7 +80,7 @@ fun PillButton(
                 onClick = onClick
             )
             .thenIf(text != null) {
-                padding(horizontal = 12.dp)
+                padding(horizontal = PillButtonDefaults.HorizontalPadding)
             }
             .enabledAlpha(enabled),
         horizontalArrangement = Arrangement.Center,
@@ -106,7 +106,7 @@ expect object PillButtonDefaults {
      * - Mobile (Android/iOS): 48.dp
      * - Desktop: 32.dp
      */
-    val Height: Dp
+    internal val Height: Dp
 
     /**
      * The recommended icon size for content inside a [PillButton].
@@ -115,4 +115,6 @@ expect object PillButtonDefaults {
      * - Desktop: 16.dp
      */
     val IconSize: Dp
+
+    internal val HorizontalPadding: Dp
 }
