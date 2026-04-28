@@ -22,9 +22,12 @@ import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.plus
 import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -33,6 +36,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -51,32 +55,35 @@ fun BasicScreen(
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
     title: String? = null,
+    contentPadding: PaddingValues = PaddingValues(0.dp),
     content: @Composable BoxScope.(PaddingValues) -> Unit
 ) {
     Box(
         modifier = modifier
             .fillMaxSize()
     ) {
-        val contentPaddingTop = PillButtonDefaults.Height + 32.dp
+        val boxContentPaddingTop =
+            contentPadding.calculateTopPadding() + PillButtonDefaults.Height + 32.dp
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .graphicsLayer {
                     compositingStrategy = CompositingStrategy.Offscreen
                 }
-                .verticalEdge(top = contentPaddingTop)
+                .verticalEdge(top = boxContentPaddingTop)
         ) {
-            val contentPaddingValues = remember {
+            val boxContentPaddingValues = remember {
                 PaddingValues(
-                    top = contentPaddingTop
+                    top = boxContentPaddingTop
                 )
             }
-            content(contentPaddingValues)
+            content(boxContentPaddingValues)
         }
 
         TitleBar(
             onBack = onBack,
-            title = title
+            title = title,
+            contentPadding = contentPadding
         )
     }
 }
@@ -86,11 +93,20 @@ fun BasicScreen(
 private fun TitleBar(
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
-    title: String? = null
+    title: String? = null,
+    contentPadding: PaddingValues = PaddingValues(0.dp)
 ) {
+    val layoutDirection = LocalLayoutDirection.current
     Row(
         modifier = modifier
             .fillMaxWidth()
+            .padding(
+                PaddingValues(
+                    start = contentPadding.calculateStartPadding(layoutDirection),
+                    top = contentPadding.calculateTopPadding(),
+                    end = contentPadding.calculateEndPadding(layoutDirection)
+                )
+            )
             .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {

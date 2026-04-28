@@ -22,6 +22,8 @@ import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.compositionLocalOf
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clipToBounds
 import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
@@ -39,10 +41,13 @@ val LocalNavBackStack = compositionLocalOf<NavBackStack<NavKey>> {
 
 @Composable
 fun AppNavigation(
-    navBackStack: NavBackStack<NavKey>
+    navBackStack: NavBackStack<NavKey>,
+    modifier: Modifier = Modifier
 ) {
     NavDisplay(
         backStack = navBackStack,
+        modifier = modifier
+            .clipToBounds(),
         onBack = {
             navBackStack.removeLastOrNull()
         },
