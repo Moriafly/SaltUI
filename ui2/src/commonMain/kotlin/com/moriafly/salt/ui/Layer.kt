@@ -44,7 +44,12 @@ fun Layer(
     content: @Composable BoxScope.() -> Unit
 ) {
     val isDarkTheme = SaltTheme.configs.isDarkTheme
-    val borderColor = Color(0x09000000)
+    val borderColor =
+        if (isDarkTheme) {
+            Color(0x12FFFFFF)
+        } else {
+            Color(0x0F000000)
+        }
     Surface(
         modifier = modifier
             .clip(RoundedCornerShape(topStart = 12.dp))
