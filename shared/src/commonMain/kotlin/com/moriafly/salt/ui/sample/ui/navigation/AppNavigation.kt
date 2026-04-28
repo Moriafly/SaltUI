@@ -51,9 +51,24 @@ fun AppNavigation(
         onBack = {
             navBackStack.removeLastOrNull()
         },
-        transitionSpec = defaultTransitionSpec(),
-        popTransitionSpec = defaultPopTransitionSpec(),
-        predictivePopTransitionSpec = defaultPredictivePopTransitionSpec(),
+        transitionSpec = {
+            ContentTransform(
+                targetContentEnter = EnterTransition.None,
+                initialContentExit = ExitTransition.None
+            )
+        },
+        popTransitionSpec = {
+            ContentTransform(
+                targetContentEnter = EnterTransition.None,
+                initialContentExit = ExitTransition.None
+            )
+        },
+        predictivePopTransitionSpec = {
+            ContentTransform(
+                targetContentEnter = EnterTransition.None,
+                initialContentExit = ExitTransition.None
+            )
+        },
         entryProvider = entryProvider {
             entry<ScreenRoute.Main>(
                 metadata =

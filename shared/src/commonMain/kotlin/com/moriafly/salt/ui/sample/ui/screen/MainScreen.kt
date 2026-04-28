@@ -20,12 +20,11 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.unit.dp
 import com.moriafly.salt.ui.Item
 import com.moriafly.salt.ui.ItemOuterLargeTitle
@@ -48,18 +47,38 @@ import com.moriafly.salt.ui.verticalScroll
 @Composable
 fun MainScreen() {
     BasicScreen(
-        onBack = {
-        },
-        title = "Main"
-    ) { contentPaddingValues ->
+        actionButton = null,
+        title = "Main",
+        toolButtons = {
+            PillButton(
+                onClick = {}
+            ) {
+                Box(
+                    modifier = Modifier
+                        .border(1.dp, SaltTheme.colors.subText, CircleShape)
+                )
+            }
+            PillButton(
+                onClick = {},
+                text = {
+                    Text("Feedback")
+                }
+            ) {
+                Box(
+                    modifier = Modifier
+                        .border(1.dp, SaltTheme.colors.subText, CircleShape)
+                )
+            }
+        }
+    ) { contentPadding ->
         Column(
             modifier = Modifier
                 .verticalScroll(rememberScrollState())
         ) {
-            Spacer(Modifier.height(contentPaddingValues.calculateTopPadding()))
+            Spacer(Modifier.height(contentPadding.calculateTopPadding()))
 
             ItemOuterLargeTitle(
-                text = "Salt UI",
+                text = "Salt UI 3",
                 sub = "UI Components for Compose Multiplatform (Android/Desktop/iOS)"
             )
 
@@ -73,8 +92,17 @@ fun MainScreen() {
                 )
             }
 
+            val navBackStack = LocalNavBackStack.current
             RoundedColumn {
-                val navBackStack = LocalNavBackStack.current
+                Item(
+                    onClick = {
+                        navBackStack.add(ScreenRoute.About)
+                    },
+                    text = "About"
+                )
+            }
+
+            RoundedColumn {
                 Item(
                     onClick = {
                         navBackStack.add(ScreenRoute.List)

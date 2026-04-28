@@ -48,6 +48,8 @@ import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.moriafly.salt.ui.platform.linux.LinuxSaltWindowFrame
 import com.moriafly.salt.ui.platform.macos.MacOSSaltWindowFrame
 import com.moriafly.salt.ui.platform.windows.WindowsSaltWindowFrame
+import com.moriafly.salt.ui.util.findSkiaLayer
+import com.moriafly.salt.ui.util.hackContentPane
 import com.moriafly.salt.ui.window.internal.SaltWindowEnvironment
 import com.moriafly.salt.ui.window.internal.resolveForPlatform
 import java.awt.Dimension
@@ -98,7 +100,7 @@ fun SaltWindow(
 
     val currentProperties by rememberUpdatedState(properties)
 
-    // On Linux the window is always undecorated.
+    // On Linux the window is always undecorated
     val resolvedDecoration = decoration.resolveForPlatform()
 
     SaltWindowEnvironment {
@@ -116,7 +118,17 @@ fun SaltWindow(
             alwaysOnTop = alwaysOnTop,
             onPreviewKeyEvent = onPreviewKeyEvent,
             onKeyEvent = onKeyEvent,
-            init = init
+            init = { window ->
+                // TODO https://youtrack.jetbrains.com/issue/CMP-5651/When-the-dialog-window-is-closed-under-the-dark-theme-a-white-flash-will-appear.
+                // The background color must be set to java.awt.Color.BLACK
+                // Otherwise, background anomalies such as Mica will occur under Direct3D:
+                // the Mica background will not update when the window is resized
+                window.background = java.awt.Color.BLACK
+                window.findSkiaLayer()?.transparency = true
+
+                // Move to before window creation
+                window.hackContentPane()
+            }
         ) {
             val density = LocalDensity.current
 

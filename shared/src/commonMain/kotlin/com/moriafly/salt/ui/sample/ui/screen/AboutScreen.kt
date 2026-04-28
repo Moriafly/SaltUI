@@ -15,26 +15,45 @@
 
 package com.moriafly.salt.ui.sample.ui.screen
 
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import com.moriafly.salt.ui.Item
 import com.moriafly.salt.ui.RoundedColumn
+import com.moriafly.salt.ui.UnstableSaltUiApi
+import com.moriafly.salt.ui.rememberScrollState
 import com.moriafly.salt.ui.sample.ui.navigation.LocalNavBackStack
 import com.moriafly.salt.ui.sample.ui.navigation.ScreenRoute
+import com.moriafly.salt.ui.screen.BasicScreen
+import com.moriafly.salt.ui.verticalScroll
 
+@Suppress("ktlint:compose:modifier-missing-check")
+@OptIn(UnstableSaltUiApi::class)
 @Composable
 fun AboutScreen() {
-    BasicScreenColumn(
-        title = "About",
-        showBackBtn = false
-    ) {
-        val navBackStack = LocalNavBackStack.current
-        RoundedColumn {
-            Item(
-                onClick = {
-                    navBackStack.add(ScreenRoute.License)
-                },
-                text = "License"
-            )
+    val navBackStack = LocalNavBackStack.current
+    BasicScreen(
+        onBack = {
+            navBackStack.removeLastOrNull()
+        },
+        title = "About"
+    ) { contentPadding ->
+        Column(
+            modifier = Modifier
+                .verticalScroll(rememberScrollState())
+        ) {
+            Spacer(Modifier.height(contentPadding.calculateTopPadding()))
+
+            RoundedColumn {
+                Item(
+                    onClick = {
+                        navBackStack.add(ScreenRoute.License)
+                    },
+                    text = "License"
+                )
+            }
         }
     }
 }

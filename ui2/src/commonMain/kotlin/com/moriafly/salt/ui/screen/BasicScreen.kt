@@ -17,6 +17,7 @@
 
 package com.moriafly.salt.ui.screen
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.PaddingValues
@@ -54,6 +55,31 @@ fun BasicScreen(
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
     title: String? = null,
+    toolButtons: (@Composable () -> Unit)? = null,
+    contentPadding: PaddingValues = PaddingValues(0.dp),
+    content: @Composable BoxScope.(PaddingValues) -> Unit
+) {
+    BasicScreen(
+        actionButton = {
+            BasicScreenDefaults.BackButton(
+                onBack = onBack
+            )
+        },
+        modifier = modifier,
+        title = title,
+        toolButtons = toolButtons,
+        contentPadding = contentPadding,
+        content = content
+    )
+}
+
+@UnstableSaltUiApi
+@Composable
+fun BasicScreen(
+    actionButton: (@Composable () -> Unit)?,
+    modifier: Modifier = Modifier,
+    title: String? = null,
+    toolButtons: (@Composable () -> Unit)? = null,
     contentPadding: PaddingValues = PaddingValues(0.dp),
     content: @Composable BoxScope.(PaddingValues) -> Unit
 ) {
@@ -83,13 +109,14 @@ fun BasicScreen(
         }
 
         TitleBar(
-            onBack = onBack,
-            title = title,
+            actionButton = actionButton,
 //            modifier = Modifier
 //                .hazeEffect(hazeState) {
 //                    progressive =
 //                        HazeProgressive.verticalGradient(startIntensity = 1f, endIntensity = 0f)
 //                },
+            title = title,
+            toolButtons = toolButtons,
             contentPadding = contentPadding
         )
     }
@@ -98,9 +125,10 @@ fun BasicScreen(
 @UnstableSaltUiApi
 @Composable
 private fun TitleBar(
-    onBack: () -> Unit,
+    actionButton: (@Composable () -> Unit)?,
     modifier: Modifier = Modifier,
     title: String? = null,
+    toolButtons: (@Composable () -> Unit)? = null,
     contentPadding: PaddingValues = PaddingValues(0.dp)
 ) {
     val layoutDirection = LocalLayoutDirection.current
@@ -114,25 +142,55 @@ private fun TitleBar(
                     end = contentPadding.calculateEndPadding(layoutDirection)
                 )
             )
-            .padding(16.dp),
-        verticalAlignment = Alignment.CenterVertically
+            .padding(16.dp)
+    ) {
+        Row(
+            modifier = Modifier
+                .weight(1f),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            actionButton?.invoke()
+
+            if (actionButton != null && title != null) {
+                Spacer(Modifier.width(8.dp))
+            }
+
+            if (title != null) {
+                Text(
+                    text = title,
+                    fontWeight = FontWeight.Medium,
+                    fontSize = 16.sp
+                )
+            }
+        }
+
+        Spacer(Modifier.width(16.dp))
+
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            toolButtons?.invoke()
+        }
+    }
+}
+
+object BasicScreenDefaults {
+    @UnstableSaltUiApi
+    @Composable
+    fun BackButton(
+        onBack: () -> Unit,
+        modifier: Modifier = Modifier,
+        enabled: Boolean = true
     ) {
         PillButton(
-            onClick = onBack
+            onClick = onBack,
+            modifier = modifier,
+            enabled = enabled
         ) {
             Icon(
                 painter = rememberVectorPainter(SaltIcons.ArrowBack),
                 contentDescription = null
-            )
-        }
-
-        Spacer(Modifier.width(8.dp))
-
-        if (title != null) {
-            Text(
-                text = title,
-                fontWeight = FontWeight.Medium,
-                fontSize = 16.sp
             )
         }
     }
