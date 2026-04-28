@@ -27,7 +27,6 @@ import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.plus
 import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -62,6 +61,9 @@ fun BasicScreen(
         modifier = modifier
             .fillMaxSize()
     ) {
+        // TODO When Haze 2.0.0-alpha01 Release
+        // val hazeState = rememberHazeState()
+
         val boxContentPaddingTop =
             contentPadding.calculateTopPadding() + PillButtonDefaults.Height + 32.dp
         Box(
@@ -83,6 +85,11 @@ fun BasicScreen(
         TitleBar(
             onBack = onBack,
             title = title,
+//            modifier = Modifier
+//                .hazeEffect(hazeState) {
+//                    progressive =
+//                        HazeProgressive.verticalGradient(startIntensity = 1f, endIntensity = 0f)
+//                },
             contentPadding = contentPadding
         )
     }

@@ -50,10 +50,7 @@ fun MainScreen() {
     BasicScreen(
         onBack = {
         },
-        title = "Main",
-        contentPadding = PaddingValues(
-            top = 40.dp
-        )
+        title = "Main"
     ) { contentPaddingValues ->
         Column(
             modifier = Modifier

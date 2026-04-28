@@ -17,28 +17,24 @@ package com.moriafly.salt.ui.sample.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.windowInsetsBottomHeight
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.rememberVectorPainter
+import androidx.compose.ui.unit.dp
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.savedstate.serialization.SavedStateConfiguration
-import com.moriafly.salt.ui.BottomBar
-import com.moriafly.salt.ui.BottomBarItem
+import com.moriafly.salt.ui.Island
+import com.moriafly.salt.ui.IslandDefaults
+import com.moriafly.salt.ui.IslandGroup
 import com.moriafly.salt.ui.SaltTheme
 import com.moriafly.salt.ui.UnstableSaltUiApi
-import com.moriafly.salt.ui.ext.safeMainCompat
-import com.moriafly.salt.ui.icons.SaltIcons
-import com.moriafly.salt.ui.icons.Success
 import com.moriafly.salt.ui.sample.ui.navigation.AppNavigation
 import com.moriafly.salt.ui.sample.ui.navigation.LocalNavBackStack
 import com.moriafly.salt.ui.sample.ui.navigation.ScreenRoute
@@ -68,52 +64,81 @@ fun MainContent() {
         Box(
             modifier = Modifier
                 .fillMaxSize()
+                .background(SaltTheme.colors.subBackground)
         ) {
-            Row {
-                SideBar {
-                }
-
-                AppNavigation(
-                    navBackStack = navBackStack
+            IslandGroup(
+                contentPadding = PaddingValues(
+                    start = IslandDefaults.IslandGroupPadding,
+                    end = IslandDefaults.IslandGroupPadding,
+                    bottom = IslandDefaults.IslandGroupPadding
                 )
-            }
-
-            Column(
-                modifier = Modifier
-                    .align(Alignment.BottomCenter)
-                    .fillMaxWidth()
             ) {
-                BottomBar {
-                    BottomBarItem(
-                        state = navBackStack[0] == ScreenRoute.Main,
-                        onClick = {
-                            if (navBackStack[0] != ScreenRoute.Main) {
-                                navBackStack.subList(1, navBackStack.size).clear()
-                                navBackStack[0] = ScreenRoute.Main
-                            }
-                        },
-                        painter = rememberVectorPainter(SaltIcons.Success),
-                        text = "Main"
-                    )
-                    BottomBarItem(
-                        state = navBackStack[0] == ScreenRoute.About,
-                        onClick = {
-                            if (navBackStack[0] != ScreenRoute.About) {
-                                navBackStack.subList(1, navBackStack.size).clear()
-                                navBackStack[0] = ScreenRoute.About
-                            }
-                        },
-                        painter = rememberVectorPainter(SaltIcons.Success),
-                        text = "About"
-                    )
+                Row {
+                    Island(
+                        modifier = Modifier
+                            .padding(top = 40.dp)
+                            .width(220.dp)
+                            .fillMaxHeight(),
+                        contentPadding = PaddingValues(
+                            start = IslandDefaults.IslandPadding,
+                            end = IslandDefaults.IslandPadding,
+                            bottom = IslandDefaults.IslandPadding
+                        )
+                    ) {
+                    }
+
+                    Island(
+                        modifier = Modifier
+                            .padding(top = 40.dp),
+                        contentPadding = PaddingValues(
+                            start = IslandDefaults.IslandPadding,
+                            end = IslandDefaults.IslandPadding,
+                            bottom = IslandDefaults.IslandPadding
+                        )
+                    ) {
+                        AppNavigation(
+                            navBackStack = navBackStack
+                        )
+                    }
                 }
-                Spacer(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .windowInsetsBottomHeight(WindowInsets.safeMainCompat)
-                        .background(SaltTheme.colors.subBackground)
-                )
             }
+
+//            Column(
+//                modifier = Modifier
+//                    .align(Alignment.BottomCenter)
+//                    .fillMaxWidth()
+//            ) {
+//                BottomBar {
+//                    BottomBarItem(
+//                        state = navBackStack[0] == ScreenRoute.Main,
+//                        onClick = {
+//                            if (navBackStack[0] != ScreenRoute.Main) {
+//                                navBackStack.subList(1, navBackStack.size).clear()
+//                                navBackStack[0] = ScreenRoute.Main
+//                            }
+//                        },
+//                        painter = rememberVectorPainter(SaltIcons.Success),
+//                        text = "Main"
+//                    )
+//                    BottomBarItem(
+//                        state = navBackStack[0] == ScreenRoute.About,
+//                        onClick = {
+//                            if (navBackStack[0] != ScreenRoute.About) {
+//                                navBackStack.subList(1, navBackStack.size).clear()
+//                                navBackStack[0] = ScreenRoute.About
+//                            }
+//                        },
+//                        painter = rememberVectorPainter(SaltIcons.Success),
+//                        text = "About"
+//                    )
+//                }
+//                Spacer(
+//                    modifier = Modifier
+//                        .fillMaxWidth()
+//                        .windowInsetsBottomHeight(WindowInsets.safeMainCompat)
+//                        .background(SaltTheme.colors.subBackground)
+//                )
+//            }
         }
     }
 }
