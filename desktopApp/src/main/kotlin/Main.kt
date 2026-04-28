@@ -36,17 +36,17 @@ import com.moriafly.salt.ui.window.SaltWindowProperties
 
 @OptIn(ExperimentalComposeUiApi::class, UnstableSaltUiApi::class)
 fun main() = application {
-    SaltWindow(
-        onCloseRequest = ::exitApplication,
-        title = "Salt UI",
-        resizable = true,
-        properties = SaltWindowProperties.default(
-            captionButtonIsDarkTheme = AppConfig.isDarkTheme,
-            backgroundType = SaltWindowBackgroundType.Mica,
-            backgroundIsDarkTheme = AppConfig.isDarkTheme
-        )
-    ) {
-        AppTheme {
+    AppTheme {
+        SaltWindow(
+            onCloseRequest = ::exitApplication,
+            title = "Salt UI",
+            resizable = true,
+            properties = SaltWindowProperties.default(
+                captionButtonIsDarkTheme = AppConfig.isDarkTheme,
+                backgroundType = SaltWindowBackgroundType.None,
+                backgroundIsDarkTheme = AppConfig.isDarkTheme
+            )
+        ) {
             MainContent()
 
             DesktopCaptionBar {
@@ -63,8 +63,8 @@ fun main() = application {
                     )
                 }
             }
-        }
 
-        CaptionBarHitTest()
+            CaptionBarHitTest()
+        }
     }
 }

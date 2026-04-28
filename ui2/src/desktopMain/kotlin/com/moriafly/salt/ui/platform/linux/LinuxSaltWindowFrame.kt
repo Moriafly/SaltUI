@@ -17,6 +17,7 @@
 
 package com.moriafly.salt.ui.platform.linux
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.Row
@@ -37,11 +38,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.FrameWindowScope
 import androidx.compose.ui.window.WindowPlacement
 import com.moriafly.salt.ui.ChangeSaltThemeIsDark
+import com.moriafly.salt.ui.SaltTheme
 import com.moriafly.salt.ui.UnstableSaltUiApi
+import com.moriafly.salt.ui.thenIf
 import com.moriafly.salt.ui.window.CaptionButtonsAlign
 import com.moriafly.salt.ui.window.LocalIsHitTestInCaptionBarState
 import com.moriafly.salt.ui.window.LocalSaltWindowInfo
 import com.moriafly.salt.ui.window.LocalWindowState
+import com.moriafly.salt.ui.window.SaltWindowBackgroundType
 import com.moriafly.salt.ui.window.SaltWindowInfo
 import com.moriafly.salt.ui.window.SaltWindowProperties
 import java.awt.event.WindowEvent
@@ -101,6 +105,9 @@ internal fun FrameWindowScope.LinuxSaltWindowFrame(
         Box(
             modifier = Modifier
                 .fillMaxSize()
+                .thenIf(properties.backgroundType == SaltWindowBackgroundType.None) {
+                    background(SaltTheme.colors.background)
+                }
         ) {
             content()
 

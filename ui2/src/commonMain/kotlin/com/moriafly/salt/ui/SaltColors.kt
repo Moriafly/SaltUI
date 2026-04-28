@@ -107,8 +107,8 @@ fun lightSaltColors(
     highlight: Color = Color(0xFF0470E6),
     text: Color = Color(0xFF1E1715),
     subText: Color = Color(0xFF8C8C8C),
-    background: Color = Color(0xFFF7F9FA),
-    subBackground: Color = Color(0x70FFFFFF),
+    background: Color = Color(0xFFF3F3F3),
+    subBackground: Color = Color(0x80FFFFFF),
     popup: Color = subBackground.compositeOver(background),
     stroke: Color = subText.copy(alpha = 0.15f),
     onHighlight: Color = Color.White
@@ -127,8 +127,8 @@ fun darkSaltColors(
     highlight: Color = Color(0xFF0088FF),
     text: Color = Color(0xFFEBEEF1),
     subText: Color = Color(0xBFE1E6EB),
-    background: Color = Color(0xFF0C0C0C),
-    subBackground: Color = Color(0x0DFFFFFF),
+    background: Color = Color(0xFF202020),
+    subBackground: Color = Color(0x08FFFFFF),
     popup: Color = subBackground.compositeOver(background),
     stroke: Color = subText.copy(alpha = 0.1f),
     onHighlight: Color = Color.White
