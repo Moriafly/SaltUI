@@ -22,10 +22,11 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.unit.dp
+import com.moriafly.salt.ui.Icon
 import com.moriafly.salt.ui.Item
 import com.moriafly.salt.ui.ItemOuterLargeTitle
 import com.moriafly.salt.ui.ItemSwitcher
@@ -36,6 +37,10 @@ import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.moriafly.salt.ui.button.PillButton
 import com.moriafly.salt.ui.outerPadding
 import com.moriafly.salt.ui.rememberScrollState
+import com.moriafly.salt.ui.sample.ui.icons.Like
+import com.moriafly.salt.ui.sample.ui.icons.Search
+import com.moriafly.salt.ui.sample.ui.icons.SimpleIcons
+import com.moriafly.salt.ui.sample.ui.icons.Star
 import com.moriafly.salt.ui.sample.ui.navigation.LocalNavBackStack
 import com.moriafly.salt.ui.sample.ui.navigation.ScreenRoute
 import com.moriafly.salt.ui.sample.util.AppConfig
@@ -47,26 +52,35 @@ import com.moriafly.salt.ui.verticalScroll
 @Composable
 fun MainScreen() {
     BasicScreen(
-        actionButton = null,
+        actionButton = {
+            PillButton(
+                onClick = {}
+            ) {
+                Icon(
+                    painter = rememberVectorPainter(SimpleIcons.Star),
+                    contentDescription = null
+                )
+            }
+        },
         title = "Main",
         toolButtons = {
             PillButton(
                 onClick = {}
             ) {
-                Box(
-                    modifier = Modifier
-                        .border(1.dp, SaltTheme.colors.subText, CircleShape)
+                Icon(
+                    painter = rememberVectorPainter(SimpleIcons.Like),
+                    contentDescription = null
                 )
             }
             PillButton(
                 onClick = {},
                 text = {
-                    Text("Feedback")
+                    Text("Search")
                 }
             ) {
-                Box(
-                    modifier = Modifier
-                        .border(1.dp, SaltTheme.colors.subText, CircleShape)
+                Icon(
+                    painter = rememberVectorPainter(SimpleIcons.Search),
+                    contentDescription = null
                 )
             }
         }
