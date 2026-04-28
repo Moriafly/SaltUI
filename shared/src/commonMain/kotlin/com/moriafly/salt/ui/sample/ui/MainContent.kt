@@ -15,9 +15,7 @@
 
 package com.moriafly.salt.ui.sample.ui
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -30,17 +28,15 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.savedstate.serialization.SavedStateConfiguration
-import com.moriafly.salt.ui.Island
-import com.moriafly.salt.ui.IslandDefaults
-import com.moriafly.salt.ui.IslandGroup
-import com.moriafly.salt.ui.SaltTheme
+import com.moriafly.salt.ui.Layer
 import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.moriafly.salt.ui.sample.ui.navigation.AppNavigation
 import com.moriafly.salt.ui.sample.ui.navigation.LocalNavBackStack
 import com.moriafly.salt.ui.sample.ui.navigation.ScreenRoute
-import com.moriafly.salt.ui.sidebar.SideBar
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
+import org.jetbrains.compose.resources.painterResource
+import saltui.composeapp.generated.resources.Res
 
 private val navBackStackConfig = SavedStateConfiguration {
     serializersModule = SerializersModule {
@@ -61,45 +57,27 @@ fun MainContent() {
     CompositionLocalProvider(
         LocalNavBackStack provides navBackStack
     ) {
+        Res
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(SaltTheme.colors.subBackground)
         ) {
-            IslandGroup(
-                contentPadding = PaddingValues(
-                    start = IslandDefaults.IslandGroupPadding,
-                    end = IslandDefaults.IslandGroupPadding,
-                    bottom = IslandDefaults.IslandGroupPadding
-                )
-            ) {
-                Row {
-                    Island(
-                        modifier = Modifier
-                            .padding(top = 40.dp)
-                            .width(220.dp)
-                            .fillMaxHeight(),
-                        contentPadding = PaddingValues(
-                            start = IslandDefaults.IslandPadding,
-                            end = IslandDefaults.IslandPadding,
-                            bottom = IslandDefaults.IslandPadding
-                        )
-                    ) {
-                    }
+            Row {
+                Box(
+                    modifier = Modifier
+                        .padding(top = 40.dp)
+                        .width(220.dp)
+                        .fillMaxHeight()
+                ) {
+                }
 
-                    Island(
-                        modifier = Modifier
-                            .padding(top = 40.dp),
-                        contentPadding = PaddingValues(
-                            start = IslandDefaults.IslandPadding,
-                            end = IslandDefaults.IslandPadding,
-                            bottom = IslandDefaults.IslandPadding
-                        )
-                    ) {
-                        AppNavigation(
-                            navBackStack = navBackStack
-                        )
-                    }
+                Layer(
+                    modifier = Modifier
+                        .padding(top = 40.dp)
+                ) {
+                    AppNavigation(
+                        navBackStack = navBackStack
+                    )
                 }
             }
 

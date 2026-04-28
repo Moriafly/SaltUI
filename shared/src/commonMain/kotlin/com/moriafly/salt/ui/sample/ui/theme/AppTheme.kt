@@ -17,14 +17,14 @@
 
 package com.moriafly.salt.ui.sample.ui.theme
 
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
 import com.moriafly.salt.ui.SaltConfigs
 import com.moriafly.salt.ui.SaltTheme
+import com.moriafly.salt.ui.sample.util.AppConfig
 
 @Composable
 fun AppTheme(
-    isDarkTheme: Boolean = isSystemInDarkTheme(),
+    isDarkTheme: Boolean = AppConfig.isDarkTheme,
     content: @Composable () -> Unit
 ) {
     SaltTheme(

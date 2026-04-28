@@ -26,7 +26,8 @@ import androidx.compose.runtime.LaunchedEffect
 import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.moriafly.salt.ui.ext.edgeToEdge
 import com.moriafly.salt.ui.gestures.cupertino.CupertinoOverscrollEffectFactory
-import com.moriafly.salt.ui.sample.ui.AppContent
+import com.moriafly.salt.ui.sample.ui.MainContent
+import com.moriafly.salt.ui.sample.ui.theme.AppTheme
 import com.moriafly.salt.ui.sample.util.AppConfig
 import com.moriafly.salt.ui.util.WindowUtil
 
@@ -37,10 +38,12 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
 
         setContent {
-            CompositionLocalProvider(
-                LocalOverscrollFactory provides CupertinoOverscrollEffectFactory()
-            ) {
-                AppContent()
+            AppTheme {
+                CompositionLocalProvider(
+                    LocalOverscrollFactory provides CupertinoOverscrollEffectFactory()
+                ) {
+                    MainContent()
+                }
             }
 
             val isDarkTheme = AppConfig.isDarkTheme
