@@ -22,7 +22,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 
 object AppConfig {
-    var isDarkTheme by mutableStateOf(false)
+    var isDarkTheme by mutableStateOf(true)
         private set
 
     fun updateIsDarkTheme(value: Boolean) {

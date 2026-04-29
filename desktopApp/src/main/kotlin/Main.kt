@@ -20,8 +20,11 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.application
+import androidx.compose.ui.window.rememberWindowState
 import com.moriafly.salt.ui.Text
 import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.moriafly.salt.ui.sample.ui.MainContent
@@ -39,11 +42,15 @@ fun main() = application {
     AppTheme {
         SaltWindow(
             onCloseRequest = ::exitApplication,
+            state = rememberWindowState(
+                size = DpSize(1280.dp, 960.dp),
+                position = WindowPosition.Aligned(Alignment.Center)
+            ),
             title = "Salt UI",
             resizable = true,
             properties = SaltWindowProperties.default(
                 captionButtonIsDarkTheme = AppConfig.isDarkTheme,
-                backgroundType = SaltWindowBackgroundType.None,
+                backgroundType = SaltWindowBackgroundType.Mica,
                 backgroundIsDarkTheme = AppConfig.isDarkTheme
             )
         ) {
