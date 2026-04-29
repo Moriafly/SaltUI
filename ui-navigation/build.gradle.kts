@@ -115,6 +115,7 @@ kotlin {
 
         commonTest.dependencies {
             implementation(libs.kotlin.test)
+            implementation(libs.compose.ui.test)
         }
     }
 
