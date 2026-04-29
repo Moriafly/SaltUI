@@ -34,7 +34,7 @@ mavenPublishing {
     coordinates(
         groupId = "io.github.moriafly",
         artifactId = "salt-ui",
-        version = if (isPublishingToMavenLocal) "0.0.0-SNAPSHOT" else libs.versions.version.get()
+        version = if (isPublishingToMavenLocal) libs.versions.mavenLocalVersion.get() else libs.versions.version.get()
     )
 
     // Configure POM metadata for the published artifact
