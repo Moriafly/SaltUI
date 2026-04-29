@@ -138,6 +138,8 @@ fun SaltDialogWindow(
 
                 // Move to before window creation
                 window.hackContentPane()
+
+                init(window)
             }
         ) {
             val density = LocalDensity.current
