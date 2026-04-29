@@ -1,6 +1,6 @@
 /*
  * Salt UI
- * Copyright (C) 2025 Moriafly
+ * Copyright (C) 2026 Moriafly
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -19,6 +19,7 @@ import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinAndroidTarget
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
     alias(libs.plugins.kotlin.plugin.compose)
+    alias(libs.plugins.kotlin.plugin.serialization)
     alias(libs.plugins.android.kotlin.multiplatform.library)
     alias(libs.plugins.compose.multiplatform)
     alias(libs.plugins.vanniktech.maven.publish)
@@ -39,7 +40,7 @@ mavenPublishing {
     pom {
         name.set("Salt UI Navigation")
         description.set("Navigation components for Compose Multiplatform (Android/Desktop/iOS)")
-        inceptionYear.set("2025")
+        inceptionYear.set("2026")
         url.set("https://github.com/Moriafly/SaltUI")
 
         licenses {
@@ -107,6 +108,7 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             api(project(":ui2"))
+            implementation(libs.kotlinx.serialization.json)
             implementation(libs.androidx.navigation3.ui)
             implementation(libs.androidx.navigationevent.compose)
         }
