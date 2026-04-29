@@ -19,6 +19,8 @@
 
 package com.moriafly.salt.ui.window
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -31,6 +33,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.ExperimentalComposeUiApi
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.awt.ComposeWindow
 import androidx.compose.ui.awt.SwingWindow
 import androidx.compose.ui.graphics.painter.Painter
@@ -44,10 +47,12 @@ import androidx.compose.ui.window.WindowDecoration
 import androidx.compose.ui.window.WindowState
 import androidx.compose.ui.window.rememberWindowState
 import com.moriafly.salt.core.os.OS
+import com.moriafly.salt.ui.SaltTheme
 import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.moriafly.salt.ui.platform.linux.LinuxSaltWindowFrame
 import com.moriafly.salt.ui.platform.macos.MacOSSaltWindowFrame
 import com.moriafly.salt.ui.platform.windows.WindowsSaltWindowFrame
+import com.moriafly.salt.ui.thenIf
 import com.moriafly.salt.ui.util.findSkiaLayer
 import com.moriafly.salt.ui.util.hackContentPane
 import com.moriafly.salt.ui.window.internal.SaltWindowEnvironment
@@ -197,29 +202,38 @@ fun SaltWindow(
                     }
                 }
 
-                when (OS.current) {
-                    is OS.Windows ->
-                        WindowsSaltWindowFrame(
-                            resizable = resizable,
-                            properties = properties,
-                            content = content
-                        )
+                Box(
+                    modifier = Modifier
+                        .thenIf(
+                            !transparent &&
+                                properties.backgroundType == SaltWindowBackgroundType.None
+                        ) {
+                            background(SaltTheme.colors.background)
+                        }
+                ) {
+                    when (OS.current) {
+                        is OS.Windows ->
+                            WindowsSaltWindowFrame(
+                                resizable = resizable,
+                                properties = properties,
+                                content = content
+                            )
 
-                    is OS.MacOS ->
-                        MacOSSaltWindowFrame(
-                            properties = properties,
-                            content = content
-                        )
+                        is OS.MacOS ->
+                            MacOSSaltWindowFrame(
+                                properties = properties,
+                                content = content
+                            )
 
-                    is OS.Linux ->
-                        LinuxSaltWindowFrame(
-                            resizable = resizable,
-                            properties = properties,
-                            content = content
-                        )
+                        is OS.Linux ->
+                            LinuxSaltWindowFrame(
+                                resizable = resizable,
+                                properties = properties,
+                                content = content
+                            )
 
-                    else ->
-                        content()
+                        else -> content()
+                    }
                 }
             }
         }

@@ -19,6 +19,8 @@
 
 package com.moriafly.salt.ui.window
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -28,6 +30,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.ExperimentalComposeUiApi
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.awt.ComposeDialog
 import androidx.compose.ui.awt.SwingDialog
 import androidx.compose.ui.graphics.painter.Painter
@@ -42,10 +45,12 @@ import androidx.compose.ui.window.DialogWindowScope
 import androidx.compose.ui.window.WindowDecoration
 import androidx.compose.ui.window.rememberDialogState
 import com.moriafly.salt.core.os.OS
+import com.moriafly.salt.ui.SaltTheme
 import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.moriafly.salt.ui.platform.linux.LinuxSaltDialogWindowFrame
 import com.moriafly.salt.ui.platform.macos.MacOSSaltDialogWindowFrame
 import com.moriafly.salt.ui.platform.windows.WindowsSaltDialogWindowFrame
+import com.moriafly.salt.ui.thenIf
 import com.moriafly.salt.ui.util.findSkiaLayer
 import com.moriafly.salt.ui.util.hackContentPane
 import com.moriafly.salt.ui.window.internal.SaltWindowEnvironment
@@ -207,29 +212,38 @@ fun SaltDialogWindow(
                     }
                 }
 
-                val os = OS.current
-                when (os) {
-                    is OS.Windows ->
-                        WindowsSaltDialogWindowFrame(
-                            resizable = resizable,
-                            properties = properties,
-                            content = content
-                        )
+                Box(
+                    modifier = Modifier
+                        .thenIf(
+                            !transparent &&
+                                properties.backgroundType == SaltWindowBackgroundType.None
+                        ) {
+                            background(SaltTheme.colors.background)
+                        }
+                ) {
+                    when (OS.current) {
+                        is OS.Windows ->
+                            WindowsSaltDialogWindowFrame(
+                                resizable = resizable,
+                                properties = properties,
+                                content = content
+                            )
 
-                    is OS.MacOS ->
-                        MacOSSaltDialogWindowFrame(
-                            properties = properties,
-                            content = content
-                        )
+                        is OS.MacOS ->
+                            MacOSSaltDialogWindowFrame(
+                                properties = properties,
+                                content = content
+                            )
 
-                    is OS.Linux ->
-                        LinuxSaltDialogWindowFrame(
-                            resizable = resizable,
-                            properties = properties,
-                            content = content
-                        )
+                        is OS.Linux ->
+                            LinuxSaltDialogWindowFrame(
+                                resizable = resizable,
+                                properties = properties,
+                                content = content
+                            )
 
-                    else -> content()
+                        else -> content()
+                    }
                 }
             }
         }

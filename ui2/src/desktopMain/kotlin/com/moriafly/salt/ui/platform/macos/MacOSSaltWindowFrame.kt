@@ -17,19 +17,14 @@
 
 package com.moriafly.salt.ui.platform.macos
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.awt.ComposeWindow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.FrameWindowScope
-import com.moriafly.salt.ui.SaltTheme
 import com.moriafly.salt.ui.UnstableSaltUiApi
-import com.moriafly.salt.ui.thenIf
 import com.moriafly.salt.ui.window.CaptionButtonsAlign
 import com.moriafly.salt.ui.window.LocalSaltWindowInfo
 import com.moriafly.salt.ui.window.SaltWindowBackgroundType
@@ -64,13 +59,6 @@ internal fun FrameWindowScope.MacOSSaltWindowFrame(
             styler.disableTitleBar(properties.captionBarHeight.value)
         }
 
-        Box(
-            modifier = Modifier
-                .thenIf(properties.backgroundType == SaltWindowBackgroundType.None) {
-                    background(SaltTheme.colors.background)
-                }
-        ) {
-            content()
-        }
+        content()
     }
 }
