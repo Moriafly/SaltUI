@@ -43,7 +43,7 @@ fun main() = application {
         SaltWindow(
             onCloseRequest = ::exitApplication,
             state = rememberWindowState(
-                size = DpSize(1280.dp, 960.dp),
+                size = DpSize(960.dp, 720.dp),
                 position = WindowPosition.Aligned(Alignment.Center)
             ),
             title = "Salt UI",

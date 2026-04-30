@@ -21,6 +21,7 @@ package com.moriafly.salt.ui.window
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -202,14 +203,9 @@ fun SaltWindow(
                     }
                 }
 
-                Box(
-                    modifier = Modifier
-                        .thenIf(
-                            !transparent &&
-                                properties.backgroundType == SaltWindowBackgroundType.None
-                        ) {
-                            background(SaltTheme.colors.background)
-                        }
+                WindowBackgroundBox(
+                    transparent = transparent,
+                    backgroundType = properties.backgroundType
                 ) {
                     when (OS.current) {
                         is OS.Windows ->
@@ -251,3 +247,25 @@ val LocalWindowState = staticCompositionLocalOf<WindowState> {
 @Suppress("RemoveExplicitTypeArguments")
 internal val LocalIsHitTestInCaptionBarState =
     compositionLocalOf<MutableState<Boolean>> { mutableStateOf(false) }
+
+@UnstableSaltUiApi
+@Composable
+internal fun WindowBackgroundBox(
+    transparent: Boolean,
+    backgroundType: SaltWindowBackgroundType,
+    modifier: Modifier = Modifier,
+    content: @Composable BoxScope.() -> Unit
+) {
+    Box(
+        modifier = modifier
+            .thenIf(
+                when (OS.current) {
+                    is OS.Windows -> !transparent && backgroundType == SaltWindowBackgroundType.None
+                    else -> true
+                }
+            ) {
+                background(SaltTheme.colors.background)
+            },
+        content = content
+    )
+}

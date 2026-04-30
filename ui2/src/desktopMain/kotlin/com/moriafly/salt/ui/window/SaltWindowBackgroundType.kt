@@ -52,8 +52,8 @@ enum class SaltWindowBackgroundType {
         return when (this) {
             None -> true
             Mica if os is OS.Windows -> os.windowsBuild >= OS.Windows.WINDOWS_11_21H2
-            Acrylic if os is OS.Windows -> return os.windowsBuild >= OS.Windows.WINDOWS_11_22H2
-            MicaAlt if os is OS.Windows -> return os.windowsBuild >= OS.Windows.WINDOWS_11_22H2
+            Acrylic if os is OS.Windows -> os.windowsBuild >= OS.Windows.WINDOWS_11_22H2
+            MicaAlt if os is OS.Windows -> os.windowsBuild >= OS.Windows.WINDOWS_11_22H2
             else -> false
         }
     }
