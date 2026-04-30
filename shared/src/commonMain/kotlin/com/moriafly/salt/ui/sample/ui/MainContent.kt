@@ -16,6 +16,7 @@
 package com.moriafly.salt.ui.sample.ui
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -28,15 +29,15 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.savedstate.serialization.SavedStateConfiguration
+import com.moriafly.salt.core.os.OS
 import com.moriafly.salt.ui.Layer
 import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.moriafly.salt.ui.sample.ui.navigation.AppNavigation
 import com.moriafly.salt.ui.sample.ui.navigation.LocalNavBackStack
 import com.moriafly.salt.ui.sample.ui.navigation.ScreenRoute
+import com.moriafly.salt.ui.thenIf
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
-import org.jetbrains.compose.resources.painterResource
-import saltui.composeapp.generated.resources.Res
 
 private val navBackStackConfig = SavedStateConfiguration {
     serializersModule = SerializersModule {
@@ -57,66 +58,35 @@ fun MainContent() {
     CompositionLocalProvider(
         LocalNavBackStack provides navBackStack
     ) {
-        Res
-        Box(
+        BoxWithConstraints(
             modifier = Modifier
                 .fillMaxSize()
         ) {
+            val maxWidth = maxWidth
             Row {
-                Box(
-                    modifier = Modifier
-                        .padding(top = 40.dp)
-                        .width(220.dp)
-                        .fillMaxHeight()
-                ) {
+                val pad = maxWidth > 600.dp
+                if (pad) {
+                    Box(
+                        modifier = Modifier
+                            .padding(top = 40.dp)
+                            .width(220.dp)
+                            .fillMaxHeight()
+                    ) {
+                    }
                 }
 
                 Layer(
                     modifier = Modifier
-                        .padding(top = 40.dp)
+                        .thenIf(OS.isDesktop()) {
+                            padding(top = 40.dp)
+                        },
+                    decorationEnabled = OS.isDesktop()
                 ) {
                     AppNavigation(
                         navBackStack = navBackStack
                     )
                 }
             }
-
-//            Column(
-//                modifier = Modifier
-//                    .align(Alignment.BottomCenter)
-//                    .fillMaxWidth()
-//            ) {
-//                BottomBar {
-//                    BottomBarItem(
-//                        state = navBackStack[0] == ScreenRoute.Main,
-//                        onClick = {
-//                            if (navBackStack[0] != ScreenRoute.Main) {
-//                                navBackStack.subList(1, navBackStack.size).clear()
-//                                navBackStack[0] = ScreenRoute.Main
-//                            }
-//                        },
-//                        painter = rememberVectorPainter(SaltIcons.Success),
-//                        text = "Main"
-//                    )
-//                    BottomBarItem(
-//                        state = navBackStack[0] == ScreenRoute.About,
-//                        onClick = {
-//                            if (navBackStack[0] != ScreenRoute.About) {
-//                                navBackStack.subList(1, navBackStack.size).clear()
-//                                navBackStack[0] = ScreenRoute.About
-//                            }
-//                        },
-//                        painter = rememberVectorPainter(SaltIcons.Success),
-//                        text = "About"
-//                    )
-//                }
-//                Spacer(
-//                    modifier = Modifier
-//                        .fillMaxWidth()
-//                        .windowInsetsBottomHeight(WindowInsets.safeMainCompat)
-//                        .background(SaltTheme.colors.subBackground)
-//                )
-//            }
         }
     }
 }

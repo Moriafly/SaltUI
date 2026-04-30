@@ -21,8 +21,12 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.LocalOverscrollFactory
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.Modifier
+import com.moriafly.salt.ui.SaltTheme
 import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.moriafly.salt.ui.ext.edgeToEdge
 import com.moriafly.salt.ui.gestures.cupertino.CupertinoOverscrollEffectFactory
@@ -42,7 +46,12 @@ class MainActivity : ComponentActivity() {
                 CompositionLocalProvider(
                     LocalOverscrollFactory provides CupertinoOverscrollEffectFactory()
                 ) {
-                    MainContent()
+                    Box(
+                        modifier = Modifier
+                            .background(SaltTheme.colors.background)
+                    ) {
+                        MainContent()
+                    }
                 }
             }
 

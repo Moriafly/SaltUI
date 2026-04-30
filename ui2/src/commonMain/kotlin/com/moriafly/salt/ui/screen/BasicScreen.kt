@@ -23,6 +23,8 @@ import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
@@ -30,7 +32,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.CompositingStrategy
@@ -38,13 +39,16 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.moriafly.salt.core.os.OS
 import com.moriafly.salt.ui.Icon
 import com.moriafly.salt.ui.Text
 import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.moriafly.salt.ui.button.PillButton
 import com.moriafly.salt.ui.button.PillButtonDefaults
+import com.moriafly.salt.ui.ext.safeMainIgnoringVisibility
 import com.moriafly.salt.ui.icons.ArrowBack
 import com.moriafly.salt.ui.icons.SaltIcons
 import com.moriafly.salt.ui.verticalEdge
@@ -56,7 +60,7 @@ fun BasicScreen(
     modifier: Modifier = Modifier,
     title: String? = null,
     toolButtons: (@Composable () -> Unit)? = null,
-    contentPadding: PaddingValues = PaddingValues(0.dp),
+    contentPadding: PaddingValues = BasicScreenDefaults.ContentPadding,
     content: @Composable BoxScope.(PaddingValues) -> Unit
 ) {
     BasicScreen(
@@ -80,7 +84,7 @@ fun BasicScreen(
     modifier: Modifier = Modifier,
     title: String? = null,
     toolButtons: (@Composable () -> Unit)? = null,
-    contentPadding: PaddingValues = PaddingValues(0.dp),
+    contentPadding: PaddingValues = BasicScreenDefaults.ContentPadding,
     content: @Composable BoxScope.(PaddingValues) -> Unit
 ) {
     Box(
@@ -91,7 +95,9 @@ fun BasicScreen(
         // val hazeState = rememberHazeState()
 
         val boxContentPaddingTop =
-            contentPadding.calculateTopPadding() + PillButtonDefaults.Height + 32.dp
+            contentPadding.calculateTopPadding() +
+                PillButtonDefaults.Height +
+                BasicScreenDefaults.TitleBarInsideVerticalPadding * 2
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -100,11 +106,10 @@ fun BasicScreen(
                 }
                 .verticalEdge(top = boxContentPaddingTop)
         ) {
-            val boxContentPaddingValues = remember {
+            val boxContentPaddingValues =
                 PaddingValues(
                     top = boxContentPaddingTop
                 )
-            }
             content(boxContentPaddingValues)
         }
 
@@ -142,7 +147,10 @@ private fun TitleBar(
                     end = contentPadding.calculateEndPadding(layoutDirection)
                 )
             )
-            .padding(16.dp)
+            .padding(
+                horizontal = 16.dp,
+                vertical = BasicScreenDefaults.TitleBarInsideVerticalPadding
+            )
     ) {
         Row(
             modifier = Modifier
@@ -175,8 +183,20 @@ private fun TitleBar(
     }
 }
 
+@UnstableSaltUiApi
 object BasicScreenDefaults {
-    @UnstableSaltUiApi
+    internal val TitleBarInsideVerticalPadding: Dp =
+        if (OS.isDesktop()) 16.dp else 8.dp
+
+    val ContentPadding: PaddingValues
+        @Composable
+        get() {
+            val topPadding = WindowInsets.safeMainIgnoringVisibility
+                .asPaddingValues()
+                .calculateTopPadding()
+            return PaddingValues(top = topPadding)
+        }
+
     @Composable
     fun BackButton(
         onBack: () -> Unit,

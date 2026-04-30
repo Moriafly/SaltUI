@@ -41,6 +41,7 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun Layer(
     modifier: Modifier = Modifier,
+    decorationEnabled: Boolean = true,
     content: @Composable BoxScope.() -> Unit
 ) {
     val isDarkTheme = SaltTheme.configs.isDarkTheme
@@ -50,44 +51,51 @@ fun Layer(
         } else {
             Color(0x0F000000)
         }
+    val decorationModifier =
+        if (decorationEnabled) {
+            Modifier
+                .clip(RoundedCornerShape(topStart = 12.dp))
+                .drawBehind {
+                    val strokeWidth = 1.dp.toPx()
+                    val radius = 12.dp.toPx()
+                    // Top border (excluding the arc area)
+                    drawLine(
+                        color = borderColor,
+                        start = Offset(radius, 0f),
+                        end = Offset(size.width, 0f),
+                        strokeWidth = strokeWidth
+                    )
+                    // Start (left) border (excluding the arc area)
+                    drawLine(
+                        color = borderColor,
+                        start = Offset(0f, radius),
+                        end = Offset(0f, size.height),
+                        strokeWidth = strokeWidth
+                    )
+                    // Top-start corner arc
+                    drawArc(
+                        color = borderColor,
+                        startAngle = 180f,
+                        sweepAngle = 90f,
+                        useCenter = false,
+                        topLeft = Offset.Zero,
+                        size = Size(radius * 2, radius * 2),
+                        style = Stroke(width = strokeWidth)
+                    )
+                }
+                .background(
+                    if (isDarkTheme) {
+                        Color(0x1E3A3A3A)
+                    } else {
+                        Color(0x64FFFFFF)
+                    }
+                )
+        } else {
+            Modifier
+        }
     Surface(
         modifier = modifier
-            .clip(RoundedCornerShape(topStart = 12.dp))
-            .drawBehind {
-                val strokeWidth = 1.dp.toPx()
-                val radius = 12.dp.toPx()
-                // Top border (excluding the arc area)
-                drawLine(
-                    color = borderColor,
-                    start = Offset(radius, 0f),
-                    end = Offset(size.width, 0f),
-                    strokeWidth = strokeWidth
-                )
-                // Start (left) border (excluding the arc area)
-                drawLine(
-                    color = borderColor,
-                    start = Offset(0f, radius),
-                    end = Offset(0f, size.height),
-                    strokeWidth = strokeWidth
-                )
-                // Top-start corner arc
-                drawArc(
-                    color = borderColor,
-                    startAngle = 180f,
-                    sweepAngle = 90f,
-                    useCenter = false,
-                    topLeft = Offset.Zero,
-                    size = Size(radius * 2, radius * 2),
-                    style = Stroke(width = strokeWidth)
-                )
-            }
-            .background(
-                if (isDarkTheme) {
-                    Color(0x1E3A3A3A)
-                } else {
-                    Color(0x64FFFFFF)
-                }
-            ),
+            .then(decorationModifier),
         content = content
     )
 }
