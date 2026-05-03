@@ -33,6 +33,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.moriafly.salt.core.os.OS
 import com.moriafly.salt.ui.SaltTheme
 import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.moriafly.salt.ui.enabledAlpha
@@ -63,7 +64,7 @@ fun PillButton(
     enabled: Boolean = true,
     icon: @Composable () -> Unit
 ) {
-    Row(
+    BasicPillButton(
         modifier = modifier
             .run {
                 if (text != null) {
@@ -84,6 +85,30 @@ fun PillButton(
                 padding(horizontal = PillButtonDefaults.HorizontalPadding)
             }
             .enabledAlpha(enabled),
+        text = text,
+        icon = icon
+    )
+}
+
+/**
+ * Low-level layout for pill/circle buttons.
+ *
+ * Contains only the content arrangement logic without any background, border, or click handling.
+ * For a fully styled button, use [PillButton].
+ *
+ * @param modifier [Modifier] to be applied to the container.
+ * @param text Optional text content displayed to the right of the [icon].
+ * @param icon Icon content displayed inside the button.
+ */
+@UnstableSaltUiApi
+@Composable
+fun BasicPillButton(
+    modifier: Modifier = Modifier,
+    text: (@Composable () -> Unit)? = null,
+    icon: @Composable () -> Unit
+) {
+    Row(
+        modifier = modifier,
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -104,17 +129,17 @@ fun PillButton(
 }
 
 /**
- * Default values used by [PillButton].
+ * Default values used by [PillButton] and [BasicPillButton].
  */
 @UnstableSaltUiApi
-expect object PillButtonDefaults {
+object PillButtonDefaults {
     /**
      * The recommended icon size for content inside a [PillButton].
      *
      * - Mobile (Android/iOS): 20.dp
      * - Desktop: 16.dp
      */
-    internal val IconSize: Dp
+    internal val IconSize: Dp = if (OS.isDesktop()) 16.dp else 20.dp
 
     /**
      * The default height of a [PillButton].
@@ -122,7 +147,7 @@ expect object PillButtonDefaults {
      * - Mobile (Android/iOS): 48.dp
      * - Desktop: 32.dp
      */
-    internal val Height: Dp
+    internal val Height: Dp = if (OS.isDesktop()) 32.dp else 48.dp
 
     /**
      * The default horizontal content padding for a pill-shaped [PillButton].
@@ -130,5 +155,5 @@ expect object PillButtonDefaults {
      * - Mobile (Android/iOS): 16.dp
      * - Desktop: 10.dp
      */
-    internal val HorizontalPadding: Dp
+    internal val HorizontalPadding: Dp = if (OS.isDesktop()) 10.dp else 16.dp
 }
