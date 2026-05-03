@@ -49,7 +49,7 @@ import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.moriafly.salt.ui.button.PillButton
 import com.moriafly.salt.ui.button.PillButtonDefaults
 import com.moriafly.salt.ui.ext.safeMainIgnoringVisibility
-import com.moriafly.salt.ui.icons.ArrowBack
+import com.moriafly.salt.ui.icons.Back
 import com.moriafly.salt.ui.icons.SaltIcons
 import com.moriafly.salt.ui.verticalEdge
 
@@ -209,7 +209,7 @@ object BasicScreenDefaults {
             enabled = enabled
         ) {
             Icon(
-                painter = rememberVectorPainter(SaltIcons.ArrowBack),
+                painter = rememberVectorPainter(SaltIcons.Back),
                 contentDescription = null
             )
         }

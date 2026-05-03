@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -28,7 +29,10 @@ import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.unit.dp
 import com.moriafly.salt.ui.Icon
 import com.moriafly.salt.ui.Item
+import com.moriafly.salt.ui.ItemInfo
+import com.moriafly.salt.ui.ItemInfoType
 import com.moriafly.salt.ui.ItemOuterLargeTitle
+import com.moriafly.salt.ui.ItemOuterTip
 import com.moriafly.salt.ui.ItemSwitcher
 import com.moriafly.salt.ui.RoundedColumn
 import com.moriafly.salt.ui.SaltTheme
@@ -87,6 +91,7 @@ fun MainScreen() {
     ) { contentPadding ->
         Column(
             modifier = Modifier
+                .fillMaxSize()
                 .verticalScroll(rememberScrollState())
         ) {
             Spacer(Modifier.height(contentPadding.calculateTopPadding()))
@@ -95,6 +100,13 @@ fun MainScreen() {
                 text = "Salt UI 3",
                 sub = "UI Components for Compose Multiplatform (Android/Desktop/iOS)"
             )
+
+            RoundedColumn {
+                ItemInfo(
+                    text = "Coming!",
+                    infoType = ItemInfoType.Success
+                )
+            }
 
             RoundedColumn {
                 ItemSwitcher(
@@ -110,80 +122,46 @@ fun MainScreen() {
             RoundedColumn {
                 Item(
                     onClick = {
-                        navBackStack.add(ScreenRoute.About)
+                        navBackStack.add(ScreenRoute.List)
                     },
-                    text = "About"
+                    text = "List"
+                )
+                Item(
+                    onClick = {
+                    },
+                    text = "Button",
+                    sub = "BasicButton, PillButton"
+                )
+                Item(
+                    onClick = {
+                    },
+                    text = "Item"
                 )
             }
 
             RoundedColumn {
                 Item(
                     onClick = {
-                        navBackStack.add(ScreenRoute.List)
+                        navBackStack.add(ScreenRoute.About)
                     },
-                    text = "List"
-                )
-                Item(
-                    onClick = {
-                        navBackStack.add(ScreenRoute.List)
-                    },
-                    text = "List"
-                )
-                Item(
-                    onClick = {
-                        navBackStack.add(ScreenRoute.List)
-                    },
-                    text = "List"
-                )
-                Item(
-                    onClick = {
-                        navBackStack.add(ScreenRoute.List)
-                    },
-                    text = "List"
-                )
-                Item(
-                    onClick = {
-                        navBackStack.add(ScreenRoute.List)
-                    },
-                    text = "List"
-                )
-                Item(
-                    onClick = {
-                        navBackStack.add(ScreenRoute.List)
-                    },
-                    text = "List"
-                )
-                Item(
-                    onClick = {
-                        navBackStack.add(ScreenRoute.List)
-                    },
-                    text = "List"
-                )
-                Item(
-                    onClick = {
-                        navBackStack.add(ScreenRoute.List)
-                    },
-                    text = "List"
-                )
-                Item(
-                    onClick = {
-                        navBackStack.add(ScreenRoute.List)
-                    },
-                    text = "List"
-                )
-                Item(
-                    onClick = {
-                        navBackStack.add(ScreenRoute.List)
-                    },
-                    text = "List"
-                )
-                Item(
-                    onClick = {
-                        navBackStack.add(ScreenRoute.List)
-                    },
-                    text = "List"
+                    text = "About"
                 )
             }
+
+            ItemOuterTip(
+                """
+                Salt UI
+                Copyright (C) 2023-2026 Moriafly
+                This library is free software; you can redistribute it and/or
+                modify it under the terms of the GNU Lesser General Public
+                License as published by the Free Software Foundation; either
+                version 2.1 of the License, or (at your option) any later version.
+                This library is distributed in the hope that it will be useful,
+                but WITHOUT ANY WARRANTY; without even the implied warranty of
+                MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+                Lesser General Public License for more details.
+                """.trimIndent()
+            )
 
             FlowRow(
                 modifier = Modifier

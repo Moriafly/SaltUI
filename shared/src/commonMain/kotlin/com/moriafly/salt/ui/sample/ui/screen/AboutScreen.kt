@@ -17,13 +17,22 @@ package com.moriafly.salt.ui.sample.ui.screen
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
+import com.moriafly.salt.ui.Icon
 import com.moriafly.salt.ui.Item
+import com.moriafly.salt.ui.ItemOuterLargeTitle
+import com.moriafly.salt.ui.ItemOuterTip
 import com.moriafly.salt.ui.RoundedColumn
 import com.moriafly.salt.ui.UnstableSaltUiApi
+import com.moriafly.salt.ui.button.PillButton
 import com.moriafly.salt.ui.rememberScrollState
+import com.moriafly.salt.ui.sample.ui.icons.Like
+import com.moriafly.salt.ui.sample.ui.icons.SimpleIcons
+import com.moriafly.salt.ui.sample.ui.icons.Star
 import com.moriafly.salt.ui.sample.ui.navigation.LocalNavBackStack
 import com.moriafly.salt.ui.sample.ui.navigation.ScreenRoute
 import com.moriafly.salt.ui.screen.BasicScreen
@@ -38,13 +47,37 @@ fun AboutScreen() {
         onBack = {
             navBackStack.removeLastOrNull()
         },
-        title = "About"
+        title = "About",
+        toolButtons = {
+            PillButton(
+                onClick = {}
+            ) {
+                Icon(
+                    painter = rememberVectorPainter(SimpleIcons.Like),
+                    contentDescription = null
+                )
+            }
+            PillButton(
+                onClick = {}
+            ) {
+                Icon(
+                    painter = rememberVectorPainter(SimpleIcons.Star),
+                    contentDescription = null
+                )
+            }
+        }
     ) { contentPadding ->
         Column(
             modifier = Modifier
+                .fillMaxSize()
                 .verticalScroll(rememberScrollState())
         ) {
             Spacer(Modifier.height(contentPadding.calculateTopPadding()))
+
+            ItemOuterLargeTitle(
+                text = "Salt UI 3",
+                sub = "UI Components for Compose Multiplatform (Android/Desktop/iOS)"
+            )
 
             RoundedColumn {
                 Item(
