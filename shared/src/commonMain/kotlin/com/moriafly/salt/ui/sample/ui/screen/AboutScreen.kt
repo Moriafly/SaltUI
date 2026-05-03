@@ -25,7 +25,6 @@ import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import com.moriafly.salt.ui.Icon
 import com.moriafly.salt.ui.Item
 import com.moriafly.salt.ui.ItemOuterLargeTitle
-import com.moriafly.salt.ui.ItemOuterTip
 import com.moriafly.salt.ui.RoundedColumn
 import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.moriafly.salt.ui.button.PillButton

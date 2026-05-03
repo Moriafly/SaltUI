@@ -29,6 +29,7 @@ import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
@@ -151,6 +152,8 @@ private fun TitleBar(
                 horizontal = 16.dp,
                 vertical = BasicScreenDefaults.TitleBarInsideVerticalPadding
             )
+            // Same as PillButtonDefaults.Height
+            .height(PillButtonDefaults.Height)
     ) {
         Row(
             modifier = Modifier
