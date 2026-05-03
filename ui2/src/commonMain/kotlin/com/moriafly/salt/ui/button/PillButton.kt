@@ -50,9 +50,9 @@ import com.moriafly.salt.ui.thenIf
  *
  * @param onClick Called when the button is clicked.
  * @param modifier [Modifier] to be applied to the button.
+ * @param enabled Whether the button is enabled and responds to click events.
  * @param text Optional text content displayed to the right of the [icon].
  * When provided, the button becomes a pill shape; when `null`, it is a perfect circle.
- * @param enabled Whether the button is enabled and responds to click events.
  * @param icon Icon content displayed inside the button.
  */
 @UnstableSaltUiApi
@@ -60,8 +60,8 @@ import com.moriafly.salt.ui.thenIf
 fun PillButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    text: (@Composable () -> Unit)? = null,
     enabled: Boolean = true,
+    text: (@Composable () -> Unit)? = null,
     icon: @Composable () -> Unit
 ) {
     BasicPillButton(
