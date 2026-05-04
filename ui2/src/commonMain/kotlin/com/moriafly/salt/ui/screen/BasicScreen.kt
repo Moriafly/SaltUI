@@ -36,8 +36,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.CompositingStrategy
-import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.draw.drawWithCache
+import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.font.FontWeight
@@ -53,7 +53,9 @@ import com.moriafly.salt.ui.button.PillButtonDefaults
 import com.moriafly.salt.ui.ext.safeMainIgnoringVisibility
 import com.moriafly.salt.ui.icons.Back
 import com.moriafly.salt.ui.icons.SaltIcons
-import com.moriafly.salt.ui.verticalEdge
+import dev.chrisbanes.haze.hazeEffect
+import dev.chrisbanes.haze.hazeSource
+import dev.chrisbanes.haze.rememberHazeState
 
 /**
  * A basic screen layout with a title bar and a back button.
@@ -115,20 +117,26 @@ fun BasicScreen(
         modifier = modifier
             .fillMaxSize()
     ) {
-        // TODO When Haze 2.0.0-alpha01 Release
-        // val hazeState = rememberHazeState()
+        val hazeState = rememberHazeState()
 
         val boxContentPaddingTop =
             contentPadding.calculateTopPadding() +
                 PillButtonDefaults.Height +
                 BasicScreenDefaults.TitleBarInsideVerticalPadding * 2
+
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .graphicsLayer {
-                    compositingStrategy = CompositingStrategy.Offscreen
+                .drawWithCache {
+                    onDrawWithContent {
+                        clipRect(
+                            top = boxContentPaddingTop.toPx()
+                        ) {
+                            this@onDrawWithContent.drawContent()
+                        }
+                    }
                 }
-                .verticalEdge(top = boxContentPaddingTop)
+                .hazeSource(hazeState)
         ) {
             val boxContentPaddingValues =
                 PaddingValues(
@@ -139,11 +147,10 @@ fun BasicScreen(
 
         TitleBar(
             actionButton = actionButton,
-//            modifier = Modifier
-//                .hazeEffect(hazeState) {
-//                    progressive =
-//                        HazeProgressive.verticalGradient(startIntensity = 1f, endIntensity = 0f)
-//                },
+            modifier = Modifier
+                .hazeEffect(hazeState) {
+                    noiseFactor = 0f
+                },
             title = title,
             toolButtons = toolButtons,
             contentPadding = contentPadding
