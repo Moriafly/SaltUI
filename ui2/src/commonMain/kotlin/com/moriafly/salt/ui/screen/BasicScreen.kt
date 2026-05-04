@@ -27,6 +27,7 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -157,7 +158,8 @@ private fun TitleBar(
     ) {
         Row(
             modifier = Modifier
-                .weight(1f),
+                .weight(1f)
+                .fillMaxHeight(),
             verticalAlignment = Alignment.CenterVertically
         ) {
             actionButton?.invoke()
@@ -178,6 +180,8 @@ private fun TitleBar(
         Spacer(Modifier.width(16.dp))
 
         Row(
+            modifier = Modifier
+                .fillMaxHeight(),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
