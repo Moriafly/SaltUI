@@ -55,6 +55,18 @@ import com.moriafly.salt.ui.icons.Back
 import com.moriafly.salt.ui.icons.SaltIcons
 import com.moriafly.salt.ui.verticalEdge
 
+/**
+ * A basic screen layout with a title bar and a back button.
+ *
+ * This is a convenience overload that automatically provides a default back button.
+ *
+ * @param onBack Callback invoked when the back button is clicked.
+ * @param modifier Modifier to be applied to the screen.
+ * @param title Optional title text displayed in the title bar.
+ * @param toolButtons Optional composable for trailing action buttons in the title bar.
+ * @param contentPadding Padding values applied to the outer layout.
+ * @param content The main content of the screen, receiving inner padding values.
+ */
 @UnstableSaltUiApi
 @Composable
 fun BasicScreen(
@@ -79,6 +91,16 @@ fun BasicScreen(
     )
 }
 
+/**
+ * A basic screen layout with a customizable title bar.
+ *
+ * @param actionButton Optional composable lambda for placing a leading action (e.g., back button).
+ * @param modifier Modifier to be applied to the screen.
+ * @param title Optional title text displayed in the title bar.
+ * @param toolButtons Optional composable for trailing action buttons in the title bar.
+ * @param contentPadding Padding values applied to the outer layout.
+ * @param content The main content of the screen, receiving inner padding values.
+ */
 @UnstableSaltUiApi
 @Composable
 fun BasicScreen(
@@ -129,6 +151,12 @@ fun BasicScreen(
     }
 }
 
+/**
+ * Internal title bar component used by [BasicScreen].
+ *
+ * Arranges an optional [actionButton], an optional [title], and optional [toolButtons]
+ * horizontally with default padding and height constraints.
+ */
 @UnstableSaltUiApi
 @Composable
 private fun TitleBar(
@@ -190,11 +218,22 @@ private fun TitleBar(
     }
 }
 
+/**
+ * Default values and components for [BasicScreen].
+ */
 @UnstableSaltUiApi
 object BasicScreenDefaults {
+    /**
+     * Vertical padding inside the title bar.
+     *
+     * Uses a larger value on desktop platforms for better visual balance.
+     */
     internal val TitleBarInsideVerticalPadding: Dp =
         if (OS.isDesktop()) 16.dp else 8.dp
 
+    /**
+     * Default content padding that respects the safe area insets at the top.
+     */
     val ContentPadding: PaddingValues
         @Composable
         get() {
@@ -204,6 +243,13 @@ object BasicScreenDefaults {
             return PaddingValues(top = topPadding)
         }
 
+    /**
+     * A default back button using a pill-shaped container and the Salt back icon.
+     *
+     * @param onBack Callback invoked when the button is clicked.
+     * @param modifier Modifier to be applied to the button.
+     * @param enabled Whether the button is enabled.
+     */
     @Composable
     fun BackButton(
         onBack: () -> Unit,
