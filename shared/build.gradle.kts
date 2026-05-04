@@ -90,6 +90,7 @@ kotlin {
             implementation(libs.compose.ui.tooling.preview)
             implementation(libs.compose.components.resources)
             implementation(libs.haze)
+            implementation(libs.haze.blur)
             implementation(libs.androidx.navigation3.ui)
             implementation(libs.androidx.navigationevent.compose)
 

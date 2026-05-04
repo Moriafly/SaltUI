@@ -53,6 +53,8 @@ import com.moriafly.salt.ui.button.PillButtonDefaults
 import com.moriafly.salt.ui.ext.safeMainIgnoringVisibility
 import com.moriafly.salt.ui.icons.Back
 import com.moriafly.salt.ui.icons.SaltIcons
+import dev.chrisbanes.haze.blur.HazeProgressive
+import dev.chrisbanes.haze.blur.blurEffect
 import dev.chrisbanes.haze.hazeEffect
 import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.rememberHazeState
@@ -149,7 +151,13 @@ fun BasicScreen(
             actionButton = actionButton,
             modifier = Modifier
                 .hazeEffect(hazeState) {
-                    noiseFactor = 0f
+                    blurEffect {
+                        noiseFactor = 0f
+                        progressive = HazeProgressive.verticalGradient(
+                            startIntensity = 1f,
+                            endIntensity = 0f
+                        )
+                    }
                 },
             title = title,
             toolButtons = toolButtons,

@@ -137,7 +137,8 @@ kotlin {
             implementation(libs.compose.ui.tooling.preview)
             implementation(libs.compose.components.resources)
             implementation(libs.haze)
-            implementation(libs.haze.materials)
+            implementation(libs.haze.blur)
+            implementation(libs.haze.blur.materials)
             implementation(libs.collection)
         }
 

@@ -22,13 +22,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.moriafly.salt.ui.SaltTheme
 import com.moriafly.salt.ui.UnstableSaltUiApi
-import dev.chrisbanes.haze.HazeStyle
-import dev.chrisbanes.haze.HazeTint
-import dev.chrisbanes.haze.materials.ExperimentalHazeMaterialsApi
-import dev.chrisbanes.haze.materials.FluentMaterials
+import dev.chrisbanes.haze.blur.HazeBlurStyle
+import dev.chrisbanes.haze.blur.HazeColorEffect
+import dev.chrisbanes.haze.blur.materials.FluentMaterials
 
 /**
- * Provides predefined [HazeStyle]s for Salt UI's material components.
+ * Provides predefined [HazeBlurStyle]s for Salt UI's material components.
  *
  * This can also be conveniently used with the Haze library to achieve custom effects in certain
  * scenarios.
@@ -46,19 +45,19 @@ object SaltHazeStyles {
     fun blurryGlass(
         layer: MaterialLayer,
         isDarkTheme: Boolean = SaltTheme.configs.isDarkTheme
-    ): HazeStyle = when (layer) {
+    ): HazeBlurStyle = when (layer) {
         MaterialLayer.Background ->
-            HazeStyle(
+            HazeBlurStyle(
                 backgroundColor = SaltTheme.colors.background,
-                tints = if (isDarkTheme) {
+                colorEffects = if (isDarkTheme) {
                     listOf(
-                        HazeTint(
+                        HazeColorEffect.tint(
                             color = Color(0x80000000)
                         )
                     )
                 } else {
                     listOf(
-                        HazeTint(
+                        HazeColorEffect.tint(
                             color = Color(0x80FFFFFF)
                         )
                     )
@@ -68,33 +67,33 @@ object SaltHazeStyles {
             )
 
         MaterialLayer.SubBackground ->
-            HazeStyle(
+            HazeBlurStyle(
                 backgroundColor = SaltTheme.colors.background,
-                tints = if (isDarkTheme) {
+                colorEffects = if (isDarkTheme) {
                     listOf(
-                        HazeTint(
+                        HazeColorEffect.tint(
                             color = Color(0x60333333)
                         ),
-                        HazeTint(
+                        HazeColorEffect.tint(
                             color = Color(0x80000000),
                             blendMode = BlendMode.Overlay
                         )
                     )
                 } else {
                     listOf(
-                        HazeTint(
+                        HazeColorEffect.tint(
                             color = Color(0x99585858),
                             blendMode = BlendMode.Luminosity
                         ),
-                        HazeTint(
+                        HazeColorEffect.tint(
                             color = Color(0x60404040),
                             blendMode = BlendMode.Screen
                         ),
-                        HazeTint(
+                        HazeColorEffect.tint(
                             color = Color(0xFF808080),
                             blendMode = BlendMode.ColorDodge
                         ),
-                        HazeTint(
+                        HazeColorEffect.tint(
                             color = Color(0x8CFFFFFF),
                             blendMode = BlendMode.Luminosity
                         )
@@ -108,13 +107,12 @@ object SaltHazeStyles {
     /**
      * Copy of [FluentMaterials].
      */
-    @OptIn(ExperimentalHazeMaterialsApi::class)
     @Composable
     @ReadOnlyComposable
     fun acrylic(
         layer: MaterialLayer,
         isDarkTheme: Boolean = SaltTheme.configs.isDarkTheme
-    ): HazeStyle = when (layer) {
+    ): HazeBlurStyle = when (layer) {
         MaterialLayer.Background ->
             FluentMaterials.acrylicBase(isDarkTheme)
         MaterialLayer.SubBackground ->
@@ -124,13 +122,12 @@ object SaltHazeStyles {
     /**
      * Copy of [FluentMaterials].
      */
-    @OptIn(ExperimentalHazeMaterialsApi::class)
     @Composable
     @ReadOnlyComposable
     fun mica(
         layer: MaterialLayer,
         isDarkTheme: Boolean = SaltTheme.configs.isDarkTheme
-    ): HazeStyle = when (layer) {
+    ): HazeBlurStyle = when (layer) {
         MaterialLayer.Background ->
             FluentMaterials.micaAlt(isDarkTheme)
         MaterialLayer.SubBackground ->
@@ -148,12 +145,12 @@ object SaltHazeStyles {
     fun premium(
         layer: MaterialLayer,
         isDarkTheme: Boolean = SaltTheme.configs.isDarkTheme
-    ): HazeStyle = when (layer) {
+    ): HazeBlurStyle = when (layer) {
         MaterialLayer.Background ->
-            HazeStyle(
+            HazeBlurStyle(
                 backgroundColor = SaltTheme.colors.background,
-                tints = listOf(
-                    HazeTint(
+                colorEffects = listOf(
+                    HazeColorEffect.tint(
                         color = Color(0x10000000),
                         blendMode = BlendMode.Luminosity
                     )
@@ -161,33 +158,33 @@ object SaltHazeStyles {
                 blurRadius = 90.dp
             )
         MaterialLayer.SubBackground ->
-            HazeStyle(
+            HazeBlurStyle(
                 backgroundColor = SaltTheme.colors.background,
-                tints = if (isDarkTheme) {
+                colorEffects = if (isDarkTheme) {
                     listOf(
-                        HazeTint(
+                        HazeColorEffect.tint(
                             color = Color(0x35666666)
                         ),
-                        HazeTint(
+                        HazeColorEffect.tint(
                             color = Color(0x15333333),
                             blendMode = BlendMode.Softlight
                         ),
-                        HazeTint(
+                        HazeColorEffect.tint(
                             color = Color(0x99000000),
                             blendMode = BlendMode.Overlay
                         ),
-                        HazeTint(
+                        HazeColorEffect.tint(
                             color = Color(0x18000000),
                             blendMode = BlendMode.Luminosity
                         )
                     )
                 } else {
                     listOf(
-                        HazeTint(
+                        HazeColorEffect.tint(
                             color = Color(0x65DBDBDB),
                             blendMode = BlendMode.Softlight
                         ),
-                        HazeTint(
+                        HazeColorEffect.tint(
                             color = Color(0x38EFEFEF),
                             blendMode = BlendMode.Plus
                         )

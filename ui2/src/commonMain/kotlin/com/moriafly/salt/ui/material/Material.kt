@@ -29,13 +29,12 @@ import androidx.compose.ui.graphics.Color
 import com.moriafly.salt.ui.SaltTheme
 import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.moriafly.salt.ui.thenIf
-import dev.chrisbanes.haze.ExperimentalHazeApi
 import dev.chrisbanes.haze.HazeInputScale
 import dev.chrisbanes.haze.HazeState
-import dev.chrisbanes.haze.HazeStyle
+import dev.chrisbanes.haze.blur.HazeBlurStyle
+import dev.chrisbanes.haze.blur.blurEffect
 import dev.chrisbanes.haze.hazeEffect
 import dev.chrisbanes.haze.hazeSource
-import dev.chrisbanes.haze.materials.ExperimentalHazeMaterialsApi
 
 @UnstableSaltUiApi
 enum class MaterialType {
@@ -113,7 +112,6 @@ fun DisableMaterial(
 }
 
 @UnstableSaltUiApi
-@OptIn(ExperimentalHazeMaterialsApi::class)
 @Composable
 fun Modifier.material(
     isDarkTheme: Boolean = SaltTheme.configs.isDarkTheme,
@@ -126,7 +124,6 @@ fun Modifier.material(
 )
 
 @UnstableSaltUiApi
-@OptIn(ExperimentalHazeMaterialsApi::class)
 @Composable
 fun Modifier.subMaterial(
     isDarkTheme: Boolean = SaltTheme.configs.isDarkTheme,
@@ -139,7 +136,6 @@ fun Modifier.subMaterial(
 )
 
 @UnstableSaltUiApi
-@OptIn(ExperimentalHazeApi::class, ExperimentalHazeMaterialsApi::class)
 @Composable
 internal fun Modifier.basicMaterial(
     type: MaterialType,
@@ -150,16 +146,17 @@ internal fun Modifier.basicMaterial(
     val hazeState = LocalHazeState.current
 
     return if (hazeState != null) {
-        hazeEffect(
-            state = hazeState,
-            style = when (type) {
-                MaterialType.None -> HazeStyle.Unspecified
-                MaterialType.BlurryGlass -> SaltHazeStyles.blurryGlass(layer, isDarkTheme)
-                MaterialType.Acrylic -> SaltHazeStyles.acrylic(layer, isDarkTheme)
-                MaterialType.Mica -> SaltHazeStyles.mica(layer, isDarkTheme)
-                MaterialType.Premium -> SaltHazeStyles.premium(layer, isDarkTheme)
+        val blurStyle = when (type) {
+            MaterialType.None -> HazeBlurStyle.Unspecified
+            MaterialType.BlurryGlass -> SaltHazeStyles.blurryGlass(layer, isDarkTheme)
+            MaterialType.Acrylic -> SaltHazeStyles.acrylic(layer, isDarkTheme)
+            MaterialType.Mica -> SaltHazeStyles.mica(layer, isDarkTheme)
+            MaterialType.Premium -> SaltHazeStyles.premium(layer, isDarkTheme)
+        }
+        hazeEffect(state = hazeState) {
+            blurEffect {
+                style = blurStyle
             }
-        ) {
             inputScale = HazeInputScale.Fixed(InputScale)
         }
     } else {
