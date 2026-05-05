@@ -67,6 +67,7 @@ fun MainScreen() {
             }
         },
         title = "Main",
+        subtitle = "Salt UI 3",
         toolButtons = {
             PillButton(
                 onClick = {}

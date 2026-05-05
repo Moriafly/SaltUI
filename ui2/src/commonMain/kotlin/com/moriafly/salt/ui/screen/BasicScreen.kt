@@ -20,6 +20,7 @@ package com.moriafly.salt.ui.screen
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -48,6 +49,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.moriafly.salt.core.os.OS
 import com.moriafly.salt.ui.Icon
+import com.moriafly.salt.ui.SaltTheme
 import com.moriafly.salt.ui.Text
 import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.moriafly.salt.ui.button.PillButton
@@ -57,11 +59,11 @@ import com.moriafly.salt.ui.icons.Back
 import com.moriafly.salt.ui.icons.SaltIcons
 import com.moriafly.salt.ui.verticalEdge
 import dev.chrisbanes.haze.HazeInputScale
+import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.blur.HazeProgressive
 import dev.chrisbanes.haze.blur.blurEffect
 import dev.chrisbanes.haze.hazeEffect
 import dev.chrisbanes.haze.hazeSource
-import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.rememberHazeState
 
 /**
@@ -72,6 +74,7 @@ import dev.chrisbanes.haze.rememberHazeState
  * @param onBack Callback invoked when the back button is clicked.
  * @param modifier Modifier to be applied to the screen.
  * @param title Optional title text displayed in the title bar.
+ * @param subtitle Optional subtitle text displayed below the title.
  * @param toolButtons Optional composable for trailing action buttons in the title bar.
  * @param contentPadding Padding values applied to the outer layout.
  * @param content The main content of the screen, receiving inner padding values.
@@ -82,6 +85,7 @@ fun BasicScreen(
     onBack: () -> Unit,
     modifier: Modifier = Modifier,
     title: String? = null,
+    subtitle: String? = null,
     toolButtons: (@Composable () -> Unit)? = null,
     contentPadding: PaddingValues = BasicScreenDefaults.ContentPadding,
     content: @Composable BoxScope.(PaddingValues) -> Unit
@@ -94,6 +98,7 @@ fun BasicScreen(
         },
         modifier = modifier,
         title = title,
+        subtitle = subtitle,
         toolButtons = toolButtons,
         contentPadding = contentPadding,
         content = content
@@ -106,6 +111,7 @@ fun BasicScreen(
  * @param actionButton Optional composable lambda for placing a leading action (e.g., back button).
  * @param modifier Modifier to be applied to the screen.
  * @param title Optional title text displayed in the title bar.
+ * @param subtitle Optional subtitle text displayed below the title.
  * @param toolButtons Optional composable for trailing action buttons in the title bar.
  * @param contentPadding Padding values applied to the outer layout.
  * @param content The main content of the screen, receiving inner padding values.
@@ -116,6 +122,7 @@ fun BasicScreen(
     actionButton: (@Composable () -> Unit)?,
     modifier: Modifier = Modifier,
     title: String? = null,
+    subtitle: String? = null,
     toolButtons: (@Composable () -> Unit)? = null,
     contentPadding: PaddingValues = BasicScreenDefaults.ContentPadding,
     content: @Composable BoxScope.(PaddingValues) -> Unit
@@ -127,9 +134,7 @@ fun BasicScreen(
         val hazeState = rememberHazeState()
 
         val boxContentPaddingTop =
-            contentPadding.calculateTopPadding() +
-                PillButtonDefaults.Height +
-                BasicScreenDefaults.TitleBarInsideVerticalPadding * 2
+            contentPadding.calculateTopPadding() + BasicScreenDefaults.TitleBarHeight
 
         Box(
             modifier = Modifier
@@ -161,6 +166,7 @@ fun BasicScreen(
             actionButton = actionButton,
             modifier = Modifier,
             title = title,
+            subtitle = subtitle,
             toolButtons = toolButtons,
             contentPadding = contentPadding
         )
@@ -201,8 +207,8 @@ private fun TitleBarBackdrop(
 /**
  * Internal title bar component used by [BasicScreen].
  *
- * Arranges an optional [actionButton], an optional [title], and optional [toolButtons]
- * horizontally with default padding and height constraints.
+ * Arranges an optional [actionButton], an optional [title], an optional [subtitle],
+ * and optional [toolButtons] horizontally with default padding and height constraints.
  */
 @UnstableSaltUiApi
 @Composable
@@ -210,6 +216,7 @@ private fun TitleBar(
     actionButton: (@Composable () -> Unit)?,
     modifier: Modifier = Modifier,
     title: String? = null,
+    subtitle: String? = null,
     toolButtons: (@Composable () -> Unit)? = null,
     contentPadding: PaddingValues = PaddingValues(0.dp)
 ) {
@@ -219,17 +226,12 @@ private fun TitleBar(
             .fillMaxWidth()
             .padding(
                 PaddingValues(
-                    start = contentPadding.calculateStartPadding(layoutDirection),
+                    start = contentPadding.calculateStartPadding(layoutDirection) + 16.dp,
                     top = contentPadding.calculateTopPadding(),
-                    end = contentPadding.calculateEndPadding(layoutDirection)
+                    end = contentPadding.calculateEndPadding(layoutDirection) + 16.dp
                 )
             )
-            .padding(
-                horizontal = 16.dp,
-                vertical = BasicScreenDefaults.TitleBarInsideVerticalPadding
-            )
-            // Same as PillButtonDefaults.Height
-            .height(PillButtonDefaults.Height)
+            .height(BasicScreenDefaults.TitleBarHeight)
     ) {
         Row(
             modifier = Modifier
@@ -243,12 +245,21 @@ private fun TitleBar(
                 Spacer(Modifier.width(8.dp))
             }
 
-            if (title != null) {
-                Text(
-                    text = title,
-                    fontWeight = FontWeight.Medium,
-                    fontSize = 16.sp
-                )
+            Column {
+                if (title != null) {
+                    Text(
+                        text = title,
+                        fontWeight = FontWeight.Medium,
+                        fontSize = 16.sp
+                    )
+                }
+                if (subtitle != null) {
+                    Text(
+                        text = subtitle,
+                        color = SaltTheme.colors.subText,
+                        style = SaltTheme.textStyles.sub
+                    )
+                }
             }
         }
 
@@ -270,13 +281,12 @@ private fun TitleBar(
  */
 @UnstableSaltUiApi
 object BasicScreenDefaults {
-    /**
-     * Vertical padding inside the title bar.
-     *
-     * Uses a larger value on desktop platforms for better visual balance.
-     */
-    internal val TitleBarInsideVerticalPadding: Dp =
-        if (OS.isDesktop()) 16.dp else 8.dp
+    internal val TitleBarHeight: Dp =
+        if (OS.isDesktop()) {
+            PillButtonDefaults.Height + 32.dp
+        } else {
+            PillButtonDefaults.Height + 16.dp
+        }
 
     /**
      * Default content padding that respects the safe area insets at the top.

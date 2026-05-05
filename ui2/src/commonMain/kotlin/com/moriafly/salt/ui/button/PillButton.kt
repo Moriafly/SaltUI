@@ -135,25 +135,16 @@ fun BasicPillButton(
 object PillButtonDefaults {
     /**
      * The recommended icon size for content inside a [PillButton].
-     *
-     * - Mobile (Android/iOS): 20.dp
-     * - Desktop: 16.dp
      */
-    internal val IconSize: Dp = if (OS.isDesktop()) 16.dp else 20.dp
+    internal val IconSize: Dp = if (OS.isDesktop()) 18.dp else 22.dp
 
     /**
      * The default height of a [PillButton].
-     *
-     * - Mobile (Android/iOS): 48.dp
-     * - Desktop: 32.dp
      */
-    internal val Height: Dp = if (OS.isDesktop()) 32.dp else 48.dp
+    internal val Height: Dp = if (OS.isDesktop()) 36.dp else 48.dp
 
     /**
      * The default horizontal content padding for a pill-shaped [PillButton].
-     *
-     * - Mobile (Android/iOS): 16.dp
-     * - Desktop: 10.dp
      */
     internal val HorizontalPadding: Dp = if (OS.isDesktop()) 10.dp else 16.dp
 }
