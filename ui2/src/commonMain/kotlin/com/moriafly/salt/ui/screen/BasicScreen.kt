@@ -37,7 +37,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithCache
+import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.drawscope.clipRect
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.font.FontWeight
@@ -53,10 +55,13 @@ import com.moriafly.salt.ui.button.PillButtonDefaults
 import com.moriafly.salt.ui.ext.safeMainIgnoringVisibility
 import com.moriafly.salt.ui.icons.Back
 import com.moriafly.salt.ui.icons.SaltIcons
+import com.moriafly.salt.ui.verticalEdge
+import dev.chrisbanes.haze.HazeInputScale
 import dev.chrisbanes.haze.blur.HazeProgressive
 import dev.chrisbanes.haze.blur.blurEffect
 import dev.chrisbanes.haze.hazeEffect
 import dev.chrisbanes.haze.hazeSource
+import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.rememberHazeState
 
 /**
@@ -147,23 +152,50 @@ fun BasicScreen(
             content(boxContentPaddingValues)
         }
 
+        TitleBarBackdrop(
+            height = boxContentPaddingTop,
+            hazeState = hazeState
+        )
+
         TitleBar(
             actionButton = actionButton,
-            modifier = Modifier
-                .hazeEffect(hazeState) {
-                    blurEffect {
-                        noiseFactor = 0f
-                        progressive = HazeProgressive.verticalGradient(
-                            startIntensity = 1f,
-                            endIntensity = 0f
-                        )
-                    }
-                },
+            modifier = Modifier,
             title = title,
             toolButtons = toolButtons,
             contentPadding = contentPadding
         )
     }
+}
+
+/**
+ * A blur backdrop placed behind the title bar in [BasicScreen].
+ */
+@UnstableSaltUiApi
+@Composable
+private fun TitleBarBackdrop(
+    height: Dp,
+    hazeState: HazeState,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(height)
+            .graphicsLayer {
+                compositingStrategy = CompositingStrategy.Offscreen
+            }
+            .verticalEdge(top = height)
+            .hazeEffect(hazeState) {
+                blurEffect {
+                    noiseFactor = 0f
+                    inputScale = HazeInputScale.Auto
+                    progressive = HazeProgressive.verticalGradient(
+                        startIntensity = 1f,
+                        endIntensity = 0f
+                    )
+                }
+            }
+    )
 }
 
 /**
