@@ -77,6 +77,7 @@ import dev.chrisbanes.haze.rememberHazeState
  * @param subtitle Optional subtitle text displayed below the title.
  * @param toolButtons Optional composable for trailing action buttons in the title bar.
  * @param contentPadding Padding values applied to the outer layout.
+ * @param properties Screen-level visual properties such as title bar backdrop type.
  * @param content The main content of the screen, receiving inner padding values.
  */
 @UnstableSaltUiApi
@@ -88,6 +89,7 @@ fun BasicScreen(
     subtitle: String? = null,
     toolButtons: (@Composable () -> Unit)? = null,
     contentPadding: PaddingValues = BasicScreenDefaults.ContentPadding,
+    properties: BasicScreenProperties = BasicScreenProperties.default(),
     content: @Composable BoxScope.(PaddingValues) -> Unit
 ) {
     BasicScreen(
@@ -101,6 +103,7 @@ fun BasicScreen(
         subtitle = subtitle,
         toolButtons = toolButtons,
         contentPadding = contentPadding,
+        properties = properties,
         content = content
     )
 }
@@ -114,6 +117,7 @@ fun BasicScreen(
  * @param subtitle Optional subtitle text displayed below the title.
  * @param toolButtons Optional composable for trailing action buttons in the title bar.
  * @param contentPadding Padding values applied to the outer layout.
+ * @param properties Screen-level visual properties such as title bar backdrop type.
  * @param content The main content of the screen, receiving inner padding values.
  */
 @UnstableSaltUiApi
@@ -125,6 +129,7 @@ fun BasicScreen(
     subtitle: String? = null,
     toolButtons: (@Composable () -> Unit)? = null,
     contentPadding: PaddingValues = BasicScreenDefaults.ContentPadding,
+    properties: BasicScreenProperties = BasicScreenProperties.default(),
     content: @Composable BoxScope.(PaddingValues) -> Unit
 ) {
     Box(
@@ -159,7 +164,8 @@ fun BasicScreen(
 
         TitleBarBackdrop(
             height = boxContentPaddingTop,
-            hazeState = hazeState
+            hazeState = hazeState,
+            backdropType = properties.titleBarBackdropType
         )
 
         TitleBar(
@@ -174,41 +180,126 @@ fun BasicScreen(
 }
 
 /**
+ * Visual properties for configuring [BasicScreen] appearance.
+ *
+ * @param titleBarBackdropType The type of backdrop effect applied behind the title bar.
+ */
+@UnstableSaltUiApi
+data class BasicScreenProperties(
+    val titleBarBackdropType: TitleBarBackdropType
+) {
+    /**
+     * Available backdrop effect types for the title bar.
+     */
+    enum class TitleBarBackdropType {
+        /**
+         * No backdrop effect.
+         */
+        None,
+
+        /**
+         * Uniform blur backdrop.
+         */
+        Blur,
+
+        /**
+         * Progressive blur that fades toward the bottom.
+         */
+        Progressive
+    }
+
+    companion object {
+        /**
+         * Returns default properties based on the current platform.
+         */
+        fun default(
+            titleBarBackdropType: TitleBarBackdropType =
+                when (val os = OS.current) {
+                    is OS.Android ->
+                        when {
+                            os.versionSdk >= OS.Android.ANDROID_13 ->
+                                TitleBarBackdropType.Progressive
+                            os.versionSdk >= OS.Android.ANDROID_12 ->
+                                TitleBarBackdropType.Blur
+                            else -> TitleBarBackdropType.None
+                        }
+                    is OS.IOS -> TitleBarBackdropType.Progressive
+                    else -> TitleBarBackdropType.Blur
+                }
+        ): BasicScreenProperties =
+            BasicScreenProperties(
+                titleBarBackdropType = titleBarBackdropType
+            )
+    }
+}
+
+/**
  * A blur backdrop placed behind the title bar in [BasicScreen].
+ *
+ * @param height Height of the backdrop area.
+ * @param hazeState Haze state for blur calculation.
+ * @param backdropType Type of blur effect to apply.
+ * @param modifier Modifier to be applied to the backdrop.
  */
 @UnstableSaltUiApi
 @Composable
 private fun TitleBarBackdrop(
     height: Dp,
     hazeState: HazeState,
+    backdropType: BasicScreenProperties.TitleBarBackdropType,
     modifier: Modifier = Modifier
 ) {
+    val backdropModifier = when (backdropType) {
+        BasicScreenProperties.TitleBarBackdropType.None ->
+            Modifier
+
+        BasicScreenProperties.TitleBarBackdropType.Blur ->
+            Modifier
+                .hazeEffect(hazeState) {
+                    blurEffect {
+                        noiseFactor = 0f
+                        inputScale = HazeInputScale.Auto
+                    }
+                }
+
+        BasicScreenProperties.TitleBarBackdropType.Progressive ->
+            Modifier
+                .graphicsLayer {
+                    compositingStrategy = CompositingStrategy.Offscreen
+                }
+                .verticalEdge(top = height)
+                .hazeEffect(hazeState) {
+                    blurEffect {
+                        noiseFactor = 0f
+                        inputScale = HazeInputScale.Auto
+                        progressive = HazeProgressive.verticalGradient(
+                            startIntensity = 1f,
+                            endIntensity = 0f
+                        )
+                    }
+                }
+    }
+
     Box(
         modifier = modifier
             .fillMaxWidth()
             .height(height)
-            .graphicsLayer {
-                compositingStrategy = CompositingStrategy.Offscreen
-            }
-            .verticalEdge(top = height)
-            .hazeEffect(hazeState) {
-                blurEffect {
-                    noiseFactor = 0f
-                    inputScale = HazeInputScale.Auto
-                    progressive = HazeProgressive.verticalGradient(
-                        startIntensity = 1f,
-                        endIntensity = 0f
-                    )
-                }
-            }
+            .then(backdropModifier)
     )
 }
 
 /**
  * Internal title bar component used by [BasicScreen].
  *
- * Arranges an optional [actionButton], an optional [title], an optional [subtitle],
- * and optional [toolButtons] horizontally with default padding and height constraints.
+ * Arranges an optional [actionButton], an optional [title] with [subtitle],
+ * and optional [toolButtons] with default padding and height constraints.
+ *
+ * @param actionButton Optional leading action composable.
+ * @param modifier Modifier to be applied to the title bar.
+ * @param title Optional title text.
+ * @param subtitle Optional subtitle text displayed below the title.
+ * @param toolButtons Optional trailing action buttons.
+ * @param contentPadding Padding values for the title bar edges.
  */
 @UnstableSaltUiApi
 @Composable
@@ -281,6 +372,11 @@ private fun TitleBar(
  */
 @UnstableSaltUiApi
 object BasicScreenDefaults {
+    /**
+     * Default height of the title bar.
+     *
+     * Taller on desktop for better visual balance.
+     */
     internal val TitleBarHeight: Dp =
         if (OS.isDesktop()) {
             PillButtonDefaults.Height + 32.dp
