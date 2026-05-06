@@ -15,6 +15,7 @@
 
 package com.moriafly.salt.ui.sample.ui.screen
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -25,6 +26,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.unit.dp
 import com.moriafly.salt.ui.Icon
@@ -99,7 +101,9 @@ fun MainScreen() {
 
             ItemOuterLargeTitle(
                 text = "Salt UI 3",
-                sub = "UI Components for Compose Multiplatform (Android/Desktop/iOS)"
+                sub = "UI Components for Compose Multiplatform (Android/Desktop/iOS)",
+                modifier = Modifier
+                    .background(Color.Green)
             )
 
             RoundedColumn {

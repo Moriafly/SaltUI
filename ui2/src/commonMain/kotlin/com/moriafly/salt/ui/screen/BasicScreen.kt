@@ -38,6 +38,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithCache
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.graphics.graphicsLayer
@@ -198,9 +200,9 @@ data class BasicScreenProperties(
         None,
 
         /**
-         * Uniform blur backdrop.
+         * Uniform mask backdrop.
          */
-        Blur,
+        Mask,
 
         /**
          * Progressive blur that fades toward the bottom.
@@ -220,11 +222,11 @@ data class BasicScreenProperties(
                             os.versionSdk >= OS.Android.ANDROID_13 ->
                                 TitleBarBackdropType.Progressive
                             os.versionSdk >= OS.Android.ANDROID_12 ->
-                                TitleBarBackdropType.Blur
+                                TitleBarBackdropType.Mask
                             else -> TitleBarBackdropType.None
                         }
                     is OS.IOS -> TitleBarBackdropType.Progressive
-                    else -> TitleBarBackdropType.Blur
+                    else -> TitleBarBackdropType.Mask
                 }
         ): BasicScreenProperties =
             BasicScreenProperties(
@@ -253,12 +255,15 @@ private fun TitleBarBackdrop(
         BasicScreenProperties.TitleBarBackdropType.None ->
             Modifier
 
-        BasicScreenProperties.TitleBarBackdropType.Blur ->
+        BasicScreenProperties.TitleBarBackdropType.Mask ->
             Modifier
                 .hazeEffect(hazeState) {
                     blurEffect {
                         noiseFactor = 0f
                         inputScale = HazeInputScale.Auto
+                        mask = Brush.verticalGradient(
+                            colors = listOf(Color.Transparent, Color.Black)
+                        )
                     }
                 }
 
