@@ -38,6 +38,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithCache
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.CompositingStrategy
@@ -328,6 +329,7 @@ private fun TitleBar(
                 )
             )
             .height(BasicScreenDefaults.TitleBarHeight)
+            .pointerInput(Unit) {}
     ) {
         Row(
             modifier = Modifier
