@@ -258,6 +258,10 @@ private fun TitleBarBackdrop(
 
         BasicScreenProperties.TitleBarBackdropType.Mask ->
             Modifier
+                .graphicsLayer {
+                    compositingStrategy = CompositingStrategy.Offscreen
+                }
+                .verticalEdge(top = height)
                 .hazeEffect(hazeState) {
                     blurEffect {
                         blurRadius = 8.dp
