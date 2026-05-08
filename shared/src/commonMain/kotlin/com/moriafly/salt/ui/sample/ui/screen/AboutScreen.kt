@@ -27,7 +27,6 @@ import com.moriafly.salt.ui.Item
 import com.moriafly.salt.ui.ItemOuterLargeTitle
 import com.moriafly.salt.ui.RoundedColumn
 import com.moriafly.salt.ui.UnstableSaltUiApi
-import com.moriafly.salt.ui.button.PillButton
 import com.moriafly.salt.ui.rememberScrollState
 import com.moriafly.salt.ui.sample.ui.icons.Like
 import com.moriafly.salt.ui.sample.ui.icons.SimpleIcons
@@ -35,6 +34,7 @@ import com.moriafly.salt.ui.sample.ui.icons.Star
 import com.moriafly.salt.ui.sample.ui.navigation.LocalNavBackStack
 import com.moriafly.salt.ui.sample.ui.navigation.ScreenRoute
 import com.moriafly.salt.ui.screen.BasicScreen
+import com.moriafly.salt.ui.screen.TitleBarButton
 import com.moriafly.salt.ui.verticalScroll
 
 @Suppress("ktlint:compose:modifier-missing-check")
@@ -48,7 +48,7 @@ fun AboutScreen() {
         },
         title = "About",
         toolButtons = {
-            PillButton(
+            TitleBarButton(
                 onClick = {}
             ) {
                 Icon(
@@ -56,7 +56,7 @@ fun AboutScreen() {
                     contentDescription = null
                 )
             }
-            PillButton(
+            TitleBarButton(
                 onClick = {}
             ) {
                 Icon(

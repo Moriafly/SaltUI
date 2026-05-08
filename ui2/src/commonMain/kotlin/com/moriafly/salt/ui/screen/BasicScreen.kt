@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Salt UI
  * Copyright (C) 2025 Moriafly
  *
@@ -17,6 +17,7 @@
 
 package com.moriafly.salt.ui.screen
 
+import androidx.compose.animation.core.EaseInOut
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
@@ -28,7 +29,6 @@ import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -38,6 +38,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithCache
+import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.CompositingStrategy
@@ -55,8 +56,6 @@ import com.moriafly.salt.ui.Icon
 import com.moriafly.salt.ui.SaltTheme
 import com.moriafly.salt.ui.Text
 import com.moriafly.salt.ui.UnstableSaltUiApi
-import com.moriafly.salt.ui.button.PillButton
-import com.moriafly.salt.ui.button.PillButtonDefaults
 import com.moriafly.salt.ui.ext.safeMainIgnoringVisibility
 import com.moriafly.salt.ui.icons.Back
 import com.moriafly.salt.ui.icons.SaltIcons
@@ -80,7 +79,7 @@ import dev.chrisbanes.haze.rememberHazeState
  * @param subtitle Optional subtitle text displayed below the title.
  * @param toolButtons Optional composable for trailing action buttons in the title bar.
  * @param contentPadding Padding values applied to the outer layout.
- * @param properties Screen-level visual properties such as title bar backdrop type.
+ * @param style Screen-level visual properties such as title bar backdrop type.
  * @param content The main content of the screen, receiving inner padding values.
  */
 @UnstableSaltUiApi
@@ -92,7 +91,7 @@ fun BasicScreen(
     subtitle: String? = null,
     toolButtons: (@Composable () -> Unit)? = null,
     contentPadding: PaddingValues = BasicScreenDefaults.ContentPadding,
-    properties: BasicScreenProperties = BasicScreenProperties.default(),
+    style: BasicScreenStyle = BasicScreenStyle.default(),
     content: @Composable BoxScope.(PaddingValues) -> Unit
 ) {
     BasicScreen(
@@ -106,7 +105,7 @@ fun BasicScreen(
         subtitle = subtitle,
         toolButtons = toolButtons,
         contentPadding = contentPadding,
-        properties = properties,
+        style = style,
         content = content
     )
 }
@@ -120,7 +119,7 @@ fun BasicScreen(
  * @param subtitle Optional subtitle text displayed below the title.
  * @param toolButtons Optional composable for trailing action buttons in the title bar.
  * @param contentPadding Padding values applied to the outer layout.
- * @param properties Screen-level visual properties such as title bar backdrop type.
+ * @param style Screen-level visual properties such as title bar backdrop type.
  * @param content The main content of the screen, receiving inner padding values.
  */
 @UnstableSaltUiApi
@@ -132,7 +131,7 @@ fun BasicScreen(
     subtitle: String? = null,
     toolButtons: (@Composable () -> Unit)? = null,
     contentPadding: PaddingValues = BasicScreenDefaults.ContentPadding,
-    properties: BasicScreenProperties = BasicScreenProperties.default(),
+    style: BasicScreenStyle = SaltTheme.basicScreenStyle,
     content: @Composable BoxScope.(PaddingValues) -> Unit
 ) {
     Box(
@@ -168,7 +167,7 @@ fun BasicScreen(
         TitleBarBackdrop(
             height = boxContentPaddingTop,
             hazeState = hazeState,
-            backdropType = properties.titleBarBackdropType
+            backdropType = style.titleBarBackdropType
         )
 
         TitleBar(
@@ -188,7 +187,7 @@ fun BasicScreen(
  * @param titleBarBackdropType The type of backdrop effect applied behind the title bar.
  */
 @UnstableSaltUiApi
-data class BasicScreenProperties(
+data class BasicScreenStyle(
     val titleBarBackdropType: TitleBarBackdropType
 ) {
     /**
@@ -229,8 +228,8 @@ data class BasicScreenProperties(
                     is OS.IOS -> TitleBarBackdropType.Progressive
                     else -> TitleBarBackdropType.Mask
                 }
-        ): BasicScreenProperties =
-            BasicScreenProperties(
+        ): BasicScreenStyle =
+            BasicScreenStyle(
                 titleBarBackdropType = titleBarBackdropType
             )
     }
@@ -249,14 +248,14 @@ data class BasicScreenProperties(
 private fun TitleBarBackdrop(
     height: Dp,
     hazeState: HazeState,
-    backdropType: BasicScreenProperties.TitleBarBackdropType,
+    backdropType: BasicScreenStyle.TitleBarBackdropType,
     modifier: Modifier = Modifier
 ) {
     val backdropModifier = when (backdropType) {
-        BasicScreenProperties.TitleBarBackdropType.None ->
+        BasicScreenStyle.TitleBarBackdropType.None ->
             Modifier
 
-        BasicScreenProperties.TitleBarBackdropType.Mask ->
+        BasicScreenStyle.TitleBarBackdropType.Mask ->
             Modifier
                 .graphicsLayer {
                     compositingStrategy = CompositingStrategy.Offscreen
@@ -273,17 +272,30 @@ private fun TitleBarBackdrop(
                     }
                 }
 
-        BasicScreenProperties.TitleBarBackdropType.Progressive ->
+        BasicScreenStyle.TitleBarBackdropType.Progressive ->
             Modifier
                 .graphicsLayer {
                     compositingStrategy = CompositingStrategy.Offscreen
                 }
-                .verticalEdge(top = height)
+                .drawWithCache {
+                    onDrawWithContent {
+                        drawContent()
+
+                        drawRect(
+                            brush = Brush.verticalGradient(
+                                0f to Color.Transparent,
+                                size.height to Color.Black
+                            ),
+                            blendMode = BlendMode.DstIn
+                        )
+                    }
+                }
                 .hazeEffect(hazeState) {
                     blurEffect {
                         noiseFactor = 0f
                         inputScale = HazeInputScale.Auto
                         progressive = HazeProgressive.verticalGradient(
+                            easing = EaseInOut,
                             startIntensity = 1f,
                             endIntensity = 0f
                         )
@@ -302,7 +314,7 @@ private fun TitleBarBackdrop(
 /**
  * Internal title bar component used by [BasicScreen].
  *
- * Arranges an optional [actionButton], an optional [title] with [subtitle],
+ * Arranges an optional [actionButton], an optional [title] with [subtitle],.
  * and optional [toolButtons] with default padding and height constraints.
  *
  * @param actionButton Optional leading action composable.
@@ -322,56 +334,153 @@ private fun TitleBar(
     toolButtons: (@Composable () -> Unit)? = null,
     contentPadding: PaddingValues = PaddingValues(0.dp)
 ) {
+    if (OS.isDesktop()) {
+        DesktopTitleBar(
+            actionButton = actionButton,
+            modifier = modifier,
+            title = title,
+            subtitle = subtitle,
+            toolButtons = toolButtons,
+            contentPadding = contentPadding
+        )
+    } else {
+        MobileTitleBar(
+            actionButton = actionButton,
+            modifier = modifier,
+            title = title,
+            subtitle = subtitle,
+            toolButtons = toolButtons,
+            contentPadding = contentPadding
+        )
+    }
+}
+
+@UnstableSaltUiApi
+@Composable
+private fun DesktopTitleBar(
+    actionButton: (@Composable () -> Unit)?,
+    modifier: Modifier = Modifier,
+    title: String? = null,
+    subtitle: String? = null,
+    toolButtons: (@Composable () -> Unit)? = null,
+    contentPadding: PaddingValues = PaddingValues(0.dp)
+) {
     val layoutDirection = LocalLayoutDirection.current
     Row(
         modifier = modifier
             .fillMaxWidth()
             .padding(
                 PaddingValues(
-                    start = contentPadding.calculateStartPadding(layoutDirection) + 16.dp,
+                    start = contentPadding.calculateStartPadding(layoutDirection) + 12.dp,
                     top = contentPadding.calculateTopPadding(),
-                    end = contentPadding.calculateEndPadding(layoutDirection) + 16.dp
+                    end = contentPadding.calculateEndPadding(layoutDirection) + 12.dp
                 )
             )
             .height(BasicScreenDefaults.TitleBarHeight)
-            .pointerInput(Unit) {}
+            .pointerInput(Unit) {},
+        verticalAlignment = Alignment.CenterVertically
     ) {
         Row(
             modifier = Modifier
-                .weight(1f)
-                .fillMaxHeight(),
+                .weight(1f),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            actionButton?.invoke()
-
-            if (actionButton != null && title != null) {
+            if (actionButton != null) {
+                actionButton()
                 Spacer(Modifier.width(8.dp))
+            } else {
+                Spacer(Modifier.width(4.dp))
             }
 
-            Column {
-                if (title != null) {
-                    Text(
-                        text = title,
-                        fontWeight = FontWeight.Medium,
-                        fontSize = 16.sp
-                    )
-                }
-                if (subtitle != null) {
-                    Text(
-                        text = subtitle,
-                        color = SaltTheme.colors.subText,
-                        style = SaltTheme.textStyles.sub
-                    )
-                }
+            if (title != null) {
+                Text(
+                    text = title,
+                    modifier = Modifier
+                        .alignByBaseline(),
+                    fontSize = 24.sp,
+                    fontWeight = FontWeight.Medium
+                )
+            }
+            if (subtitle != null) {
+                Spacer(Modifier.width(8.dp))
+                Text(
+                    text = subtitle,
+                    modifier = Modifier
+                        .alignByBaseline(),
+                    color = SaltTheme.colors.subText,
+                    fontSize = 14.sp,
+                    style = SaltTheme.textStyles.sub
+                )
             }
         }
 
-        Spacer(Modifier.width(16.dp))
+        Row(
+            modifier = Modifier
+                .weight(1f),
+            horizontalArrangement = Arrangement.spacedBy(
+                space = 8.dp,
+                alignment = Alignment.End
+            ),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            toolButtons?.invoke()
+        }
+    }
+}
+
+@UnstableSaltUiApi
+@Composable
+private fun MobileTitleBar(
+    actionButton: (@Composable () -> Unit)?,
+    modifier: Modifier = Modifier,
+    title: String? = null,
+    subtitle: String? = null,
+    toolButtons: (@Composable () -> Unit)? = null,
+    contentPadding: PaddingValues = PaddingValues(0.dp)
+) {
+    val layoutDirection = LocalLayoutDirection.current
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(
+                PaddingValues(
+                    start = contentPadding.calculateStartPadding(layoutDirection) + 8.dp,
+                    top = contentPadding.calculateTopPadding(),
+                    end = contentPadding.calculateEndPadding(layoutDirection) + 8.dp
+                )
+            )
+            .height(BasicScreenDefaults.TitleBarHeight)
+            .pointerInput(Unit) {},
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        actionButton?.invoke()
+
+        Spacer(Modifier.width(8.dp))
+
+        Column {
+            if (title != null) {
+                Text(
+                    text = title,
+                    fontWeight = FontWeight.Medium,
+                    fontSize = 17.sp
+                )
+            }
+            if (subtitle != null) {
+                Text(
+                    text = subtitle,
+                    color = SaltTheme.colors.subText,
+                    style = SaltTheme.textStyles.sub
+                )
+            }
+        }
 
         Row(
             modifier = Modifier
-                .fillMaxHeight(),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                .weight(1f),
+            horizontalArrangement = Arrangement.spacedBy(
+                space = 4.dp,
+                alignment = Alignment.End
+            ),
             verticalAlignment = Alignment.CenterVertically
         ) {
             toolButtons?.invoke()
@@ -386,15 +495,8 @@ private fun TitleBar(
 object BasicScreenDefaults {
     /**
      * Default height of the title bar.
-     *
-     * Taller on desktop for better visual balance.
      */
-    internal val TitleBarHeight: Dp =
-        if (OS.isDesktop()) {
-            PillButtonDefaults.Height + 32.dp
-        } else {
-            PillButtonDefaults.Height + 16.dp
-        }
+    internal val TitleBarHeight: Dp = 56.dp
 
     /**
      * Default content padding that respects the safe area insets at the top.
@@ -409,7 +511,7 @@ object BasicScreenDefaults {
         }
 
     /**
-     * A default back button using a pill-shaped container and the Salt back icon.
+     * A default back button using the Salt back icon.
      *
      * @param onBack Callback invoked when the button is clicked.
      * @param modifier Modifier to be applied to the button.
@@ -421,7 +523,7 @@ object BasicScreenDefaults {
         modifier: Modifier = Modifier,
         enabled: Boolean = true
     ) {
-        PillButton(
+        TitleBarButton(
             onClick = onBack,
             modifier = modifier,
             enabled = enabled

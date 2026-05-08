@@ -44,11 +44,11 @@ import com.moriafly.salt.ui.rememberScrollState
 import com.moriafly.salt.ui.sample.ui.icons.Like
 import com.moriafly.salt.ui.sample.ui.icons.Search
 import com.moriafly.salt.ui.sample.ui.icons.SimpleIcons
-import com.moriafly.salt.ui.sample.ui.icons.Star
 import com.moriafly.salt.ui.sample.ui.navigation.LocalNavBackStack
 import com.moriafly.salt.ui.sample.ui.navigation.ScreenRoute
 import com.moriafly.salt.ui.sample.util.AppConfig
 import com.moriafly.salt.ui.screen.BasicScreen
+import com.moriafly.salt.ui.screen.TitleBarButton
 import com.moriafly.salt.ui.verticalScroll
 
 @Suppress("ktlint:compose:modifier-missing-check")
@@ -56,20 +56,21 @@ import com.moriafly.salt.ui.verticalScroll
 @Composable
 fun MainScreen() {
     BasicScreen(
-        actionButton = {
-            PillButton(
-                onClick = {}
-            ) {
-                Icon(
-                    painter = rememberVectorPainter(SimpleIcons.Star),
-                    contentDescription = null
-                )
-            }
-        },
+        actionButton = null,
+//        actionButton = {
+//            TitleBarButton(
+//                onClick = {}
+//            ) {
+//                Icon(
+//                    painter = rememberVectorPainter(SimpleIcons.Star),
+//                    contentDescription = null
+//                )
+//            }
+//        },
         title = "Main",
         subtitle = "Salt UI 3",
         toolButtons = {
-            PillButton(
+            TitleBarButton(
                 onClick = {}
             ) {
                 Icon(
@@ -77,11 +78,8 @@ fun MainScreen() {
                     contentDescription = null
                 )
             }
-            PillButton(
-                onClick = {},
-                text = {
-                    Text("Search")
-                }
+            TitleBarButton(
+                onClick = {}
             ) {
                 Icon(
                     painter = rememberVectorPainter(SimpleIcons.Search),

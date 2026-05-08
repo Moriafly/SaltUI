@@ -1,4 +1,4 @@
-/*
+﻿/*
  * Salt UI
  * Copyright (C) 2023 Moriafly
  *
@@ -25,6 +25,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.staticCompositionLocalOf
 import com.moriafly.salt.ui.material.LocalHazeState
 import com.moriafly.salt.ui.material.MaterialType
+import com.moriafly.salt.ui.screen.BasicScreenStyle
 import dev.chrisbanes.haze.HazeState
 
 /**
@@ -51,7 +52,8 @@ fun SaltTheme(
         textStyles = textStyles,
         dimens = dimens,
         shapes = shapes,
-        material = SaltMaterial.default(),
+        material = SaltTheme.material,
+        basicScreenStyle = SaltTheme.basicScreenStyle,
         content = content
     )
 }
@@ -71,6 +73,7 @@ fun SaltTheme(
     dimens: SaltDimens = SaltTheme.dimens,
     shapes: SaltShapes = SaltTheme.shapes,
     material: SaltMaterial = SaltTheme.material,
+    basicScreenStyle: BasicScreenStyle = SaltTheme.basicScreenStyle,
     content: @Composable () -> Unit
 ) {
     val materialType = material.type
@@ -145,6 +148,12 @@ object SaltTheme {
         @Composable
         @ReadOnlyComposable
         get() = LocalSaltMaterial.current
+
+    @UnstableSaltUiApi
+    val basicScreenStyle: BasicScreenStyle
+        @Composable
+        @ReadOnlyComposable
+        get() = LocalBasicScreenStyle.current
 }
 
 private val LocalSaltConfigs = staticCompositionLocalOf { SaltConfigs.default() }
@@ -159,3 +168,6 @@ private val LocalSaltShapes = staticCompositionLocalOf { SaltShapes.default() }
 
 @UnstableSaltUiApi
 private val LocalSaltMaterial = staticCompositionLocalOf { SaltMaterial.default() }
+
+@UnstableSaltUiApi
+private val LocalBasicScreenStyle = staticCompositionLocalOf { BasicScreenStyle.default() }
