@@ -395,8 +395,6 @@ private fun DesktopTitleBar(
             if (title != null) {
                 Text(
                     text = title,
-                    modifier = Modifier
-                        .alignByBaseline(),
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Medium
                 )
@@ -405,8 +403,6 @@ private fun DesktopTitleBar(
                 Spacer(Modifier.width(8.dp))
                 Text(
                     text = subtitle,
-                    modifier = Modifier
-                        .alignByBaseline(),
                     color = SaltTheme.colors.subText,
                     fontSize = 14.sp,
                     style = SaltTheme.textStyles.sub
