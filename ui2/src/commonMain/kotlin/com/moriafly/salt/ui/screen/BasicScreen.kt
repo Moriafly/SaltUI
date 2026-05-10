@@ -139,8 +139,11 @@ fun BasicScreen(
     ) {
         val hazeState = rememberHazeState()
 
-        val boxContentPaddingTop =
+        val realTitleBarHeight =
             contentPadding.calculateTopPadding() + BasicScreenDefaults.TitleBarHeight
+
+        val realTitleBarBackdropHeight =
+            realTitleBarHeight + style.titleBarBackdropExtraHeight
 
         Box(
             modifier = Modifier
@@ -148,7 +151,7 @@ fun BasicScreen(
                 .drawWithCache {
                     onDrawWithContent {
                         clipRect(
-                            top = boxContentPaddingTop.toPx()
+                            top = realTitleBarBackdropHeight.toPx()
                         ) {
                             this@onDrawWithContent.drawContent()
                         }
@@ -158,20 +161,19 @@ fun BasicScreen(
         ) {
             val boxContentPaddingValues =
                 PaddingValues(
-                    top = boxContentPaddingTop
+                    top = realTitleBarBackdropHeight
                 )
             content(boxContentPaddingValues)
         }
 
         TitleBarBackdrop(
-            height = boxContentPaddingTop,
+            height = realTitleBarBackdropHeight,
             hazeState = hazeState,
             backdropType = style.titleBarBackdropType
         )
 
         TitleBar(
             actionButton = actionButton,
-            modifier = Modifier,
             title = title,
             subtitle = subtitle,
             toolButtons = toolButtons,
@@ -184,10 +186,13 @@ fun BasicScreen(
  * Visual properties for configuring [BasicScreen] appearance.
  *
  * @param titleBarBackdropType The type of backdrop effect applied behind the title bar.
+ * @param titleBarBackdropExtraHeight Extra height to extend the title bar backdrop below the title
+ * bar.
  */
 @UnstableSaltUiApi
 data class BasicScreenStyle(
-    val titleBarBackdropType: TitleBarBackdropType
+    val titleBarBackdropType: TitleBarBackdropType,
+    val titleBarBackdropExtraHeight: Dp = 0.dp
 ) {
     /**
      * Available backdrop effect types for the title bar.
@@ -226,10 +231,12 @@ data class BasicScreenStyle(
                         }
                     is OS.IOS -> TitleBarBackdropType.Progressive
                     else -> TitleBarBackdropType.Mask
-                }
+                },
+            titleBarBackdropExtraHeight: Dp = 0.dp
         ): BasicScreenStyle =
             BasicScreenStyle(
-                titleBarBackdropType = titleBarBackdropType
+                titleBarBackdropType = titleBarBackdropType,
+                titleBarBackdropExtraHeight = titleBarBackdropExtraHeight
             )
     }
 }
