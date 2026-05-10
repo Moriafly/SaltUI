@@ -48,6 +48,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.coerceAtLeast
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.moriafly.salt.core.os.OS
@@ -280,6 +281,9 @@ private fun TitleBarBackdrop(
 
         BasicScreenStyle.TitleBarBackdropType.Progressive ->
             Modifier
+                .padding(
+                    top = (height - 80.dp).coerceAtLeast(0.dp)
+                )
                 .graphicsLayer {
                     compositingStrategy = CompositingStrategy.Offscreen
                 }
