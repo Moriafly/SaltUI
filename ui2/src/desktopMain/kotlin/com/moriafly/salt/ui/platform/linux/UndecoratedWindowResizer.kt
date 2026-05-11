@@ -31,7 +31,7 @@ import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.Measurable
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.window.WindowDecorationDefaults
+import androidx.compose.ui.unit.dp
 import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.moriafly.salt.ui.window.WindowResizeEdge
 import java.awt.Cursor
