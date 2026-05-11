@@ -46,7 +46,7 @@ internal class UndecoratedWindowResizer(
     private val onResizeEdgeChange: (WindowResizeEdge) -> Unit
 ) {
     var enabled: Boolean by mutableStateOf(false)
-    var resizerThickness: Dp by mutableStateOf(WindowDecorationDefaults.ResizerThickness)
+    var resizerThickness: Dp by mutableStateOf(4.dp)
 
     private var initialPointPos = Point()
     private var initialWindowPos = Point()
