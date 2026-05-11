@@ -261,7 +261,7 @@ internal fun WindowBackgroundBox(
             .thenIf(
                 when (OS.current) {
                     is OS.Windows -> !transparent && backgroundType == SaltWindowBackgroundType.None
-                    else -> true
+                    else -> !transparent
                 }
             ) {
                 background(SaltTheme.colors.background)
