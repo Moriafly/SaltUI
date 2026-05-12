@@ -31,9 +31,11 @@ import com.moriafly.salt.ui.Icon
 import com.moriafly.salt.ui.Item
 import com.moriafly.salt.ui.ItemInfo
 import com.moriafly.salt.ui.ItemInfoType
+import com.moriafly.salt.ui.ItemLabelValueContainer
 import com.moriafly.salt.ui.ItemOuterLargeTitle
 import com.moriafly.salt.ui.ItemOuterTip
 import com.moriafly.salt.ui.ItemSwitcher
+import com.moriafly.salt.ui.LabelValue
 import com.moriafly.salt.ui.RoundedColumn
 import com.moriafly.salt.ui.SaltTheme
 import com.moriafly.salt.ui.Text
@@ -145,6 +147,35 @@ fun MainScreen() {
                     },
                     text = "About"
                 )
+            }
+
+            RoundedColumn {
+                ItemLabelValueContainer {
+                    LabelValue(
+                        label = "Version",
+                        value = "3.0"
+                    )
+                    LabelValue(
+                        label = "Developer",
+                        value = "Moriafly"
+                    )
+                    LabelValue(
+                        label = "Year",
+                        value = "2026"
+                    )
+                    LabelValue(
+                        label = "设备名称",
+                        value = "测试 DESKTOP"
+                    )
+                    LabelValue(
+                        label = "处理器",
+                        value = "测试 AMD"
+                    )
+                    LabelValue(
+                        label = "产品 ID",
+                        value = "测试 ABC"
+                    )
+                }
             }
 
             ItemOuterTip(

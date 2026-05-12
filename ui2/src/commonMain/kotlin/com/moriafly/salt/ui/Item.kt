@@ -23,6 +23,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
@@ -930,5 +931,28 @@ fun ItemInfo(
                 .innerPadding(horizontal = false),
             color = SaltTheme.colors.text
         )
+    }
+}
+
+/**
+ * Build a container for [LabelValue] items in the content interface.
+ *
+ * Provides internal padding and vertical spacing for stacking multiple [LabelValue] rows.
+ *
+ * @param modifier [Modifier] to apply to this layout node.
+ * @param content Composable content, typically multiple [LabelValue] items.
+ */
+@UnstableSaltUiApi
+@Composable
+fun ItemLabelValueContainer(
+    modifier: Modifier = Modifier,
+    content: @Composable () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .innerPadding(),
+        verticalArrangement = Arrangement.spacedBy(6.dp)
+    ) {
+        content()
     }
 }
