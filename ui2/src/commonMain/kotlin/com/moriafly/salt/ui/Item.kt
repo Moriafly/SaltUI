@@ -906,21 +906,9 @@ fun ItemInfo(
             contentDescription = null,
             colorFilter = ColorFilter.tint(
                 when (infoType) {
-                    ItemInfoType.Success -> if (SaltTheme.configs.isDarkTheme) {
-                        SaltPalette.SuccessDarkIcon
-                    } else {
-                        SaltPalette.SuccessLightIcon
-                    }
-                    ItemInfoType.Warning -> if (SaltTheme.configs.isDarkTheme) {
-                        SaltPalette.WarningDarkIcon
-                    } else {
-                        SaltPalette.WarningLightIcon
-                    }
-                    ItemInfoType.Error -> if (SaltTheme.configs.isDarkTheme) {
-                        SaltPalette.ErrorDarkIcon
-                    } else {
-                        SaltPalette.ErrorLightIcon
-                    }
+                    ItemInfoType.Success -> SaltTheme.colors.success
+                    ItemInfoType.Warning -> SaltTheme.colors.warning
+                    ItemInfoType.Error -> SaltTheme.colors.error
                 }
             )
         )
