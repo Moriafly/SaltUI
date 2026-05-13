@@ -37,8 +37,8 @@ import dev.chrisbanes.haze.HazeState
 fun SaltTheme(
     configs: SaltConfigs = SaltConfigs.default(),
     dynamicColors: SaltDynamicColors = SaltDynamicColors(
-        light = lightSaltColors(),
-        dark = darkSaltColors()
+        light = SaltColors.defaultLight(),
+        dark = SaltColors.defaultDark()
     ),
     textStyles: SaltTextStyles = SaltTheme.textStyles,
     dimens: SaltDimens = SaltTheme.dimens,
@@ -66,8 +66,8 @@ fun SaltTheme(
 fun SaltTheme(
     configs: SaltConfigs = SaltConfigs.default(),
     dynamicColors: SaltDynamicColors = SaltDynamicColors(
-        light = lightSaltColors(),
-        dark = darkSaltColors()
+        light = SaltColors.defaultLight(),
+        dark = SaltColors.defaultDark()
     ),
     textStyles: SaltTextStyles = SaltTheme.textStyles,
     dimens: SaltDimens = SaltTheme.dimens,

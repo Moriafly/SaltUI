@@ -43,10 +43,14 @@ data class SaltDynamicColors(
     val dark: SaltColors
 ) {
     companion object {
-        fun default(): SaltDynamicColors = SaltDynamicColors(
-            light = lightSaltColors(),
-            dark = darkSaltColors()
-        )
+        fun default(
+            light: SaltColors = SaltColors.defaultLight(),
+            dark: SaltColors = SaltColors.defaultDark()
+        ): SaltDynamicColors =
+            SaltDynamicColors(
+                light = light,
+                dark = dark
+            )
     }
 }
 
@@ -101,8 +105,58 @@ class SaltColors(
         stroke = stroke,
         onHighlight = onHighlight
     )
+
+    companion object {
+        fun defaultLight(
+            highlight: Color = Color(0xFF0470E6),
+            text: Color = Color(0xFF1E1715),
+            subText: Color = Color(0xFF8C8C8C),
+            background: Color = Color(0xFFF3F3F3),
+            subBackground: Color = Color(0x80FFFFFF),
+            popup: Color = subBackground.compositeOver(background),
+            stroke: Color = subText.copy(alpha = 0.15f),
+            onHighlight: Color = Color.White
+        ): SaltColors = SaltColors(
+            highlight = highlight,
+            text = text,
+            subText = subText,
+            background = background,
+            subBackground = subBackground,
+            popup = popup,
+            stroke = stroke,
+            onHighlight = onHighlight
+        )
+
+        fun defaultDark(
+            highlight: Color = Color(0xFF0088FF),
+            text: Color = Color(0xFFEBEEF1),
+            subText: Color = Color(0xBFE1E6EB),
+            background: Color = Color(0xFF202020),
+            subBackground: Color = Color(0x08FFFFFF),
+            popup: Color = subBackground.compositeOver(background),
+            stroke: Color = subText.copy(alpha = 0.1f),
+            onHighlight: Color = Color.White
+        ): SaltColors = SaltColors(
+            highlight = highlight,
+            text = text,
+            subText = subText,
+            background = background,
+            subBackground = subBackground,
+            popup = popup,
+            stroke = stroke,
+            onHighlight = onHighlight
+        )
+    }
 }
 
+@Deprecated(
+    message = "Use SaltColors.defaultLight() instead",
+    replaceWith = ReplaceWith(
+        expression = "SaltColors.defaultLight()",
+        imports = arrayOf("com.moriafly.salt.ui.SaltColors")
+    ),
+    level = DeprecationLevel.WARNING
+)
 fun lightSaltColors(
     highlight: Color = Color(0xFF0470E6),
     text: Color = Color(0xFF1E1715),
@@ -123,6 +177,14 @@ fun lightSaltColors(
     onHighlight = onHighlight
 )
 
+@Deprecated(
+    message = "Use SaltColors.defaultDark() instead",
+    replaceWith = ReplaceWith(
+        expression = "SaltColors.defaultDark()",
+        imports = arrayOf("com.moriafly.salt.ui.SaltColors")
+    ),
+    level = DeprecationLevel.WARNING
+)
 fun darkSaltColors(
     highlight: Color = Color(0xFF0088FF),
     text: Color = Color(0xFFEBEEF1),
