@@ -313,6 +313,9 @@ private fun TitleBarBackdrop(
         modifier = modifier
             .fillMaxWidth()
             .height(height)
+            // The backdrop spans the full title bar area, so it handles gesture
+            // interception here to prevent click-through to the content below
+            .pointerInput(Unit) {}
             .then(backdropModifier)
     )
 }
@@ -382,8 +385,7 @@ private fun DesktopTitleBar(
                     end = contentPadding.calculateEndPadding(layoutDirection) + 12.dp
                 )
             )
-            .height(BasicScreenDefaults.TitleBarHeight)
-            .pointerInput(Unit) {},
+            .height(BasicScreenDefaults.TitleBarHeight),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Row(
@@ -451,8 +453,7 @@ private fun MobileTitleBar(
                     end = contentPadding.calculateEndPadding(layoutDirection) + 8.dp
                 )
             )
-            .height(BasicScreenDefaults.TitleBarHeight)
-            .pointerInput(Unit) {},
+            .height(BasicScreenDefaults.TitleBarHeight),
         verticalAlignment = Alignment.CenterVertically
     ) {
         actionButton?.invoke()
