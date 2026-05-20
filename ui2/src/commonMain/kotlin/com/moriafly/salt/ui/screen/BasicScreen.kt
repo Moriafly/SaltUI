@@ -79,6 +79,7 @@ import dev.chrisbanes.haze.rememberHazeState
  * @param subtitle Optional subtitle text displayed below the title.
  * @param toolButtons Optional composable for trailing action buttons in the title bar.
  * @param contentPadding Padding values applied to the outer layout.
+ * @param overlay Optional content drawn above the main content and below the title bar.
  * @param style Screen-level visual properties such as title bar backdrop type.
  * @param content The main content of the screen, receiving inner padding values.
  */
@@ -91,6 +92,7 @@ fun BasicScreen(
     subtitle: String? = null,
     toolButtons: (@Composable () -> Unit)? = null,
     contentPadding: PaddingValues = BasicScreenDefaults.ContentPadding,
+    overlay: @Composable (BoxScope.(PaddingValues) -> Unit)? = null,
     style: BasicScreenStyle = BasicScreenStyle.default(),
     content: @Composable BoxScope.(PaddingValues) -> Unit
 ) {
@@ -105,6 +107,7 @@ fun BasicScreen(
         subtitle = subtitle,
         toolButtons = toolButtons,
         contentPadding = contentPadding,
+        overlay = overlay,
         style = style,
         content = content
     )
@@ -119,6 +122,7 @@ fun BasicScreen(
  * @param subtitle Optional subtitle text displayed below the title.
  * @param toolButtons Optional composable for trailing action buttons in the title bar.
  * @param contentPadding Padding values applied to the outer layout.
+ * @param overlay Optional content drawn above the main content and below the title bar.
  * @param style Screen-level visual properties such as title bar backdrop type.
  * @param content The main content of the screen, receiving inner padding values.
  */
@@ -131,6 +135,7 @@ fun BasicScreen(
     subtitle: String? = null,
     toolButtons: (@Composable () -> Unit)? = null,
     contentPadding: PaddingValues = BasicScreenDefaults.ContentPadding,
+    overlay: @Composable (BoxScope.(PaddingValues) -> Unit)? = null,
     style: BasicScreenStyle = SaltTheme.basicScreenStyle,
     content: @Composable BoxScope.(PaddingValues) -> Unit
 ) {
@@ -146,6 +151,11 @@ fun BasicScreen(
         val realTitleBarBackdropHeight =
             realTitleBarHeight + style.titleBarBackdropExtraHeight
 
+        val boxContentPaddingValues =
+            PaddingValues(
+                top = realTitleBarBackdropHeight
+            )
+
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -160,10 +170,6 @@ fun BasicScreen(
                 }
                 .hazeSource(hazeState)
         ) {
-            val boxContentPaddingValues =
-                PaddingValues(
-                    top = realTitleBarBackdropHeight
-                )
             content(boxContentPaddingValues)
         }
 
@@ -180,6 +186,8 @@ fun BasicScreen(
             toolButtons = toolButtons,
             contentPadding = contentPadding
         )
+
+        overlay?.invoke(this, boxContentPaddingValues)
     }
 }
 
