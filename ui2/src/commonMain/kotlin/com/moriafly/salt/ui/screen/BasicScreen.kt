@@ -404,7 +404,8 @@ private fun DesktopTitleBar(
                 Text(
                     text = title,
                     fontSize = 24.sp,
-                    fontWeight = FontWeight.Medium
+                    fontWeight = FontWeight.Medium,
+                    maxLines = 1
                 )
             }
             if (subtitle != null) {
@@ -413,6 +414,7 @@ private fun DesktopTitleBar(
                     text = subtitle,
                     color = SaltTheme.colors.subText,
                     fontSize = 14.sp,
+                    maxLines = 1,
                     style = SaltTheme.textStyles.sub
                 )
             }
@@ -465,13 +467,15 @@ private fun MobileTitleBar(
                 Text(
                     text = title,
                     fontWeight = FontWeight.Medium,
-                    fontSize = 17.sp
+                    fontSize = 17.sp,
+                    maxLines = 1
                 )
             }
             if (subtitle != null) {
                 Text(
                     text = subtitle,
                     color = SaltTheme.colors.subText,
+                    maxLines = 1,
                     style = SaltTheme.textStyles.sub
                 )
             }
