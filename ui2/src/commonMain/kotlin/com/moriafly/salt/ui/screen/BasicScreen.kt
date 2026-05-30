@@ -421,8 +421,6 @@ private fun DesktopTitleBar(
         }
 
         Row(
-            modifier = Modifier
-                .weight(1f),
             horizontalArrangement = Arrangement.spacedBy(
                 space = 8.dp,
                 alignment = Alignment.End
@@ -462,7 +460,10 @@ private fun MobileTitleBar(
 
         Spacer(Modifier.width(8.dp))
 
-        Column {
+        Column(
+            modifier = Modifier
+                .weight(1f)
+        ) {
             if (title != null) {
                 Text(
                     text = title,
@@ -482,8 +483,6 @@ private fun MobileTitleBar(
         }
 
         Row(
-            modifier = Modifier
-                .weight(1f),
             horizontalArrangement = Arrangement.spacedBy(
                 space = 4.dp,
                 alignment = Alignment.End
