@@ -18,6 +18,9 @@
 package com.moriafly.salt.ui.screen
 
 import androidx.compose.animation.core.EaseInOut
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.gestures.BringIntoViewSpec
+import androidx.compose.foundation.gestures.LocalBringIntoViewSpec
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
@@ -35,6 +38,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithCache
@@ -45,6 +50,7 @@ import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
@@ -67,6 +73,7 @@ import dev.chrisbanes.haze.blur.blurEffect
 import dev.chrisbanes.haze.hazeEffect
 import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.rememberHazeState
+import kotlin.math.abs
 
 /**
  * A basic screen layout with a title bar and a back button.
@@ -126,6 +133,7 @@ fun BasicScreen(
  * @param style Screen-level visual properties such as title bar backdrop type.
  * @param content The main content of the screen, receiving inner padding values.
  */
+@OptIn(ExperimentalFoundationApi::class)
 @UnstableSaltUiApi
 @Composable
 fun BasicScreen(
@@ -156,6 +164,33 @@ fun BasicScreen(
                 top = realTitleBarBackdropHeight
             )
 
+        // Adjust the bring-into-view spec so that scrollable containers
+        // inside the content area account for the content padding overlay
+        // Without this, bring-into-view requests may place items
+        // behind the title bar instead of below it
+        val density = LocalDensity.current
+        val adjustedBringIntoViewSpec = remember(boxContentPaddingValues, density) {
+            object : BringIntoViewSpec {
+                override fun calculateScrollDistance(
+                    offset: Float,
+                    size: Float,
+                    containerSize: Float
+                ): Float {
+                    val topPx =
+                        with(density) { boxContentPaddingValues.calculateTopPadding().toPx() }
+                    val adjustedOffset = offset - topPx
+                    val adjustedEnd = adjustedOffset + size
+                    val adjustedSize = containerSize - topPx
+                    return when {
+                        adjustedOffset >= 0 && adjustedEnd <= adjustedSize -> 0f
+                        adjustedOffset < 0 && adjustedEnd > adjustedSize -> 0f
+                        abs(adjustedOffset) < abs(adjustedEnd - adjustedSize) -> adjustedOffset
+                        else -> adjustedEnd - adjustedSize
+                    }
+                }
+            }
+        }
+
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -170,7 +205,11 @@ fun BasicScreen(
                 }
                 .hazeSource(hazeState)
         ) {
-            content(boxContentPaddingValues)
+            CompositionLocalProvider(
+                LocalBringIntoViewSpec provides adjustedBringIntoViewSpec
+            ) {
+                content(boxContentPaddingValues)
+            }
         }
 
         TitleBarBackdrop(
