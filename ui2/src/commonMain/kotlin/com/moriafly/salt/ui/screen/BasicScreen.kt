@@ -36,6 +36,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.plus
 import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -153,43 +154,53 @@ fun BasicScreen(
     ) {
         val hazeState = rememberHazeState()
 
-        val realTitleBarHeight =
-            contentPadding.calculateTopPadding() + BasicScreenDefaults.TitleBarHeight
-
-        val realTitleBarBackdropHeight =
-            realTitleBarHeight + style.titleBarBackdropExtraHeight
-
         val boxContentPaddingValues =
-            PaddingValues(
-                top = realTitleBarBackdropHeight
-            )
+            contentPadding +
+                PaddingValues(
+                    top = BasicScreenDefaults.TitleBarHeight + style.titleBarBackdropExtraHeight
+                )
+
+        val realTitleBarBackdropHeight = boxContentPaddingValues.calculateTopPadding()
 
         // Adjust the bring-into-view spec so that scrollable containers
         // inside the content area account for the content padding overlay
         // Without this, bring-into-view requests may place items
         // behind the title bar instead of below it
         val density = LocalDensity.current
-        val adjustedBringIntoViewSpec = remember(boxContentPaddingValues, density) {
-            object : BringIntoViewSpec {
-                override fun calculateScrollDistance(
-                    offset: Float,
-                    size: Float,
-                    containerSize: Float
-                ): Float {
-                    val topPx =
-                        with(density) { boxContentPaddingValues.calculateTopPadding().toPx() }
-                    val adjustedOffset = offset - topPx
-                    val adjustedEnd = adjustedOffset + size
-                    val adjustedSize = containerSize - topPx
-                    return when {
-                        adjustedOffset >= 0 && adjustedEnd <= adjustedSize -> 0f
-                        adjustedOffset < 0 && adjustedEnd > adjustedSize -> 0f
-                        abs(adjustedOffset) < abs(adjustedEnd - adjustedSize) -> adjustedOffset
-                        else -> adjustedEnd - adjustedSize
+        val layoutDirection = LocalLayoutDirection.current
+        val adjustedBringIntoViewSpec =
+            remember(boxContentPaddingValues, density, layoutDirection) {
+                object : BringIntoViewSpec {
+                    override fun calculateScrollDistance(
+                        offset: Float,
+                        size: Float,
+                        containerSize: Float
+                    ): Float {
+                        val topPx = with(density) {
+                            boxContentPaddingValues.calculateTopPadding().toPx()
+                        }
+                        val bottomPx = with(density) {
+                            boxContentPaddingValues.calculateBottomPadding().toPx()
+                        }
+                        val startPx = with(density) {
+                            boxContentPaddingValues.calculateStartPadding(layoutDirection).toPx()
+                        }
+                        val endPx = with(density) {
+                            boxContentPaddingValues.calculateEndPadding(layoutDirection).toPx()
+                        }
+                        val safeStart = maxOf(topPx, startPx)
+                        val safeEnd = containerSize - maxOf(bottomPx, endPx)
+                        val safeSize = safeEnd - safeStart
+                        val trailing = offset + size
+                        return when {
+                            offset >= safeStart && trailing <= safeEnd -> 0f
+                            size > safeSize -> 0f
+                            abs(offset - safeStart) < abs(trailing - safeEnd) -> offset - safeStart
+                            else -> trailing - safeEnd
+                        }
                     }
                 }
             }
-        }
 
         Box(
             modifier = Modifier
