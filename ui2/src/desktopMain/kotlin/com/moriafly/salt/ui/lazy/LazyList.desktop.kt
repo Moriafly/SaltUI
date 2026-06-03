@@ -18,4 +18,4 @@ package com.moriafly.salt.ui.lazy
 
 import androidx.compose.runtime.Composable
 
-@Composable internal actual fun defaultLazyListBeyondBoundsItemCount(): Int = 0
+@Composable internal actual fun defaultLazyListBeyondBoundsItemCount(): Int = 1
