@@ -380,6 +380,7 @@ fun LazyRow(
 /**
  * Allow use [beyondBoundsItemCount].
  */
+@UnstableSaltUiApi
 @Composable
 fun LazyColumn(
     modifier: Modifier = Modifier,
