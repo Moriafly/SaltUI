@@ -138,6 +138,12 @@ fun MainScreen() {
                     },
                     text = "Item"
                 )
+                Item(
+                    onClick = {
+                        navBackStack.add(ScreenRoute.Dialog)
+                    },
+                    text = "Dialog"
+                )
             }
 
             RoundedColumn {

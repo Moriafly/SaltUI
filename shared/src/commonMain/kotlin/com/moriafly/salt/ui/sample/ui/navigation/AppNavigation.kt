@@ -31,6 +31,7 @@ import androidx.navigation3.scene.Scene
 import androidx.navigation3.ui.NavDisplay
 import androidx.navigationevent.NavigationEvent.SwipeEdge
 import com.moriafly.salt.ui.sample.ui.screen.AboutScreen
+import com.moriafly.salt.ui.sample.ui.screen.DialogScreen
 import com.moriafly.salt.ui.sample.ui.screen.LicenseScreen
 import com.moriafly.salt.ui.sample.ui.screen.ListScreen
 import com.moriafly.salt.ui.sample.ui.screen.MainScreen
@@ -118,6 +119,7 @@ fun AppNavigation(
             }
             entry<ScreenRoute.License> { LicenseScreen() }
             entry<ScreenRoute.List> { ListScreen() }
+            entry<ScreenRoute.Dialog> { DialogScreen() }
         }
     )
 }
