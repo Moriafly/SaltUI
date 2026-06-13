@@ -55,8 +55,10 @@ internal fun FrameWindowScope.MacOSSaltWindowFrame(
             )
         }
 
-        LaunchedEffect(properties.captionBarHeight) {
-            styler.disableTitleBar(properties.captionBarHeight.value)
+        LaunchedEffect(window.isUndecorated, properties.captionBarHeight) {
+            if (!window.isUndecorated) {
+                styler.disableTitleBar(properties.captionBarHeight.value)
+            }
         }
 
         content()
