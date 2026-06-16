@@ -17,7 +17,7 @@ fun MaterialScreen() {
     ) {
         ItemOuterTitle("Title Bar Backdrop Type")
         RoundedColumn {
-            BasicScreenStyle.TitleBarBackdropType.supportStyles().forEach { style ->
+            BasicScreenStyle.TitleBarBackdropType.supportedEntries().forEach { style ->
                 ItemCheck(
                     state = style == AppConfig.titleBarBackdropType,
                     onChange = {

@@ -275,9 +275,9 @@ data class BasicScreenStyle(
         Progressive;
 
         /**
-         * TODO Better function name.
+         * Returns whether this backdrop type is supported on the current platform.
          */
-        fun support(): Boolean {
+        fun isSupported(): Boolean {
             val os = OS.current
 
             return when (this) {
@@ -302,10 +302,10 @@ data class BasicScreenStyle(
                 }
 
             /**
-             * TODO Better function name.
+             * Returns the backdrop types supported on the current platform.
              */
-            fun supportStyles(): List<TitleBarBackdropType> =
-                TitleBarBackdropType.entries.filter { it.support() }
+            fun supportedEntries(): List<TitleBarBackdropType> =
+                TitleBarBackdropType.entries.filter { it.isSupported() }
         }
     }
 
