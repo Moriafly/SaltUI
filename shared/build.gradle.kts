@@ -95,6 +95,7 @@ kotlin {
             implementation(libs.androidx.navigationevent.compose)
 
             api(project(":ui2"))
+            api(project(":ui-navigation"))
         }
 
         desktopMain.dependencies {

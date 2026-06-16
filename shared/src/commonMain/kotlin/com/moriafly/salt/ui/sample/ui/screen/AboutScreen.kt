@@ -15,37 +15,26 @@
 
 package com.moriafly.salt.ui.sample.ui.screen
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import com.moriafly.salt.ui.Icon
 import com.moriafly.salt.ui.Item
 import com.moriafly.salt.ui.ItemOuterLargeTitle
 import com.moriafly.salt.ui.RoundedColumn
 import com.moriafly.salt.ui.UnstableSaltUiApi
-import com.moriafly.salt.ui.rememberScrollState
 import com.moriafly.salt.ui.sample.ui.icons.Like
 import com.moriafly.salt.ui.sample.ui.icons.SimpleIcons
 import com.moriafly.salt.ui.sample.ui.icons.Star
 import com.moriafly.salt.ui.sample.ui.navigation.LocalNavBackStack
 import com.moriafly.salt.ui.sample.ui.navigation.ScreenRoute
-import com.moriafly.salt.ui.screen.BasicScreen
+import com.moriafly.salt.ui.sample.ui.screen.basic.BasicScreenColumn
 import com.moriafly.salt.ui.screen.TitleBarButton
-import com.moriafly.salt.ui.verticalScroll
 
 @Suppress("ktlint:compose:modifier-missing-check")
 @OptIn(UnstableSaltUiApi::class)
 @Composable
 fun AboutScreen() {
-    val navBackStack = LocalNavBackStack.current
-    BasicScreen(
-        onBack = {
-            navBackStack.removeLastOrNull()
-        },
+    BasicScreenColumn(
         title = "About",
         toolButtons = {
             TitleBarButton(
@@ -65,27 +54,20 @@ fun AboutScreen() {
                 )
             }
         }
-    ) { contentPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-        ) {
-            Spacer(Modifier.height(contentPadding.calculateTopPadding()))
+    ) {
+        ItemOuterLargeTitle(
+            text = "Salt UI 3",
+            sub = "UI Components for Compose Multiplatform (Android/Desktop/iOS)"
+        )
 
-            ItemOuterLargeTitle(
-                text = "Salt UI 3",
-                sub = "UI Components for Compose Multiplatform (Android/Desktop/iOS)"
+        RoundedColumn {
+            val navBackStack = LocalNavBackStack.current
+            Item(
+                onClick = {
+                    navBackStack.add(ScreenRoute.License)
+                },
+                text = "License"
             )
-
-            RoundedColumn {
-                Item(
-                    onClick = {
-                        navBackStack.add(ScreenRoute.License)
-                    },
-                    text = "License"
-                )
-            }
         }
     }
 }

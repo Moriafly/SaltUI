@@ -16,10 +16,8 @@
 package com.moriafly.salt.ui.sample.ui.screen
 
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.windowInsetsBottomHeight
+import androidx.compose.foundation.layout.plus
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.moriafly.salt.ui.RoundedColumn
@@ -27,9 +25,9 @@ import com.moriafly.salt.ui.RoundedColumnType
 import com.moriafly.salt.ui.SaltDimens
 import com.moriafly.salt.ui.Text
 import com.moriafly.salt.ui.UnstableSaltUiApi
-import com.moriafly.salt.ui.ext.safeMainCompat
 import com.moriafly.salt.ui.innerPadding
 import com.moriafly.salt.ui.lazy.LazyColumn
+import com.moriafly.salt.ui.sample.ui.screen.basic.BasicScreenBox
 
 @Suppress("ktlint:compose:modifier-missing-check")
 @OptIn(UnstableSaltUiApi::class)
@@ -37,13 +35,14 @@ import com.moriafly.salt.ui.lazy.LazyColumn
 fun ListScreen() {
     BasicScreenBox(
         title = "List"
-    ) {
+    ) { contentPadding ->
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize(),
-            contentPadding = PaddingValues(
-                vertical = SaltDimens.RoundedColumnInListEdgePadding
-            )
+            contentPadding = contentPadding +
+                PaddingValues(
+                    vertical = SaltDimens.RoundedColumnInListEdgePadding
+                )
         ) {
             items(100) {
                 RoundedColumn(
@@ -55,10 +54,6 @@ fun ListScreen() {
                             .innerPadding()
                     )
                 }
-            }
-
-            item {
-                Spacer(Modifier.windowInsetsBottomHeight(WindowInsets.safeMainCompat))
             }
         }
     }

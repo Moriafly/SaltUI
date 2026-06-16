@@ -35,6 +35,7 @@ import com.moriafly.salt.ui.sample.ui.screen.DialogScreen
 import com.moriafly.salt.ui.sample.ui.screen.LicenseScreen
 import com.moriafly.salt.ui.sample.ui.screen.ListScreen
 import com.moriafly.salt.ui.sample.ui.screen.MainScreen
+import com.moriafly.salt.ui.sample.ui.screen.MaterialScreen
 
 val LocalNavBackStack = compositionLocalOf<NavBackStack<NavKey>> {
     error("LocalNavBackStack is not provided")
@@ -120,6 +121,7 @@ fun AppNavigation(
             entry<ScreenRoute.License> { LicenseScreen() }
             entry<ScreenRoute.List> { ListScreen() }
             entry<ScreenRoute.Dialog> { DialogScreen() }
+            entry<ScreenRoute.Material> { MaterialScreen() }
         }
     )
 }

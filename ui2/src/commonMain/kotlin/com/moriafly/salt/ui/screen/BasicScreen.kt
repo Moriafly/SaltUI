@@ -40,6 +40,7 @@ import androidx.compose.foundation.layout.plus
 import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -101,7 +102,7 @@ fun BasicScreen(
     toolButtons: (@Composable () -> Unit)? = null,
     contentPadding: PaddingValues = BasicScreenDefaults.ContentPadding,
     overlay: @Composable (BoxScope.(PaddingValues) -> Unit)? = null,
-    style: BasicScreenStyle = BasicScreenStyle.default(),
+    style: BasicScreenStyle = SaltTheme.basicScreenStyle,
     content: @Composable BoxScope.(PaddingValues) -> Unit
 ) {
     BasicScreen(
@@ -249,6 +250,7 @@ fun BasicScreen(
  * bar.
  */
 @UnstableSaltUiApi
+@Immutable
 data class BasicScreenStyle(
     val titleBarBackdropType: TitleBarBackdropType,
     val titleBarBackdropExtraHeight: Dp = 0.dp
@@ -270,7 +272,41 @@ data class BasicScreenStyle(
         /**
          * Progressive blur that fades toward the bottom.
          */
-        Progressive
+        Progressive;
+
+        /**
+         * TODO Better function name.
+         */
+        fun support(): Boolean {
+            val os = OS.current
+
+            return when (this) {
+                None -> true
+                Mask -> os !is OS.Android || os.versionSdk >= OS.Android.ANDROID_12
+                Progressive ->
+                    os is OS.IOS || (os is OS.Android && os.versionSdk >= OS.Android.ANDROID_13)
+            }
+        }
+
+        companion object {
+            fun default(): TitleBarBackdropType =
+                when (val os = OS.current) {
+                    is OS.Android ->
+                        when {
+                            os.versionSdk >= OS.Android.ANDROID_13 -> Progressive
+                            os.versionSdk >= OS.Android.ANDROID_12 -> Mask
+                            else -> None
+                        }
+                    is OS.IOS -> Progressive
+                    else -> Mask
+                }
+
+            /**
+             * TODO Better function name.
+             */
+            fun supportStyles(): List<TitleBarBackdropType> =
+                TitleBarBackdropType.entries.filter { it.support() }
+        }
     }
 
     companion object {
@@ -278,19 +314,7 @@ data class BasicScreenStyle(
          * Returns default properties based on the current platform.
          */
         fun default(
-            titleBarBackdropType: TitleBarBackdropType =
-                when (val os = OS.current) {
-                    is OS.Android ->
-                        when {
-                            os.versionSdk >= OS.Android.ANDROID_13 ->
-                                TitleBarBackdropType.Progressive
-                            os.versionSdk >= OS.Android.ANDROID_12 ->
-                                TitleBarBackdropType.Mask
-                            else -> TitleBarBackdropType.None
-                        }
-                    is OS.IOS -> TitleBarBackdropType.Progressive
-                    else -> TitleBarBackdropType.Mask
-                },
+            titleBarBackdropType: TitleBarBackdropType = TitleBarBackdropType.default(),
             titleBarBackdropExtraHeight: Dp = 0.dp
         ): BasicScreenStyle =
             BasicScreenStyle(
@@ -555,16 +579,11 @@ object BasicScreenDefaults {
     internal val TitleBarHeight: Dp = 56.dp
 
     /**
-     * Default content padding that respects the safe area insets at the top.
+     * Default content padding that respects the safe area.
      */
     val ContentPadding: PaddingValues
         @Composable
-        get() {
-            val topPadding = WindowInsets.safeMainIgnoringVisibility
-                .asPaddingValues()
-                .calculateTopPadding()
-            return PaddingValues(top = topPadding)
-        }
+        get() = WindowInsets.safeMainIgnoringVisibility.asPaddingValues()
 
     /**
      * A default back button using the Salt back icon.

@@ -20,12 +20,11 @@ package com.moriafly.salt.ui.sample.util
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import com.moriafly.salt.ui.UnstableSaltUiApi
+import com.moriafly.salt.ui.screen.BasicScreenStyle
 
+@OptIn(UnstableSaltUiApi::class)
 object AppConfig {
     var isDarkTheme by mutableStateOf(false)
-        private set
-
-    fun updateIsDarkTheme(value: Boolean) {
-        isDarkTheme = value
-    }
+    var titleBarBackdropType by mutableStateOf(BasicScreenStyle.TitleBarBackdropType.default())
 }

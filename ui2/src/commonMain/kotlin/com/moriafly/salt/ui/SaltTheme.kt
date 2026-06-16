@@ -89,6 +89,7 @@ fun SaltTheme(
         LocalSaltDimens provides dimens,
         LocalSaltShapes provides shapes,
         LocalSaltMaterial provides material,
+        LocalBasicScreenStyle provides basicScreenStyle,
         LocalHazeState provides hazeState
     ) {
         content()

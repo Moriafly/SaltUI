@@ -20,8 +20,11 @@ package com.moriafly.salt.ui.sample.ui.theme
 import androidx.compose.runtime.Composable
 import com.moriafly.salt.ui.SaltConfigs
 import com.moriafly.salt.ui.SaltTheme
+import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.moriafly.salt.ui.sample.util.AppConfig
+import com.moriafly.salt.ui.screen.BasicScreenStyle
 
+@OptIn(UnstableSaltUiApi::class)
 @Composable
 fun AppTheme(
     isDarkTheme: Boolean = AppConfig.isDarkTheme,
@@ -30,6 +33,9 @@ fun AppTheme(
     SaltTheme(
         configs = SaltConfigs.default(
             isDarkTheme = isDarkTheme
+        ),
+        basicScreenStyle = BasicScreenStyle.default(
+            titleBarBackdropType = AppConfig.titleBarBackdropType
         ),
         content = content
     )

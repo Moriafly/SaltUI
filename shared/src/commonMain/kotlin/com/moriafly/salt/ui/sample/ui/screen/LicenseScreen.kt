@@ -18,8 +18,11 @@ package com.moriafly.salt.ui.sample.ui.screen
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.moriafly.salt.ui.Text
+import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.moriafly.salt.ui.outerPadding
+import com.moriafly.salt.ui.sample.ui.screen.basic.BasicScreenColumn
 
+@OptIn(UnstableSaltUiApi::class)
 @Suppress("ktlint:compose:modifier-missing-check")
 @Composable
 fun LicenseScreen() {
