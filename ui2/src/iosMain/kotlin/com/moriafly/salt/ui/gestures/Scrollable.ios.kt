@@ -17,9 +17,20 @@
 
 package com.moriafly.salt.ui.gestures
 
+import androidx.compose.animation.core.generateDecayAnimationSpec
 import androidx.compose.foundation.gestures.FlingBehavior
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import com.moriafly.salt.ui.gestures.cupertino.CupertinoFlingBehavior
+import com.moriafly.salt.ui.gestures.cupertino.CupertinoScrollDecayAnimationSpec
+
+internal actual fun platformScrollableDefaultFlingBehavior(): ScrollableDefaultFlingBehavior =
+    CupertinoFlingBehavior(CupertinoScrollDecayAnimationSpec().generateDecayAnimationSpec())
 
 @Composable
 internal actual fun rememberPlatformDefaultFlingBehavior(): FlingBehavior =
-    androidx.compose.foundation.gestures.ScrollableDefaults.flingBehavior()
+// Unlike other platforms, we don't need to remember it based on density,
+    // because it's density independent
+    remember {
+        platformScrollableDefaultFlingBehavior()
+    }

@@ -24,8 +24,7 @@ import androidx.compose.runtime.remember
 import com.moriafly.salt.ui.gestures.cupertino.CupertinoFlingBehavior
 import com.moriafly.salt.ui.gestures.cupertino.CupertinoScrollDecayAnimationSpec
 
-// TODO FlingBehavior.shouldBeTriggeredByMouseWheel
-internal fun platformScrollableDefaultFlingBehavior(): FlingBehavior =
+internal actual fun platformScrollableDefaultFlingBehavior(): ScrollableDefaultFlingBehavior =
     CupertinoFlingBehavior(CupertinoScrollDecayAnimationSpec().generateDecayAnimationSpec())
 
 @Composable
