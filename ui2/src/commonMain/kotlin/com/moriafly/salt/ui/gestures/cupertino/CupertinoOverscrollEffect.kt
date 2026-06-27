@@ -606,7 +606,7 @@ private class CupertinoOverscrollNode(
                     pointersDown--
                 }
             }
-            assert(pointersDown >= 0) { "pointersDown cannot be negative" }
+            check(pointersDown >= 0) { "pointersDown cannot be negative" }
         }
     }
 
