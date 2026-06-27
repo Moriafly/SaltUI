@@ -19,9 +19,9 @@ package com.moriafly.salt.ui.gestures.cupertino
 import androidx.compose.animation.core.AnimationState
 import androidx.compose.animation.core.DecayAnimationSpec
 import androidx.compose.animation.core.animateDecay
-import androidx.compose.foundation.gestures.FlingBehavior
 import androidx.compose.foundation.gestures.ScrollScope
 import androidx.compose.ui.MotionDurationScale
+import com.moriafly.salt.ui.gestures.ScrollableDefaultFlingBehavior
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.withContext
 import kotlin.math.abs
@@ -35,7 +35,7 @@ internal class CupertinoFlingBehavior(
      * blackbox
      */
     private val velocityThreshold: Float = 500f
-) : FlingBehavior {
+) : ScrollableDefaultFlingBehavior {
     override suspend fun ScrollScope.performFling(initialVelocity: Float): Float {
         if (abs(initialVelocity) < velocityThreshold) {
             return 0f

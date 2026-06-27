@@ -39,7 +39,6 @@ import androidx.compose.foundation.gestures.Orientation.Vertical
 import androidx.compose.foundation.gestures.ScrollLogic
 import androidx.compose.foundation.gestures.ScrollScope
 import androidx.compose.foundation.gestures.ScrollableContainerNode
-import androidx.compose.foundation.gestures.ScrollableDefaultFlingBehavior
 import androidx.compose.foundation.gestures.ScrollableNestedScrollConnection
 import androidx.compose.foundation.gestures.ScrollableState
 import androidx.compose.foundation.gestures.VerticalAxisThresholdAngle
@@ -75,6 +74,7 @@ import androidx.compose.ui.node.requireDensity
 import androidx.compose.ui.semantics.SemanticsPropertyReceiver
 import androidx.compose.ui.semantics.scrollBy
 import androidx.compose.ui.semantics.scrollByOffset
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.util.fastAny
@@ -690,6 +690,17 @@ internal class ScrollingLogic(
     }
 
     fun isVertical(): Boolean = orientation == Vertical
+}
+
+/** Compatibility interface for default fling behaviors that depends on [Density]. */
+internal interface ScrollableDefaultFlingBehavior : FlingBehavior {
+    /**
+     * Update the internal parameters of FlingBehavior in accordance with the new
+     * [androidx.compose.ui.unit.Density] value.
+     *
+     * @param density new density value.
+     */
+    fun updateDensity(density: Density) = Unit
 }
 
 /**
