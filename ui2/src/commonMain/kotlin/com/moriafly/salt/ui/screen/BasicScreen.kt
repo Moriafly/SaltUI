@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Salt UI
  * Copyright (C) 2025 Moriafly
  *
@@ -87,7 +87,10 @@ import kotlin.math.abs
  * @param title Optional title text displayed in the title bar.
  * @param subtitle Optional subtitle text displayed below the title.
  * @param toolButtons Optional composable for trailing action buttons in the title bar.
- * @param contentPadding Padding values applied to the outer layout.
+ * @param contentPadding Padding values applied to the outer layout. The title bar height and the
+ * title bar backdrop extra height are automatically added internally, so callers do not need to
+ * account for them. Only consider extra window-level insets, such as the top [WindowInsets] for
+ * the screen (which is handled by default via [BasicScreenDefaults.ContentPadding]).
  * @param overlay Optional content drawn above the main content and below the title bar.
  * @param style Screen-level visual properties such as title bar backdrop type.
  * @param content The main content of the screen, receiving inner padding values.
@@ -130,7 +133,10 @@ fun BasicScreen(
  * @param title Optional title text displayed in the title bar.
  * @param subtitle Optional subtitle text displayed below the title.
  * @param toolButtons Optional composable for trailing action buttons in the title bar.
- * @param contentPadding Padding values applied to the outer layout.
+ * @param contentPadding Padding values applied to the outer layout. The title bar height and the
+ * title bar backdrop extra height are automatically added internally, so callers do not need to
+ * account for them. Only consider extra window-level insets, such as the top [WindowInsets] for
+ * the screen (which is handled by default via [BasicScreenDefaults.ContentPadding]).
  * @param overlay Optional content drawn above the main content and below the title bar.
  * @param style Screen-level visual properties such as title bar backdrop type.
  * @param content The main content of the screen, receiving inner padding values.
