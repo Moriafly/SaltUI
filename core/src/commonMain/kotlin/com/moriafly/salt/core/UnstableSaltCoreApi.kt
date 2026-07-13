@@ -13,7 +13,7 @@
  * Lesser General Public License for more details.
  */
 
-@file:Suppress("unused")
+@file:Suppress("unused", "ExperimentalAnnotationRetention")
 
 package com.moriafly.salt.core
 

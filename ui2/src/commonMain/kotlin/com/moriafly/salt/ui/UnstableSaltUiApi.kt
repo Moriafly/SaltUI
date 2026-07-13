@@ -13,7 +13,7 @@
  * Lesser General Public License for more details.
  */
 
-@file:Suppress("unused")
+@file:Suppress("unused", "ExperimentalAnnotationRetention")
 
 package com.moriafly.salt.ui
 
@@ -21,6 +21,5 @@ package com.moriafly.salt.ui
     message = "This Salt UI API is experimental and may change or be removed in the future",
     level = RequiresOptIn.Level.ERROR
 )
-@Suppress("ExperimentalAnnotationRetention")
 @Retention(AnnotationRetention.BINARY)
 annotation class UnstableSaltUiApi
