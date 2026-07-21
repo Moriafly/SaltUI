@@ -50,7 +50,13 @@ fun main() = application {
             resizable = true,
             properties = SaltWindowProperties.default(
                 captionButtonIsDarkTheme = AppConfig.isDarkTheme,
-                backgroundType = SaltWindowBackgroundType.Mica,
+                backgroundType = when {
+                    SaltWindowBackgroundType.Vibrancy.isSupported() ->
+                        SaltWindowBackgroundType.Vibrancy
+
+                    SaltWindowBackgroundType.Mica.isSupported() -> SaltWindowBackgroundType.Mica
+                    else -> SaltWindowBackgroundType.None
+                },
                 backgroundIsDarkTheme = AppConfig.isDarkTheme
             )
         ) {

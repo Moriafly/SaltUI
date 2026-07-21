@@ -260,7 +260,15 @@ internal fun WindowBackgroundBox(
         modifier = modifier
             .thenIf(
                 when (OS.current) {
-                    is OS.Windows -> !transparent && backgroundType == SaltWindowBackgroundType.None
+                    is OS.Windows ->
+                        !transparent && (
+                            backgroundType == SaltWindowBackgroundType.None ||
+                                backgroundType == SaltWindowBackgroundType.Vibrancy
+                        )
+
+                    is OS.MacOS ->
+                        !transparent && backgroundType != SaltWindowBackgroundType.Vibrancy
+
                     else -> !transparent
                 }
             ) {

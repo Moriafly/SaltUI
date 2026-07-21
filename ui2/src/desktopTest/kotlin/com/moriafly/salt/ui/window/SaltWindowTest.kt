@@ -18,8 +18,12 @@
 package com.moriafly.salt.ui.window
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.awt.ComposeWindow
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
@@ -27,10 +31,15 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.v2.runDesktopComposeUiTest
 import androidx.compose.ui.window.WindowDecoration
 import androidx.compose.ui.window.rememberWindowState
+import com.moriafly.salt.core.os.OS
 import com.moriafly.salt.ui.SaltTheme
 import com.moriafly.salt.ui.Text
 import com.moriafly.salt.ui.UnstableSaltUiApi
+import com.moriafly.salt.ui.util.findSkiaLayer
+import java.awt.Color
+import java.awt.Dimension
 import kotlin.test.Test
+import kotlin.test.assertEquals
 
 @OptIn(
     ExperimentalTestApi::class,
@@ -40,12 +49,14 @@ import kotlin.test.Test
 class SaltWindowTest {
     @Test
     fun saltWindow_displaysContent() = runDesktopComposeUiTest {
+        lateinit var composeWindow: ComposeWindow
         setContent {
             SaltTheme {
                 SaltWindow(
                     onCloseRequest = {},
                     state = rememberWindowState(),
-                    title = "Test Window"
+                    title = "Test Window",
+                    init = { composeWindow = it }
                 ) {
                     Box(
                         modifier = Modifier
@@ -58,6 +69,7 @@ class SaltWindowTest {
         }
 
         onNodeWithTag("saltWindowContent").assertIsDisplayed()
+        assertEquals(Color.BLACK, composeWindow.background)
     }
 
     @Test
@@ -82,5 +94,52 @@ class SaltWindowTest {
         }
 
         onNodeWithTag("transparentWindowContent").assertIsDisplayed()
+    }
+
+    @Test
+    fun saltWindow_macosVibrancy_displaysContent() {
+        if (OS.current !is OS.MacOS) return
+
+        runDesktopComposeUiTest {
+            lateinit var composeWindow: ComposeWindow
+            var backgroundType by mutableStateOf(SaltWindowBackgroundType.Vibrancy)
+            setContent {
+                SaltTheme {
+                    SaltWindow(
+                        onCloseRequest = {},
+                        state = rememberWindowState(),
+                        title = "Vibrancy Window",
+                        properties = SaltWindowProperties.default(
+                            backgroundType = backgroundType
+                        ),
+                        init = { composeWindow = it }
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .testTag("vibrancyWindowContent")
+                        ) {
+                            Text("Hello Vibrancy SaltWindow")
+                        }
+                    }
+                }
+            }
+
+            onNodeWithTag("vibrancyWindowContent").assertIsDisplayed()
+            assertEquals(0, composeWindow.findSkiaLayer()?.background?.alpha)
+
+            runOnUiThread {
+                composeWindow.size = Dimension(720, 540)
+            }
+            waitForIdle()
+            assertEquals(Dimension(720, 540), composeWindow.size)
+            onNodeWithTag("vibrancyWindowContent").assertIsDisplayed()
+
+            runOnUiThread {
+                backgroundType = SaltWindowBackgroundType.None
+            }
+            waitForIdle()
+            onNodeWithTag("vibrancyWindowContent").assertIsDisplayed()
+            assertEquals(Color.BLACK, composeWindow.background)
+        }
     }
 }

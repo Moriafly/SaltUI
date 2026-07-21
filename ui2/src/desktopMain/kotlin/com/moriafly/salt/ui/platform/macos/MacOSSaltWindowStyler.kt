@@ -24,6 +24,7 @@ import com.moriafly.salt.ui.util.findSkiaLayer
 import com.moriafly.salt.ui.window.SaltWindowBackgroundType
 import com.moriafly.salt.ui.window.internal.SaltWindowStyler
 import org.jetbrains.skiko.disableTitleBar
+import java.awt.Color
 import java.awt.Window
 
 // TODO macos 26 https://github.com/electron/electron/issues/47514
@@ -32,6 +33,7 @@ internal class MacOSSaltWindowStyler(
     window: Window
 ) : SaltWindowStyler {
     private val skiaLayer = window.findSkiaLayer()
+    private val vibrancy = MacOSWindowVibrancy(window)
 
     private val rootPane = when (window) {
         is ComposeWindow -> window.rootPane
@@ -52,7 +54,6 @@ internal class MacOSSaltWindowStyler(
     }
 
     override fun updateBackground(type: SaltWindowBackgroundType, isDarkTheme: Boolean) {
-        // TODO Support type
         val windowAppearance =
             if (isDarkTheme) {
                 "NSAppearanceNameVibrantDark"
@@ -60,6 +61,22 @@ internal class MacOSSaltWindowStyler(
                 "NSAppearanceNameVibrantLight"
             }
         rootPane.putClientProperty("apple.awt.windowAppearance", windowAppearance)
+        val isVibrancyActive = vibrancy.update(
+            enabled = type == SaltWindowBackgroundType.Vibrancy,
+            isDarkTheme = isDarkTheme
+        )
+        if (isVibrancyActive) {
+            // Compose deliberately inherits the Window background for a transparent Metal
+            // SkiaLayer on a regular opaque window. Override the clear color after the native
+            // window and its host Metal layer have become non-opaque.
+            skiaLayer?.apply {
+                transparency = true
+                background = Color(0, 0, 0, 0)
+            }
+        } else {
+            // Restore Compose's inherited BLACK fallback when vibrancy is disabled or unavailable.
+            skiaLayer?.background = null
+        }
     }
 
     override fun updateBorderAndShadow(value: Boolean) {
@@ -72,5 +89,11 @@ internal class MacOSSaltWindowStyler(
 
     fun disableTitleBar(customHeaderHeight: Float) {
         skiaLayer?.disableTitleBar(customHeaderHeight)
+    }
+
+    fun dispose() {
+        if (!vibrancy.dispose() && skiaLayer?.isDisplayable == true) {
+            skiaLayer.background = null
+        }
     }
 }
