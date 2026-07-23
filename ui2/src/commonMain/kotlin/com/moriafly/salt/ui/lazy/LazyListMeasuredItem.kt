@@ -29,6 +29,7 @@ import com.moriafly.salt.ui.internal.requirePreconditionNotNull
 import com.moriafly.salt.ui.lazy.layout.LazyLayoutItemAnimation.Companion.NotInitialized
 import com.moriafly.salt.ui.lazy.layout.LazyLayoutItemAnimator
 import com.moriafly.salt.ui.lazy.layout.LazyLayoutMeasuredItem
+import com.moriafly.salt.ui.lazy.layout.placeablesCount
 
 /**
  * Represents one measured item of the lazy list. It can in fact consist of multiple placeables if
@@ -36,8 +37,8 @@ import com.moriafly.salt.ui.lazy.layout.LazyLayoutMeasuredItem
  */
 internal class LazyListMeasuredItem(
     override val index: Int,
-    private val placeables: List<Placeable>,
-    override val isVertical: Boolean,
+    override val placeables: List<Placeable>,
+    private val isVertical: Boolean,
     private val horizontalAlignment: Alignment.Horizontal?,
     private val verticalAlignment: Alignment.Vertical?,
     private val layoutDirection: LayoutDirection,
@@ -72,8 +73,10 @@ internal class LazyListMeasuredItem(
     /** And each item takes one span. */
     override val span: Int = 1
 
-    /** Sum of the main axis sizes of all the inner placeables and [spacing]. */
-    override val mainAxisSizeWithSpacings: Int
+    override val horizontalAxisSize: Int
+    override val verticalAxisSize: Int
+    override val horizontalAxisSpacing: Int
+    override val verticalAxisSpacing: Int
 
     /** Max of the cross axis sizes of all the inner placeables. */
     val crossAxisSize: Int
@@ -82,7 +85,7 @@ internal class LazyListMeasuredItem(
      * True when this item is not supposted to react on scroll delta. for example sticky header, or
      * items being animated away out of the bounds are non scrollable.
      */
-    override var nonScrollableItem: Boolean = false
+    var nonScrollableItem: Boolean = false
 
     private var mainAxisLayoutSize: Int = Unset
     private var minMainAxisOffset: Int = 0
@@ -100,23 +103,45 @@ internal class LazyListMeasuredItem(
             maxCrossAxis = maxOf(maxCrossAxis, if (!isVertical) it.height else it.width)
         }
         size = mainAxisSize
-        mainAxisSizeWithSpacings = (size + spacing).coerceAtLeast(0)
         crossAxisSize = maxCrossAxis
         placeableOffsets = IntArray(placeables.size * 2)
+        if (isVertical) {
+            verticalAxisSpacing = spacing
+            verticalAxisSize = size
+            horizontalAxisSize = crossAxisSize
+            horizontalAxisSpacing = 0
+        } else {
+            verticalAxisSpacing = 0
+            verticalAxisSize = crossAxisSize
+
+            horizontalAxisSize = size
+            horizontalAxisSpacing = spacing
+        }
     }
 
-    override val placeablesCount: Int
-        get() = placeables.size
+    /** Sum of the main axis sizes of all the inner placeables and [spacing]. */
+    val mainAxisSizeWithSpacings: Int
+        get() =
+            if (isVertical) {
+                    verticalAxisSize + verticalAxisSpacing
+                } else {
+                    horizontalAxisSize + horizontalAxisSpacing
+                }
+                .coerceAtLeast(0)
 
-    override fun getParentData(index: Int) = placeables[index].parentData
+    fun getParentData(index: Int) = placeables[index].parentData
 
     override fun position(
-        mainAxisOffset: Int,
-        crossAxisOffset: Int,
+        horizontalAxisOffset: Int,
+        verticalAxisOffset: Int,
         layoutWidth: Int,
         layoutHeight: Int,
     ) {
-        position(mainAxisOffset, layoutWidth, layoutHeight)
+        position(horizontalAxisOffset, layoutWidth, layoutHeight)
+    }
+
+    override fun makeNonScrollable() {
+        nonScrollableItem = true
     }
 
     /**
@@ -161,11 +186,14 @@ internal class LazyListMeasuredItem(
         maxMainAxisOffset = mainAxisLayoutSize + afterContentPadding
     }
 
-    override fun getOffset(index: Int) =
-        if (index == 0 && placeablesCount == 0) {
+    override fun getOffset(placeableIndex: Int) =
+        if (placeableIndex == 0 && placeablesCount == 0) {
             if (isVertical) IntOffset(0, offset) else IntOffset(offset, 0)
         } else {
-            IntOffset(placeableOffsets[index * 2], placeableOffsets[index * 2 + 1])
+            IntOffset(
+                placeableOffsets[placeableIndex * 2],
+                placeableOffsets[placeableIndex * 2 + 1],
+            )
         }
 
     fun applyScrollDelta(delta: Int, updateAnimations: Boolean) {
@@ -186,8 +214,8 @@ internal class LazyListMeasuredItem(
             repeat(placeablesCount) { index ->
                 val animation = animator.getAnimation(key, index)
                 if (animation != null) {
-                    animation.rawOffset =
-                        animation.rawOffset.copy { mainAxis -> mainAxis + delta }
+                    animation.targetOffset =
+                        animation.targetOffset.copy { mainAxis -> mainAxis + delta }
                 }
             }
         }
@@ -245,7 +273,7 @@ internal class LazyListMeasuredItem(
                 }
                 offset += visualOffset
                 if (!isLookingAhead) {
-                    animation?.finalOffset = offset
+                    animation?.placementOffset = offset
                 }
                 if (isVertical) {
                     if (layer != null) {

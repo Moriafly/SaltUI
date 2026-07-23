@@ -411,6 +411,7 @@ internal fun measureLazyList(
                 afterContentPadding,
                 layoutWidth,
                 layoutHeight,
+                isVertical,
             ) {
                 measuredItemProvider.getAndMeasure(it)
             }
