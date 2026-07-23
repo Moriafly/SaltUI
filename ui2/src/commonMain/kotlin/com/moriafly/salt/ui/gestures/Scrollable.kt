@@ -25,7 +25,6 @@ import androidx.compose.animation.core.DecayAnimationSpec
 import androidx.compose.animation.core.animate
 import androidx.compose.animation.core.animateDecay
 import androidx.compose.animation.splineBasedDecay
-import androidx.compose.foundation.ComposeFoundationFlags.isDelayPressesUsingGestureConsumptionEnabled
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.MutatePriority
 import androidx.compose.foundation.OverscrollEffect
@@ -43,7 +42,6 @@ import androidx.compose.foundation.gestures.Orientation.Horizontal
 import androidx.compose.foundation.gestures.Orientation.Vertical
 import androidx.compose.foundation.gestures.ScrollLogic
 import androidx.compose.foundation.gestures.ScrollScope
-import androidx.compose.foundation.gestures.ScrollableContainerNode
 import androidx.compose.foundation.gestures.ScrollableElement
 import androidx.compose.foundation.gestures.ScrollableNestedScrollConnection
 import androidx.compose.foundation.gestures.ScrollableState
@@ -108,7 +106,7 @@ internal class ScrollableNode(
         canDrag = CanDragCalculation,
         enabled = enabled,
         interactionSource = interactionSource,
-        orientationLock = orientation,
+        orientation = orientation,
     ),
     KeyInputModifierNode,
     SemanticsModifierNode,
@@ -155,8 +153,6 @@ internal class ScrollableNode(
     private var mouseWheelScrollingLogic: MouseWheelScrollingLogic? = null
     private var trackpadScrollingLogic: TrackpadScrollingLogic? = null
 
-    private var scrollableContainerNode: ScrollableContainerNode? = null
-
     init {
         /** Nested scrolling */
         delegate(nestedScrollModifierNode(nestedScrollConnection, nestedScrollDispatcher))
@@ -164,9 +160,6 @@ internal class ScrollableNode(
         /** Focus scrolling */
         delegate(BringIntoViewResponderNode(contentInViewNode))
 
-        if (!isDelayPressesUsingGestureConsumptionEnabled) {
-            scrollableContainerNode = delegate(ScrollableContainerNode(enabled))
-        }
     }
 
     override fun dispatchScrollDeltaInfo(delta: Offset) {
@@ -264,7 +257,6 @@ internal class ScrollableNode(
         var shouldInvalidateSemantics = false
         if (this.enabled != enabled) { // enabled changed
             nestedScrollConnection.enabled = enabled
-            scrollableContainerNode?.update(enabled)
             shouldInvalidateSemantics = true
         }
         // a new fling behavior was set, change the resolved one.
@@ -289,7 +281,7 @@ internal class ScrollableNode(
             canDrag = CanDragCalculation,
             enabled = enabled,
             interactionSource = interactionSource,
-            orientationLock = if (scrollingLogic.isVertical()) Vertical else Horizontal,
+            orientation = if (scrollingLogic.isVertical()) Vertical else Horizontal,
             shouldResetPointerInputHandling = resetPointerInputHandling,
         )
 
@@ -379,8 +371,8 @@ internal class ScrollableNode(
         if (pointerEvent.changes.fastAny { canDrag.invoke(it.type) }) {
             super.onPointerEvent(pointerEvent, pass, bounds)
         }
-        initializeGestureCoordination()
         if (enabled) {
+            initializePointerInputGestureCoordination()
             if (pass == PointerEventPass.Initial && pointerEvent.type == PointerEventType.Scroll) {
                 ensureMouseWheelScrollingLogicInitialized()
             }
