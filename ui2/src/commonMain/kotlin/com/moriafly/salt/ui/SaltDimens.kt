@@ -26,6 +26,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.structuralEqualityPolicy
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.moriafly.salt.core.os.OS
 
 /**
  * Dimens for Salt UI.
@@ -112,6 +113,18 @@ class SaltDimens(
      * customization, which is also a common practice in most UI frameworks.
      */
     companion object {
+        internal val Item = when (OS.current) {
+            is OS.Android -> 56.dp
+            is OS.IOS -> 52.dp
+            else -> 48.dp
+        }
+
+        internal val ItemIcon = when (OS.current) {
+            is OS.Android -> 24.dp
+            is OS.IOS -> 22.dp
+            else -> 20.dp
+        }
+
         @UnstableSaltUiApi
         internal val RoundedColumnInListItemPadding = 3.dp
 
@@ -133,17 +146,39 @@ class SaltDimens(
          */
         @UnstableSaltUiApi
         val RoundedColumnInListEdgePadding = 5.dp
+
+        fun default(
+            item: Dp = Item,
+            itemIcon: Dp = ItemIcon,
+            corner: Dp = 12.dp,
+            dialogCorner: Dp = 20.dp,
+            padding: Dp = 16.dp,
+            subPadding: Dp = 12.dp
+        ): SaltDimens = SaltDimens(
+            item = item,
+            itemIcon = itemIcon,
+            corner = corner,
+            dialogCorner = dialogCorner,
+            padding = padding,
+            subPadding = subPadding
+        )
     }
 }
 
+@Deprecated(
+    message = "Use SaltDimens.default()",
+    replaceWith = ReplaceWith(
+        "SaltDimens.default(item, itemIcon, corner, dialogCorner, padding, subPadding)"
+    )
+)
 fun saltDimens(
-    item: Dp = SaltDimensItem,
-    itemIcon: Dp = SaltDimensItemIcon,
+    item: Dp = SaltDimens.Item,
+    itemIcon: Dp = SaltDimens.ItemIcon,
     corner: Dp = 12.dp,
     dialogCorner: Dp = 20.dp,
     padding: Dp = 16.dp,
     subPadding: Dp = 12.dp
-): SaltDimens = SaltDimens(
+): SaltDimens = SaltDimens.default(
     item = item,
     itemIcon = itemIcon,
     corner = corner,
@@ -151,7 +186,3 @@ fun saltDimens(
     padding = padding,
     subPadding = subPadding
 )
-
-internal expect val SaltDimensItem: Dp
-
-internal expect val SaltDimensItemIcon: Dp

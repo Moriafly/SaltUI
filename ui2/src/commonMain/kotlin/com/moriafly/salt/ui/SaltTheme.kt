@@ -163,7 +163,7 @@ private val LocalSaltDynamicColors = staticCompositionLocalOf { SaltDynamicColor
 
 private val LocalSaltTextStyles = staticCompositionLocalOf { saltTextStyles() }
 
-private val LocalSaltDimens = staticCompositionLocalOf { saltDimens() }
+private val LocalSaltDimens = staticCompositionLocalOf { SaltDimens.default() }
 
 private val LocalSaltShapes = staticCompositionLocalOf { SaltShapes.default() }
 
