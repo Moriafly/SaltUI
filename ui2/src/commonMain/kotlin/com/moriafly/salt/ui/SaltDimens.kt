@@ -150,6 +150,28 @@ class SaltDimens(
         fun default(
             item: Dp = Item,
             itemIcon: Dp = ItemIcon,
+            padding: Dp = 16.dp,
+            subPadding: Dp = 12.dp
+        ): SaltDimens = SaltDimens(
+            item = item,
+            itemIcon = itemIcon,
+            // TODO Remove
+            corner = 12.dp,
+            // TODO Remove
+            dialogCorner = 20.dp,
+            padding = padding,
+            subPadding = subPadding
+        )
+
+        @Deprecated(
+            message = "Use overload without corner and dialogCorner",
+            replaceWith = ReplaceWith(
+                "SaltDimens.default(item, itemIcon, padding, subPadding)"
+            )
+        )
+        fun default(
+            item: Dp = Item,
+            itemIcon: Dp = ItemIcon,
             corner: Dp = 12.dp,
             dialogCorner: Dp = 20.dp,
             padding: Dp = 16.dp,
@@ -171,6 +193,7 @@ class SaltDimens(
         "SaltDimens.default(item, itemIcon, corner, dialogCorner, padding, subPadding)"
     )
 )
+@Suppress("DEPRECATION")
 fun saltDimens(
     item: Dp = SaltDimens.Item,
     itemIcon: Dp = SaltDimens.ItemIcon,
