@@ -23,6 +23,8 @@ import androidx.annotation.FloatRange
 import androidx.compose.animation.core.AnimationSpec
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.MutatePriority
+import androidx.compose.foundation.gestures.DragScope
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
@@ -207,24 +209,45 @@ class BottomSheetState(
      * cancelled. Note: If the peek height is equal to the sheet height, this method will animate to
      * the [Collapsed] state.
      *
+     * @param velocity initial velocity in pixels per second. By default, an interrupted animation's
+     * last velocity is preserved so retargeting remains continuous.
+     *
      * This method will throw [CancellationException] if the animation is interrupted.
      */
-    suspend fun expand() {
+    suspend fun expand(velocity: Float = anchoredDraggableState.lastVelocity) {
         val target =
             if (anchoredDraggableState.anchors.hasPositionFor(Expanded)) {
                 Expanded
             } else {
                 Collapsed
             }
-        anchoredDraggableState.animateTo(target)
+        anchoredDraggableState.animateTo(target, velocity)
     }
 
     /**
      * Collapse the bottom sheet with animation and suspend until it if fully collapsed or animation
      * has been cancelled. This method will throw [CancellationException] if the animation is
      * interrupted.
+     *
+     * @param velocity initial velocity in pixels per second. By default, an interrupted animation's
+     * last velocity is preserved so retargeting remains continuous.
      */
-    suspend fun collapse() = anchoredDraggableState.animateTo(Collapsed)
+    suspend fun collapse(velocity: Float = anchoredDraggableState.lastVelocity) {
+        anchoredDraggableState.animateTo(Collapsed, velocity)
+    }
+
+    /**
+     * Runs a direct user drag as one mutually exclusive transaction.
+     *
+     * Starting this transaction interrupts an in-flight settling animation without intercepting
+     * pointer input before the caller has resolved the gesture direction.
+     */
+    suspend fun dragAsUserInput(block: suspend DragScope.() -> Unit) {
+        anchoredDraggableState.draggableState.drag(
+            dragPriority = MutatePriority.UserInput,
+            block = block
+        )
+    }
 
     /**
      * Require the current offset.

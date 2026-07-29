@@ -26,7 +26,7 @@ plugins {
 }
 
 val isPublishingToMavenLocal = gradle.startParameter.taskNames.any {
-    it.contains("publishToMavenLocal", ignoreCase = true)
+    it.substringAfterLast(':').endsWith("ToMavenLocal", ignoreCase = true)
 }
 
 mavenPublishing {
