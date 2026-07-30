@@ -21,10 +21,10 @@ package com.moriafly.salt.ui.internal
 
 import androidx.compose.runtime.Composable
 import org.jetbrains.compose.resources.stringResource
-import saltui.ui2.generated.resources.Res
-import saltui.ui2.generated.resources.back
-import saltui.ui2.generated.resources.cancel
-import saltui.ui2.generated.resources.confirm
+import com.moriafly.salt.ui.generated.resources.Res
+import com.moriafly.salt.ui.generated.resources.back
+import com.moriafly.salt.ui.generated.resources.cancel
+import com.moriafly.salt.ui.generated.resources.confirm
 
 @Composable
 internal actual fun stringResourceBack(): String {

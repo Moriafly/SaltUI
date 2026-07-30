@@ -25,6 +25,11 @@ plugins {
     `maven-publish`
 }
 
+compose.resources {
+    packageOfResClass = "com.moriafly.salt.ui.generated.resources"
+    publicResClass = true
+}
+
 mavenPublishing {
     // Define coordinates for the published artifact
     coordinates(

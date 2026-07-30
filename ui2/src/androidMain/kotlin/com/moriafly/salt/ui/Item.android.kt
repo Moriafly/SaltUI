@@ -27,9 +27,9 @@ import androidx.compose.ui.unit.dp
 import com.moriafly.salt.ui.icons.ChevronRight
 import com.moriafly.salt.ui.icons.SaltIcons
 import org.jetbrains.compose.resources.painterResource
-import saltui.ui2.generated.resources.Res
-import saltui.ui2.generated.resources.ic_arrow_drop_down
-import saltui.ui2.generated.resources.ic_item_link_android
+import com.moriafly.salt.ui.generated.resources.Res
+import com.moriafly.salt.ui.generated.resources.ic_arrow_drop_down
+import com.moriafly.salt.ui.generated.resources.ic_item_link_android
 
 @Composable
 actual fun ItemArrow(

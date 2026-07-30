@@ -26,10 +26,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import org.jetbrains.compose.resources.painterResource
-import saltui.ui2.generated.resources.Res
-import saltui.ui2.generated.resources.ic_item_arrow
-import saltui.ui2.generated.resources.ic_item_expand_arrow
-import saltui.ui2.generated.resources.ic_item_link
+import com.moriafly.salt.ui.generated.resources.Res
+import com.moriafly.salt.ui.generated.resources.ic_item_arrow
+import com.moriafly.salt.ui.generated.resources.ic_item_expand_arrow
+import com.moriafly.salt.ui.generated.resources.ic_item_link
 
 @Composable
 actual fun ItemArrow(
