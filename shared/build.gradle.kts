@@ -34,7 +34,7 @@ kotlin {
 
     android {
         namespace = "com.moriafly.salt.ui.sample"
-        compileSdk = 36
+        compileSdk = 37
         minSdk = 23
 
         androidResources {

@@ -79,7 +79,7 @@ kotlin {
 
     android {
         namespace = "com.moriafly.salt.ui.navigation"
-        compileSdk = 36
+        compileSdk = 37
         minSdk = 23
 
         compilerOptions {
