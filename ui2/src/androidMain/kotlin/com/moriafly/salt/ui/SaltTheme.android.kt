@@ -32,6 +32,11 @@ import androidx.compose.ui.unit.dp
  *
  * Of course, you can also implement the corresponding color conversion yourself.
  */
+@Deprecated(
+    message = "This API is no longer maintained. Please import Material 3 library yourself " +
+        "and implement custom color mapping via SaltColors.defaultLight() or SaltColors.defaultDark()",
+    level = DeprecationLevel.WARNING
+)
 @RequiresApi(Build.VERSION_CODES.S)
 @UnstableSaltUiApi
 fun saltColorsByColorScheme(
@@ -44,5 +49,8 @@ fun saltColorsByColorScheme(
     subBackground = colorScheme.surfaceColorAtElevation(3.dp),
     popup = colorScheme.surfaceColorAtElevation(3.dp).compositeOver(colorScheme.surface),
     stroke = colorScheme.onSurfaceVariant.copy(alpha = 0.1f),
-    onHighlight = Color.White
+    onHighlight = Color.White,
+    success = SaltPalette.SuccessLightIcon,
+    warning = SaltPalette.WarningLightIcon,
+    error = SaltPalette.ErrorLightIcon
 )

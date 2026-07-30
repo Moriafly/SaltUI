@@ -20,13 +20,17 @@
 
 package com.moriafly.salt.ui.gestures
 
+import androidx.compose.animation.core.AnimationState
+import androidx.compose.animation.core.DecayAnimationSpec
 import androidx.compose.animation.core.animate
-import androidx.compose.foundation.ComposeFoundationFlags.isDelayPressesUsingGestureConsumptionEnabled
+import androidx.compose.animation.core.animateDecay
+import androidx.compose.animation.splineBasedDecay
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.MutatePriority
 import androidx.compose.foundation.OverscrollEffect
 import androidx.compose.foundation.gestures.BringIntoViewSpec
 import androidx.compose.foundation.gestures.CanDragCalculation
+import androidx.compose.foundation.gestures.DefaultScrollMotionDurationScale
 import androidx.compose.foundation.gestures.DragEvent
 import androidx.compose.foundation.gestures.DragGestureNode
 import androidx.compose.foundation.gestures.FlingBehavior
@@ -38,17 +42,16 @@ import androidx.compose.foundation.gestures.Orientation.Horizontal
 import androidx.compose.foundation.gestures.Orientation.Vertical
 import androidx.compose.foundation.gestures.ScrollLogic
 import androidx.compose.foundation.gestures.ScrollScope
-import androidx.compose.foundation.gestures.ScrollableContainerNode
-import androidx.compose.foundation.gestures.ScrollableDefaultFlingBehavior
+import androidx.compose.foundation.gestures.ScrollableElement
 import androidx.compose.foundation.gestures.ScrollableNestedScrollConnection
 import androidx.compose.foundation.gestures.ScrollableState
 import androidx.compose.foundation.gestures.VerticalAxisThresholdAngle
 import androidx.compose.foundation.gestures.platformScrollConfig
-import androidx.compose.foundation.gestures.platformScrollableDefaultFlingBehavior
 import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.relocation.BringIntoViewResponderNode
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.MotionDurationScale
 import androidx.compose.ui.focus.FocusTargetModifierNode
 import androidx.compose.ui.focus.Focusability
 import androidx.compose.ui.focus.getFocusedRect
@@ -75,13 +78,17 @@ import androidx.compose.ui.node.requireDensity
 import androidx.compose.ui.semantics.SemanticsPropertyReceiver
 import androidx.compose.ui.semantics.scrollBy
 import androidx.compose.ui.semantics.scrollByOffset
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.util.fastAny
 import com.moriafly.salt.ui.SaltUiFlags
 import com.moriafly.salt.ui.UnstableSaltUiApi
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlin.math.PI
+import kotlin.math.abs
 import kotlin.math.absoluteValue
 import kotlin.math.atan2
 
@@ -99,7 +106,7 @@ internal class ScrollableNode(
         canDrag = CanDragCalculation,
         enabled = enabled,
         interactionSource = interactionSource,
-        orientationLock = orientation,
+        orientation = orientation,
     ),
     KeyInputModifierNode,
     SemanticsModifierNode,
@@ -146,8 +153,6 @@ internal class ScrollableNode(
     private var mouseWheelScrollingLogic: MouseWheelScrollingLogic? = null
     private var trackpadScrollingLogic: TrackpadScrollingLogic? = null
 
-    private var scrollableContainerNode: ScrollableContainerNode? = null
-
     init {
         /** Nested scrolling */
         delegate(nestedScrollModifierNode(nestedScrollConnection, nestedScrollDispatcher))
@@ -155,9 +160,6 @@ internal class ScrollableNode(
         /** Focus scrolling */
         delegate(BringIntoViewResponderNode(contentInViewNode))
 
-        if (!isDelayPressesUsingGestureConsumptionEnabled) {
-            scrollableContainerNode = delegate(ScrollableContainerNode(enabled))
-        }
     }
 
     override fun dispatchScrollDeltaInfo(delta: Offset) {
@@ -255,7 +257,6 @@ internal class ScrollableNode(
         var shouldInvalidateSemantics = false
         if (this.enabled != enabled) { // enabled changed
             nestedScrollConnection.enabled = enabled
-            scrollableContainerNode?.update(enabled)
             shouldInvalidateSemantics = true
         }
         // a new fling behavior was set, change the resolved one.
@@ -280,7 +281,7 @@ internal class ScrollableNode(
             canDrag = CanDragCalculation,
             enabled = enabled,
             interactionSource = interactionSource,
-            orientationLock = if (scrollingLogic.isVertical()) Vertical else Horizontal,
+            orientation = if (scrollingLogic.isVertical()) Vertical else Horizontal,
             shouldResetPointerInputHandling = resetPointerInputHandling,
         )
 
@@ -370,8 +371,8 @@ internal class ScrollableNode(
         if (pointerEvent.changes.fastAny { canDrag.invoke(it.type) }) {
             super.onPointerEvent(pointerEvent, pass, bounds)
         }
-        initializeGestureCoordination()
         if (enabled) {
+            initializePointerInputGestureCoordination()
             if (pass == PointerEventPass.Initial && pointerEvent.type == PointerEventType.Scroll) {
                 ensureMouseWheelScrollingLogicInitialized()
             }
@@ -692,6 +693,22 @@ internal class ScrollingLogic(
     fun isVertical(): Boolean = orientation == Vertical
 }
 
+private val NoOpScrollScope: ScrollScope =
+    object : ScrollScope {
+        override fun scrollBy(pixels: Float): Float = pixels
+    }
+
+/** Compatibility interface for default fling behaviors that depends on [Density]. */
+internal interface ScrollableDefaultFlingBehavior : FlingBehavior {
+    /**
+     * Update the internal parameters of FlingBehavior in accordance with the new
+     * [androidx.compose.ui.unit.Density] value.
+     *
+     * @param density new density value.
+     */
+    fun updateDensity(density: Density) = Unit
+}
+
 /**
  * TODO: Move it to public interface Currently, default [FlingBehavior] is not triggered at all to
  *   avoid unexpected effects during regular scrolling. However, custom one must be triggered
@@ -702,9 +719,62 @@ internal class ScrollingLogic(
 private val FlingBehavior.shouldBeTriggeredByMouseWheel
     get() = this !is ScrollableDefaultFlingBehavior
 
-private val NoOpScrollScope: ScrollScope =
-    object : ScrollScope {
-        override fun scrollBy(pixels: Float): Float = pixels
+/**
+ * This method returns [ScrollableDefaultFlingBehavior] whose density will be managed by the
+ * [ScrollableElement] because it's not created inside [Composable] context. This is different from
+ * [rememberPlatformDefaultFlingBehavior] which creates [FlingBehavior] whose density depends on
+ * [androidx.compose.ui.platform.LocalDensity] and is automatically resolved.
+ */
+internal expect fun platformScrollableDefaultFlingBehavior(): ScrollableDefaultFlingBehavior
+
+internal class DefaultFlingBehavior(
+    private var flingDecay: DecayAnimationSpec<Float>,
+    private val motionDurationScale: MotionDurationScale = DefaultScrollMotionDurationScale,
+) : ScrollableDefaultFlingBehavior {
+    // For Testing
+    var lastAnimationCycleCount = 0
+
+    override suspend fun ScrollScope.performFling(initialVelocity: Float): Float {
+        lastAnimationCycleCount = 0
+        // come up with the better threshold, but we need it since spline curve gives us NaNs
+        return withContext(motionDurationScale) {
+            if (abs(initialVelocity) > 1f) {
+                var velocityLeft = initialVelocity
+                var lastValue = 0f
+                val animationState =
+                    AnimationState(initialValue = 0f, initialVelocity = initialVelocity)
+                try {
+                    animationState.animateDecay(flingDecay) {
+                        val delta = value - lastValue
+                        val consumed = scrollBy(delta)
+                        lastValue = value
+                        velocityLeft = this.velocity
+                        // avoid rounding errors and stop if anything is unconsumed
+                        if (abs(delta - consumed) > 0.5f) this.cancelAnimation()
+                        lastAnimationCycleCount++
+                    }
+                } catch (exception: CancellationException) {
+                    velocityLeft = animationState.velocity
+                }
+                velocityLeft
+            } else {
+                initialVelocity
+            }
+        }
+    }
+
+    override fun updateDensity(density: Density) {
+        flingDecay = splineBasedDecay(density)
+    }
+}
+
+internal val UnityDensity =
+    object : Density {
+        override val density: Float
+            get() = 1f
+
+        override val fontScale: Float
+            get() = 1f
     }
 
 /**

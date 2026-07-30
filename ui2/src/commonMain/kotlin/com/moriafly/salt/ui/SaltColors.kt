@@ -43,10 +43,14 @@ data class SaltDynamicColors(
     val dark: SaltColors
 ) {
     companion object {
-        fun default(): SaltDynamicColors = SaltDynamicColors(
-            light = lightSaltColors(),
-            dark = darkSaltColors()
-        )
+        fun default(
+            light: SaltColors = SaltColors.defaultLight(),
+            dark: SaltColors = SaltColors.defaultDark()
+        ): SaltDynamicColors =
+            SaltDynamicColors(
+                light = light,
+                dark = dark
+            )
     }
 }
 
@@ -61,6 +65,9 @@ data class SaltDynamicColors(
  * @param popup background color for UI elements like [com.moriafly.salt.ui.popup.PopupMenu].
  * @param stroke stroke color.
  * @param onHighlight Text or icon color for elements that are above or behind the highlight.
+ * @param success success color.
+ * @param warning warning color.
+ * @param error error color.
  */
 @Stable
 class SaltColors(
@@ -71,7 +78,10 @@ class SaltColors(
     subBackground: Color,
     popup: Color,
     stroke: Color,
-    onHighlight: Color
+    onHighlight: Color,
+    success: Color,
+    warning: Color,
+    error: Color
 ) {
     val highlight by mutableStateOf(highlight, structuralEqualityPolicy())
     val text by mutableStateOf(text, structuralEqualityPolicy())
@@ -81,6 +91,9 @@ class SaltColors(
     val popup by mutableStateOf(popup, structuralEqualityPolicy())
     val stroke by mutableStateOf(stroke, structuralEqualityPolicy())
     val onHighlight by mutableStateOf(onHighlight, structuralEqualityPolicy())
+    val success by mutableStateOf(success, structuralEqualityPolicy())
+    val warning by mutableStateOf(warning, structuralEqualityPolicy())
+    val error by mutableStateOf(error, structuralEqualityPolicy())
 
     fun copy(
         highlight: Color = this.highlight,
@@ -90,7 +103,10 @@ class SaltColors(
         subBackground: Color = this.subBackground,
         popup: Color = this.popup,
         stroke: Color = this.stroke,
-        onHighlight: Color = this.onHighlight
+        onHighlight: Color = this.onHighlight,
+        success: Color = this.success,
+        warning: Color = this.warning,
+        error: Color = this.error
     ): SaltColors = SaltColors(
         highlight = highlight,
         text = text,
@@ -99,19 +115,87 @@ class SaltColors(
         subBackground = subBackground,
         popup = popup,
         stroke = stroke,
-        onHighlight = onHighlight
+        onHighlight = onHighlight,
+        success = success,
+        warning = warning,
+        error = error
     )
+
+    companion object {
+        fun defaultLight(
+            highlight: Color = Color(0xFF0470E6),
+            text: Color = Color(0xFF1E1715),
+            subText: Color = Color(0xFF8C8C8C),
+            background: Color = Color(0xFFF3F3F3),
+            subBackground: Color = Color(0x80FFFFFF),
+            popup: Color = subBackground.compositeOver(background),
+            stroke: Color = subText.copy(alpha = 0.15f),
+            onHighlight: Color = Color.White,
+            success: Color = SaltPalette.SuccessLightIcon,
+            warning: Color = SaltPalette.WarningLightIcon,
+            error: Color = SaltPalette.ErrorLightIcon
+        ): SaltColors = SaltColors(
+            highlight = highlight,
+            text = text,
+            subText = subText,
+            background = background,
+            subBackground = subBackground,
+            popup = popup,
+            stroke = stroke,
+            onHighlight = onHighlight,
+            success = success,
+            warning = warning,
+            error = error
+        )
+
+        fun defaultDark(
+            highlight: Color = Color(0xFF0088FF),
+            text: Color = Color(0xFFEBEEF1),
+            subText: Color = Color(0xBFE1E6EB),
+            background: Color = Color(0xFF202020),
+            subBackground: Color = Color(0x08FFFFFF),
+            popup: Color = subBackground.compositeOver(background),
+            stroke: Color = subText.copy(alpha = 0.1f),
+            onHighlight: Color = Color.White,
+            success: Color = SaltPalette.SuccessDarkIcon,
+            warning: Color = SaltPalette.WarningDarkIcon,
+            error: Color = SaltPalette.ErrorDarkIcon
+        ): SaltColors = SaltColors(
+            highlight = highlight,
+            text = text,
+            subText = subText,
+            background = background,
+            subBackground = subBackground,
+            popup = popup,
+            stroke = stroke,
+            onHighlight = onHighlight,
+            success = success,
+            warning = warning,
+            error = error
+        )
+    }
 }
 
+@Deprecated(
+    message = "Use SaltColors.defaultLight() instead",
+    replaceWith = ReplaceWith(
+        expression = "SaltColors.defaultLight()",
+        imports = arrayOf("com.moriafly.salt.ui.SaltColors")
+    ),
+    level = DeprecationLevel.WARNING
+)
 fun lightSaltColors(
     highlight: Color = Color(0xFF0470E6),
     text: Color = Color(0xFF1E1715),
     subText: Color = Color(0xFF8C8C8C),
-    background: Color = Color(0xFFF7F9FA),
-    subBackground: Color = Color(0xFFFFFFFF),
+    background: Color = Color(0xFFF3F3F3),
+    subBackground: Color = Color(0x80FFFFFF),
     popup: Color = subBackground.compositeOver(background),
     stroke: Color = subText.copy(alpha = 0.15f),
-    onHighlight: Color = Color.White
+    onHighlight: Color = Color.White,
+    success: Color = SaltPalette.SuccessLightIcon,
+    warning: Color = SaltPalette.WarningLightIcon,
+    error: Color = SaltPalette.ErrorLightIcon
 ): SaltColors = SaltColors(
     highlight = highlight,
     text = text,
@@ -120,18 +204,32 @@ fun lightSaltColors(
     subBackground = subBackground,
     popup = popup,
     stroke = stroke,
-    onHighlight = onHighlight
+    onHighlight = onHighlight,
+    success = success,
+    warning = warning,
+    error = error
 )
 
+@Deprecated(
+    message = "Use SaltColors.defaultDark() instead",
+    replaceWith = ReplaceWith(
+        expression = "SaltColors.defaultDark()",
+        imports = arrayOf("com.moriafly.salt.ui.SaltColors")
+    ),
+    level = DeprecationLevel.WARNING
+)
 fun darkSaltColors(
     highlight: Color = Color(0xFF0088FF),
     text: Color = Color(0xFFEBEEF1),
     subText: Color = Color(0xBFE1E6EB),
-    background: Color = Color(0xFF0C0C0C),
-    subBackground: Color = Color(0xFF191919),
+    background: Color = Color(0xFF202020),
+    subBackground: Color = Color(0x08FFFFFF),
     popup: Color = subBackground.compositeOver(background),
     stroke: Color = subText.copy(alpha = 0.1f),
-    onHighlight: Color = Color.White
+    onHighlight: Color = Color.White,
+    success: Color = SaltPalette.SuccessDarkIcon,
+    warning: Color = SaltPalette.WarningDarkIcon,
+    error: Color = SaltPalette.ErrorDarkIcon
 ): SaltColors = SaltColors(
     highlight = highlight,
     text = text,
@@ -140,5 +238,8 @@ fun darkSaltColors(
     subBackground = subBackground,
     popup = popup,
     stroke = stroke,
-    onHighlight = onHighlight
+    onHighlight = onHighlight,
+    success = success,
+    warning = warning,
+    error = error
 )

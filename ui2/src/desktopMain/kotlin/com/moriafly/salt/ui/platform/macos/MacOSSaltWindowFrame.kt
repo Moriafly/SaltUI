@@ -19,6 +19,7 @@ package com.moriafly.salt.ui.platform.macos
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.awt.ComposeWindow
@@ -27,7 +28,6 @@ import androidx.compose.ui.window.FrameWindowScope
 import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.moriafly.salt.ui.window.CaptionButtonsAlign
 import com.moriafly.salt.ui.window.LocalSaltWindowInfo
-import com.moriafly.salt.ui.window.SaltWindowBackgroundType
 import com.moriafly.salt.ui.window.SaltWindowInfo
 import com.moriafly.salt.ui.window.SaltWindowProperties
 
@@ -48,15 +48,21 @@ internal fun FrameWindowScope.MacOSSaltWindowFrame(
             MacOSSaltWindowStyler(window)
         }
 
-        LaunchedEffect(properties.backgroundIsDarkTheme) {
+        DisposableEffect(styler) {
+            onDispose(styler::dispose)
+        }
+
+        LaunchedEffect(properties.backgroundType, properties.backgroundIsDarkTheme) {
             styler.updateBackground(
-                type = SaltWindowBackgroundType.None,
+                type = properties.backgroundType,
                 isDarkTheme = properties.backgroundIsDarkTheme
             )
         }
 
-        LaunchedEffect(properties.captionBarHeight) {
-            styler.disableTitleBar(properties.captionBarHeight.value)
+        LaunchedEffect(window.isUndecorated, properties.captionBarHeight) {
+            if (!window.isUndecorated) {
+                styler.disableTitleBar(properties.captionBarHeight.value)
+            }
         }
 
         content()

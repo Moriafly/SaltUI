@@ -52,6 +52,7 @@ import com.moriafly.salt.ui.lazy.layout.LazyLayoutMeasurePolicy
 import com.moriafly.salt.ui.lazy.layout.StickyItemsPlacement
 import com.moriafly.salt.ui.lazy.layout.calculateLazyLayoutPinnedIndices
 import com.moriafly.salt.ui.lazy.layout.lazyLayoutBeyondBoundsModifier
+import com.moriafly.salt.ui.lazy.layout.lazyLayoutItemAnimator
 import com.moriafly.salt.ui.lazy.layout.lazyLayoutSemantics
 import com.moriafly.salt.ui.scrollableArea
 import kotlinx.coroutines.CoroutineScope
@@ -134,7 +135,7 @@ internal fun LazyGrid(
                     reverseScrolling = reverseLayout,
                 )
                 .then(beyondBoundsModifier)
-                .then(state.itemAnimator.modifier)
+                .lazyLayoutItemAnimator(state.itemAnimator)
                 .scrollableArea(
                     state = state,
                     orientation = orientation,

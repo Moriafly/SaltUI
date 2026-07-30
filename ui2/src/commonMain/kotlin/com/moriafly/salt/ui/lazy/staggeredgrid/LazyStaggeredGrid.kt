@@ -32,6 +32,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.moriafly.salt.ui.lazy.layout.LazyLayout
 import com.moriafly.salt.ui.lazy.layout.lazyLayoutBeyondBoundsModifier
+import com.moriafly.salt.ui.lazy.layout.lazyLayoutItemAnimator
 import com.moriafly.salt.ui.lazy.layout.lazyLayoutSemantics
 import com.moriafly.salt.ui.scrollableArea
 
@@ -106,7 +107,7 @@ internal fun LazyStaggeredGrid(
                     reverseScrolling = reverseLayout,
                 )
                 .then(beyondBoundsModifier)
-                .then(state.itemAnimator.modifier)
+                .lazyLayoutItemAnimator(state.itemAnimator)
                 .scrollableArea(
                     state = state,
                     orientation = orientation,

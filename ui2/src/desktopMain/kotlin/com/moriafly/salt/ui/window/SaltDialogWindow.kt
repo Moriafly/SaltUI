@@ -46,6 +46,8 @@ import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.moriafly.salt.ui.platform.linux.LinuxSaltDialogWindowFrame
 import com.moriafly.salt.ui.platform.macos.MacOSSaltDialogWindowFrame
 import com.moriafly.salt.ui.platform.windows.WindowsSaltDialogWindowFrame
+import com.moriafly.salt.ui.util.findSkiaLayer
+import com.moriafly.salt.ui.util.hackContentPane
 import com.moriafly.salt.ui.window.internal.SaltWindowEnvironment
 import com.moriafly.salt.ui.window.internal.resolveForPlatform
 import java.awt.Dialog.ModalityType
@@ -107,6 +109,7 @@ fun SaltDialogWindow(
 
     val currentProperties by rememberUpdatedState(properties)
 
+    // On Linux the window is always undecorated
     val resolvedDecoration = decoration.resolveForPlatform()
 
     SaltWindowEnvironment {
@@ -125,7 +128,19 @@ fun SaltDialogWindow(
             onPreviewKeyEvent = onPreviewKeyEvent,
             onKeyEvent = onKeyEvent,
             modalityType = modalityType.toAwtModalityType(),
-            init = init
+            init = { window ->
+                // TODO https://youtrack.jetbrains.com/issue/CMP-5651/When-the-dialog-window-is-closed-under-the-dark-theme-a-white-flash-will-appear.
+                // The background color must be set to java.awt.Color.BLACK
+                // Otherwise, background anomalies such as Mica will occur under Direct3D:
+                // the Mica background will not update when the window is resized
+                window.background = java.awt.Color.BLACK
+                window.findSkiaLayer()?.transparency = true
+
+                // Move to before window creation
+                window.hackContentPane()
+
+                init(window)
+            }
         ) {
             val density = LocalDensity.current
 
@@ -192,29 +207,33 @@ fun SaltDialogWindow(
                     }
                 }
 
-                val os = OS.current
-                when (os) {
-                    is OS.Windows ->
-                        WindowsSaltDialogWindowFrame(
-                            resizable = resizable,
-                            properties = properties,
-                            content = content
-                        )
+                WindowBackgroundBox(
+                    transparent = transparent,
+                    backgroundType = properties.backgroundType
+                ) {
+                    when (OS.current) {
+                        is OS.Windows ->
+                            WindowsSaltDialogWindowFrame(
+                                resizable = resizable,
+                                properties = properties,
+                                content = content
+                            )
 
-                    is OS.MacOS ->
-                        MacOSSaltDialogWindowFrame(
-                            properties = properties,
-                            content = content
-                        )
+                        is OS.MacOS ->
+                            MacOSSaltDialogWindowFrame(
+                                properties = properties,
+                                content = content
+                            )
 
-                    is OS.Linux ->
-                        LinuxSaltDialogWindowFrame(
-                            resizable = resizable,
-                            properties = properties,
-                            content = content
-                        )
+                        is OS.Linux ->
+                            LinuxSaltDialogWindowFrame(
+                                resizable = resizable,
+                                properties = properties,
+                                content = content
+                            )
 
-                    else -> content()
+                        else -> content()
+                    }
                 }
             }
         }

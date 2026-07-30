@@ -18,8 +18,6 @@
 
 package com.moriafly.salt.ui.gestures
 
-import androidx.compose.foundation.ComposeFoundationFlags
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.gestures.NestedScrollScope
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
@@ -46,14 +44,10 @@ internal class TrackpadScrollingLogic(
         pass: PointerEventPass,
         bounds: IntSize,
     ) {
-        @OptIn(ExperimentalFoundationApi::class)
         if (
-            !ComposeFoundationFlags.isTrackpadGestureHandlingEnabled ||
-            (
-                pointerEvent.type != PointerEventType.PanStart &&
-                    pointerEvent.type != PointerEventType.PanMove &&
-                    pointerEvent.type != PointerEventType.PanEnd
-            )
+            pointerEvent.type != PointerEventType.PanStart &&
+                pointerEvent.type != PointerEventType.PanMove &&
+                pointerEvent.type != PointerEventType.PanEnd
         ) {
             return
         }
@@ -116,9 +110,6 @@ internal class TrackpadScrollingLogic(
     }
 
     private fun onPan(pointerEvent: PointerEvent): Boolean {
-        @OptIn(ExperimentalFoundationApi::class)
-        if (!ComposeFoundationFlags.isTrackpadGestureHandlingEnabled) return false
-
         var sent = false
 
         pointerEvent.changes.firstOrNull()?.let {

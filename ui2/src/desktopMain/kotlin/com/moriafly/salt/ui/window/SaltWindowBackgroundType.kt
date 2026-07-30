@@ -42,7 +42,12 @@ enum class SaltWindowBackgroundType {
     /**
      * Windows 11 22621+
      */
-    MicaAlt;
+    MicaAlt,
+
+    /**
+     * Native macOS 10.14+ vibrancy backed by `NSVisualEffectView`.
+     */
+    Vibrancy;
 
     /**
      * Whether the background type is supported on the current OS.
@@ -52,9 +57,17 @@ enum class SaltWindowBackgroundType {
         return when (this) {
             None -> true
             Mica if os is OS.Windows -> os.windowsBuild >= OS.Windows.WINDOWS_11_21H2
-            Acrylic if os is OS.Windows -> return os.windowsBuild >= OS.Windows.WINDOWS_11_22H2
-            MicaAlt if os is OS.Windows -> return os.windowsBuild >= OS.Windows.WINDOWS_11_22H2
+            Acrylic if os is OS.Windows -> os.windowsBuild >= OS.Windows.WINDOWS_11_22H2
+            MicaAlt if os is OS.Windows -> os.windowsBuild >= OS.Windows.WINDOWS_11_22H2
+            Vibrancy if os is OS.MacOS -> os.supportsVibrancy()
             else -> false
         }
     }
+}
+
+private fun OS.MacOS.supportsVibrancy(): Boolean {
+    val components = version.split('.')
+    val major = components.getOrNull(0)?.toIntOrNull() ?: return false
+    val minor = components.getOrNull(1)?.toIntOrNull() ?: 0
+    return major > 10 || major == 10 && minor >= 14
 }

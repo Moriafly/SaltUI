@@ -124,6 +124,8 @@ internal class WindowsSaltWindowStyler(
                                 SaltWindowBackgroundType.Mica -> 2
                                 SaltWindowBackgroundType.Acrylic -> 3
                                 SaltWindowBackgroundType.MicaAlt -> 4
+                                // Vibrancy is macOS-only; use no system backdrop on Windows.
+                                SaltWindowBackgroundType.Vibrancy -> 1
                             }
                         ),
                         valueSize = 4

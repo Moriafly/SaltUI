@@ -19,6 +19,9 @@
 
 package com.moriafly.salt.ui.window
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
@@ -31,6 +34,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.ExperimentalComposeUiApi
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.awt.ComposeWindow
 import androidx.compose.ui.awt.SwingWindow
 import androidx.compose.ui.graphics.painter.Painter
@@ -44,10 +48,14 @@ import androidx.compose.ui.window.WindowDecoration
 import androidx.compose.ui.window.WindowState
 import androidx.compose.ui.window.rememberWindowState
 import com.moriafly.salt.core.os.OS
+import com.moriafly.salt.ui.SaltTheme
 import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.moriafly.salt.ui.platform.linux.LinuxSaltWindowFrame
 import com.moriafly.salt.ui.platform.macos.MacOSSaltWindowFrame
 import com.moriafly.salt.ui.platform.windows.WindowsSaltWindowFrame
+import com.moriafly.salt.ui.thenIf
+import com.moriafly.salt.ui.util.findSkiaLayer
+import com.moriafly.salt.ui.util.hackContentPane
 import com.moriafly.salt.ui.window.internal.SaltWindowEnvironment
 import com.moriafly.salt.ui.window.internal.resolveForPlatform
 import java.awt.Dimension
@@ -98,7 +106,7 @@ fun SaltWindow(
 
     val currentProperties by rememberUpdatedState(properties)
 
-    // On Linux the window is always undecorated.
+    // On Linux the window is always undecorated
     val resolvedDecoration = decoration.resolveForPlatform()
 
     SaltWindowEnvironment {
@@ -116,7 +124,19 @@ fun SaltWindow(
             alwaysOnTop = alwaysOnTop,
             onPreviewKeyEvent = onPreviewKeyEvent,
             onKeyEvent = onKeyEvent,
-            init = init
+            init = { window ->
+                // TODO https://youtrack.jetbrains.com/issue/CMP-5651/When-the-dialog-window-is-closed-under-the-dark-theme-a-white-flash-will-appear.
+                // The background color must be set to java.awt.Color.BLACK
+                // Otherwise, background anomalies such as Mica will occur under Direct3D:
+                // the Mica background will not update when the window is resized
+                window.background = java.awt.Color.BLACK
+                window.findSkiaLayer()?.transparency = true
+
+                // Move to before window creation
+                window.hackContentPane()
+
+                init(window)
+            }
         ) {
             val density = LocalDensity.current
 
@@ -183,29 +203,33 @@ fun SaltWindow(
                     }
                 }
 
-                when (OS.current) {
-                    is OS.Windows ->
-                        WindowsSaltWindowFrame(
-                            resizable = resizable,
-                            properties = properties,
-                            content = content
-                        )
+                WindowBackgroundBox(
+                    transparent = transparent,
+                    backgroundType = properties.backgroundType
+                ) {
+                    when (OS.current) {
+                        is OS.Windows ->
+                            WindowsSaltWindowFrame(
+                                resizable = resizable,
+                                properties = properties,
+                                content = content
+                            )
 
-                    is OS.MacOS ->
-                        MacOSSaltWindowFrame(
-                            properties = properties,
-                            content = content
-                        )
+                        is OS.MacOS ->
+                            MacOSSaltWindowFrame(
+                                properties = properties,
+                                content = content
+                            )
 
-                    is OS.Linux ->
-                        LinuxSaltWindowFrame(
-                            resizable = resizable,
-                            properties = properties,
-                            content = content
-                        )
+                        is OS.Linux ->
+                            LinuxSaltWindowFrame(
+                                resizable = resizable,
+                                properties = properties,
+                                content = content
+                            )
 
-                    else ->
-                        content()
+                        else -> content()
+                    }
                 }
             }
         }
@@ -223,3 +247,33 @@ val LocalWindowState = staticCompositionLocalOf<WindowState> {
 @Suppress("RemoveExplicitTypeArguments")
 internal val LocalIsHitTestInCaptionBarState =
     compositionLocalOf<MutableState<Boolean>> { mutableStateOf(false) }
+
+@UnstableSaltUiApi
+@Composable
+internal fun WindowBackgroundBox(
+    transparent: Boolean,
+    backgroundType: SaltWindowBackgroundType,
+    modifier: Modifier = Modifier,
+    content: @Composable BoxScope.() -> Unit
+) {
+    Box(
+        modifier = modifier
+            .thenIf(
+                when (OS.current) {
+                    is OS.Windows ->
+                        !transparent && (
+                            backgroundType == SaltWindowBackgroundType.None ||
+                                backgroundType == SaltWindowBackgroundType.Vibrancy
+                        )
+
+                    is OS.MacOS ->
+                        !transparent && backgroundType != SaltWindowBackgroundType.Vibrancy
+
+                    else -> !transparent
+                }
+            ) {
+                background(SaltTheme.colors.background)
+            },
+        content = content
+    )
+}

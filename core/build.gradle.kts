@@ -13,7 +13,6 @@
  * Lesser General Public License for more details.
  */
 
-import com.android.build.api.dsl.androidLibrary
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.plugin.mpp.KotlinAndroidTarget
 
@@ -27,9 +26,9 @@ plugins {
 mavenPublishing {
     // Define coordinates for the published artifact
     coordinates(
-        groupId = "io.github.moriafly",
+        groupId = project.group.toString(),
         artifactId = "salt-core",
-        version = libs.versions.version.get()
+        version = project.version.toString()
     )
 
     // Configure POM metadata for the published artifact
@@ -75,10 +74,9 @@ kotlin {
 
     withSourcesJar(false)
 
-    @Suppress("UnstableApiUsage")
-    androidLibrary {
+    android {
         namespace = "com.moriafly.salt.core"
-        compileSdk = 36
+        compileSdk = 37
         minSdk = 23
 
         compilerOptions {

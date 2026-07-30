@@ -17,9 +17,17 @@
 
 package com.moriafly.salt.ui.gestures
 
+import androidx.compose.animation.rememberSplineBasedDecay
+import androidx.compose.animation.splineBasedDecay
 import androidx.compose.foundation.gestures.FlingBehavior
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+
+internal actual fun platformScrollableDefaultFlingBehavior(): ScrollableDefaultFlingBehavior =
+    DefaultFlingBehavior(splineBasedDecay(UnityDensity))
 
 @Composable
-internal actual fun rememberPlatformDefaultFlingBehavior(): FlingBehavior =
-    androidx.compose.foundation.gestures.ScrollableDefaults.flingBehavior()
+internal actual fun rememberPlatformDefaultFlingBehavior(): FlingBehavior {
+    val flingSpec = rememberSplineBasedDecay<Float>()
+    return remember(flingSpec) { DefaultFlingBehavior(flingSpec) }
+}

@@ -25,9 +25,19 @@ import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.sun.jna.Pointer
 import com.sun.jna.platform.win32.WinDef
 import org.jetbrains.skiko.SkiaLayer
+import java.awt.AlphaComposite
+import java.awt.BorderLayout
+import java.awt.Color
+import java.awt.Component
 import java.awt.Container
+import java.awt.Graphics
+import java.awt.Graphics2D
 import java.awt.Window
 import javax.swing.JComponent
+import javax.swing.JDialog
+import javax.swing.JFrame
+import javax.swing.JLayeredPane
+import javax.swing.JWindow
 
 /**
  * Get the handle of the window, only works on Windows platform.
@@ -89,6 +99,66 @@ fun Window.findSkiaLayer(): SkiaLayer? = when (this) {
         "Unsupported window type: ${this::class.simpleName}"
     )
 }
+
+@UnstableSaltUiApi
+fun Window.hackContentPane() {
+    val oldContentPane = contentPane ?: return
+
+    // Create hacked content pane the same way of AWT
+    val newContentPane: JComponent = HackedContentPane()
+    newContentPane.name = "$name.contentPane"
+    newContentPane.layout = object : BorderLayout() {
+        override fun addLayoutComponent(comp: Component, constraints: Any?) {
+            super.addLayoutComponent(comp, constraints ?: CENTER)
+        }
+    }
+
+    newContentPane.background = Color(0, 0, 0, 0)
+    newContentPane.isOpaque = false
+    newContentPane.size = oldContentPane.size
+
+    newContentPane.enableInputMethods(true)
+    oldContentPane.components.forEach { component ->
+        newContentPane.add(component)
+    }
+
+    contentPane = newContentPane
+}
+
+private class HackedContentPane : JLayeredPane() {
+    override fun paint(g: Graphics) {
+        if (background.alpha != 255) {
+            val graphics = g.create()
+            try {
+                if (graphics is Graphics2D) {
+                    graphics.color = background
+                    graphics.composite = AlphaComposite.getInstance(AlphaComposite.SRC)
+                    graphics.fillRect(0, 0, width, height)
+                }
+            } finally {
+                graphics.dispose()
+            }
+        }
+        super.paint(g)
+    }
+}
+
+/**
+ * Try hard to get the contentPane.
+ */
+private var Window.contentPane
+    get() = when (this) {
+        is JFrame -> contentPane
+        is JDialog -> contentPane
+        is JWindow -> contentPane
+        else -> null
+    }
+    set(value) = when (this) {
+        is JFrame -> contentPane = value
+        is JDialog -> contentPane = value
+        is JWindow -> contentPane = value
+        else -> throw IllegalStateException()
+    }
 
 /**
  * Recursively finds the first JComponent of a specific type in a container (depth-first).

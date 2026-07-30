@@ -473,39 +473,33 @@ class AnchoredDraggableState<T>(
         }
     }
 
-    private fun computeTarget(offset: Float, currentValue: T, velocity: Float): T {
+    internal fun computeTarget(offset: Float, currentValue: T, velocity: Float): T {
         val currentAnchors = anchors
         val currentAnchorPosition = currentAnchors.positionOf(currentValue)
         val velocityThresholdPx = velocityThreshold()
         return if (currentAnchorPosition == offset || currentAnchorPosition.isNaN()) {
             currentValue
+        } else if (velocity >= velocityThresholdPx) {
+            currentAnchors.closestAnchor(offset, true) ?: currentValue
+        } else if (velocity <= -velocityThresholdPx) {
+            currentAnchors.closestAnchor(offset, false) ?: currentValue
         } else if (currentAnchorPosition < offset) {
-            // Swiping from lower to upper (positive)
-            if (velocity >= velocityThresholdPx) {
-                currentAnchors.closestAnchor(offset, true)!!
-            } else {
-                val upper = currentAnchors.closestAnchor(offset, true)!!
-                val distance = abs(currentAnchors.positionOf(upper) - currentAnchorPosition)
-                val relativeThreshold = abs(positionalThreshold(distance))
-                val absoluteThreshold = abs(currentAnchorPosition + relativeThreshold)
-                if (offset < absoluteThreshold) currentValue else upper
-            }
+            val upper = currentAnchors.closestAnchor(offset, true)!!
+            val distance = abs(currentAnchors.positionOf(upper) - currentAnchorPosition)
+            val relativeThreshold = abs(positionalThreshold(distance))
+            val absoluteThreshold = abs(currentAnchorPosition + relativeThreshold)
+            if (offset < absoluteThreshold) currentValue else upper
         } else {
-            // Swiping from upper to lower (negative)
-            if (velocity <= -velocityThresholdPx) {
-                currentAnchors.closestAnchor(offset, false)!!
+            val lower = currentAnchors.closestAnchor(offset, false)!!
+            val distance = abs(currentAnchorPosition - currentAnchors.positionOf(lower))
+            val relativeThreshold = abs(positionalThreshold(distance))
+            val absoluteThreshold = abs(currentAnchorPosition - relativeThreshold)
+            if (offset < 0) {
+                // For negative offsets, larger absolute thresholds are closer to lower anchors
+                // than smaller ones
+                if (abs(offset) < absoluteThreshold) currentValue else lower
             } else {
-                val lower = currentAnchors.closestAnchor(offset, false)!!
-                val distance = abs(currentAnchorPosition - currentAnchors.positionOf(lower))
-                val relativeThreshold = abs(positionalThreshold(distance))
-                val absoluteThreshold = abs(currentAnchorPosition - relativeThreshold)
-                if (offset < 0) {
-                    // For negative offsets, larger absolute thresholds are closer to lower anchors
-                    // than smaller ones
-                    if (abs(offset) < absoluteThreshold) currentValue else lower
-                } else {
-                    if (offset > absoluteThreshold) currentValue else lower
-                }
+                if (offset > absoluteThreshold) currentValue else lower
             }
         }
     }

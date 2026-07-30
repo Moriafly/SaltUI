@@ -24,6 +24,7 @@ import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 
 /**
  * Vertical edge.
@@ -41,8 +42,8 @@ import androidx.compose.ui.unit.Dp
  */
 @Stable
 fun Modifier.verticalEdge(
-    top: Dp,
-    bottom: Dp
+    top: Dp = 0.dp,
+    bottom: Dp = 0.dp
 ): Modifier = drawWithCache {
     onDrawWithContent {
         drawContent()
@@ -78,8 +79,8 @@ fun Modifier.verticalEdge(
  */
 @Stable
 fun Modifier.horizontalEdge(
-    start: Dp,
-    end: Dp
+    start: Dp = 0.dp,
+    end: Dp = 0.dp
 ): Modifier = drawWithCache {
     onDrawWithContent {
         drawContent()

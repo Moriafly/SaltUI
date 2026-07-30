@@ -69,9 +69,8 @@ import java.awt.Window
  * Maximize, and Close). Similar to how apps like Windows 11, [captionButtonHeight] <=
  * [captionBarHeight].
  * @property captionButtonIsDarkTheme Whether the caption button is dark theme.
- * @property backgroundType The background type. Support Windows 11 Build 22621 or later.
- * @property backgroundIsDarkTheme Whether the window background is dark theme. Support Windows 11
- * Build 22621 or later.
+ * @property backgroundType The platform window background type.
+ * @property backgroundIsDarkTheme Whether the platform window background uses a dark appearance.
  * @property extraDisplayScale The extra display scale.
  * @property extraFontScale The extra font scale.
  * @property minimizeButtonEnabled Whether the minimize button is enabled, only used for

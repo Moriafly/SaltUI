@@ -10,7 +10,7 @@ Add dependency:
 
 ```kotlin
 // Replace <TAG> with the latest version
-// e.g. implementation("io.github.moriafly:salt-ui:2.6.0-beta02")
+// e.g. implementation("io.github.moriafly:salt-ui:3.0.0-alpha01")
 implementation("io.github.moriafly:salt-ui:<TAG>")
 ```
 
@@ -27,7 +27,7 @@ fun App() {
 }
 ```
 
-See demo: [composeApp](https://github.com/Moriafly/SaltUI/tree/main/composeApp).
+See demo: [shared](https://github.com/Moriafly/SaltUI/tree/main/shared).
 
 ## Text Description and Translation Standards
 
@@ -54,6 +54,7 @@ Salt UI performs operations related to internal ART APIs. Please refer to the fo
 
 | Salt UI        | Compose Multiplatform | Jetpack Compose |
 |----------------|-----------------------|-----------------|
+| 3.0.0-alpha01+ | 1.12.0-alpha01        | 1.12.0-alpha02  |
 | 2.9.0-beta02+  | 1.11.0-beta02         | 1.11.0-beta02   |
 | 2.9.0-beta01+  | 1.11.0-beta01         | 1.11.0-beta01   |
 | 2.9.0-alpha08+ | 1.11.0-alpha04        | 1.11.0-alpha06  |
