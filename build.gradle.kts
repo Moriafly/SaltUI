@@ -9,3 +9,23 @@ plugins {
     alias(libs.plugins.vanniktech.maven.publish) apply false
     alias(libs.plugins.kotlinx.atomicfu) apply false
 }
+
+val isPublishingToMavenLocal = gradle.startParameter.taskNames.any {
+    val taskName = it.substringAfterLast(':')
+    taskName == "publishToMavenLocal" ||
+        taskName.endsWith("PublicationToMavenLocal")
+}
+
+val defaultPublicationVersion = if (isPublishingToMavenLocal) {
+    libs.versions.mavenLocalVersion.get()
+} else {
+    libs.versions.version.get()
+}
+
+val publicationVersion = providers.gradleProperty("publicationVersion")
+    .getOrElse(defaultPublicationVersion)
+
+allprojects {
+    group = "io.github.moriafly"
+    version = publicationVersion
+}

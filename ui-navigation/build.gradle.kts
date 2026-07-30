@@ -26,15 +26,11 @@ plugins {
     `maven-publish`
 }
 
-val isPublishingToMavenLocal = gradle.startParameter.taskNames.any {
-    it.contains("publishToMavenLocal", ignoreCase = true)
-}
-
 mavenPublishing {
     coordinates(
-        groupId = "io.github.moriafly",
+        groupId = project.group.toString(),
         artifactId = "salt-ui-navigation",
-        version = if (isPublishingToMavenLocal) libs.versions.mavenLocalVersion.get() else libs.versions.version.get()
+        version = project.version.toString()
     )
 
     pom {
