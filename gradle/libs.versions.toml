@@ -17,6 +17,7 @@ collection = "1.5.0"
 navigation3="1.1.1"
 navigationevent = "1.1.0"
 kotlinx-serialization = "1.10.0"
+kover = "0.9.8"
 
 [libraries]
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
@@ -52,5 +53,6 @@ android-kotlin-multiplatform-library = { id = "com.android.kotlin.multiplatform.
 compose-multiplatform = { id = "org.jetbrains.compose", version.ref = "compose-multiplatform" }
 vanniktech-maven-publish = { id = "com.vanniktech.maven.publish", version.ref = "maven-publish" }
 kotlinx-atomicfu = { id  = "org.jetbrains.kotlinx.atomicfu", version.ref = "kotlinx-atomicfu" }
+kover = { id = "org.jetbrains.kotlinx.kover", version.ref = "kover" }
 
 [bundles]

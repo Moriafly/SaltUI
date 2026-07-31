@@ -22,7 +22,23 @@ plugins {
     alias(libs.plugins.android.kotlin.multiplatform.library)
     alias(libs.plugins.compose.multiplatform)
     alias(libs.plugins.vanniktech.maven.publish)
+    alias(libs.plugins.kover)
     `maven-publish`
+}
+
+kover {
+    reports {
+        filters {
+            includes {
+                classes("com.moriafly.salt.ui.JustifiedRowKt*")
+            }
+        }
+        verify {
+            rule("JustifiedRow line coverage") {
+                minBound(80)
+            }
+        }
+    }
 }
 
 compose.resources {

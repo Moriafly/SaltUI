@@ -8,6 +8,7 @@ plugins {
     alias(libs.plugins.compose.multiplatform) apply false
     alias(libs.plugins.vanniktech.maven.publish) apply false
     alias(libs.plugins.kotlinx.atomicfu) apply false
+    alias(libs.plugins.kover) apply false
 }
 
 val isPublishingToMavenLocal = gradle.startParameter.taskNames.any {
