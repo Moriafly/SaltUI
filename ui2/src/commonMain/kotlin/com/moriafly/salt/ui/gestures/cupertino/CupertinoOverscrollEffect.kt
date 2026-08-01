@@ -31,7 +31,7 @@ import androidx.compose.foundation.overscroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateSetOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -45,6 +45,7 @@ import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.pointer.PointerEvent
 import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.PointerId
 import androidx.compose.ui.input.pointer.changedToDownIgnoreConsumed
 import androidx.compose.ui.input.pointer.changedToUpIgnoreConsumed
 import androidx.compose.ui.layout.Measurable
@@ -591,7 +592,10 @@ private class CupertinoOverscrollNode(
     PointerInputModifierNode {
     override fun onRemeasured(size: IntSize) = onNodeRemeasured(size)
 
-    var pointersDown by mutableIntStateOf(0)
+    private val pointerTracker = CupertinoPointerTracker()
+
+    val pointersDown: Int
+        get() = pointerTracker.pointersDown
 
     override fun onPointerEvent(
         pointerEvent: PointerEvent,
@@ -599,19 +603,12 @@ private class CupertinoOverscrollNode(
         bounds: IntSize
     ) {
         if (pass == PointerEventPass.Initial) {
-            pointerEvent.changes.forEach { change ->
-                if (change.changedToDownIgnoreConsumed()) {
-                    pointersDown++
-                } else if (change.changedToUpIgnoreConsumed()) {
-                    pointersDown--
-                }
-            }
-            check(pointersDown >= 0) { "pointersDown cannot be negative" }
+            pointerTracker.update(pointerEvent)
         }
     }
 
     override fun onCancelPointerInput() {
-        pointersDown = 0
+        pointerTracker.reset()
     }
 
     override fun ContentDrawScope.draw() {
@@ -642,6 +639,27 @@ private class CupertinoOverscrollNode(
         return layout(placeable.width, placeable.height) {
             placeable.placeWithLayer(offset())
         }
+    }
+}
+
+internal class CupertinoPointerTracker {
+    private val activePointerIds = mutableStateSetOf<PointerId>()
+
+    val pointersDown: Int
+        get() = activePointerIds.size
+
+    fun update(pointerEvent: PointerEvent) {
+        pointerEvent.changes.forEach { change ->
+            if (change.changedToDownIgnoreConsumed()) {
+                activePointerIds.add(change.id)
+            } else if (change.changedToUpIgnoreConsumed()) {
+                activePointerIds.remove(change.id)
+            }
+        }
+    }
+
+    fun reset() {
+        activePointerIds.clear()
     }
 }
 
