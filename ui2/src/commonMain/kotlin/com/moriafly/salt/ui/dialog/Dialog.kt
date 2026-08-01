@@ -23,7 +23,6 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.gestures.waitForUpOrCancellation
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -37,6 +36,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -57,8 +57,10 @@ import androidx.compose.ui.layout.boundsInParent
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.DialogProperties
 import com.moriafly.salt.ui.BasicButton
 import com.moriafly.salt.ui.ButtonAppearance
@@ -75,6 +77,7 @@ import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.moriafly.salt.ui.internal.stringResourceCancel
 import com.moriafly.salt.ui.internal.stringResourceConfirm
 import com.moriafly.salt.ui.material.DisableMaterial
+import com.moriafly.salt.ui.outerPadding
 import com.moriafly.salt.ui.thenIf
 
 /**
@@ -84,11 +87,11 @@ import com.moriafly.salt.ui.thenIf
 @Composable
 fun YesDialog(
     onDismissRequest: () -> Unit,
+    title: String,
+    content: String,
     properties: DialogProperties = DialogProperties(
         usePlatformDefaultWidth = false
     ),
-    title: String,
-    content: String,
     confirmText: String = stringResourceConfirm()
 ) {
     BasicAdaptiveDialog(
@@ -106,7 +109,9 @@ fun YesDialog(
             ) {
                 DialogActions(
                     onConfirm = onDismissRequest,
-                    confirmText = confirmText
+                    onDismiss = null,
+                    confirmText = confirmText,
+                    dismissText = null
                 )
             }
         }
@@ -121,14 +126,14 @@ fun YesDialog(
 fun YesNoDialog(
     onDismissRequest: () -> Unit,
     onConfirm: () -> Unit,
+    title: String,
+    content: String,
     properties: DialogProperties = DialogProperties(
         usePlatformDefaultWidth = false
     ),
-    title: String,
-    content: String,
-    drawContent: (@Composable () -> Unit)? = null,
     cancelText: String = stringResourceCancel(),
-    confirmText: String = stringResourceConfirm()
+    confirmText: String = stringResourceConfirm(),
+    drawContent: (@Composable () -> Unit)? = null
 ) {
     BasicAdaptiveDialog(
         onDismissRequest = onDismissRequest,
@@ -146,8 +151,8 @@ fun YesNoDialog(
             ) {
                 DialogActions(
                     onConfirm = onConfirm,
-                    confirmText = confirmText,
                     onDismiss = onDismissRequest,
+                    confirmText = confirmText,
                     dismissText = cancelText
                 )
             }
@@ -158,17 +163,18 @@ fun YesNoDialog(
 /**
  * Displays an adaptive text-input dialog with confirmation and dismissal actions.
  */
+@Suppress("ktlint:compose:modifier-missing-check")
 @UnstableSaltUiApi
 @Composable
 fun InputDialog(
     onDismissRequest: () -> Unit,
     onConfirm: () -> Unit,
+    onChange: (String) -> Unit,
+    title: String,
+    text: String,
     properties: DialogProperties = DialogProperties(
         usePlatformDefaultWidth = false
     ),
-    title: String,
-    text: String,
-    onChange: (String) -> Unit,
     hint: String? = null,
     cancelText: String = stringResourceCancel(),
     confirmText: String = stringResourceConfirm()
@@ -202,8 +208,8 @@ fun InputDialog(
             ) {
                 DialogActions(
                     onConfirm = onConfirm,
-                    confirmText = confirmText,
                     onDismiss = onDismissRequest,
+                    confirmText = confirmText,
                     dismissText = cancelText
                 )
             }
@@ -217,6 +223,7 @@ fun InputDialog(
 /**
  * A styled adaptive dialog surface with platform-resolved geometry and content padding.
  */
+@Suppress("ktlint:compose:modifier-missing-check")
 @OptIn(UnstableSaltUiApi::class)
 @Composable
 fun BasicDialog(
@@ -245,7 +252,6 @@ fun BasicDialog(
 }
 
 /** Default visual tokens shared by Salt dialogs. */
-@Suppress("ConstPropertyName")
 object DialogDefaults {
     /** Platform-resolved surface shape for a dialog. */
     val shape: Shape
@@ -301,9 +307,22 @@ object DialogDefaults {
         }
 }
 
-/** A short, theme-derived dialog title. */
+/** A default title for arbitrary dialog content. */
 @Composable
 fun DialogTitle(
+    text: String,
+    modifier: Modifier = Modifier
+) {
+    Text(
+        text = text,
+        modifier = modifier.outerPadding(),
+        fontSize = 18.sp,
+        fontWeight = FontWeight.Bold
+    )
+}
+
+@Composable
+private fun AlertDialogTitle(
     text: String,
     modifier: Modifier = Modifier
 ) {
@@ -316,9 +335,8 @@ fun DialogTitle(
     )
 }
 
-/** Supporting text that explains the purpose or consequence of a dialog. */
 @Composable
-fun DialogMessage(
+private fun AlertDialogMessage(
     text: String,
     modifier: Modifier = Modifier
 ) {
@@ -389,7 +407,7 @@ private fun DialogSurface(
                             .clip(shape)
                             .background(DialogDefaults.containerColor)
                             .thenIf(surfaceBorder != null) {
-                                border(requireNotNull(surfaceBorder), shape)
+                                border(surfaceBorder, shape)
                             }
                     ) {
                         content()
@@ -418,13 +436,13 @@ private fun AlertDialogContent(
                 .verticalScroll(rememberScrollState())
         ) {
             Spacer(Modifier.height(metrics.topPadding))
-            DialogTitle(
+            AlertDialogTitle(
                 text = title,
                 modifier = Modifier.padding(horizontal = metrics.textHorizontalPadding)
             )
             if (messageVisible) {
                 Spacer(Modifier.height(metrics.titleMessageSpacing))
-                DialogMessage(
+                AlertDialogMessage(
                     text = message,
                     modifier = Modifier.padding(horizontal = metrics.textHorizontalPadding)
                 )
@@ -448,9 +466,9 @@ private fun AlertDialogContent(
 @Composable
 private fun DialogActions(
     onConfirm: () -> Unit,
+    onDismiss: (() -> Unit)?,
     confirmText: String,
-    onDismiss: (() -> Unit)? = null,
-    dismissText: String? = null
+    dismissText: String?
 ) {
     val metrics = platformDialogMetrics()
     val fontScale = LocalDensity.current.fontScale
@@ -478,8 +496,8 @@ private fun DialogActions(
                 )
                 Spacer(Modifier.height(metrics.actionSpacing))
                 DialogActionButton(
-                    onClick = requireNotNull(onDismiss),
-                    text = requireNotNull(dismissText),
+                    onClick = onDismiss,
+                    text = dismissText,
                     colors = ButtonDefaults.colors(ButtonAppearance.Subtle),
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -490,8 +508,8 @@ private fun DialogActions(
                 horizontalArrangement = Arrangement.End
             ) {
                 DialogActionButton(
-                    onClick = requireNotNull(onDismiss),
-                    text = requireNotNull(dismissText),
+                    onClick = onDismiss,
+                    text = dismissText,
                     colors = ButtonDefaults.colors(ButtonAppearance.Subtle),
                     modifier = if (metrics.horizontalActionsFillWidth) {
                         Modifier.weight(1f)

@@ -48,10 +48,7 @@ internal data class DialogMetrics(
     val titleFontWeight: FontWeight
 )
 
-/**
- * Salt's continuous corner extends a rounded corner by 1.528665 times its nominal radius.
- * AndroidX expresses the extension as `(1 + smoothing) * radius`.
- */
-internal const val SaltContinuousCornerSmoothing = 0.528665f
+/** Smoothing calibrated against Salt's concentric dialog reference geometry. */
+internal const val SaltContinuousCornerSmoothing = 0.65f
 
 internal expect fun platformDialogMetrics(): DialogMetrics

@@ -17,8 +17,9 @@ SaltUI 2.0 is now available!
   control geometry such as height, padding, and icon size.
 - Dialog cancel actions reuse `ButtonAppearance.Subtle`; confirmation actions remain filled.
 - Dialogs now use platform-resolved continuous shapes, spacing, unclipped dual-layer drop shadows,
-  control density, scroll-safe content, and adaptive action layouts. Titles and messages inherit
-  `SaltTheme` typography, and default action labels are no longer forced to uppercase.
+  control density, scroll-safe content, and adaptive action layouts. Alert dialog titles and
+  messages inherit `SaltTheme` typography, and default action labels are no longer forced to
+  uppercase.
 - `AdaptiveDialogSize.Min` resolves to a maximum width of 260 dp on Desktop and 320 dp on Android
   and iOS. Compact alerts use equal-width horizontal actions, stacking only when available width or
   accessibility font scale requires it.

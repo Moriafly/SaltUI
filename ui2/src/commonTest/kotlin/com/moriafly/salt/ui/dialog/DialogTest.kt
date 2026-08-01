@@ -76,6 +76,13 @@ class DialogTest {
     }
 
     @Test
+    fun dialogShape_usesCalibratedContinuousCorner() {
+        val shape = assertIs<SmoothRoundedRectangleShape>(platformDialogMetrics().shape)
+
+        assertEquals(0.65f, shape.smoothing)
+    }
+
+    @Test
     fun typography_inheritsThemeMainStyle() = runComposeUiTest {
         val mainStyle = TextStyle(
             fontSize = 19.sp,
