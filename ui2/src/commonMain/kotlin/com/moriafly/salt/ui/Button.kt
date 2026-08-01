@@ -48,16 +48,17 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 
 /** The visual treatment of a [Button]. */
 enum class ButtonAppearance {
     /** A contrasting filled container for the most prominent action in a surface. */
     Filled,
 
-    /** A transparent container with an outline for actions that need a visible boundary. */
+    /** A subtle neutral container with an outline for actions that need a visible boundary. */
     Outlined,
 
-    /** A transparent, borderless container for actions already framed by their parent surface. */
+    /** A borderless action whose highlighted content provides its interactive affordance. */
     Plain
 }
 
@@ -195,7 +196,7 @@ fun Button(
     replaceWith = ReplaceWith(
         expression = "Button(onClick = onClick, text = text, modifier = modifier, " +
             "enabled = enabled, appearance = if (type == ButtonType.Sub) " +
-            "ButtonAppearance.Plain else ButtonAppearance.Filled, maxLines = maxLines)",
+            "ButtonAppearance.Outlined else ButtonAppearance.Filled, maxLines = maxLines)",
         imports = arrayOf(
             "com.moriafly.salt.ui.Button",
             "com.moriafly.salt.ui.ButtonAppearance",
@@ -219,7 +220,7 @@ fun Button(
         enabled = enabled,
         appearance = when (type ?: ButtonType.Highlight) {
             ButtonType.Highlight -> ButtonAppearance.Filled
-            ButtonType.Sub -> ButtonAppearance.Plain
+            ButtonType.Sub -> ButtonAppearance.Outlined
         },
         maxLines = maxLines
     )
@@ -253,7 +254,8 @@ fun Button(
         ),
         border = ButtonDefaults.border(
             appearance = appearance,
-            enabled = enabled
+            enabled = enabled,
+            intent = intent
         ),
         content = content
     )
@@ -352,10 +354,16 @@ object ButtonDefaults {
                 disabledContentColor = disabledContentColor
             )
 
-            ButtonAppearance.Outlined,
+            ButtonAppearance.Outlined -> ButtonColors(
+                containerColor = themeColors.subBackground,
+                contentColor = if (destructive) themeColors.error else themeColors.text,
+                disabledContainerColor = themeColors.subBackground,
+                disabledContentColor = disabledContentColor
+            )
+
             ButtonAppearance.Plain -> ButtonColors(
                 containerColor = Color.Transparent,
-                contentColor = if (destructive) themeColors.error else themeColors.text,
+                contentColor = if (destructive) themeColors.error else themeColors.highlight,
                 disabledContainerColor = Color.Transparent,
                 disabledContentColor = disabledContentColor
             )
@@ -365,22 +373,28 @@ object ButtonDefaults {
     @Composable
     fun border(
         appearance: ButtonAppearance,
-        enabled: Boolean = true
+        enabled: Boolean = true,
+        intent: ButtonIntent = ButtonIntent.Normal
     ): BorderStroke? {
         if (appearance != ButtonAppearance.Outlined) return null
 
-        val stroke = SaltTheme.colors.stroke
+        val themeColors = SaltTheme.colors
+        val borderColor = when (intent) {
+            ButtonIntent.Normal -> themeColors.stroke
+            ButtonIntent.Destructive -> themeColors.error.copy(alpha = DestructiveBorderAlpha)
+        }
         return BorderStroke(
-            width = Dp.Hairline,
+            width = 1.dp,
             color = if (enabled) {
-                stroke
+                borderColor
             } else {
-                stroke.copy(alpha = stroke.alpha * DisabledBorderAlpha)
+                borderColor.copy(alpha = borderColor.alpha * DisabledBorderAlpha)
             }
         )
     }
 
     private const val DisabledContentAlpha = 0.55f
+    private const val DestructiveBorderAlpha = 0.4f
     private const val DisabledBorderAlpha = 0.5f
 }
 

@@ -114,7 +114,7 @@ fun YesNoDialog(
                 text = cancelText,
                 modifier = Modifier
                     .weight(1f),
-                appearance = ButtonAppearance.Plain
+                appearance = ButtonAppearance.Outlined
             )
             Spacer(modifier = Modifier.width(SaltTheme.dimens.padding))
             Button(
@@ -173,7 +173,7 @@ fun InputDialog(
                 modifier = Modifier
                     .weight(1f),
                 text = cancelText,
-                appearance = ButtonAppearance.Plain
+                appearance = ButtonAppearance.Outlined
             )
             Spacer(modifier = Modifier.width(SaltTheme.dimens.padding))
             Button(

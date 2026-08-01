@@ -64,8 +64,8 @@ fun ButtonScreen() {
             )
         }
         ItemOuterTip(
-            "Use Filled for the prominent action, Outlined when an action needs a visible " +
-                "boundary, and Plain when the surrounding surface already provides structure"
+            "Use Filled for the prominent action, Outlined for supporting actions that need a " +
+                "visible boundary, and Plain for lightweight highlighted actions"
         )
 
         ItemOuterTitle("Control size")

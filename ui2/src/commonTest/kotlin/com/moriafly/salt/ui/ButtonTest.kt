@@ -17,6 +17,7 @@
 
 package com.moriafly.salt.ui
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -29,6 +30,7 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.v2.runComposeUiTest
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -53,6 +55,102 @@ class ButtonTest {
                 disabledContentColor = Color.Unspecified
             )
         )
+    }
+
+    @Test
+    fun outlinedBorder_usesVisibleSemanticColor() = runComposeUiTest {
+        var normalBorder = BorderStroke(0.dp, Color.Unspecified)
+        var destructiveBorder = BorderStroke(0.dp, Color.Unspecified)
+        var disabledBorder = BorderStroke(0.dp, Color.Unspecified)
+        var strokeColor = Color.Unspecified
+        var errorColor = Color.Unspecified
+
+        setContent {
+            SaltTheme {
+                normalBorder = requireNotNull(
+                    ButtonDefaults.border(ButtonAppearance.Outlined)
+                )
+                destructiveBorder = requireNotNull(
+                    ButtonDefaults.border(
+                        appearance = ButtonAppearance.Outlined,
+                        intent = ButtonIntent.Destructive
+                    )
+                )
+                disabledBorder = requireNotNull(
+                    ButtonDefaults.border(
+                        appearance = ButtonAppearance.Outlined,
+                        enabled = false
+                    )
+                )
+                strokeColor = SaltTheme.colors.stroke
+                errorColor = SaltTheme.colors.error
+            }
+        }
+
+        runOnIdle {
+            assertEquals(
+                BorderStroke(1.dp, strokeColor),
+                normalBorder
+            )
+            assertEquals(
+                BorderStroke(1.dp, errorColor.copy(alpha = 0.4f)),
+                destructiveBorder
+            )
+            assertEquals(
+                BorderStroke(
+                    1.dp,
+                    strokeColor.copy(alpha = strokeColor.alpha * 0.5f)
+                ),
+                disabledBorder
+            )
+        }
+    }
+
+    @Test
+    fun outlinedButton_usesSubBackgroundContainer() = runComposeUiTest {
+        var outlinedColors = ButtonColors(
+            containerColor = Color.Unspecified,
+            contentColor = Color.Unspecified,
+            disabledContainerColor = Color.Unspecified,
+            disabledContentColor = Color.Unspecified
+        )
+        var subBackground = Color.Unspecified
+
+        setContent {
+            SaltTheme {
+                outlinedColors = ButtonDefaults.colors(ButtonAppearance.Outlined)
+                subBackground = SaltTheme.colors.subBackground
+            }
+        }
+
+        runOnIdle {
+            assertEquals(subBackground, outlinedColors.containerColor)
+            assertEquals(subBackground, outlinedColors.disabledContainerColor)
+        }
+    }
+
+    @Test
+    fun plainButton_usesTransparentContainerAndHighlightContent() = runComposeUiTest {
+        var plainColors = ButtonColors(
+            containerColor = Color.Unspecified,
+            contentColor = Color.Unspecified,
+            disabledContainerColor = Color.Unspecified,
+            disabledContentColor = Color.Unspecified
+        )
+        var highlight = Color.Unspecified
+
+        setContent {
+            SaltTheme {
+                plainColors = ButtonDefaults.colors(ButtonAppearance.Plain)
+                highlight = SaltTheme.colors.highlight
+            }
+        }
+
+        runOnIdle {
+            assertEquals(Color.Transparent, plainColors.containerColor)
+            assertEquals(highlight, plainColors.contentColor)
+            assertEquals(Color.Transparent, plainColors.disabledContainerColor)
+        }
     }
 
     @Test
