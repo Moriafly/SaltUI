@@ -17,6 +17,15 @@ val isPublishingToMavenLocal = gradle.startParameter.taskNames.any {
         taskName.endsWith("PublicationToMavenLocal")
 }
 
+val isWindowsOrLinux = providers.systemProperty("os.name")
+    .map { osName ->
+        osName.startsWith("Windows", ignoreCase = true) ||
+            osName.startsWith("Linux", ignoreCase = true)
+    }
+    .get()
+
+extra["configureAppleTargets"] = !isPublishingToMavenLocal || !isWindowsOrLinux
+
 val defaultPublicationVersion = if (isPublishingToMavenLocal) {
     libs.versions.mavenLocalVersion.get()
 } else {

@@ -23,6 +23,8 @@ plugins {
     `maven-publish`
 }
 
+val configureAppleTargets = rootProject.extra["configureAppleTargets"] as Boolean
+
 mavenPublishing {
     // Define coordinates for the published artifact
     coordinates(
@@ -92,13 +94,15 @@ kotlin {
 
     jvm("desktop")
 
-    listOf(
-        iosArm64(),
-        iosSimulatorArm64()
-    ).forEach { iosTarget ->
-        iosTarget.binaries.framework {
-            baseName = "SaltCore"
-            isStatic = true
+    if (configureAppleTargets) {
+        listOf(
+            iosArm64(),
+            iosSimulatorArm64()
+        ).forEach { iosTarget ->
+            iosTarget.binaries.framework {
+                baseName = "SaltCore"
+                isStatic = true
+            }
         }
     }
 
@@ -122,14 +126,16 @@ kotlin {
             implementation(libs.jna.platform)
         }
 
-        val iosArm64Main by getting
-        val iosSimulatorArm64Main by getting
+        if (configureAppleTargets) {
+            val iosArm64Main by getting
+            val iosSimulatorArm64Main by getting
 
-        @Suppress("unused")
-        val iosMain by creating {
-            dependsOn(commonMain)
-            iosArm64Main.dependsOn(this)
-            iosSimulatorArm64Main.dependsOn(this)
+            @Suppress("unused")
+            val iosMain by creating {
+                dependsOn(commonMain)
+                iosArm64Main.dependsOn(this)
+                iosSimulatorArm64Main.dependsOn(this)
+            }
         }
     }
 

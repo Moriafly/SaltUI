@@ -26,6 +26,8 @@ plugins {
     `maven-publish`
 }
 
+val configureAppleTargets = rootProject.extra["configureAppleTargets"] as Boolean
+
 mavenPublishing {
     coordinates(
         groupId = project.group.toString(),
@@ -91,13 +93,15 @@ kotlin {
 
     jvm("desktop")
 
-    listOf(
-        iosArm64(),
-        iosSimulatorArm64()
-    ).forEach { iosTarget ->
-        iosTarget.binaries.framework {
-            baseName = "SaltUINavigation"
-            isStatic = true
+    if (configureAppleTargets) {
+        listOf(
+            iosArm64(),
+            iosSimulatorArm64()
+        ).forEach { iosTarget ->
+            iosTarget.binaries.framework {
+                baseName = "SaltUINavigation"
+                isStatic = true
+            }
         }
     }
 
