@@ -547,7 +547,10 @@ private fun MobileTitleBar(
             if (title != null) {
                 Text(
                     text = title,
-                    fontWeight = FontWeight.Medium,
+                    fontWeight = when (OS.current) {
+                        is OS.IOS -> FontWeight.SemiBold
+                        else -> FontWeight.Medium
+                    },
                     fontSize = 17.sp,
                     maxLines = 1
                 )
