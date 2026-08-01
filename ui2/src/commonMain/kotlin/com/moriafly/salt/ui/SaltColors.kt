@@ -25,6 +25,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.structuralEqualityPolicy
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.compositeOver
+import com.moriafly.salt.core.os.OS
 
 /**
  * Represents a dynamic color scheme that includes both light and dark mode colors.
@@ -122,12 +123,32 @@ class SaltColors(
     )
 
     companion object {
+        private val LightBackground = when (OS.current) {
+            is OS.IOS -> Color(0xFFF2F2F7)
+            else -> Color(0xFFF3F3F3)
+        }
+
+        private val LightSubBackground = when (OS.current) {
+            is OS.IOS -> Color(0xFFFFFFFF)
+            else -> Color(0x80FFFFFF)
+        }
+
+        private val DarkBackground = when (OS.current) {
+            is OS.IOS -> Color(0xFF000000)
+            else -> Color(0xFF202020)
+        }
+
+        private val DarkSubBackground = when (OS.current) {
+            is OS.IOS -> Color(0xFF1C1C1E)
+            else -> Color(0x08FFFFFF)
+        }
+
         fun defaultLight(
             highlight: Color = Color(0xFF0470E6),
             text: Color = Color(0xFF1E1715),
             subText: Color = Color(0xFF8C8C8C),
-            background: Color = Color(0xFFF3F3F3),
-            subBackground: Color = Color(0x80FFFFFF),
+            background: Color = LightBackground,
+            subBackground: Color = LightSubBackground,
             popup: Color = subBackground.compositeOver(background),
             stroke: Color = subText.copy(alpha = 0.15f),
             onHighlight: Color = Color.White,
@@ -152,8 +173,8 @@ class SaltColors(
             highlight: Color = Color(0xFF0088FF),
             text: Color = Color(0xFFEBEEF1),
             subText: Color = Color(0xBFE1E6EB),
-            background: Color = Color(0xFF202020),
-            subBackground: Color = Color(0x08FFFFFF),
+            background: Color = DarkBackground,
+            subBackground: Color = DarkSubBackground,
             popup: Color = subBackground.compositeOver(background),
             stroke: Color = subText.copy(alpha = 0.1f),
             onHighlight: Color = Color.White,
