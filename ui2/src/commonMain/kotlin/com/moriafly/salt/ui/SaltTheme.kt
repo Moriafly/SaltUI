@@ -80,9 +80,11 @@ fun SaltTheme(
     val hazeState = remember(materialType) {
         if (materialType != MaterialType.None) HazeState() else null
     }
+    val colors = if (configs.isDarkTheme) dynamicColors.dark else dynamicColors.light
 
     CompositionLocalProvider(
         LocalIndication provides configs.indication,
+        LocalContentColor provides colors.text,
         LocalSaltConfigs provides configs,
         LocalSaltDynamicColors provides dynamicColors,
         LocalSaltTextStyles provides textStyles,
@@ -92,7 +94,10 @@ fun SaltTheme(
         LocalBasicScreenStyle provides basicScreenStyle,
         LocalHazeState provides hazeState
     ) {
-        content()
+        ProvideTextStyle(
+            value = textStyles.main,
+            content = content
+        )
     }
 }
 
@@ -108,8 +113,11 @@ fun ChangeSaltThemeIsDark(
     val configs = LocalSaltConfigs.current.copy(
         isDarkTheme = isDarkTheme
     )
+    val dynamicColors = LocalSaltDynamicColors.current
+    val colors = if (isDarkTheme) dynamicColors.dark else dynamicColors.light
     CompositionLocalProvider(
         LocalSaltConfigs provides configs,
+        LocalContentColor provides colors.text,
         content = content
     )
 }

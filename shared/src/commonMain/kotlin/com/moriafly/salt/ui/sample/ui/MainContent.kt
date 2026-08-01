@@ -45,6 +45,7 @@ private val navBackStackConfig = SavedStateConfiguration {
             subclass(ScreenRoute.Main::class, ScreenRoute.Main.serializer())
             subclass(ScreenRoute.About::class, ScreenRoute.About.serializer())
             subclass(ScreenRoute.License::class, ScreenRoute.License.serializer())
+            subclass(ScreenRoute.Button::class, ScreenRoute.Button.serializer())
         }
     }
 }

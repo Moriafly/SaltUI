@@ -37,12 +37,13 @@ import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.moriafly.salt.ui.Button
-import com.moriafly.salt.ui.ButtonType
+import com.moriafly.salt.ui.ButtonAppearance
+import com.moriafly.salt.ui.ControlSize
 import com.moriafly.salt.ui.ItemOuterEdit
 import com.moriafly.salt.ui.ItemOuterTip
+import com.moriafly.salt.ui.ProvideControlSize
 import com.moriafly.salt.ui.SaltTheme
 import com.moriafly.salt.ui.Text
-import com.moriafly.salt.ui.TextButton
 import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.moriafly.salt.ui.internal.stringResourceCancel
 import com.moriafly.salt.ui.internal.stringResourceConfirm
@@ -73,8 +74,7 @@ fun YesDialog(
             text = confirmText,
             modifier = Modifier
                 .fillMaxWidth()
-                .outerPadding(),
-            maxLines = 1
+                .outerPadding()
         )
     }
 }
@@ -114,7 +114,7 @@ fun YesNoDialog(
                 text = cancelText,
                 modifier = Modifier
                     .weight(1f),
-                type = ButtonType.Sub
+                appearance = ButtonAppearance.Plain
             )
             Spacer(modifier = Modifier.width(SaltTheme.dimens.padding))
             Button(
@@ -123,8 +123,7 @@ fun YesNoDialog(
                 },
                 text = confirmText,
                 modifier = Modifier
-                    .weight(1f),
-                maxLines = 1
+                    .weight(1f)
             )
         }
     }
@@ -167,18 +166,17 @@ fun InputDialog(
         Row(
             modifier = Modifier.outerPadding()
         ) {
-            TextButton(
+            Button(
                 onClick = {
                     onDismissRequest()
                 },
                 modifier = Modifier
                     .weight(1f),
                 text = cancelText,
-                textColor = SaltTheme.colors.subText,
-                backgroundColor = SaltTheme.colors.subBackground
+                appearance = ButtonAppearance.Plain
             )
             Spacer(modifier = Modifier.width(SaltTheme.dimens.padding))
-            TextButton(
+            Button(
                 onClick = {
                     onConfirm()
                 },
@@ -205,15 +203,17 @@ fun BasicDialog(
         properties = properties
     ) {
         DisableMaterial {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(SaltTheme.shapes.large)
-                    .border(Dp.Hairline, SaltTheme.colors.stroke)
-                    .background(SaltTheme.colors.background)
-                    .outerPadding(horizontal = false)
-            ) {
-                content()
+            ProvideControlSize(ControlSize.Regular) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(SaltTheme.shapes.large)
+                        .border(Dp.Hairline, SaltTheme.colors.stroke)
+                        .background(SaltTheme.colors.background)
+                        .outerPadding(horizontal = false)
+                ) {
+                    content()
+                }
             }
         }
     }

@@ -24,7 +24,7 @@ import androidx.compose.foundation.text.InlineTextContent
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.isSpecified
+import androidx.compose.ui.graphics.takeOrElse
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.Paragraph
 import androidx.compose.ui.text.TextLayoutResult
@@ -51,7 +51,7 @@ import androidx.compose.ui.unit.TextUnit
  * @param text the text to be displayed.
  * @param modifier [Modifier] to apply to this layout node.
  * @param color [Color] to apply to the text. If [Color.Unspecified], and [style] has no color set,
- * this will be [SaltTheme] text color.
+ * this will be [LocalContentColor].
  * @param fontSize the size of glyphs to use when painting the text. See [TextStyle.fontSize]
  * @param fontStyle the typeface variant to use when drawing the letters (e.g., italic). See
  * [TextStyle.fontStyle].
@@ -98,15 +98,9 @@ fun Text(
     maxLines: Int = Int.MAX_VALUE,
     minLines: Int = 1,
     onTextLayout: ((TextLayoutResult) -> Unit)? = null,
-    style: TextStyle = SaltTheme.textStyles.main
+    style: TextStyle = LocalTextStyle.current
 ) {
-    val overrideColorOrUnspecified: Color = if (color.isSpecified) {
-        color
-    } else if (style.color.isSpecified) {
-        style.color
-    } else {
-        SaltTheme.colors.text
-    }
+    val textColor = color.takeOrElse { style.color.takeOrElse { LocalContentColor.current } }
 
     BasicText(
         text = text,
@@ -126,7 +120,7 @@ fun Text(
         softWrap = softWrap,
         maxLines = maxLines,
         minLines = minLines,
-        color = { overrideColorOrUnspecified }
+        color = { textColor }
     )
 }
 
@@ -144,7 +138,7 @@ fun Text(
  * @param text the text to be displayed.
  * @param modifier [Modifier] to apply to this layout node.
  * @param color [Color] to apply to the text. If [Color.Unspecified], and [style] has no color set,
- * this will be [SaltTheme] text color.
+ * this will be [LocalContentColor].
  * @param fontSize the size of glyphs to use when painting the text. See [TextStyle.fontSize].
  * @param fontStyle the typeface variant to use when drawing the letters (e.g., italic). See
  * [TextStyle.fontStyle].
@@ -194,15 +188,9 @@ fun Text(
     minLines: Int = 1,
     inlineContent: Map<String, InlineTextContent> = mapOf(),
     onTextLayout: (TextLayoutResult) -> Unit = {},
-    style: TextStyle = SaltTheme.textStyles.main
+    style: TextStyle = LocalTextStyle.current
 ) {
-    val overrideColorOrUnspecified: Color = if (color.isSpecified) {
-        color
-    } else if (style.color.isSpecified) {
-        style.color
-    } else {
-        SaltTheme.colors.text
-    }
+    val textColor = color.takeOrElse { style.color.takeOrElse { LocalContentColor.current } }
 
     BasicText(
         text = text,
@@ -223,6 +211,6 @@ fun Text(
         maxLines = maxLines,
         minLines = minLines,
         inlineContent = inlineContent,
-        color = { overrideColorOrUnspecified }
+        color = { textColor }
     )
 }

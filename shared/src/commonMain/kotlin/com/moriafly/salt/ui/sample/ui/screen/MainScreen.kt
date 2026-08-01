@@ -106,9 +106,10 @@ fun MainScreen() {
             )
             Item(
                 onClick = {
+                    navBackStack.add(ScreenRoute.Button)
                 },
                 text = "Button",
-                sub = "BasicButton, PillButton"
+                sub = "Appearance, intent, and control size"
             )
             Item(
                 onClick = {

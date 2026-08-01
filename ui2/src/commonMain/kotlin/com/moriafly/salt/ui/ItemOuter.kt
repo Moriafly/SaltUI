@@ -30,6 +30,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 
 /**
@@ -168,16 +169,26 @@ fun ItemOuterTextButton(
     textColor: Color = SaltTheme.colors.onHighlight,
     backgroundColor: Color = SaltTheme.colors.highlight
 ) {
-    TextButton(
+    BasicButton(
         onClick = onClick,
-        text = text,
         modifier = Modifier
             .fillMaxWidth()
             .outerPadding(),
         enabled = enabled,
-        textColor = textColor,
-        backgroundColor = backgroundColor
-    )
+        colors = ButtonColors(
+            containerColor = backgroundColor,
+            contentColor = textColor,
+            disabledContainerColor = backgroundColor.copy(alpha = 0.5f),
+            disabledContentColor = textColor.copy(alpha = 0.55f)
+        )
+    ) {
+        Text(
+            text = text,
+            overflow = TextOverflow.Ellipsis,
+            softWrap = false,
+            maxLines = 1
+        )
+    }
 }
 
 /**

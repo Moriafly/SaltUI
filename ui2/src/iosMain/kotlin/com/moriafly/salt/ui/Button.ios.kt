@@ -18,13 +18,31 @@
 package com.moriafly.salt.ui
 
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.runtime.Composable
+import androidx.compose.ui.unit.dp
 
-actual object ButtonDefaults {
-    actual val ContentPadding: PaddingValues
-        @Composable
-        get() = PaddingValues(
-            horizontal = SaltTheme.dimens.padding,
-            vertical = SaltTheme.dimens.padding * 0.75f
-        )
+private val SmallButtonMetrics = ButtonMetrics(
+    containerHeight = 32.dp,
+    contentPadding = PaddingValues(horizontal = 12.dp),
+    iconSize = 18.dp,
+    iconSpacing = 6.dp
+)
+
+private val RegularButtonMetrics = ButtonMetrics(
+    containerHeight = 44.dp,
+    contentPadding = PaddingValues(horizontal = 16.dp),
+    iconSize = 20.dp,
+    iconSpacing = 8.dp
+)
+
+private val LargeButtonMetrics = ButtonMetrics(
+    containerHeight = 52.dp,
+    contentPadding = PaddingValues(horizontal = 20.dp),
+    iconSize = 22.dp,
+    iconSpacing = 8.dp
+)
+
+internal actual fun platformButtonMetrics(size: ControlSize): ButtonMetrics = when (size) {
+    ControlSize.Small -> SmallButtonMetrics
+    ControlSize.Regular -> RegularButtonMetrics
+    ControlSize.Large -> LargeButtonMetrics
 }

@@ -44,7 +44,7 @@ import org.jetbrains.compose.resources.stringResource
 
 /**
  * A icon component that draws [imageVector] using [tint], with a default value of
- * [SaltColors.text]. If [imageVector] has no intrinsic size, this component will use the
+ * [LocalContentColor]. If [imageVector] has no intrinsic size, this component will use the
  * recommended default size. Icon is an opinionated component designed to be used with single-color
  * icons so that they can be tinted correctly for the component they are placed in. For multicolored
  * icons and icons that should not be tinted, use [Color.Unspecified] for [tint]. For generic images
@@ -66,7 +66,7 @@ fun Icon(
     imageVector: ImageVector,
     contentDescription: String?,
     modifier: Modifier = Modifier,
-    tint: Color = SaltTheme.colors.text
+    tint: Color = LocalContentColor.current
 ) {
     Icon(
         painter = rememberVectorPainter(imageVector),
@@ -77,7 +77,7 @@ fun Icon(
 }
 
 /**
- * A icon component that draws [bitmap] using [tint], with a default value of [SaltColors.text].
+ * A icon component that draws [bitmap] using [tint], with a default value of [LocalContentColor].
  * If [bitmap] has no intrinsic size, this component will use the recommended default size. Icon is
  * an opinionated component designed to be used with single-color icons so that they can be tinted
  * correctly for the component they are placed in. For multicolored icons and icons that should not
@@ -100,7 +100,7 @@ fun Icon(
     bitmap: ImageBitmap,
     contentDescription: String?,
     modifier: Modifier = Modifier,
-    tint: Color = SaltTheme.colors.text
+    tint: Color = LocalContentColor.current
 ) {
     val painter = remember(bitmap) { BitmapPainter(bitmap) }
     Icon(
@@ -112,7 +112,7 @@ fun Icon(
 }
 
 /**
- * A icon component that draws [painter] using [tint], with a default value of [SaltColors.text].
+ * A icon component that draws [painter] using [tint], with a default value of [LocalContentColor].
  * If [painter] has no intrinsic size, this component will use the recommended default size. Icon is
  * an opinionated component designed to be used with single-color icons so that they can be tinted
  * correctly for the component they are placed in. For multicolored icons and icons that should not
@@ -134,7 +134,7 @@ fun Icon(
     painter: Painter,
     contentDescription: String?,
     modifier: Modifier = Modifier,
-    tint: Color = SaltTheme.colors.text
+    tint: Color = LocalContentColor.current
 ) {
     val colorFilter = remember(tint) {
         if (tint == Color.Unspecified) null else ColorFilter.tint(tint)
@@ -155,7 +155,7 @@ fun Icon(
             )
             .thenIf(contentDescription != null) {
                 semantics {
-                    this.contentDescription = contentDescription!!
+                    this.contentDescription = contentDescription
                     this.role = Role.Image
                 }
             }

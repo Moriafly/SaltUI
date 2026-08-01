@@ -32,6 +32,9 @@ sealed class ScreenRoute : NavKey {
     data object List : ScreenRoute()
 
     @Serializable
+    data object Button : ScreenRoute()
+
+    @Serializable
     data object Dialog : ScreenRoute()
 
     @Serializable
