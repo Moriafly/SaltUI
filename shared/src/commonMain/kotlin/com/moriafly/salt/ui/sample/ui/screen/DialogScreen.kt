@@ -14,6 +14,8 @@ import com.moriafly.salt.ui.RoundedColumn
 import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.moriafly.salt.ui.dialog.AdaptiveDialogSize
 import com.moriafly.salt.ui.dialog.BasicAdaptiveDialog
+import com.moriafly.salt.ui.dialog.YesDialog
+import com.moriafly.salt.ui.dialog.YesNoDialog
 import com.moriafly.salt.ui.popup.rememberPopupState
 import com.moriafly.salt.ui.sample.ui.screen.basic.BasicScreenColumn
 
@@ -25,6 +27,9 @@ fun DialogScreen() {
         title = "Dialog"
     ) {
         val basicAdaptiveDialogPopupState = rememberPopupState()
+        val yesDialogPopupState = rememberPopupState()
+        val yesNoDialogPopupState = rememberPopupState()
+
         if (basicAdaptiveDialogPopupState.expend) {
             BasicAdaptiveDialog(
                 onDismissRequest = {
@@ -41,6 +46,30 @@ fun DialogScreen() {
                 }
             }
         }
+        if (yesDialogPopupState.expend) {
+            YesDialog(
+                onDismissRequest = {
+                    yesDialogPopupState.dismiss()
+                },
+                title = "Changes saved",
+                content = "Your settings have been saved successfully",
+                confirmText = "Done"
+            )
+        }
+        if (yesNoDialogPopupState.expend) {
+            YesNoDialog(
+                onDismissRequest = {
+                    yesNoDialogPopupState.dismiss()
+                },
+                onConfirm = {
+                    yesNoDialogPopupState.dismiss()
+                },
+                title = "Continue?",
+                content = "Would you like to continue with this action?",
+                cancelText = "Cancel",
+                confirmText = "Continue"
+            )
+        }
 
         RoundedColumn {
             Item(
@@ -48,6 +77,20 @@ fun DialogScreen() {
                     basicAdaptiveDialogPopupState.expend()
                 },
                 text = "BasicAdaptiveDialog",
+                arrowType = ItemArrowType.Link
+            )
+            Item(
+                onClick = {
+                    yesDialogPopupState.expend()
+                },
+                text = "YesDialog",
+                arrowType = ItemArrowType.Link
+            )
+            Item(
+                onClick = {
+                    yesNoDialogPopupState.expend()
+                },
+                text = "YesNoDialog",
                 arrowType = ItemArrowType.Link
             )
         }

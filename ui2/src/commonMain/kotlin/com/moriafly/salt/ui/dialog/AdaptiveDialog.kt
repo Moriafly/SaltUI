@@ -23,6 +23,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.DpSize
+import androidx.compose.ui.unit.coerceAtLeast
 import androidx.compose.ui.unit.coerceAtMost
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
@@ -34,7 +36,8 @@ import com.moriafly.salt.ui.UnstableSaltUiApi
  *
  * The content is constrained to the maximum width specified by [size] and to the window size
  * minus 16 dp on each side. This component does not provide a background, shape, or padding;
- * callers are responsible for styling [content].
+ * callers are responsible for styling [content]. Platform default width limiting is disabled by
+ * default because [size] is the single source of truth for adaptive width.
  *
  * @param onDismissRequest Called when the user requests to dismiss the dialog, such as by
  * pressing the back button or clicking outside the dialog.
@@ -47,7 +50,9 @@ import com.moriafly.salt.ui.UnstableSaltUiApi
 fun BasicAdaptiveDialog(
     onDismissRequest: () -> Unit,
     size: AdaptiveDialogSize = AdaptiveDialogSize.Standard,
-    properties: DialogProperties = DialogProperties(),
+    properties: DialogProperties = DialogProperties(
+        usePlatformDefaultWidth = false
+    ),
     content: @Composable () -> Unit
 ) {
     Dialog(
@@ -55,15 +60,16 @@ fun BasicAdaptiveDialog(
         properties = properties
     ) {
         val windowInfo = LocalWindowInfo.current
-        val windowWidth = windowInfo.containerDpSize.width
-        val windowHeight = windowInfo.containerDpSize.height
+        val maxSize = calculateAdaptiveDialogMaxSize(
+            windowSize = windowInfo.containerDpSize,
+            requestedMaxWidth = size.maxWidth
+        )
 
         Box(
             modifier = Modifier
                 .sizeIn(
-                    maxWidth = (windowWidth - 32.dp)
-                        .coerceAtMost(size.maxWidth),
-                    maxHeight = windowHeight - 32.dp
+                    maxWidth = maxSize.width,
+                    maxHeight = maxSize.height
                 )
         ) {
             content()
@@ -81,8 +87,8 @@ fun BasicAdaptiveDialog(
 enum class AdaptiveDialogSize(
     val maxWidth: Dp
 ) {
-    /** A compact dialog with a maximum width of 320 dp. */
-    Min(320.dp),
+    /** A compact dialog, resolved to 260 dp on Desktop and 320 dp on Android and iOS. */
+    Min(platformMinAdaptiveDialogMaxWidth()),
 
     /** A standard dialog with a maximum width of 448 dp. */
     Standard(448.dp),
@@ -90,3 +96,17 @@ enum class AdaptiveDialogSize(
     /** A large dialog with a maximum width of 540 dp. */
     Max(540.dp)
 }
+
+@OptIn(UnstableSaltUiApi::class)
+internal expect fun platformMinAdaptiveDialogMaxWidth(): Dp
+
+internal fun calculateAdaptiveDialogMaxSize(
+    windowSize: DpSize,
+    requestedMaxWidth: Dp
+): DpSize = DpSize(
+    width = (windowSize.width - 32.dp)
+        .coerceAtLeast(0.dp)
+        .coerceAtMost(requestedMaxWidth.coerceAtLeast(0.dp)),
+    height = (windowSize.height - 32.dp)
+        .coerceAtLeast(0.dp)
+)

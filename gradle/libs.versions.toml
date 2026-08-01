@@ -14,6 +14,7 @@ maven-publish = "0.36.0"
 kotlinx-atomicfu = "0.29.0"
 haze = "2.0.0-alpha03"
 collection = "1.5.0"
+graphics-shapes = "1.0.1"
 navigation3="1.1.1"
 navigationevent = "1.1.0"
 kotlinx-serialization = "1.10.0"
@@ -38,6 +39,7 @@ haze = { group = "dev.chrisbanes.haze", name = "haze", version.ref = "haze"}
 haze-blur = { group = "dev.chrisbanes.haze", name = "haze-blur", version.ref = "haze"}
 haze-blur-materials = { group = "dev.chrisbanes.haze", name = "haze-blur-materials", version.ref = "haze"}
 collection = { group = "androidx.collection", name = "collection", version.ref = "collection" }
+graphics-shapes = { group = "androidx.graphics", name = "graphics-shapes", version.ref = "graphics-shapes" }
 androidx-navigation3-ui = { module = "org.jetbrains.androidx.navigation3:navigation3-ui", version.ref = "navigation3" }
 androidx-navigationevent-compose = { module = "org.jetbrains.androidx.navigationevent:navigationevent-compose", version.ref = "navigationevent" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization" }

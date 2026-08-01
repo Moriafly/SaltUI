@@ -2,22 +2,19 @@
  * Salt UI
  * Copyright (C) 2026 Moriafly
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
  *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
  */
 
 package com.moriafly.salt.ui
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -30,7 +27,6 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.v2.runComposeUiTest
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -58,74 +54,46 @@ class ButtonTest {
     }
 
     @Test
-    fun outlinedBorder_usesVisibleSemanticColor() = runComposeUiTest {
-        var normalBorder = BorderStroke(0.dp, Color.Unspecified)
-        var destructiveBorder = BorderStroke(0.dp, Color.Unspecified)
-        var disabledBorder = BorderStroke(0.dp, Color.Unspecified)
-        var strokeColor = Color.Unspecified
+    fun subtleButton_usesQuietNeutralContainer() = runComposeUiTest {
+        var normalColors: ButtonColors? = null
+        var destructiveColors: ButtonColors? = null
+        var textColor = Color.Unspecified
+        var subTextColor = Color.Unspecified
         var errorColor = Color.Unspecified
 
         setContent {
             SaltTheme {
-                normalBorder = requireNotNull(
-                    ButtonDefaults.border(ButtonAppearance.Outlined)
+                val currentNormalColors = ButtonDefaults.colors(ButtonAppearance.Subtle)
+                val currentDestructiveColors = ButtonDefaults.colors(
+                    appearance = ButtonAppearance.Subtle,
+                    intent = ButtonIntent.Destructive
                 )
-                destructiveBorder = requireNotNull(
-                    ButtonDefaults.border(
-                        appearance = ButtonAppearance.Outlined,
-                        intent = ButtonIntent.Destructive
-                    )
-                )
-                disabledBorder = requireNotNull(
-                    ButtonDefaults.border(
-                        appearance = ButtonAppearance.Outlined,
-                        enabled = false
-                    )
-                )
-                strokeColor = SaltTheme.colors.stroke
-                errorColor = SaltTheme.colors.error
+                val themeColors = SaltTheme.colors
+                SideEffect {
+                    normalColors = currentNormalColors
+                    destructiveColors = currentDestructiveColors
+                    textColor = themeColors.text
+                    subTextColor = themeColors.subText
+                    errorColor = themeColors.error
+                }
             }
         }
 
         runOnIdle {
+            val normal = requireNotNull(normalColors)
+            val destructive = requireNotNull(destructiveColors)
+            assertEquals(textColor.copy(alpha = 0.08f), normal.containerColor)
+            assertEquals(textColor, normal.contentColor)
             assertEquals(
-                BorderStroke(1.dp, strokeColor),
-                normalBorder
+                subTextColor.copy(alpha = 0.05f),
+                normal.disabledContainerColor
             )
             assertEquals(
-                BorderStroke(1.dp, errorColor.copy(alpha = 0.4f)),
-                destructiveBorder
+                subTextColor.copy(alpha = subTextColor.alpha * 0.55f),
+                normal.disabledContentColor
             )
-            assertEquals(
-                BorderStroke(
-                    1.dp,
-                    strokeColor.copy(alpha = strokeColor.alpha * 0.5f)
-                ),
-                disabledBorder
-            )
-        }
-    }
-
-    @Test
-    fun outlinedButton_usesSubBackgroundContainer() = runComposeUiTest {
-        var outlinedColors = ButtonColors(
-            containerColor = Color.Unspecified,
-            contentColor = Color.Unspecified,
-            disabledContainerColor = Color.Unspecified,
-            disabledContentColor = Color.Unspecified
-        )
-        var subBackground = Color.Unspecified
-
-        setContent {
-            SaltTheme {
-                outlinedColors = ButtonDefaults.colors(ButtonAppearance.Outlined)
-                subBackground = SaltTheme.colors.subBackground
-            }
-        }
-
-        runOnIdle {
-            assertEquals(subBackground, outlinedColors.containerColor)
-            assertEquals(subBackground, outlinedColors.disabledContainerColor)
+            assertEquals(errorColor.copy(alpha = 0.08f), destructive.containerColor)
+            assertEquals(errorColor, destructive.contentColor)
         }
     }
 
@@ -198,13 +166,13 @@ class ButtonTest {
                 textStyles = saltTextStyles(main = customTextStyle)
             ) {
                 expectedContentColor = ButtonDefaults
-                    .colors(ButtonAppearance.Outlined)
+                    .colors(ButtonAppearance.Subtle)
                     .contentColor
                 expectedTextStyle = ButtonDefaults.textStyle
 
                 Button(
                     onClick = {},
-                    appearance = ButtonAppearance.Outlined
+                    appearance = ButtonAppearance.Subtle
                 ) {
                     val currentContentColor = LocalContentColor.current
                     val currentTextStyle = LocalTextStyle.current
@@ -266,23 +234,6 @@ class ButtonTest {
         )
     }
 
-    @Suppress("DEPRECATION")
-    @Test
-    fun legacyButtonType_remainsSourceCompatible() = runComposeUiTest {
-        setContent {
-            SaltTheme {
-                Button(
-                    onClick = {},
-                    text = "Legacy",
-                    type = ButtonType.Sub,
-                    maxLines = 2
-                )
-            }
-        }
-
-        onNodeWithText("Legacy").assertExists()
-    }
-
     @Test
     fun contentSlot_exposesContentAndButtonClick() = runComposeUiTest {
         var clickCount = 0
@@ -291,7 +242,7 @@ class ButtonTest {
                 Button(
                     onClick = { clickCount++ },
                     modifier = Modifier.testTag(BUTTON_TAG),
-                    appearance = ButtonAppearance.Outlined
+                    appearance = ButtonAppearance.Subtle
                 ) {
                     Text("Custom content")
                 }

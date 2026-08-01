@@ -48,15 +48,14 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
 
 /** The visual treatment of a [Button]. */
 enum class ButtonAppearance {
     /** A contrasting filled container for the most prominent action in a surface. */
     Filled,
 
-    /** A subtle neutral container with an outline for actions that need a visible boundary. */
-    Outlined,
+    /** A low-emphasis action on a quiet neutral container. */
+    Subtle,
 
     /** A borderless action whose highlighted content provides its interactive affordance. */
     Plain
@@ -66,17 +65,6 @@ enum class ButtonAppearance {
 enum class ButtonIntent {
     Normal,
     Destructive
-}
-
-/**
- * Legacy button emphasis retained for source and binary migration.
- */
-@Deprecated(
-    message = "Use ButtonAppearance instead"
-)
-enum class ButtonType {
-    Highlight,
-    Sub
 }
 
 /**
@@ -185,48 +173,6 @@ fun Button(
 }
 
 /**
- * Legacy [ButtonType] overload retained for migration to [ButtonAppearance].
- *
- * [type] is intentionally required for source overload resolution. It remains nullable so binaries
- * compiled against the former default value can resolve a missing value as [ButtonType.Highlight].
- */
-@Suppress("DEPRECATION")
-@Deprecated(
-    message = "Use Button with ButtonAppearance instead",
-    replaceWith = ReplaceWith(
-        expression = "Button(onClick = onClick, text = text, modifier = modifier, " +
-            "enabled = enabled, appearance = if (type == ButtonType.Sub) " +
-            "ButtonAppearance.Outlined else ButtonAppearance.Filled, maxLines = maxLines)",
-        imports = arrayOf(
-            "com.moriafly.salt.ui.Button",
-            "com.moriafly.salt.ui.ButtonAppearance",
-            "com.moriafly.salt.ui.ButtonType"
-        )
-    )
-)
-@Composable
-fun Button(
-    onClick: () -> Unit,
-    text: String,
-    modifier: Modifier = Modifier,
-    enabled: Boolean = true,
-    type: ButtonType?,
-    maxLines: Int = Int.MAX_VALUE
-) {
-    Button(
-        onClick = onClick,
-        text = text,
-        modifier = modifier,
-        enabled = enabled,
-        appearance = when (type ?: ButtonType.Highlight) {
-            ButtonType.Highlight -> ButtonAppearance.Filled
-            ButtonType.Sub -> ButtonAppearance.Outlined
-        },
-        maxLines = maxLines
-    )
-}
-
-/**
  * A button whose label is supplied by a flexible [RowScope] content slot.
  *
  * [appearance] describes how the button is drawn, while [intent] describes the meaning of its
@@ -250,11 +196,6 @@ fun Button(
         size = size,
         colors = ButtonDefaults.colors(
             appearance = appearance,
-            intent = intent
-        ),
-        border = ButtonDefaults.border(
-            appearance = appearance,
-            enabled = enabled,
             intent = intent
         ),
         content = content
@@ -293,13 +234,9 @@ fun BasicButton(
                 .defaultMinSize(minHeight = metrics.containerHeight)
                 .clip(shape)
                 .background(colors.containerColor(enabled))
-                .then(
-                    if (border != null) {
-                        Modifier.border(border, shape)
-                    } else {
-                        Modifier
-                    }
-                )
+                .thenIf(border != null) {
+                    this.border(requireNotNull(border), shape)
+                }
                 .clickable(
                     interactionSource = resolvedInteractionSource,
                     indication = LocalIndication.current,
@@ -354,10 +291,16 @@ object ButtonDefaults {
                 disabledContentColor = disabledContentColor
             )
 
-            ButtonAppearance.Outlined -> ButtonColors(
-                containerColor = themeColors.subBackground,
+            ButtonAppearance.Subtle -> ButtonColors(
+                containerColor = if (destructive) {
+                    themeColors.error.copy(alpha = SubtleContainerAlpha)
+                } else {
+                    themeColors.text.copy(alpha = SubtleContainerAlpha)
+                },
                 contentColor = if (destructive) themeColors.error else themeColors.text,
-                disabledContainerColor = themeColors.subBackground,
+                disabledContainerColor = themeColors.subText.copy(
+                    alpha = DisabledSubtleContainerAlpha
+                ),
                 disabledContentColor = disabledContentColor
             )
 
@@ -370,32 +313,9 @@ object ButtonDefaults {
         }
     }
 
-    @Composable
-    fun border(
-        appearance: ButtonAppearance,
-        enabled: Boolean = true,
-        intent: ButtonIntent = ButtonIntent.Normal
-    ): BorderStroke? {
-        if (appearance != ButtonAppearance.Outlined) return null
-
-        val themeColors = SaltTheme.colors
-        val borderColor = when (intent) {
-            ButtonIntent.Normal -> themeColors.stroke
-            ButtonIntent.Destructive -> themeColors.error.copy(alpha = DestructiveBorderAlpha)
-        }
-        return BorderStroke(
-            width = 1.dp,
-            color = if (enabled) {
-                borderColor
-            } else {
-                borderColor.copy(alpha = borderColor.alpha * DisabledBorderAlpha)
-            }
-        )
-    }
-
     private const val DisabledContentAlpha = 0.55f
-    private const val DestructiveBorderAlpha = 0.4f
-    private const val DisabledBorderAlpha = 0.5f
+    private const val SubtleContainerAlpha = 0.08f
+    private const val DisabledSubtleContainerAlpha = 0.05f
 }
 
 /**

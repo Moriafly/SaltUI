@@ -158,6 +158,7 @@ kotlin {
             implementation(libs.haze.blur)
             implementation(libs.haze.blur.materials)
             implementation(libs.collection)
+            implementation(libs.graphics.shapes)
         }
 
         val desktopMain by getting

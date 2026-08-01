@@ -54,8 +54,8 @@ fun ButtonScreen() {
             )
             Button(
                 onClick = {},
-                text = "Outlined",
-                appearance = ButtonAppearance.Outlined
+                text = "Subtle",
+                appearance = ButtonAppearance.Subtle
             )
             Button(
                 onClick = {},
@@ -64,8 +64,8 @@ fun ButtonScreen() {
             )
         }
         ItemOuterTip(
-            "Use Filled for the prominent action, Outlined for supporting actions that need a " +
-                "visible boundary, and Plain for lightweight highlighted actions"
+            "Use Filled for the prominent action, Subtle for a low-emphasis action with a quiet " +
+                "container, and Plain for lightweight actions"
         )
 
         ItemOuterTitle("Control size")
@@ -93,7 +93,7 @@ fun ButtonScreen() {
             Button(
                 onClick = {},
                 text = "Remove",
-                appearance = ButtonAppearance.Outlined,
+                appearance = ButtonAppearance.Subtle,
                 intent = ButtonIntent.Destructive
             )
         }
@@ -112,7 +112,7 @@ fun ButtonScreen() {
             )
             Button(
                 onClick = {},
-                appearance = ButtonAppearance.Outlined,
+                appearance = ButtonAppearance.Subtle,
                 size = ControlSize.Regular
             ) {
                 Text("Custom slot")
@@ -140,7 +140,7 @@ fun ButtonScreen() {
                 onClick = {},
                 text = "Disabled",
                 enabled = false,
-                appearance = ButtonAppearance.Outlined
+                appearance = ButtonAppearance.Subtle
             )
         }
     }
