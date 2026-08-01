@@ -116,7 +116,7 @@ class SaltDimens(
         internal val Item = when (OS.current) {
             is OS.Android -> 56.dp
             is OS.IOS -> 52.dp
-            else -> 48.dp
+            else -> 32.dp
         }
 
         internal val ItemIcon = when (OS.current) {
