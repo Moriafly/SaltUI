@@ -23,7 +23,6 @@ import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.moriafly.salt.ui.util.findSkiaLayer
 import com.moriafly.salt.ui.window.SaltWindowBackgroundType
 import com.moriafly.salt.ui.window.internal.SaltWindowStyler
-import org.jetbrains.skiko.disableTitleBar
 import java.awt.Color
 import java.awt.Window
 
@@ -34,6 +33,7 @@ internal class MacOSSaltWindowStyler(
 ) : SaltWindowStyler {
     private val skiaLayer = window.findSkiaLayer()
     private val vibrancy = MacOSWindowVibrancy(window)
+    private val titleBar = MacOSWindowTitleBar(window)
 
     private val rootPane = when (window) {
         is ComposeWindow -> window.rootPane
@@ -87,11 +87,14 @@ internal class MacOSSaltWindowStyler(
         TODO("Not yet implemented")
     }
 
-    fun disableTitleBar(customHeaderHeight: Float) {
-        skiaLayer?.disableTitleBar(customHeaderHeight)
+    fun updateTitleBar(customHeaderHeight: Float) {
+        titleBar.update(customHeaderHeight)
     }
 
+    fun performWindowDrag(): Boolean = titleBar.performWindowDrag()
+
     fun dispose() {
+        titleBar.dispose()
         if (!vibrancy.dispose() && skiaLayer?.isDisplayable == true) {
             skiaLayer.background = null
         }

@@ -33,6 +33,7 @@ import com.moriafly.salt.ui.sample.ui.theme.AppTheme
 import com.moriafly.salt.ui.sample.util.AppConfig
 import com.moriafly.salt.ui.window.CaptionBarHitTest
 import com.moriafly.salt.ui.window.DesktopCaptionBar
+import com.moriafly.salt.ui.window.LocalSaltWindowInfo
 import com.moriafly.salt.ui.window.SaltWindow
 import com.moriafly.salt.ui.window.SaltWindowBackgroundType
 import com.moriafly.salt.ui.window.SaltWindowProperties
@@ -60,7 +61,9 @@ fun main() = application {
                 backgroundIsDarkTheme = AppConfig.isDarkTheme
             )
         ) {
-            MainContent()
+            MainContent(
+                windowCaptionBarHeight = LocalSaltWindowInfo.current.captionBarHeight
+            )
 
             DesktopCaptionBar {
                 Row(

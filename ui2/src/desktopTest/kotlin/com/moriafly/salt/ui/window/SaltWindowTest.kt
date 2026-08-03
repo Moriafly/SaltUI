@@ -18,6 +18,7 @@
 package com.moriafly.salt.ui.window
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -29,7 +30,10 @@ import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.v2.runDesktopComposeUiTest
+import androidx.compose.ui.unit.DpSize
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.WindowDecoration
+import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.rememberWindowState
 import com.moriafly.salt.core.os.OS
 import com.moriafly.salt.ui.SaltTheme
@@ -38,8 +42,13 @@ import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.moriafly.salt.ui.util.findSkiaLayer
 import java.awt.Color
 import java.awt.Dimension
+import java.awt.MouseInfo
+import java.awt.Robot
+import java.awt.event.InputEvent
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
+import org.junit.Assume.assumeTrue
 
 @OptIn(
     ExperimentalTestApi::class,
@@ -142,4 +151,137 @@ class SaltWindowTest {
             assertEquals(Color.BLACK, composeWindow.background)
         }
     }
+
+    @Test
+    fun saltWindow_macosCaptionBar_doubleClickAtVisibleBottomMaximizes() {
+        if (OS.current !is OS.MacOS) return
+
+        runMacOSCaptionBarDoubleClickTest(
+            relativeY = 50,
+            extraDisplayScale = 1.0f,
+            shouldMaximize = true
+        )
+    }
+
+    @Test
+    fun saltWindow_macosCaptionBar_doubleClickAtScaledVisibleBottomMaximizes() {
+        if (OS.current !is OS.MacOS) return
+
+        runMacOSCaptionBarDoubleClickTest(
+            relativeY = 60,
+            extraDisplayScale = 1.2f,
+            shouldMaximize = true
+        )
+    }
+
+    @Test
+    fun saltWindow_macosCaptionBar_doubleClickBelowVisibleBottomDoesNotMaximize() {
+        if (OS.current !is OS.MacOS) return
+
+        runMacOSCaptionBarDoubleClickTest(
+            relativeY = 54,
+            extraDisplayScale = 1.0f,
+            shouldMaximize = false
+        )
+    }
+
+    @Test
+    fun saltWindow_macosCaptionBar_doubleClickBelowScaledVisibleBottomDoesNotMaximize() {
+        if (OS.current !is OS.MacOS) return
+
+        runMacOSCaptionBarDoubleClickTest(
+            relativeY = 66,
+            extraDisplayScale = 1.2f,
+            shouldMaximize = false
+        )
+    }
+
+    private fun runMacOSCaptionBarDoubleClickTest(
+        relativeY: Int,
+        extraDisplayScale: Float,
+        shouldMaximize: Boolean
+    ) {
+        runDesktopComposeUiTest {
+            lateinit var composeWindow: ComposeWindow
+            setContent {
+                SaltTheme {
+                    SaltWindow(
+                        onCloseRequest = {},
+                        state = rememberWindowState(
+                            position = WindowPosition.Absolute(120.dp, 120.dp),
+                            size = DpSize(640.dp, 480.dp)
+                        ),
+                        title = "Caption Bar Hit Test",
+                        properties = SaltWindowProperties.default(
+                            extraDisplayScale = extraDisplayScale
+                        ),
+                        init = { composeWindow = it }
+                    ) {
+                        Box(
+                            modifier = Modifier.fillMaxSize()
+                        ) {
+                            CaptionBarHitTest(
+                                modifier = Modifier.testTag("captionBarHitTest")
+                            )
+                        }
+                    }
+                }
+            }
+
+            onNodeWithTag("captionBarHitTest").assertIsDisplayed()
+            runOnUiThread {
+                composeWindow.toFront()
+                composeWindow.requestFocus()
+            }
+            waitForIdle()
+
+            val robot = Robot().apply {
+                autoDelay = 40
+            }
+            assumeTrue(
+                "java.awt.Robot cannot synthesize input events; grant the host IDE or " +
+                    "terminal Accessibility permission to run this real-input test",
+                robot.canControlPointer()
+            )
+            val initialWidth = composeWindow.width
+            robot.doubleClick(
+                x = composeWindow.x + composeWindow.width / 2,
+                y = composeWindow.y + relativeY
+            )
+            if (shouldMaximize) {
+                waitUntil(timeoutMillis = 5_000) {
+                    composeWindow.width > initialWidth + 100
+                }
+            } else {
+                robot.delay(800)
+                assertEquals(initialWidth, composeWindow.width)
+            }
+            assertTrue(composeWindow.isShowing)
+        }
+    }
+}
+
+private fun Robot.doubleClick(x: Int, y: Int) {
+    mouseMove(x, y)
+    delay(150)
+    repeat(2) {
+        mousePress(InputEvent.BUTTON1_DOWN_MASK)
+        mouseRelease(InputEvent.BUTTON1_DOWN_MASK)
+        delay(60)
+    }
+}
+
+/**
+ * Returns whether this [Robot] can actually move the pointer. macOS silently drops synthesized
+ * input until the user grants the host process Accessibility permission, in which case tests
+ * driving real input events must skip instead of failing.
+ */
+private fun Robot.canControlPointer(): Boolean {
+    val before = MouseInfo.getPointerInfo().location
+    val probeX = if (before.x > 0) before.x - 1 else before.x + 1
+    mouseMove(probeX, before.y)
+    delay(50)
+    val moved = MouseInfo.getPointerInfo().location.x == probeX
+    mouseMove(before.x, before.y)
+    return moved
 }

@@ -25,6 +25,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.rememberNavBackStack
@@ -35,7 +37,6 @@ import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.moriafly.salt.ui.sample.ui.navigation.AppNavigation
 import com.moriafly.salt.ui.sample.ui.navigation.LocalNavBackStack
 import com.moriafly.salt.ui.sample.ui.navigation.ScreenRoute
-import com.moriafly.salt.ui.thenIf
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
 
@@ -53,7 +54,9 @@ private val navBackStackConfig = SavedStateConfiguration {
 @Suppress("ktlint:compose:modifier-missing-check")
 @OptIn(UnstableSaltUiApi::class)
 @Composable
-fun MainContent() {
+fun MainContent(
+    windowCaptionBarHeight: Dp = 0.dp
+) {
     val navBackStack = rememberNavBackStack(navBackStackConfig, ScreenRoute.Main)
 
     CompositionLocalProvider(
@@ -69,7 +72,7 @@ fun MainContent() {
                 if (pad) {
                     Box(
                         modifier = Modifier
-                            .padding(top = 40.dp)
+                            .padding(top = windowCaptionBarHeight)
                             .width(220.dp)
                             .fillMaxHeight()
                     ) {
@@ -78,9 +81,8 @@ fun MainContent() {
 
                 Layer(
                     modifier = Modifier
-                        .thenIf(OS.isDesktop()) {
-                            padding(top = 40.dp)
-                        },
+                        .padding(top = windowCaptionBarHeight)
+                        .testTag("mainContentLayer"),
                     decorationEnabled = OS.isDesktop()
                 ) {
                     AppNavigation(

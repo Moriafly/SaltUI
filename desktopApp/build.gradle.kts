@@ -9,6 +9,9 @@ plugins {
 dependencies {
     implementation(project(":shared"))
     implementation(compose.desktop.currentOs)
+
+    testImplementation(libs.kotlin.test)
+    testImplementation(libs.compose.ui.test)
 }
 
 compose.desktop {

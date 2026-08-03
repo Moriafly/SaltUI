@@ -42,13 +42,13 @@ import com.moriafly.salt.ui.UnstableSaltUiApi
 fun CaptionBarHitTest(
     modifier: Modifier = Modifier
 ) {
-    if (OS.isWindows() || OS.isLinux()) {
-        val saltWindowProperties = LocalSaltWindowProperties.current
+    if (OS.isDesktop()) {
+        val saltWindowInfo = LocalSaltWindowInfo.current
         val isHitTestInCaptionBarState = LocalIsHitTestInCaptionBarState.current
         Spacer(
             modifier = modifier
                 .fillMaxWidth()
-                .height(saltWindowProperties.captionBarHeight)
+                .height(saltWindowInfo.captionBarHeight)
                 .onPointerEvent(PointerEventType.Enter) {
                     isHitTestInCaptionBarState.value = true
                 }

@@ -21,14 +21,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.awt.ComposeDialog
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogWindowScope
 import com.moriafly.salt.ui.UnstableSaltUiApi
-import com.moriafly.salt.ui.window.CaptionButtonsAlign
+import com.moriafly.salt.ui.window.LocalIsHitTestInCaptionBarState
 import com.moriafly.salt.ui.window.LocalSaltWindowInfo
-import com.moriafly.salt.ui.window.SaltWindowInfo
 import com.moriafly.salt.ui.window.SaltWindowProperties
 
 @UnstableSaltUiApi
@@ -37,12 +36,17 @@ internal fun DialogWindowScope.MacOSSaltDialogWindowFrame(
     properties: SaltWindowProperties<ComposeDialog>,
     content: @Composable DialogWindowScope.() -> Unit
 ) {
+    val isHitTestInCaptionBar = remember { mutableStateOf(false) }
+    val windowInfo = remember(properties.captionBarHeight) {
+        macOSSaltWindowInfo(properties.captionBarHeight)
+    }
+    val nativeCaptionBarHeight = macOSCaptionBarHeightInWindowCoordinates(
+        window = window,
+        captionBarHeight = windowInfo.captionBarHeight
+    )
     CompositionLocalProvider(
-        LocalSaltWindowInfo provides SaltWindowInfo(
-            captionBarHeight = properties.captionBarHeight,
-            captionButtonsAlign = CaptionButtonsAlign.Start,
-            captionButtonsFullWidth = 80.dp
-        )
+        LocalSaltWindowInfo provides windowInfo,
+        LocalIsHitTestInCaptionBarState provides isHitTestInCaptionBar
     ) {
         val styler = remember(window) {
             MacOSSaltWindowStyler(window)
@@ -59,10 +63,20 @@ internal fun DialogWindowScope.MacOSSaltDialogWindowFrame(
             )
         }
 
-        LaunchedEffect(window.isUndecorated, properties.captionBarHeight) {
+        LaunchedEffect(styler, window.isUndecorated, nativeCaptionBarHeight) {
             if (!window.isUndecorated) {
-                styler.disableTitleBar(properties.captionBarHeight.value)
+                styler.updateTitleBar(nativeCaptionBarHeight)
             }
+        }
+
+        if (properties.moveable) {
+            MacOSCaptionBarDragHandler(
+                onDrag = styler::performWindowDrag,
+                onDoubleClick = null,
+                window = window,
+                captionBarHeightInWindowCoordinates = nativeCaptionBarHeight,
+                isHitTestInCaptionBar = isHitTestInCaptionBar.value
+            )
         }
 
         content()

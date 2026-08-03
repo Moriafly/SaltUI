@@ -22,8 +22,10 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
+import com.moriafly.salt.core.os.OS
 import com.moriafly.salt.ui.SaltTheme
 import com.moriafly.salt.ui.UnstableSaltUiApi
+import com.moriafly.salt.ui.platform.macos.MacOSWindowMetrics
 import java.awt.Window
 
 /**
@@ -61,8 +63,8 @@ import java.awt.Window
  * @property onResizeEdgeChange The callback to be invoked when the pointer moves to or away from
  * a resize edge of the window. The callback receives the [WindowResizeEdge] indicating which edge
  * the pointer is on, or [WindowResizeEdge.None] if not on any resize edge.
- * @property captionBarHeight The height of the caption bar, default is 40.dp, also usually 30.dp on
- * Windows.
+ * @property captionBarHeight The height of the caption bar. The platform default is 52.dp on macOS
+ * and 40.dp on Windows and Linux.
  * @property captionButtonsVisible Whether the caption buttons are visible.
  * @property captionButtonHeight The height of the caption button, default is captionBarHeight.
  * You can also customize the height of the CaptionButton (window control buttons such as Minimize,
@@ -77,7 +79,7 @@ import java.awt.Window
  * [SaltWindow]. TODO Support macOS.
  * @property maximizeOrRestoreButtonEnabled Whether the maximize/restore button is enabled, only
  * used for [SaltWindow]. TODO Support macOS.
- * @property moveable Whether the window is moveable. TODO Support macOS.
+ * @property moveable Whether the window is moveable.
  */
 @UnstableSaltUiApi
 data class SaltWindowProperties<T : Window>(
@@ -102,7 +104,7 @@ data class SaltWindowProperties<T : Window>(
             minSize: DpSize = DpSize.Zero,
             onVisibleChange: (T, Boolean) -> Unit = { _, _ -> },
             onResizeEdgeChange: (T, WindowResizeEdge) -> Unit = { _, _ -> },
-            captionBarHeight: Dp = 40.dp,
+            captionBarHeight: Dp = defaultCaptionBarHeight(),
             captionButtonsVisible: Boolean = true,
             captionButtonHeight: Dp = captionBarHeight,
             captionButtonIsDarkTheme: Boolean = SaltTheme.configs.isDarkTheme,
@@ -130,6 +132,11 @@ data class SaltWindowProperties<T : Window>(
             moveable = moveable
         )
     }
+}
+
+internal fun defaultCaptionBarHeight(os: OS = OS.current): Dp = when (os) {
+    is OS.MacOS -> MacOSWindowMetrics.defaultCaptionBarHeight
+    else -> 40.dp
 }
 
 @UnstableSaltUiApi
