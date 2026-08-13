@@ -71,10 +71,15 @@ import androidx.compose.ui.input.nestedscroll.nestedScrollModifierNode
 import androidx.compose.ui.input.pointer.PointerEvent
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.PointerEventType
+import androidx.compose.ui.input.pointer.PointerId
+import androidx.compose.ui.input.pointer.changedToDownIgnoreConsumed
+import androidx.compose.ui.input.pointer.changedToUpIgnoreConsumed
 import androidx.compose.ui.node.SemanticsModifierNode
+import androidx.compose.ui.node.currentValueOf
 import androidx.compose.ui.node.dispatchOnScrollChanged
 import androidx.compose.ui.node.invalidateSemantics
 import androidx.compose.ui.node.requireDensity
+import androidx.compose.ui.platform.LocalViewConfiguration
 import androidx.compose.ui.semantics.SemanticsPropertyReceiver
 import androidx.compose.ui.semantics.scrollBy
 import androidx.compose.ui.semantics.scrollByOffset
@@ -82,9 +87,13 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.util.fastAny
+import androidx.compose.ui.util.fastFirstOrNull
 import com.moriafly.salt.ui.SaltUiFlags
 import com.moriafly.salt.ui.UnstableSaltUiApi
+import com.moriafly.salt.ui.pointerSlop
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineStart
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlin.math.PI
@@ -153,6 +162,8 @@ internal class ScrollableNode(
     private var mouseWheelScrollingLogic: MouseWheelScrollingLogic? = null
     private var trackpadScrollingLogic: TrackpadScrollingLogic? = null
 
+    private var scrollInterruption: ScrollInterruption? = null
+
     init {
         /** Nested scrolling */
         delegate(nestedScrollModifierNode(nestedScrollConnection, nestedScrollDispatcher))
@@ -215,7 +226,8 @@ internal class ScrollableNode(
         }
     }
 
-    override fun startDragImmediately(): Boolean = scrollingLogic.shouldScrollImmediately()
+    // Stop an active scroll on DOWN, but leave ownership of the new gesture to touch slop.
+    override fun startDragImmediately(): Boolean = false
 
     private fun ensureMouseWheelScrollingLogicInitialized() {
         if (mouseWheelScrollingLogic == null) {
@@ -271,6 +283,9 @@ internal class ScrollableNode(
                 flingBehavior = resolvedFlingBehavior,
                 nestedScrollDispatcher = nestedScrollDispatcher,
             )
+        if (!enabled || resetPointerInputHandling) {
+            finishScrollInterruption()
+        }
         contentInViewNode.update(orientation, reverseDirection, bringIntoViewSpec)
 
         this.overscrollEffect = overscrollEffect
@@ -308,6 +323,11 @@ internal class ScrollableNode(
         updateDefaultFlingBehavior()
         mouseWheelScrollingLogic?.updateDensity(requireDensity())
         trackpadScrollingLogic?.updateDensity(requireDensity())
+    }
+
+    override fun onCancelPointerInput() {
+        finishScrollInterruption()
+        super.onCancelPointerInput()
     }
 
     // Key handler for Page up/down scrolling behavior.
@@ -368,8 +388,14 @@ internal class ScrollableNode(
         pass: PointerEventPass,
         bounds: IntSize,
     ) {
+        if (enabled && pass == PointerEventPass.Initial) {
+            handleScrollInterruption(pointerEvent)
+        }
         if (pointerEvent.changes.fastAny { canDrag.invoke(it.type) }) {
             super.onPointerEvent(pointerEvent, pass, bounds)
+        }
+        if (enabled && pass == PointerEventPass.Final) {
+            finishScrollInterruptionAfterPointerSlop(pointerEvent)
         }
         if (enabled) {
             initializePointerInputGestureCoordination()
@@ -390,6 +416,102 @@ internal class ScrollableNode(
             trackpadScrollingLogic?.onPointerEvent(pointerEvent, pass, bounds)
         }
     }
+
+    private fun handleScrollInterruption(pointerEvent: PointerEvent) {
+        val interruption = scrollInterruption
+        if (interruption == null) {
+            startScrollInterruption(pointerEvent)
+            return
+        }
+
+        if (
+            pointerEvent.changes.fastAny {
+                it.id != interruption.pointerId && it.changedToDownIgnoreConsumed()
+            }
+        ) {
+            finishScrollInterruption()
+            return
+        }
+
+        val trackedChange =
+            pointerEvent.changes.fastFirstOrNull { it.id == interruption.pointerId }
+                ?: return finishScrollInterruption()
+        if (!trackedChange.changedToUpIgnoreConsumed()) return
+
+        // A tap catches the animation without becoming a click.
+        if (
+            !trackedChange.isConsumed &&
+                (trackedChange.position - interruption.downPosition).getDistance() <
+                    interruption.pointerSlop
+        ) {
+            trackedChange.consume()
+        }
+        finishScrollInterruption()
+    }
+
+    private fun startScrollInterruption(pointerEvent: PointerEvent) {
+        val down =
+            pointerEvent.changes.fastFirstOrNull {
+                canDrag.invoke(it.type) && it.changedToDownIgnoreConsumed()
+            } ?: return
+
+        if (
+            pointerEvent.changes.fastAny {
+                it.id != down.id &&
+                    canDrag.invoke(it.type) &&
+                    it.changedToDownIgnoreConsumed()
+            }
+        ) return
+
+        if (!scrollingLogic.shouldScrollImmediately()) return
+
+        val interruptionJob =
+            nestedScrollDispatcher.coroutineScope.launch(start = CoroutineStart.UNDISPATCHED) {
+                scrollingLogic.interruptScroll()
+            }
+        scrollInterruption =
+            ScrollInterruption(
+                pointerId = down.id,
+                downPosition = down.position,
+                pointerSlop = currentValueOf(LocalViewConfiguration).pointerSlop(down.type),
+                interruptionJob = interruptionJob,
+            )
+    }
+
+    private fun finishScrollInterruptionAfterPointerSlop(pointerEvent: PointerEvent) {
+        val interruption = scrollInterruption ?: return
+        val trackedChange =
+            pointerEvent.changes.fastFirstOrNull { it.id == interruption.pointerId }
+                ?: return finishScrollInterruption()
+
+        if (trackedChange.changedToDownIgnoreConsumed()) return
+
+        // This runs in Final, after DragGestureNode completes orientation arbitration in Main.
+        if (
+            trackedChange.isConsumed ||
+                (trackedChange.position - interruption.downPosition).getDistance() >=
+                    interruption.pointerSlop
+        ) {
+            finishScrollInterruption()
+        }
+    }
+
+    private fun finishScrollInterruption() {
+        val interruption = scrollInterruption ?: return
+        scrollInterruption = null
+        nestedScrollDispatcher.coroutineScope.launch {
+            interruption.interruptionJob.join()
+            // Release an overscroll effect caught by the zero-delta UserInput scroll.
+            scrollingLogic.onScrollStopped(Velocity.Zero, isMouseWheel = false)
+        }
+    }
+
+    private class ScrollInterruption(
+        val pointerId: PointerId,
+        val downPosition: Offset,
+        val pointerSlop: Float,
+        val interruptionJob: Job,
+    )
 
     override fun SemanticsPropertyReceiver.applySemantics() {
         if (enabled && (scrollByAction == null || scrollByOffsetAction == null)) {
@@ -650,6 +772,13 @@ internal class ScrollingLogic(
 
     fun shouldScrollImmediately(): Boolean =
         scrollableState.isScrollInProgress || overscrollEffect?.isInProgress ?: false
+
+    /** Interrupts scrolling and lets overscroll observe new user input without moving content. */
+    suspend fun interruptScroll() {
+        scroll(scrollPriority = MutatePriority.UserInput) {
+            scrollByWithOverscroll(Offset.Zero, source = UserInput)
+        }
+    }
 
     /** Opens a scrolling session with nested scrolling and overscroll support. */
     suspend fun scroll(
