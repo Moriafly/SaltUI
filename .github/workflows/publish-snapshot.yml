@@ -17,6 +17,8 @@ jobs:
   publish:
     runs-on: ubuntu-24.04
     timeout-minutes: 35
+    env:
+      GRADLE_JVM_ARGS: -Xmx4g -XX:MaxMetaspaceSize=1g -Dfile.encoding=UTF-8
     steps:
       - name: Check out source
         uses: actions/checkout@v5
@@ -34,13 +36,19 @@ jobs:
         uses: gradle/actions/setup-gradle@v5
 
       - name: Run SaltUI coverage verification
-        run: ./gradlew --no-daemon :ui2:koverVerify
+        run: >-
+          ./gradlew --no-daemon --max-workers=2
+          -Dorg.gradle.jvmargs="${GRADLE_JVM_ARGS}"
+          -Pkotlin.compiler.execution.strategy=in-process
+          :ui2:koverVerify
 
       - name: Publish Android snapshots
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: >-
-          ./gradlew --no-daemon
+          ./gradlew --no-daemon --max-workers=2
+          -Dorg.gradle.jvmargs="${GRADLE_JVM_ARGS}"
+          -Pkotlin.compiler.execution.strategy=in-process
           -PsnapshotPublication=true
           :core:publishKotlinMultiplatformPublicationToGitHubPackagesRepository
           :core:publishAndroidPublicationToGitHubPackagesRepository
