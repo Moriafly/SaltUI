@@ -32,6 +32,7 @@ import androidx.compose.ui.unit.constrainHeight
 import androidx.compose.ui.unit.constrainWidth
 import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.util.fastRoundToInt
+import androidx.compose.ui.util.fastSumBy
 import com.moriafly.salt.ui.internal.checkPrecondition
 import com.moriafly.salt.ui.internal.requirePrecondition
 import com.moriafly.salt.ui.internal.requirePreconditionNotNull
@@ -127,6 +128,7 @@ internal fun measureLazyList(
             coroutineScope = coroutineScope,
             density = density,
             childConstraints = measuredItemProvider.childConstraints,
+            stickingItemsCombinedSize = 0,
         )
     } else {
         var currentFirstItemIndex = firstVisibleItemIndex
@@ -470,6 +472,7 @@ internal fun measureLazyList(
             coroutineScope = coroutineScope,
             density = density,
             childConstraints = measuredItemProvider.childConstraints,
+            stickingItemsCombinedSize = stickingItems.fastSumBy { it.size },
         )
     }
 }

@@ -115,7 +115,7 @@ private suspend inline fun AwaitPointerEventScope.awaitPointerSlopOrCancellation
             totalPositionChange += positionChange
 
             val inDirection = abs(totalPositionChange)
-            if (inDirection < touchSlop) {
+            if (inDirection == 0f || inDirection < touchSlop) {
                 // verify that nothing else consumed the drag event.
                 awaitPointerEvent(PointerEventPass.Final)
                 if (dragEvent.isConsumed) {

@@ -53,6 +53,8 @@ internal class LazyGridMeasureResult(
     val prefetchInfoRetriever: (line: Int) -> List<Pair<Int, Constraints>>,
     /** Finds the line for a given item. */
     val lineIndexProvider: (itemIndex: Int) -> Int,
+    /** Main axis size of sticking header items. */
+    val stickingItemsCombinedSize: Int,
     // properties representing the info needed for LazyListLayoutInfo:
     @Suppress("ktlint:standard:no-consecutive-comments")
     /** see [LazyGridLayoutInfo.visibleItemsInfo] */
@@ -158,6 +160,7 @@ internal class LazyGridMeasureResult(
                 orientation = orientation,
                 afterContentPadding = afterContentPadding,
                 mainAxisItemSpacing = mainAxisItemSpacing,
+                stickingItemsCombinedSize = stickingItemsCombinedSize,
             )
         } else {
             null

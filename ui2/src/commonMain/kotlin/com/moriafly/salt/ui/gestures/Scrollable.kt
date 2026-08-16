@@ -33,7 +33,6 @@ import androidx.compose.foundation.gestures.BringIntoViewSpec
 import androidx.compose.foundation.gestures.CanDragCalculation
 import androidx.compose.foundation.gestures.DefaultScrollMotionDurationScale
 import androidx.compose.foundation.gestures.DragEvent
-import androidx.compose.foundation.gestures.DragGestureNode
 import androidx.compose.foundation.gestures.FlingBehavior
 import androidx.compose.foundation.gestures.FlingCancellationException
 import androidx.compose.foundation.gestures.NestedScrollScope
@@ -68,22 +67,15 @@ import androidx.compose.ui.input.nestedscroll.NestedScrollDispatcher
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource.Companion.SideEffect
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource.Companion.UserInput
-import androidx.compose.ui.input.nestedscroll.nestedScrollModifierNode
 import androidx.compose.ui.input.pointer.PointerEvent
 import androidx.compose.ui.input.pointer.PointerEventPass
-import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.PointerId
 import androidx.compose.ui.input.pointer.changedToDownIgnoreConsumed
 import androidx.compose.ui.input.pointer.changedToUpIgnoreConsumed
-import androidx.compose.ui.node.SemanticsModifierNode
 import androidx.compose.ui.node.currentValueOf
 import androidx.compose.ui.node.dispatchOnScrollChanged
-import androidx.compose.ui.node.invalidateSemantics
 import androidx.compose.ui.node.requireDensity
 import androidx.compose.ui.platform.LocalViewConfiguration
-import androidx.compose.ui.semantics.SemanticsPropertyReceiver
-import androidx.compose.ui.semantics.scrollBy
-import androidx.compose.ui.semantics.scrollByOffset
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.Velocity
@@ -105,30 +97,27 @@ import kotlin.math.atan2
 @OptIn(ExperimentalFoundationApi::class)
 internal class ScrollableNode(
     state: ScrollableState,
-    private var overscrollEffect: OverscrollEffect?,
-    private var flingBehavior: FlingBehavior?,
+    overscrollEffect: OverscrollEffect?,
+    flingBehavior: FlingBehavior?,
     orientation: Orientation,
     enabled: Boolean,
     reverseDirection: Boolean,
     interactionSource: MutableInteractionSource?,
     bringIntoViewSpec: BringIntoViewSpec?,
-) : DragGestureNode(
-        canDrag = CanDragCalculation,
+) : AbstractScrollableNode(
+        overscrollEffect = overscrollEffect,
+        flingBehavior = flingBehavior,
         enabled = enabled,
         interactionSource = interactionSource,
         orientation = orientation,
     ),
     KeyInputModifierNode,
-    SemanticsModifierNode,
     OnScrollChangedDispatcher {
-    override val shouldAutoInvalidate: Boolean = false
 
-    private val nestedScrollDispatcher = NestedScrollDispatcher()
+    // Placeholder fling behavior, we'll initialize it when the density is available.
+    override val defaultFlingBehavior = platformScrollableDefaultFlingBehavior()
 
-    // Place holder fling behavior, we'll initialize it when the density is available.
-    private val defaultFlingBehavior = platformScrollableDefaultFlingBehavior()
-
-    private val scrollingLogic =
+    override val scrollLogic =
         ScrollingLogic(
             scrollableState = state,
             orientation = orientation,
@@ -140,8 +129,8 @@ internal class ScrollableNode(
             isScrollableNodeAttached = { isAttached },
         )
 
-    private val nestedScrollConnection =
-        ScrollableNestedScrollConnection(enabled = enabled, scrollingLogic = scrollingLogic)
+    override val nestedScrollConnection =
+        ScrollableNestedScrollConnection(enabled = enabled, scrollingLogic = scrollLogic)
 
     private val focusTargetModifierNode =
         delegate(FocusTargetModifierNode(focusability = Focusability.Never))
@@ -150,29 +139,38 @@ internal class ScrollableNode(
         delegate(
             ContentInViewNode(
                 orientation = orientation,
-                scrollingLogic = scrollingLogic,
+                scrollingLogic = scrollLogic,
                 reverseDirection = reverseDirection,
                 bringIntoViewSpec = bringIntoViewSpec,
                 getFocusedRect = { focusTargetModifierNode.getFocusedRect() },
             )
         )
 
-    private var scrollByAction: ((x: Float, y: Float) -> Boolean)? = null
-    private var scrollByOffsetAction: (suspend (Offset) -> Offset)? = null
-
-    private var mouseWheelScrollingLogic: MouseWheelScrollingLogic? = null
-    private var trackpadScrollingLogic: TrackpadScrollingLogic? = null
-
     private var scrollInterruption: ScrollInterruption? = null
 
     init {
-        /** Nested scrolling */
-        delegate(nestedScrollModifierNode(nestedScrollConnection, nestedScrollDispatcher))
+        // Must be called here because in AbstractScrollableNode.init nestedScrollConnection hasn't
+        // been created yet.
+        initializeNestedScrollingDelegation()
 
         /** Focus scrolling */
         delegate(BringIntoViewResponderNode(contentInViewNode))
-
     }
+
+    override fun createMouseWheelScrollingLogic() =
+        MouseWheelScrollingLogic(
+            scrollingLogic = scrollLogic,
+            mouseWheelScrollConfig = platformScrollConfig(),
+            onScrollStopped = ::onMouseWheelScrollStopped,
+            density = requireDensity(),
+        )
+
+    override fun createTrackpadScrollingLogic() =
+        TrackpadScrollingLogic(
+            scrollingLogic = scrollLogic,
+            onScrollStopped = ::onTrackpadScrollStopped,
+            density = requireDensity(),
+        )
 
     override fun dispatchScrollDeltaInfo(delta: Offset) {
         if (!isAttached) return
@@ -182,7 +180,7 @@ internal class ScrollableNode(
     override suspend fun drag(
         forEachDelta: suspend ((dragDelta: DragEvent.DragDelta) -> Unit) -> Unit
     ) {
-        with(scrollingLogic) {
+        with(scrollLogic) {
             scroll(scrollPriority = MutatePriority.UserInput) {
                 forEachDelta {
                     // Indirect pointer Events should be reverted to account for the reverse we
@@ -209,54 +207,27 @@ internal class ScrollableNode(
             // that shouldn't happen for indirect pointer events, so we cancel the reverse
             // here.
             val invertIndirectPointer = if (event.isIndirectPointerEvent) -1f else 1f
-            scrollingLogic.onScrollStopped(
+            scrollLogic.onScrollStopped(
                 event.velocity * invertIndirectPointer,
                 isMouseWheel = false,
             )
         }
     }
 
-    private fun onWheelScrollStopped(velocity: Velocity) {
+    private fun onMouseWheelScrollStopped(velocity: Velocity) {
         nestedScrollDispatcher.coroutineScope.launch {
-            scrollingLogic.onScrollStopped(velocity, isMouseWheel = true)
+            scrollLogic.onScrollStopped(velocity, isMouseWheel = true)
         }
     }
 
     private fun onTrackpadScrollStopped(velocity: Velocity) {
         nestedScrollDispatcher.coroutineScope.launch {
-            scrollingLogic.onScrollStopped(velocity, isMouseWheel = false)
+            scrollLogic.onScrollStopped(velocity, isMouseWheel = false)
         }
     }
 
     // Stop an active scroll on DOWN, but leave ownership of the new gesture to touch slop.
     override fun startDragImmediately(): Boolean = false
-
-    private fun ensureMouseWheelScrollingLogicInitialized() {
-        if (mouseWheelScrollingLogic == null) {
-            mouseWheelScrollingLogic =
-                MouseWheelScrollingLogic(
-                    scrollingLogic = scrollingLogic,
-                    mouseWheelScrollConfig = platformScrollConfig(),
-                    onScrollStopped = ::onWheelScrollStopped,
-                    density = requireDensity(),
-                )
-        }
-
-        mouseWheelScrollingLogic?.startReceivingEvents(coroutineScope)
-    }
-
-    private fun ensureTrackpadScrollingLogicInitialized() {
-        if (trackpadScrollingLogic == null) {
-            trackpadScrollingLogic =
-                TrackpadScrollingLogic(
-                    scrollingLogic = scrollingLogic,
-                    onScrollStopped = ::onTrackpadScrollStopped,
-                    density = requireDensity(),
-                )
-        }
-
-        trackpadScrollingLogic?.startReceivingEvents(coroutineScope)
-    }
 
     fun update(
         state: ScrollableState,
@@ -268,16 +239,17 @@ internal class ScrollableNode(
         interactionSource: MutableInteractionSource?,
         bringIntoViewSpec: BringIntoViewSpec?,
     ) {
-        var shouldInvalidateSemantics = false
-        if (this.enabled != enabled) { // enabled changed
-            nestedScrollConnection.enabled = enabled
-            shouldInvalidateSemantics = true
-        }
+        update(
+            enabled = enabled,
+            overscrollEffect = overscrollEffect,
+            flingBehavior = flingBehavior,
+        )
+
         // a new fling behavior was set, change the resolved one.
         val resolvedFlingBehavior = flingBehavior ?: defaultFlingBehavior
 
         val resetPointerInputHandling =
-            scrollingLogic.update(
+            scrollLogic.update(
                 scrollableState = state,
                 orientation = orientation,
                 overscrollEffect = overscrollEffect,
@@ -290,41 +262,14 @@ internal class ScrollableNode(
         }
         contentInViewNode.update(orientation, reverseDirection, bringIntoViewSpec)
 
-        this.overscrollEffect = overscrollEffect
-        this.flingBehavior = flingBehavior
-
         // update DragGestureNode
         update(
             canDrag = CanDragCalculation,
             enabled = enabled,
             interactionSource = interactionSource,
-            orientation = if (scrollingLogic.isVertical()) Vertical else Horizontal,
+            orientation = if (scrollLogic.isVertical()) Vertical else Horizontal,
             shouldResetPointerInputHandling = resetPointerInputHandling,
         )
-
-        if (shouldInvalidateSemantics) {
-            clearScrollSemanticsActions()
-            invalidateSemantics()
-        }
-    }
-
-    override fun onAttach() {
-        updateDefaultFlingBehavior()
-        mouseWheelScrollingLogic?.updateDensity(requireDensity())
-        trackpadScrollingLogic?.updateDensity(requireDensity())
-    }
-
-    private fun updateDefaultFlingBehavior() {
-        if (!isAttached) return
-        val density = requireDensity()
-        defaultFlingBehavior.updateDensity(density)
-    }
-
-    override fun onDensityChange() {
-        onCancelPointerInput()
-        updateDefaultFlingBehavior()
-        mouseWheelScrollingLogic?.updateDensity(requireDensity())
-        trackpadScrollingLogic?.updateDensity(requireDensity())
     }
 
     override fun onCancelPointerInput() {
@@ -340,7 +285,7 @@ internal class ScrollableNode(
         (!event.isCtrlPressed)
     ) {
         val scrollAmount: Offset =
-            if (scrollingLogic.isVertical()) {
+            if (scrollLogic.isVertical()) {
                 val viewportHeight = contentInViewNode.viewportSizeOrZero.height
 
                 val yAmount =
@@ -371,7 +316,7 @@ internal class ScrollableNode(
         // lazily launch one coroutine (with the first event) and use a Channel
         // to communicate the scroll amount to the UI thread.
         coroutineScope.launch {
-            scrollingLogic.scroll(scrollPriority = MutatePriority.UserInput) {
+            scrollLogic.scroll(scrollPriority = MutatePriority.UserInput) {
                 scrollBy(offset = scrollAmount, source = UserInput)
             }
         }
@@ -393,29 +338,9 @@ internal class ScrollableNode(
         if (enabled && pass == PointerEventPass.Initial) {
             handleScrollInterruption(pointerEvent)
         }
-        if (pointerEvent.changes.fastAny { canDrag.invoke(it.type) }) {
-            super.onPointerEvent(pointerEvent, pass, bounds)
-        }
+        super.onPointerEvent(pointerEvent, pass, bounds)
         if (enabled && pass == PointerEventPass.Final) {
             finishScrollInterruptionAfterPointerSlop(pointerEvent)
-        }
-        if (enabled) {
-            initializePointerInputGestureCoordination()
-            if (pass == PointerEventPass.Initial && pointerEvent.type == PointerEventType.Scroll) {
-                ensureMouseWheelScrollingLogicInitialized()
-            }
-            mouseWheelScrollingLogic?.onPointerEvent(pointerEvent, pass, bounds)
-
-            if (pass == PointerEventPass.Initial &&
-                (
-                    pointerEvent.type == PointerEventType.PanStart ||
-                        pointerEvent.type == PointerEventType.PanMove ||
-                        pointerEvent.type == PointerEventType.PanEnd
-                )
-            ) {
-                ensureTrackpadScrollingLogicInitialized()
-            }
-            trackpadScrollingLogic?.onPointerEvent(pointerEvent, pass, bounds)
         }
     }
 
@@ -465,11 +390,11 @@ internal class ScrollableNode(
             }
         ) return
 
-        if (!scrollingLogic.shouldScrollImmediately()) return
+        if (!scrollLogic.shouldScrollImmediately()) return
 
         val interruptionJob =
             nestedScrollDispatcher.coroutineScope.launch(start = CoroutineStart.UNDISPATCHED) {
-                scrollingLogic.interruptScroll()
+                scrollLogic.interruptScroll()
             }
         scrollInterruption =
             ScrollInterruption(
@@ -504,7 +429,7 @@ internal class ScrollableNode(
         nestedScrollDispatcher.coroutineScope.launch {
             interruption.interruptionJob.join()
             // Release an overscroll effect caught by the zero-delta UserInput scroll.
-            scrollingLogic.onScrollStopped(Velocity.Zero, isMouseWheel = false)
+            scrollLogic.onScrollStopped(Velocity.Zero, isMouseWheel = false)
         }
     }
 
@@ -515,29 +440,8 @@ internal class ScrollableNode(
         val interruptionJob: Job,
     )
 
-    override fun SemanticsPropertyReceiver.applySemantics() {
-        if (enabled && (scrollByAction == null || scrollByOffsetAction == null)) {
-            setScrollSemanticsActions()
-        }
-
-        scrollByAction?.let { scrollBy(action = it) }
-
-        scrollByOffsetAction?.let { scrollByOffset(action = it) }
-    }
-
-    private fun setScrollSemanticsActions() {
-        scrollByAction = { x, y ->
-            coroutineScope.launch { scrollingLogic.semanticsScrollBy(Offset(x, y)) }
-            true
-        }
-
-        scrollByOffsetAction = { offset -> scrollingLogic.semanticsScrollBy(offset) }
-    }
-
-    private fun clearScrollSemanticsActions() {
-        scrollByAction = null
-        scrollByOffsetAction = null
-    }
+    override suspend fun semanticsScrollBy(offset: Offset): Offset =
+        scrollLogic.semanticsScrollBy(offset)
 }
 
 /** Contains the default values used by [scrollable] */
@@ -773,7 +677,7 @@ internal class ScrollingLogic(
         return result
     }
 
-    fun shouldScrollImmediately(): Boolean =
+    override fun shouldScrollImmediately(): Boolean =
         scrollableState.isScrollInProgress || overscrollEffect?.isInProgress ?: false
 
     /** Interrupts scrolling and lets overscroll observe new user input without moving content. */
@@ -784,7 +688,7 @@ internal class ScrollingLogic(
     }
 
     /** Opens a scrolling session with nested scrolling and overscroll support. */
-    suspend fun scroll(
+    override suspend fun scroll(
         scrollPriority: MutatePriority = MutatePriority.Default,
         block: suspend NestedScrollScope.() -> Unit,
     ) {

@@ -219,7 +219,8 @@ class LazyGridState
             @FrequentlyChangingValue get() = scrollPosition.scrollOffset
 
         /** Backing state for [layoutInfo] */
-        private val layoutInfoState = mutableStateOf(EmptyLazyGridLayoutInfo, neverEqualPolicy())
+        internal val layoutInfoState =
+            mutableStateOf(EmptyLazyGridLayoutInfo, neverEqualPolicy())
 
         /**
          * The object of [LazyGridLayoutInfo] calculated during the last layout pass. For example, you
@@ -811,4 +812,5 @@ private val EmptyLazyGridLayoutInfo =
         coroutineScope = CoroutineScope(EmptyCoroutineContext),
         prefetchInfoRetriever = { emptyList() },
         lineIndexProvider = { -1 },
+        stickingItemsCombinedSize = 0,
     )

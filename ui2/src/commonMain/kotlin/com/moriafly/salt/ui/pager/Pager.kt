@@ -50,6 +50,7 @@ import androidx.compose.ui.semantics.pageRight
 import androidx.compose.ui.semantics.pageUp
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.Velocity
 import androidx.compose.ui.unit.dp
 import com.moriafly.salt.ui.gestures.snapping.SnapLayoutInfoProvider
@@ -432,8 +433,11 @@ object PagerDefaults {
     fun pageNestedScrollConnection(
         state: PagerState,
         orientation: Orientation,
-    ): NestedScrollConnection = remember(state, orientation) {
-        DefaultPagerNestedScrollConnection(state, orientation)
+    ): NestedScrollConnection {
+        val layoutDirection = LocalLayoutDirection.current
+        return remember(state, orientation, layoutDirection) {
+            DefaultPagerNestedScrollConnection(state, orientation, layoutDirection)
+        }
     }
 
     /**
@@ -471,6 +475,7 @@ internal fun SnapPosition.currentPageOffset(
 private class DefaultPagerNestedScrollConnection(
     val state: PagerState,
     val orientation: Orientation,
+    val layoutDirection: LayoutDirection,
 ) : NestedScrollConnection {
     fun Velocity.consumeOnOrientation(
         orientation: Orientation
@@ -513,9 +518,9 @@ private class DefaultPagerNestedScrollConnection(
         // see [ScrollableDefaults.reverseDirection] for context.
         val consumed =
             if (
-                orientation == Orientation.Horizontal &&
-                    layoutInfo.reverseLayout &&
-                    isReverseLayoutNestedScrollConnectionInPagerFixEnabled
+                isReverseLayoutNestedScrollConnectionInPagerFixEnabled &&
+                    orientation == Orientation.Horizontal &&
+                    ((layoutDirection == LayoutDirection.Rtl) xor layoutInfo.reverseLayout)
             ) {
                 state.dispatchRawDelta(coerced)
             } else {
