@@ -65,8 +65,10 @@ mavenPublishing {
     // Configure publishing to Maven Central
     publishToMavenCentral()
 
-    // Enable GPG signing for all publications
-    signAllPublications()
+    // GitHub/CI snapshots are authenticated by their repository and remain unsigned.
+    if (rootProject.extra["signPublications"] as Boolean) {
+        signAllPublications()
+    }
 }
 
 kotlin {

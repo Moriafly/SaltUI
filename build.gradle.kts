@@ -1,3 +1,5 @@
+import org.gradle.api.publish.PublishingExtension
+
 plugins {
     alias(libs.plugins.kotlin.multiplatform) apply false
     alias(libs.plugins.kotlin.jvm) apply false
@@ -16,6 +18,9 @@ val isPublishingToMavenLocal = gradle.startParameter.taskNames.any {
     taskName == "publishToMavenLocal" ||
         taskName.endsWith("PublicationToMavenLocal")
 }
+val isPublishingSnapshot = providers.gradleProperty("snapshotPublication")
+    .map { it.toBooleanStrict() }
+    .getOrElse(false)
 
 val isWindowsOrLinux = providers.systemProperty("os.name")
     .map { osName ->
@@ -24,9 +29,11 @@ val isWindowsOrLinux = providers.systemProperty("os.name")
     }
     .get()
 
-extra["configureAppleTargets"] = !isPublishingToMavenLocal || !isWindowsOrLinux
+extra["configureAppleTargets"] =
+    !(isPublishingToMavenLocal || isPublishingSnapshot) || !isWindowsOrLinux
+extra["signPublications"] = !isPublishingSnapshot
 
-val defaultPublicationVersion = if (isPublishingToMavenLocal) {
+val defaultPublicationVersion = if (isPublishingToMavenLocal || isPublishingSnapshot) {
     libs.versions.mavenLocalVersion.get()
 } else {
     libs.versions.version.get()
@@ -38,4 +45,32 @@ val publicationVersion = providers.gradleProperty("publicationVersion")
 allprojects {
     group = "io.github.moriafly"
     version = publicationVersion
+
+    plugins.withId("maven-publish") {
+        extensions.configure<PublishingExtension> {
+            repositories {
+                providers.environmentVariable("CI_MAVEN_REPOSITORY").orNull?.let { repositoryUrl ->
+                    maven {
+                        name = "Ci"
+                        url = uri(repositoryUrl)
+                    }
+                }
+                if (isPublishingSnapshot) {
+                    maven {
+                        name = "GitHubPackages"
+                        url = uri(
+                            "https://maven.pkg.github.com/" +
+                                providers.environmentVariable("GITHUB_REPOSITORY")
+                                    .getOrElse("Moriafly/SaltUI")
+                        )
+                        credentials {
+                            username = providers.environmentVariable("GITHUB_ACTOR")
+                                .getOrElse("github-actions")
+                            password = providers.environmentVariable("GITHUB_TOKEN").orNull
+                        }
+                    }
+                }
+            }
+        }
+    }
 }

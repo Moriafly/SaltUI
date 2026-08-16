@@ -62,7 +62,9 @@ mavenPublishing {
     }
 
     publishToMavenCentral()
-    signAllPublications()
+    if (rootProject.extra["signPublications"] as Boolean) {
+        signAllPublications()
+    }
 }
 
 kotlin {
