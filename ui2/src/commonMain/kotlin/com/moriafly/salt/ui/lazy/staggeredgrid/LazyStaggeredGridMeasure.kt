@@ -16,6 +16,7 @@
 
 package com.moriafly.salt.ui.lazy.staggeredgrid
 
+import androidx.collection.IntList
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.ui.graphics.GraphicsContext
 import androidx.compose.ui.graphics.layer.GraphicsLayer
@@ -29,7 +30,6 @@ import androidx.compose.ui.util.fastAny
 import androidx.compose.ui.util.fastFirstOrNull
 import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.util.fastForEachIndexed
-import androidx.compose.ui.util.fastForEachReversed
 import androidx.compose.ui.util.fastJoinToString
 import androidx.compose.ui.util.fastMaxOfOrDefault
 import androidx.compose.ui.util.fastRoundToInt
@@ -90,7 +90,7 @@ private inline fun debugLog(message: () -> String) {
 @OptIn(ExperimentalFoundationApi::class)
 internal fun LazyLayoutMeasureScope.measureStaggeredGrid(
     state: LazyStaggeredGridState,
-    pinnedItems: List<Int>,
+    pinnedItems: IntList,
     itemProvider: LazyStaggeredGridItemProvider,
     resolvedSlots: LazyStaggeredGridSlots,
     constraints: Constraints,
@@ -196,7 +196,7 @@ internal fun LazyLayoutMeasureScope.measureStaggeredGrid(
 @OptIn(ExperimentalFoundationApi::class)
 internal class LazyStaggeredGridMeasureContext(
     val state: LazyStaggeredGridState,
-    val pinnedItems: List<Int>,
+    val pinnedItems: IntList,
     val itemProvider: LazyStaggeredGridItemProvider,
     val resolvedSlots: LazyStaggeredGridSlots,
     val constraints: Constraints,
@@ -326,6 +326,7 @@ private fun LazyStaggeredGridMeasureContext.measure(
                 density = this,
                 scrollBackAmount = 0f,
                 coroutineScope = coroutineScope,
+                reverseLayout = reverseLayout,
             )
         }
 
@@ -1001,6 +1002,7 @@ private fun LazyStaggeredGridMeasureContext.measure(
             spanProvider = itemProvider.spanProvider,
             density = this,
             coroutineScope = coroutineScope,
+            reverseLayout = reverseLayout,
         )
     }
 }
@@ -1107,7 +1109,7 @@ private inline fun LazyStaggeredGridMeasureContext.calculateExtraItems(
 ): List<LazyStaggeredGridMeasuredItem> {
     var result: MutableList<LazyStaggeredGridMeasuredItem>? = null
 
-    pinnedItems.fastForEach(beforeVisibleBounds) { index ->
+    pinnedItems.forEach(beforeVisibleBounds) { index ->
         if (filter(index)) {
             val spanRange = itemProvider.getSpanRange(index, 0)
             if (result == null) {
@@ -1122,8 +1124,8 @@ private inline fun LazyStaggeredGridMeasureContext.calculateExtraItems(
     return result ?: emptyList()
 }
 
-private inline fun <T> List<T>.fastForEach(reverse: Boolean = false, action: (T) -> Unit) {
-    if (reverse) fastForEachReversed(action) else fastForEach(action)
+private inline fun IntList.forEach(reverse: Boolean = false, action: (Int) -> Unit) {
+    if (reverse) forEachReversed(action) else forEach(action)
 }
 
 @JvmInline

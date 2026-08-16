@@ -38,6 +38,7 @@ import androidx.compose.runtime.annotation.FrequentlyChangingValue
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -126,6 +127,12 @@ class ScrollState(
      */
     internal var contentSize by mutableIntStateOf(0)
 
+    /**
+     * Whether the direction of scrolling is reversed. Note that this value is only populated after
+     * the first measure pass.
+     */
+    internal var reverseScrolling by mutableStateOf(false)
+
     internal val internalInteractionSource: MutableInteractionSource = MutableInteractionSource()
 
     @Suppress("ktlint:standard:backing-property-naming")
@@ -153,7 +160,7 @@ class ScrollState(
     private val _scrollIndicatorState =
         object : ScrollIndicatorState {
             override val scrollOffset: Int
-                get() = value
+                get() = if (reverseScrolling) maxValue - value else value
 
             override val contentSize: Int
                 get() = this@ScrollState.contentSize
@@ -453,6 +460,7 @@ internal class ScrollNode(
         state.maxValue = side
         state.viewportSize = if (isVertical) height else width
         state.contentSize = if (isVertical) placeable.height else placeable.width
+        state.reverseScrolling = reverseScrolling
         return layout(width, height) {
             val scroll = state.value.fastCoerceIn(0, side)
             val absScroll = if (reverseScrolling) scroll - side else -scroll

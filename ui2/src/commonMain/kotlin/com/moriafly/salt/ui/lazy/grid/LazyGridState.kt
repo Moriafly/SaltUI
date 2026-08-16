@@ -387,7 +387,14 @@ class LazyGridState
         private val _scrollIndicatorState =
             object : ScrollIndicatorState {
                 override val scrollOffset: Int
-                    get() = calculateScrollOffset()
+                    get() =
+                        if (layoutInfo.reverseLayout) {
+                            layoutInfo.calculateContentSize() -
+                                layoutInfo.singleAxisViewportSize -
+                                calculateScrollOffset()
+                        } else {
+                            calculateScrollOffset()
+                        }
 
                 override val contentSize: Int
                     get() = layoutInfo.calculateContentSize()

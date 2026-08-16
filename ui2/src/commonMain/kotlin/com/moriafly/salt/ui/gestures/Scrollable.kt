@@ -25,6 +25,7 @@ import androidx.compose.animation.core.DecayAnimationSpec
 import androidx.compose.animation.core.animate
 import androidx.compose.animation.core.animateDecay
 import androidx.compose.animation.splineBasedDecay
+import androidx.compose.foundation.ComposeFoundationFlags.isClearNestedScrollCoroutineScopeFixEnabled
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.MutatePriority
 import androidx.compose.foundation.OverscrollEffect
@@ -201,6 +202,7 @@ internal class ScrollableNode(
     override fun onDragStarted(startedPosition: Offset) {}
 
     override fun onDragStopped(event: DragEvent.DragStopped) {
+        if (isClearNestedScrollCoroutineScopeFixEnabled && !isAttached) return
         nestedScrollDispatcher.coroutineScope.launch {
             // Indirect pointer Events should be reverted to account for the reverse we
             // do in Scrollable. Regular touchscreen events are inverted in scrollable, but
@@ -679,7 +681,8 @@ internal class ScrollingLogic(
     private val shouldDispatchOverscroll
         get() = SaltUiFlags.isAlwaysShouldDispatchOverscrollEnabled ||
             scrollableState.canScrollForward ||
-            scrollableState.canScrollBackward
+            scrollableState.canScrollBackward ||
+            overscrollEffect?.isInProgress == true
 
     override fun performRawScroll(scroll: Offset): Offset =
         if (scrollableState.isScrollInProgress) {

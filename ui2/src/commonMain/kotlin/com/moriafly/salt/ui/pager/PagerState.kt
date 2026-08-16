@@ -457,7 +457,14 @@ abstract class PagerState
         private val _scrollIndicatorState =
             object : ScrollIndicatorState {
                 override val scrollOffset: Int
-                    get() = calculateScrollOffset()
+                    get() =
+                        if (layoutInfo.reverseLayout) {
+                            layoutInfo.calculateContentSize(pageCount) -
+                                layoutInfo.mainAxisViewportSize -
+                                calculateScrollOffset()
+                        } else {
+                            calculateScrollOffset()
+                        }
 
                 override val contentSize: Int
                     get() = layoutInfo.calculateContentSize(pageCount)

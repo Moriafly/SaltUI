@@ -32,7 +32,17 @@ object SaltUiFlags {
     var isDisableDefaultWindowExceptionHandler: Boolean = true
 
     /**
-     * Always should dispatch overscroll.
+     * Always dispatch scroll and fling input through the configured overscroll effect.
+     *
+     * Jetpack Compose 1.12.0-alpha03 dispatches overscroll when the scrollable state can scroll in
+     * either direction, or when the overscroll effect reports that it is already in progress. Salt
+     * UI intentionally uses a broader default: when this flag is enabled, overscroll is also
+     * dispatched when the content has no scroll range and the effect is not currently in progress.
+     * This allows an overscroll effect to start from that otherwise non-scrollable state.
+     *
+     * Because the enabled flag short-circuits the upstream conditions, `canScrollForward`,
+     * `canScrollBackward`, and `OverscrollEffect.isInProgress` do not affect this dispatch decision
+     * while it remains `true`.
      *
      * @see com.moriafly.salt.ui.gestures.ScrollingLogic.shouldDispatchOverscroll
      */

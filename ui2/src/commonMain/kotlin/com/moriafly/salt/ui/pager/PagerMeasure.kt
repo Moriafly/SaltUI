@@ -16,6 +16,7 @@
 
 package com.moriafly.salt.ui.pager
 
+import androidx.collection.IntList
 import androidx.collection.MutableIntObjectMap
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.gestures.Orientation
@@ -59,7 +60,7 @@ internal fun LazyLayoutMeasureScope.measurePager(
     visualPageOffset: IntOffset,
     pageAvailableSize: Int,
     beyondViewportPageCount: Int,
-    pinnedPages: List<Int>,
+    pinnedPages: IntList,
     snapPosition: SnapPosition,
     placementScopeInvalidator: ObservableScopeInvalidator,
     coroutineScope: CoroutineScope,
@@ -526,7 +527,7 @@ private fun createPagesAfterList(
     currentLastPage: Int,
     pagesCount: Int,
     beyondViewportPageCount: Int,
-    pinnedPages: List<Int>,
+    pinnedPages: IntList,
     getAndMeasure: (Int) -> MeasuredPage,
 ): List<MeasuredPage> {
     var list: MutableList<MeasuredPage>? = null
@@ -538,7 +539,7 @@ private fun createPagesAfterList(
         list.add(getAndMeasure(i))
     }
 
-    pinnedPages.fastForEach { pageIndex ->
+    pinnedPages.forEach { pageIndex ->
         if (pageIndex in (end + 1) until pagesCount) {
             if (list == null) list = mutableListOf()
             list.add(getAndMeasure(pageIndex))
@@ -551,7 +552,7 @@ private fun createPagesAfterList(
 private fun createPagesBeforeList(
     currentFirstPage: Int,
     beyondViewportPageCount: Int,
-    pinnedPages: List<Int>,
+    pinnedPages: IntList,
     getAndMeasure: (Int) -> MeasuredPage,
 ): List<MeasuredPage> {
     var list: MutableList<MeasuredPage>? = null
@@ -563,7 +564,7 @@ private fun createPagesBeforeList(
         list.add(getAndMeasure(i))
     }
 
-    pinnedPages.fastForEach { pageIndex ->
+    pinnedPages.forEach { pageIndex ->
         if (pageIndex < start) {
             if (list == null) list = mutableListOf()
             list.add(getAndMeasure(pageIndex))
