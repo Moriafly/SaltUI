@@ -36,7 +36,12 @@ jobs:
         uses: gradle/actions/setup-gradle@v5
 
       - name: Run SaltUI coverage verification
+        env:
+          LIBGL_ALWAYS_SOFTWARE: '1'
         run: >-
+          xvfb-run --auto-servernum
+          --error-file=/dev/stderr
+          --server-args="-screen 0 1920x1080x24 -nolisten tcp"
           ./gradlew --no-daemon --max-workers=2
           -Dorg.gradle.jvmargs="${GRADLE_JVM_ARGS}"
           -Pkotlin.compiler.execution.strategy=in-process
