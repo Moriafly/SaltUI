@@ -19,6 +19,7 @@
 
 package com.moriafly.salt.ui.platform.linux
 
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -26,26 +27,25 @@ import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.drawscope.DrawScope
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.moriafly.salt.ui.SaltTheme
-import com.moriafly.salt.ui.Text
 import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.moriafly.salt.ui.window.LocalSaltWindowProperties
+import kotlin.math.roundToInt
 
-/**
- * Character glyph rendering may have compatibility issues.
- *
- * TODO Temporary solution; this should later be refactored to use an icon for display.
- */
 @UnstableSaltUiApi
 @Composable
 internal fun LinuxCaptionButtonFullscreen(
@@ -57,10 +57,10 @@ internal fun LinuxCaptionButtonFullscreen(
     val windowInfo = LocalWindowInfo.current
     CaptionButton(
         onClick = onClick,
-        iconGlyph = if (isFullscreen) {
-            CaptionButtonBackToWindowIconGlyph
+        icon = if (isFullscreen) {
+            CaptionButtonIcon.BackToWindow
         } else {
-            CaptionButtonFullscreenIconGlyph
+            CaptionButtonIcon.Fullscreen
         },
         colors = if (windowInfo.isWindowFocused) {
             if (SaltTheme.configs.isDarkTheme) {
@@ -90,7 +90,7 @@ internal fun LinuxCaptionButtonMinimize(
     val windowInfo = LocalWindowInfo.current
     CaptionButton(
         onClick = onClick,
-        iconGlyph = CaptionButtonMinimizeIconGlyph,
+        icon = CaptionButtonIcon.Minimize,
         colors = if (windowInfo.isWindowFocused) {
             if (SaltTheme.configs.isDarkTheme) {
                 CaptionButtonColors.MinMaxDark
@@ -120,10 +120,10 @@ internal fun LinuxCaptionButtonMaximize(
     val windowInfo = LocalWindowInfo.current
     CaptionButton(
         onClick = onClick,
-        iconGlyph = if (maximized) {
-            CaptionButtonRestoreIconGlyph
+        icon = if (maximized) {
+            CaptionButtonIcon.Restore
         } else {
-            CaptionButtonMaximizeIconGlyph
+            CaptionButtonIcon.Maximize
         },
         colors = if (windowInfo.isWindowFocused) {
             if (SaltTheme.configs.isDarkTheme) {
@@ -153,7 +153,7 @@ internal fun LinuxCaptionButtonClose(
     val windowInfo = LocalWindowInfo.current
     CaptionButton(
         onClick = onClick,
-        iconGlyph = CaptionButtonCloseIconGlyph,
+        icon = CaptionButtonIcon.Close,
         colors = if (windowInfo.isWindowFocused) {
             if (SaltTheme.configs.isDarkTheme) {
                 CaptionButtonColors.CloseDark
@@ -176,7 +176,7 @@ internal fun LinuxCaptionButtonClose(
 @Composable
 private fun CaptionButton(
     onClick: () -> Unit,
-    iconGlyph: Char,
+    icon: CaptionButtonIcon,
     colors: CaptionButtonColors,
     modifier: Modifier = Modifier,
     enabled: Boolean = true
@@ -212,14 +212,95 @@ private fun CaptionButton(
             isHovered -> colors.hover
             else -> colors.rest
         }
-        Text(
-            text = iconGlyph.toString(),
+        Canvas(
             modifier = Modifier
-                .align(Alignment.Center),
-            color = color,
-            fontSize = 16.sp,
-        )
+                .align(Alignment.Center)
+                .size(CaptionButtonIconSize)
+        ) {
+            drawCaptionButtonIcon(icon = icon, color = color)
+        }
     }
+}
+
+private fun DrawScope.drawCaptionButtonIcon(
+    icon: CaptionButtonIcon,
+    color: Color
+) {
+    val strokeWidth = CaptionButtonIconStrokeWidth.toPx().roundToInt().coerceAtLeast(1).toFloat()
+    val stroke = Stroke(width = strokeWidth)
+    fun Float.alignToStroke(): Float =
+        (this - strokeWidth / 2f).roundToInt() + strokeWidth / 2f
+
+    val edge = CaptionButtonIconEdge.toPx().alignToStroke()
+    val cornerLength = CaptionButtonFullscreenCornerLength.toPx()
+    val restoreOffset = CaptionButtonRestoreOffset.toPx()
+    val left = edge
+    val top = edge
+    val right = (size.width - CaptionButtonIconEdge.toPx()).alignToStroke()
+    val bottom = (size.height - CaptionButtonIconEdge.toPx()).alignToStroke()
+
+    when (icon) {
+        CaptionButtonIcon.Fullscreen -> {
+            drawLine(color, Offset(left, top), Offset(left + cornerLength, top), strokeWidth)
+            drawLine(color, Offset(left, top), Offset(left, top + cornerLength), strokeWidth)
+            drawLine(color, Offset(right - cornerLength, top), Offset(right, top), strokeWidth)
+            drawLine(color, Offset(right, top), Offset(right, top + cornerLength), strokeWidth)
+            drawLine(color, Offset(left, bottom - cornerLength), Offset(left, bottom), strokeWidth)
+            drawLine(color, Offset(left, bottom), Offset(left + cornerLength, bottom), strokeWidth)
+            drawLine(color, Offset(right, bottom - cornerLength), Offset(right, bottom), strokeWidth)
+            drawLine(color, Offset(right - cornerLength, bottom), Offset(right, bottom), strokeWidth)
+        }
+
+        CaptionButtonIcon.BackToWindow,
+        CaptionButtonIcon.Restore -> {
+            val frontLeft = left
+            val frontTop = (top + restoreOffset).alignToStroke()
+            val frontRight = (right - restoreOffset).alignToStroke()
+            val frontBottom = bottom
+            val backLeft = (left + restoreOffset).alignToStroke()
+            val backTop = top
+            val backRight = right
+            val backBottom = (bottom - restoreOffset).alignToStroke()
+
+            drawLine(color, Offset(backLeft, backTop), Offset(backRight, backTop), strokeWidth)
+            drawLine(color, Offset(backRight, backTop), Offset(backRight, backBottom), strokeWidth)
+            drawLine(color, Offset(backLeft, backTop), Offset(backLeft, frontTop), strokeWidth)
+            drawRect(
+                color = color,
+                topLeft = Offset(frontLeft, frontTop),
+                size = Size(frontRight - frontLeft, frontBottom - frontTop),
+                style = stroke
+            )
+        }
+
+        CaptionButtonIcon.Minimize -> drawLine(
+            color = color,
+            start = Offset(0f, center.y.alignToStroke()),
+            end = Offset(size.width, center.y.alignToStroke()),
+            strokeWidth = strokeWidth
+        )
+
+        CaptionButtonIcon.Maximize -> drawRect(
+            color = color,
+            topLeft = Offset(left, top),
+            size = Size(right - left, bottom - top),
+            style = stroke
+        )
+
+        CaptionButtonIcon.Close -> {
+            drawLine(color, Offset(left, top), Offset(right, bottom), strokeWidth)
+            drawLine(color, Offset(right, top), Offset(left, bottom), strokeWidth)
+        }
+    }
+}
+
+private enum class CaptionButtonIcon {
+    Fullscreen,
+    BackToWindow,
+    Minimize,
+    Maximize,
+    Restore,
+    Close
 }
 
 private class CaptionButtonColors(
@@ -309,12 +390,8 @@ private class CaptionButtonColors(
 }
 
 internal val LinuxCaptionButtonWidth = 46.83f.dp
-
-private const val CaptionButtonFullscreenIconGlyph = '\u2610'
-private const val CaptionButtonMinimizeIconGlyph = '\u2014'
-
-// TODO Temporarily reusing the maximize icon glyph for "back to window".
-private const val CaptionButtonBackToWindowIconGlyph = '\u25A1'
-private const val CaptionButtonMaximizeIconGlyph = '\u25A1'
-private const val CaptionButtonRestoreIconGlyph = '\u29C9'
-private const val CaptionButtonCloseIconGlyph = '\u2715'
+private val CaptionButtonIconSize = 14.dp
+private val CaptionButtonIconStrokeWidth = 1.dp
+private val CaptionButtonIconEdge = 2.5f.dp
+private val CaptionButtonFullscreenCornerLength = 3.dp
+private val CaptionButtonRestoreOffset = 2.5f.dp
