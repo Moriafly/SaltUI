@@ -61,6 +61,11 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.moriafly.salt.ui.generated.resources.Res
+import com.moriafly.salt.ui.generated.resources.ic_closed_eye
+import com.moriafly.salt.ui.generated.resources.ic_error
+import com.moriafly.salt.ui.generated.resources.ic_eye
+import com.moriafly.salt.ui.generated.resources.ic_warning
 import com.moriafly.salt.ui.icons.Check
 import com.moriafly.salt.ui.icons.SaltIcons
 import com.moriafly.salt.ui.icons.Success
@@ -68,11 +73,6 @@ import com.moriafly.salt.ui.icons.Uncheck
 import com.moriafly.salt.ui.popup.PopupMenu
 import com.moriafly.salt.ui.popup.PopupState
 import org.jetbrains.compose.resources.painterResource
-import com.moriafly.salt.ui.generated.resources.Res
-import com.moriafly.salt.ui.generated.resources.ic_closed_eye
-import com.moriafly.salt.ui.generated.resources.ic_error
-import com.moriafly.salt.ui.generated.resources.ic_eye
-import com.moriafly.salt.ui.generated.resources.ic_warning
 
 /**
  * Draw an arrow icon in [Item].
@@ -775,8 +775,7 @@ fun ItemButton(
                 SaltTheme.colors.highlight
             } else {
                 SaltTheme.colors.subText
-            },
-            fontWeight = FontWeight.Bold
+            }
         )
     }
 }
