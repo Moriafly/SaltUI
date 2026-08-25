@@ -157,7 +157,7 @@ internal fun Modifier.basicMaterial(
             blurEffect {
                 style = blurStyle
             }
-            inputScale = HazeInputScale.Fixed(InputScale)
+            inputScale = HazeInputScale.None
         }
     } else {
         background(fallback)
@@ -165,5 +165,3 @@ internal fun Modifier.basicMaterial(
 }
 
 internal val LocalHazeState = compositionLocalOf<HazeState?> { null }
-
-private const val InputScale = 0.67f
