@@ -17,13 +17,10 @@
 
 package com.moriafly.salt.ui.platform.linux
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -35,15 +32,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.awt.ComposeDialog
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.layoutId
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogWindowScope
-import androidx.compose.ui.window.WindowDecoration
 import com.moriafly.salt.ui.ChangeSaltThemeIsDark
-import com.moriafly.salt.ui.SaltTheme
 import com.moriafly.salt.ui.UnstableSaltUiApi
-import com.moriafly.salt.ui.thenIf
 import com.moriafly.salt.ui.window.CaptionButtonsAlign
 import com.moriafly.salt.ui.window.LocalIsHitTestInCaptionBarState
 import com.moriafly.salt.ui.window.LocalSaltWindowInfo
@@ -56,7 +49,6 @@ import java.awt.event.WindowEvent
 @Composable
 internal fun DialogWindowScope.LinuxSaltDialogWindowFrame(
     resizable: Boolean,
-    decoration: WindowDecoration,
     properties: SaltWindowProperties<ComposeDialog>,
     content: @Composable DialogWindowScope.() -> Unit
 ) {
@@ -94,24 +86,6 @@ internal fun DialogWindowScope.LinuxSaltDialogWindowFrame(
             }
         }
 
-        if (decoration == WindowDecoration.SystemDefault) {
-            LinuxNativeBorderOnlyFrameEffect(
-                window = window,
-                resizable = resizable
-            )
-        }
-
-        val clientShadow = LinuxWindowDecoration.shouldUseClientShadow(decoration)
-        // Dialogs are never maximized, so the shadow margin is constant
-        val shadowMargin = if (clientShadow) LinuxClientShadow.margin else 0.dp
-
-        if (clientShadow) {
-            LinuxClientShadowEffect(
-                window = window,
-                margin = shadowMargin
-            )
-        }
-
         LaunchedEffect(resizable) {
             undecoratedWindowResizer.enabled = resizable
         }
@@ -119,45 +93,31 @@ internal fun DialogWindowScope.LinuxSaltDialogWindowFrame(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(shadowMargin)
         ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .thenIf(clientShadow) {
-                        val contentShape = RoundedCornerShape(LinuxClientShadow.cornerRadius)
-                        linuxClientShadow()
-                            // WindowBackgroundBox does not paint the background for transparent
-                            // windows, so the frame paints it itself with the shadow shape
-                            .background(SaltTheme.colors.background, contentShape)
-                            .clip(contentShape)
-                    }
-            ) {
-                content()
+            content()
 
-                ChangeSaltThemeIsDark(
-                    isDarkTheme = properties.captionButtonIsDarkTheme
-                ) {
-                    if (properties.captionButtonsVisible) {
-                        Row(
-                            modifier = Modifier
-                                .align(Alignment.TopEnd)
-                        ) {
-                            LinuxCaptionButtonClose(
-                                onClick = {
-                                    window.dispatchEvent(
-                                        WindowEvent(window, WindowEvent.WINDOW_CLOSING)
-                                    )
-                                }
-                            )
-                        }
+            ChangeSaltThemeIsDark(
+                isDarkTheme = properties.captionButtonIsDarkTheme
+            ) {
+                if (properties.captionButtonsVisible) {
+                    Row(
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                    ) {
+                        LinuxCaptionButtonClose(
+                            onClick = {
+                                window.dispatchEvent(
+                                    WindowEvent(window, WindowEvent.WINDOW_CLOSING)
+                                )
+                            }
+                        )
                     }
                 }
-
-                undecoratedWindowResizer.Content(
-                    modifier = Modifier.layoutId("UndecoratedWindowResizer")
-                )
             }
+
+            undecoratedWindowResizer.Content(
+                modifier = Modifier.layoutId("UndecoratedWindowResizer")
+            )
         }
     }
 }

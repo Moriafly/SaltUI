@@ -44,7 +44,6 @@ import androidx.compose.ui.window.rememberDialogState
 import com.moriafly.salt.core.os.OS
 import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.moriafly.salt.ui.platform.linux.LinuxSaltDialogWindowFrame
-import com.moriafly.salt.ui.platform.linux.LinuxWindowDecoration
 import com.moriafly.salt.ui.platform.macos.MacOSSaltDialogWindowFrame
 import com.moriafly.salt.ui.platform.windows.WindowsSaltDialogWindowFrame
 import com.moriafly.salt.ui.util.findSkiaLayer
@@ -69,15 +68,7 @@ import java.awt.event.WindowEvent
  * Dialog is a modal window. It means it blocks the parent [SaltWindow] / [SaltDialogWindow] in
  * which composition context it was created.
  *
- * Note: On Linux, the dialog is always created undecorated at the AWT level so that the client
- * area extends to the whole window. When [decoration] is [WindowDecoration.SystemDefault] and
- * the window manager supports border-only Motif decorations (e.g. KWin), a native border-only
- * frame is requested via `_MOTIF_WM_HINTS`, which provides the native window shadow and border
- * without a title bar. On window managers without support (e.g. GNOME Shell/Mutter, which would
- * add a full title bar), a client-drawn shadow is used instead: the dialog becomes transparent,
- * the content is inset by a shadow margin, and `_GTK_FRAME_EXTENTS` keeps window snapping and
- * positioning aligned with the content. If neither is available, the dialog stays fully
- * undecorated.
+ * Note: On Linux, the dialog is always undecorated regardless of the [decoration] parameter.
  *
  * @param properties [SaltWindowProperties]
  * @param init https://youtrack.jetbrains.com/issue/CMP-8719
@@ -121,10 +112,6 @@ fun SaltDialogWindow(
     // On Linux the window is always undecorated
     val resolvedDecoration = decoration.resolveForPlatform()
 
-    // The client-drawn shadow on Linux requires a transparent window for the shadow area
-    val resolvedTransparent = transparent ||
-        (OS.isLinux() && LinuxWindowDecoration.shouldUseClientShadow(decoration))
-
     SaltWindowEnvironment {
         SwingDialog(
             onCloseRequest = onCloseRequest,
@@ -133,7 +120,7 @@ fun SaltDialogWindow(
             title = title,
             icon = icon,
             decoration = resolvedDecoration,
-            transparent = resolvedTransparent,
+            transparent = transparent,
             resizable = resizable,
             enabled = enabled,
             focusable = focusable,
@@ -145,9 +132,7 @@ fun SaltDialogWindow(
                 // TODO https://youtrack.jetbrains.com/issue/CMP-5651/When-the-dialog-window-is-closed-under-the-dark-theme-a-white-flash-will-appear.
                 // The background color must be set to java.awt.Color.BLACK
                 // Otherwise, background anomalies such as Mica will occur under Direct3D:
-                // the Mica background will not update when the window is resized.
-                // The Linux client-drawn shadow replaces this with a fully transparent
-                // background once the dialog is undecorated, see LinuxClientShadowEffect
+                // the Mica background will not update when the window is resized
                 window.background = java.awt.Color.BLACK
                 window.findSkiaLayer()?.transparency = true
 
@@ -223,7 +208,7 @@ fun SaltDialogWindow(
                 }
 
                 WindowBackgroundBox(
-                    transparent = resolvedTransparent,
+                    transparent = transparent,
                     backgroundType = properties.backgroundType
                 ) {
                     when (OS.current) {
@@ -243,7 +228,6 @@ fun SaltDialogWindow(
                         is OS.Linux ->
                             LinuxSaltDialogWindowFrame(
                                 resizable = resizable,
-                                decoration = decoration,
                                 properties = properties,
                                 content = content
                             )
