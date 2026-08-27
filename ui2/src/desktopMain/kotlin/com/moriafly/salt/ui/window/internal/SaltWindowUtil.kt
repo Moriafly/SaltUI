@@ -29,7 +29,11 @@ import com.moriafly.salt.ui.UnstableSaltUiApi
  * On Linux environments, the window is always forced to [WindowDecoration.Undecorated]
  * regardless of the requested decoration, because [WindowDecoration.SystemDefault]
  * implicitly renders the native desktop environment's title bar, which conflicts
- * with the unified custom window appearance across all platforms.
+ * with the unified custom window appearance across all platforms. When
+ * [WindowDecoration.SystemDefault] is requested on Linux, a native border-only frame
+ * (without a title bar) is applied separately via `_MOTIF_WM_HINTS` on window managers
+ * that support it; see
+ * [com.moriafly.salt.ui.platform.linux.LinuxWindowDecoration].
  *
  * On other platforms, the original decoration is returned as-is.
  */

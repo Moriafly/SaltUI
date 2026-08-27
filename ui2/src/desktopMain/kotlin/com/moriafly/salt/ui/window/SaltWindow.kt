@@ -43,7 +43,6 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.isSpecified
 import androidx.compose.ui.window.FrameWindowScope
-import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowDecoration
 import androidx.compose.ui.window.WindowState
 import androidx.compose.ui.window.rememberWindowState
@@ -51,6 +50,7 @@ import com.moriafly.salt.core.os.OS
 import com.moriafly.salt.ui.SaltTheme
 import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.moriafly.salt.ui.platform.linux.LinuxSaltWindowFrame
+import com.moriafly.salt.ui.platform.linux.LinuxWindowDecoration
 import com.moriafly.salt.ui.platform.macos.MacOSSaltWindowFrame
 import com.moriafly.salt.ui.platform.windows.WindowsSaltWindowFrame
 import com.moriafly.salt.ui.thenIf
@@ -72,7 +72,15 @@ import java.awt.event.WindowEvent
  * a new platform window will be created and receive focus. When [SaltWindow] leaves the composition,
  * the window will be disposed and closed.
  *
- * Note: On Linux, the window is always undecorated regardless of the [decoration] parameter.
+ * Note: On Linux, the window is always created undecorated at the AWT level so that the client
+ * area extends to the whole window. When [decoration] is [WindowDecoration.SystemDefault] and
+ * the window manager supports border-only Motif decorations (e.g. KWin), a native border-only
+ * frame is requested via `_MOTIF_WM_HINTS`, which provides the native window shadow and border
+ * without a title bar. On window managers without support (e.g. GNOME Shell/Mutter, which would
+ * add a full title bar), a client-drawn shadow is used instead: the window becomes transparent,
+ * the content is inset by a shadow margin, and `_GTK_FRAME_EXTENTS` keeps window snapping and
+ * positioning aligned with the content. If neither is available, the window stays fully
+ * undecorated.
  *
  * @see [Window]
  * @see [SwingWindow]
@@ -109,6 +117,10 @@ fun SaltWindow(
     // On Linux the window is always undecorated
     val resolvedDecoration = decoration.resolveForPlatform()
 
+    // The client-drawn shadow on Linux requires a transparent window for the shadow area
+    val resolvedTransparent = transparent ||
+        (OS.isLinux() && LinuxWindowDecoration.shouldUseClientShadow(decoration))
+
     SaltWindowEnvironment {
         SwingWindow(
             onCloseRequest = onCloseRequest,
@@ -117,7 +129,7 @@ fun SaltWindow(
             title = title,
             icon = icon,
             decoration = resolvedDecoration,
-            transparent = transparent,
+            transparent = resolvedTransparent,
             resizable = resizable,
             enabled = enabled,
             focusable = focusable,
@@ -128,7 +140,9 @@ fun SaltWindow(
                 // TODO https://youtrack.jetbrains.com/issue/CMP-5651/When-the-dialog-window-is-closed-under-the-dark-theme-a-white-flash-will-appear.
                 // The background color must be set to java.awt.Color.BLACK
                 // Otherwise, background anomalies such as Mica will occur under Direct3D:
-                // the Mica background will not update when the window is resized
+                // the Mica background will not update when the window is resized.
+                // The Linux client-drawn shadow replaces this with a fully transparent
+                // background once the window is undecorated, see LinuxClientShadowEffect
                 window.background = java.awt.Color.BLACK
                 window.findSkiaLayer()?.transparency = true
 
@@ -204,7 +218,7 @@ fun SaltWindow(
                 }
 
                 WindowBackgroundBox(
-                    transparent = transparent,
+                    transparent = resolvedTransparent,
                     backgroundType = properties.backgroundType
                 ) {
                     when (OS.current) {
@@ -224,6 +238,7 @@ fun SaltWindow(
                         is OS.Linux ->
                             LinuxSaltWindowFrame(
                                 resizable = resizable,
+                                decoration = decoration,
                                 properties = properties,
                                 content = content
                             )
