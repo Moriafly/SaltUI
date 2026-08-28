@@ -30,7 +30,7 @@ import androidx.compose.ui.unit.dp
 import com.moriafly.salt.ui.SaltTheme
 
 /**
- * A 1 dp border drawn along the inner edge of the window, similar to the border of
+ * A 1 px border drawn along the inner edge of the window, similar to the border of
  * JetBrains IDE windows on Linux, visually separating the undecorated window from
  * the desktop background.
  *
@@ -43,9 +43,9 @@ internal fun LinuxWindowBorder(
 ) {
     val isDarkTheme = SaltTheme.configs.isDarkTheme
     val color = if (isDarkTheme) {
-        Color(0x1AFFFFFF)
+        Color(0xFF373737)
     } else {
-        Color(0x26000000)
+        Color(0xFFCFCFCF)
     }
     Spacer(
         modifier = modifier
