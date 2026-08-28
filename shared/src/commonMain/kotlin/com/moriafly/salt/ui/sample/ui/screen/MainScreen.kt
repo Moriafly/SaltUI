@@ -15,28 +15,17 @@
 
 package com.moriafly.salt.ui.sample.ui.screen
 
-import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
-import androidx.compose.ui.unit.dp
 import com.moriafly.salt.ui.Icon
 import com.moriafly.salt.ui.Item
 import com.moriafly.salt.ui.ItemInfo
 import com.moriafly.salt.ui.ItemInfoType
 import com.moriafly.salt.ui.ItemLabelValueContainer
 import com.moriafly.salt.ui.ItemOuterLargeTitle
-import com.moriafly.salt.ui.ItemOuterTip
 import com.moriafly.salt.ui.ItemSwitcher
 import com.moriafly.salt.ui.LabelValue
-import com.moriafly.salt.ui.SaltTheme
-import com.moriafly.salt.ui.Text
 import com.moriafly.salt.ui.UnstableSaltUiApi
-import com.moriafly.salt.ui.button.PillButton
-import com.moriafly.salt.ui.outerPadding
 import com.moriafly.salt.ui.sample.ui.icons.Like
 import com.moriafly.salt.ui.sample.ui.icons.Search
 import com.moriafly.salt.ui.sample.ui.icons.SimpleIcons
@@ -45,6 +34,7 @@ import com.moriafly.salt.ui.sample.ui.navigation.ScreenRoute
 import com.moriafly.salt.ui.sample.ui.screen.basic.BasicScreenColumn
 import com.moriafly.salt.ui.sample.util.AppConfig
 import com.moriafly.salt.ui.screen.ScreenCard
+import com.moriafly.salt.ui.screen.ScreenFooter
 import com.moriafly.salt.ui.screen.TitleBarButton
 
 @Suppress("ktlint:compose:modifier-missing-check")
@@ -171,64 +161,6 @@ fun MainScreen() {
             }
         }
 
-        ItemOuterTip(
-            """
-            Salt UI
-            Copyright (C) 2023-2026 Moriafly
-            This library is free software; you can redistribute it and/or
-            modify it under the terms of the GNU Lesser General Public
-            License as published by the Free Software Foundation; either
-            version 2.1 of the License, or (at your option) any later version.
-            This library is distributed in the hope that it will be useful,
-            but WITHOUT ANY WARRANTY; without even the implied warranty of
-            MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-            Lesser General Public License for more details.
-            """.trimIndent()
-        )
-
-        FlowRow(
-            modifier = Modifier
-                .outerPadding(),
-            horizontalArrangement = Arrangement.spacedBy(12.dp)
-        ) {
-            PillButton(
-                onClick = {
-                }
-            ) {
-                Box(
-                    modifier = Modifier
-                        .border(1.dp, SaltTheme.colors.subText)
-                )
-            }
-            PillButton(
-                onClick = {
-                },
-                text = {
-                    Text(
-                        text = "你好"
-                    )
-                }
-            ) {
-                Box(
-                    modifier = Modifier
-                        .border(1.dp, SaltTheme.colors.subText)
-                )
-            }
-            PillButton(
-                onClick = {
-                },
-                text = {
-                    Text(
-                        text = "禁用"
-                    )
-                },
-                enabled = false
-            ) {
-                Box(
-                    modifier = Modifier
-                        .border(1.dp, SaltTheme.colors.subText)
-                )
-            }
-        }
+        ScreenFooter()
     }
 }
