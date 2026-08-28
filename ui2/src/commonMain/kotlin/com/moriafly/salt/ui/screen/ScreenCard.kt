@@ -61,16 +61,19 @@ fun ScreenCard(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .padding(16.dp)
+            .padding(
+                start = 16.dp,
+                top = 16.dp,
+                end = 16.dp
+            )
     ) {
         header?.let {
             Text(
                 text = header,
                 modifier = Modifier
                     .padding(
-                        start = 16.dp,
-                        end = 16.dp,
-                        bottom = 8.dp
+                        horizontal = 16.dp,
+                        vertical = 8.dp
                     ),
                 color = SaltTheme.colors.subText,
                 fontWeight = FontWeight.SemiBold,
@@ -90,9 +93,8 @@ fun ScreenCard(
                 text = footer,
                 modifier = Modifier
                     .padding(
-                        start = 16.dp,
-                        top = 8.dp,
-                        end = 16.dp
+                        horizontal = 16.dp,
+                        vertical = 8.dp
                     ),
                 color = SaltTheme.colors.subText,
                 style = SaltTheme.textStyles.sub
