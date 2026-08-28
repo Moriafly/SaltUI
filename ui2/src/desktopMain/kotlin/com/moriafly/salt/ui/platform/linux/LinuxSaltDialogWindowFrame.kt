@@ -115,6 +115,10 @@ internal fun DialogWindowScope.LinuxSaltDialogWindowFrame(
                 }
             }
 
+            if (properties.windowBorderVisible) {
+                LinuxWindowBorder()
+            }
+
             undecoratedWindowResizer.Content(
                 modifier = Modifier.layoutId("UndecoratedWindowResizer")
             )

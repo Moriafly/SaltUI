@@ -146,7 +146,7 @@ internal fun FrameWindowScope.LinuxSaltWindowFrame(
             val isMaximizedOrFullscreen =
                 windowState.placement == WindowPlacement.Maximized ||
                     windowState.placement == WindowPlacement.Fullscreen
-            if (!isMaximizedOrFullscreen) {
+            if (properties.windowBorderVisible && !isMaximizedOrFullscreen) {
                 LinuxWindowBorder()
             }
 

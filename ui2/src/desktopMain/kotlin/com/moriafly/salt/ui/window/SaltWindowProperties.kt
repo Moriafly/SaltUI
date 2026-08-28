@@ -80,6 +80,7 @@ import java.awt.Window
  * @property maximizeOrRestoreButtonEnabled Whether the maximize/restore button is enabled, only
  * used for [SaltWindow]. TODO Support macOS.
  * @property moveable Whether the window is moveable.
+ * @property windowBorderVisible Whether the 1 px window border is visible. Linux only.
  */
 @UnstableSaltUiApi
 data class SaltWindowProperties<T : Window>(
@@ -96,7 +97,8 @@ data class SaltWindowProperties<T : Window>(
     val extraFontScale: Float,
     val minimizeButtonEnabled: Boolean,
     val maximizeOrRestoreButtonEnabled: Boolean,
-    val moveable: Boolean
+    val moveable: Boolean,
+    val windowBorderVisible: Boolean
 ) {
     companion object {
         @Composable
@@ -114,7 +116,8 @@ data class SaltWindowProperties<T : Window>(
             extraFontScale: Float = 1.0f,
             minimizeButtonEnabled: Boolean = true,
             maximizeOrRestoreButtonEnabled: Boolean = true,
-            moveable: Boolean = true
+            moveable: Boolean = true,
+            windowBorderVisible: Boolean = true
         ): SaltWindowProperties<T> = SaltWindowProperties(
             minSize = minSize,
             onVisibleChange = onVisibleChange,
@@ -129,7 +132,8 @@ data class SaltWindowProperties<T : Window>(
             extraFontScale = extraFontScale,
             minimizeButtonEnabled = minimizeButtonEnabled,
             maximizeOrRestoreButtonEnabled = maximizeOrRestoreButtonEnabled,
-            moveable = moveable
+            moveable = moveable,
+            windowBorderVisible = windowBorderVisible
         )
     }
 }
