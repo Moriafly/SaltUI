@@ -32,7 +32,6 @@ import com.moriafly.salt.ui.ItemOuterLargeTitle
 import com.moriafly.salt.ui.ItemOuterTip
 import com.moriafly.salt.ui.ItemSwitcher
 import com.moriafly.salt.ui.LabelValue
-import com.moriafly.salt.ui.RoundedColumn
 import com.moriafly.salt.ui.SaltTheme
 import com.moriafly.salt.ui.Text
 import com.moriafly.salt.ui.UnstableSaltUiApi
@@ -45,6 +44,7 @@ import com.moriafly.salt.ui.sample.ui.navigation.LocalNavBackStack
 import com.moriafly.salt.ui.sample.ui.navigation.ScreenRoute
 import com.moriafly.salt.ui.sample.ui.screen.basic.BasicScreenColumn
 import com.moriafly.salt.ui.sample.util.AppConfig
+import com.moriafly.salt.ui.screen.ScreenCard
 import com.moriafly.salt.ui.screen.TitleBarButton
 
 @Suppress("ktlint:compose:modifier-missing-check")
@@ -79,14 +79,17 @@ fun MainScreen() {
             sub = "UI Components for Compose Multiplatform (Android/Desktop/iOS)"
         )
 
-        RoundedColumn {
+        ScreenCard {
             ItemInfo(
                 text = "Coming!",
                 infoType = ItemInfoType.Success
             )
         }
 
-        RoundedColumn {
+        ScreenCard(
+            header = "Appearance",
+            footer = "This is footer!"
+        ) {
             ItemSwitcher(
                 state = AppConfig.isDarkTheme,
                 onChange = {
@@ -97,7 +100,7 @@ fun MainScreen() {
         }
 
         val navBackStack = LocalNavBackStack.current
-        RoundedColumn {
+        ScreenCard {
             Item(
                 onClick = {
                     navBackStack.add(ScreenRoute.List)
@@ -130,7 +133,7 @@ fun MainScreen() {
             )
         }
 
-        RoundedColumn {
+        ScreenCard {
             Item(
                 onClick = {
                     navBackStack.add(ScreenRoute.About)
@@ -139,7 +142,7 @@ fun MainScreen() {
             )
         }
 
-        RoundedColumn {
+        ScreenCard {
             ItemLabelValueContainer {
                 LabelValue(
                     label = "Version",

@@ -26,6 +26,10 @@ plugins {
     `maven-publish`
 }
 
+dependencies {
+    androidRuntimeClasspath(libs.compose.ui.tooling)
+}
+
 val configureAppleTargets = rootProject.extra["configureAppleTargets"] as Boolean
 
 kover {
