@@ -25,34 +25,40 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
 import com.moriafly.salt.ui.Card
 import com.moriafly.salt.ui.CardDefaults
+import com.moriafly.salt.ui.ItemOuterTip
+import com.moriafly.salt.ui.ItemOuterTitle
+import com.moriafly.salt.ui.RoundedColumn
 import com.moriafly.salt.ui.SaltTheme
-import com.moriafly.salt.ui.Text
 import com.moriafly.salt.ui.UnstableSaltUiApi
 
 /**
- * A full-width [Card] section for grouping related content within a [BasicScreen].
+ * Displays a full-width screen section containing a [Card] with optional supporting text.
  *
- * The optional [header] and [footer] are placed above and below the card, and [content] is arranged
- * vertically inside it. The outer section applies [ScreenCardDefaults.paddingValues], while the
- * card fills the remaining width. The [shape], [color], and [border] are forwarded to [Card].
+ * This is the preferred replacement for the previous pattern of building page cards with
+ * [RoundedColumn]. It combines the section title, card container, and supporting text in a single
+ * screen-level component.
  *
- * When used in a [BasicScreen], the surrounding content container remains responsible for applying
- * the padding values supplied by [BasicScreen].
+ * The [header] is displayed above the card using [ItemOuterTitle], and the [footer] is displayed
+ * below it using [ItemOuterTip]. The card is inset using the current [SaltTheme] spacing, while
+ * [content] is arranged vertically without additional inner padding. The [shape], [color], and
+ * [border] are passed directly to [Card].
+ *
+ * This component does not consume the padding values provided by [BasicScreen]. Apply those values
+ * to the surrounding content container when necessary to avoid the title bar and window insets.
  *
  * @param modifier [Modifier] applied to the outer section container.
- * @param shape Shape used to clip the card and draw its [border].
+ * @param shape Shape used to clip the card and draw the [border].
  * @param color Fallback background color for the card's sub-material effect. Pass
  * [Color.Unspecified] to omit the material effect.
  * @param border Stroke drawn around the card, or `null` for no border.
- * @param header Optional section heading displayed above the card; `null` omits it.
+ * @param header Optional section title displayed above the card; `null` omits it.
  * @param footer Optional supporting text displayed below the card; `null` omits it.
  * @param content Content arranged vertically inside the card, with a [ColumnScope] receiver.
  *
- * @see ScreenCardDefaults
+ * @see ItemOuterTitle
+ * @see ItemOuterTip
  */
 @UnstableSaltUiApi
 @Composable
@@ -68,55 +74,26 @@ fun ScreenCard(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .padding(ScreenCardDefaults.paddingValues)
     ) {
         header?.let {
-            Text(
-                text = header,
-                modifier = Modifier
-                    .padding(
-                        horizontal = 16.dp,
-                        vertical = 8.dp
-                    ),
-                color = SaltTheme.colors.subText,
-                fontWeight = FontWeight.Medium,
-                style = SaltTheme.textStyles.sub
-            )
+            ItemOuterTitle(header)
         }
         Card(
             modifier = Modifier
-                .fillMaxWidth(),
+                .fillMaxWidth()
+                .padding(
+                    PaddingValues(
+                        horizontal = SaltTheme.dimens.padding,
+                        vertical = SaltTheme.dimens.padding * 0.5f
+                    )
+                ),
             shape = shape,
             color = color,
             border = border,
             content = content
         )
         footer?.let {
-            Text(
-                text = footer,
-                modifier = Modifier
-                    .padding(
-                        horizontal = 16.dp,
-                        vertical = 8.dp
-                    ),
-                color = SaltTheme.colors.subText,
-                style = SaltTheme.textStyles.sub
-            )
+            ItemOuterTip(footer)
         }
     }
-}
-
-/**
- * Default layout values for [ScreenCard].
- */
-@UnstableSaltUiApi
-object ScreenCardDefaults {
-    /**
-     * Padding around the complete section, including its header, card, and footer.
-     */
-    val paddingValues: PaddingValues =
-        PaddingValues(
-            horizontal = 16.dp,
-            vertical = 8.dp
-        )
 }
