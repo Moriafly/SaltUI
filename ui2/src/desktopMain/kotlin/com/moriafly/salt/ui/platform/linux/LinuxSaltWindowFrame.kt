@@ -17,10 +17,13 @@
 
 package com.moriafly.salt.ui.platform.linux
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -32,12 +35,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.awt.ComposeWindow
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.layoutId
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.FrameWindowScope
+import androidx.compose.ui.window.WindowDecoration
 import androidx.compose.ui.window.WindowPlacement
 import com.moriafly.salt.ui.ChangeSaltThemeIsDark
+import com.moriafly.salt.ui.SaltTheme
 import com.moriafly.salt.ui.UnstableSaltUiApi
+import com.moriafly.salt.ui.thenIf
 import com.moriafly.salt.ui.window.CaptionButtonsAlign
 import com.moriafly.salt.ui.window.LocalIsHitTestInCaptionBarState
 import com.moriafly.salt.ui.window.LocalSaltWindowInfo
@@ -51,6 +59,7 @@ import java.awt.event.WindowEvent
 @Composable
 internal fun FrameWindowScope.LinuxSaltWindowFrame(
     resizable: Boolean,
+    decoration: WindowDecoration,
     properties: SaltWindowProperties<ComposeWindow>,
     content: @Composable FrameWindowScope.() -> Unit
 ) {
@@ -86,6 +95,29 @@ internal fun FrameWindowScope.LinuxSaltWindowFrame(
             )
         }
 
+        val clientShadow = LinuxWindowDecoration.shouldUseClientShadow(decoration)
+        val isMaximizedOrFullScreen = windowState.placement == WindowPlacement.Maximized ||
+            windowState.placement == WindowPlacement.Fullscreen
+        // Maximized and fullscreen windows drop the shadow, matching the platform convention
+        val shadowMargin = if (clientShadow && !isMaximizedOrFullScreen) {
+            LinuxClientShadow.margin
+        } else {
+            0.dp
+        }
+
+        if (decoration == WindowDecoration.SystemDefault) {
+            LinuxNativeBorderOnlyFrameEffect(
+                window = window,
+                resizable = resizable
+            )
+            if (clientShadow) {
+                LinuxClientShadowEffect(
+                    window = window,
+                    margin = shadowMargin
+                )
+            }
+        }
+
         LaunchedEffect(window.undecoratedResizerThickness) {
             if (window.undecoratedResizerThickness != 0.dp) {
                 window.undecoratedResizerThickness = 0.dp
@@ -93,59 +125,78 @@ internal fun FrameWindowScope.LinuxSaltWindowFrame(
         }
 
         LaunchedEffect(resizable, windowState.placement) {
-            val isMaximizedOrFullScreen = windowState.placement == WindowPlacement.Maximized ||
-                windowState.placement == WindowPlacement.Fullscreen
             undecoratedWindowResizer.enabled = resizable && !isMaximizedOrFullScreen
         }
 
         Box(
             modifier = Modifier
                 .fillMaxSize()
+                .padding(shadowMargin)
         ) {
-            content()
-
-            ChangeSaltThemeIsDark(
-                isDarkTheme = properties.captionButtonIsDarkTheme
-            ) {
-                if (properties.captionButtonsVisible) {
-                    Row(
-                        modifier = Modifier
-                            .align(Alignment.TopEnd)
-                    ) {
-                        LinuxCaptionButtonMinimize(
-                            onClick = {
-                                windowState.isMinimized = true
-                            },
-                            enabled = properties.minimizeButtonEnabled
-                        )
-                        val isMaximized = windowState.placement == WindowPlacement.Maximized
-                        LinuxCaptionButtonMaximize(
-                            onClick = {
-                                if (isMaximized) {
-                                    windowState.placement = WindowPlacement.Floating
-                                } else {
-                                    windowState.placement = WindowPlacement.Maximized
-                                }
-                            },
-                            maximized = isMaximized,
-                            enabled = properties.maximizeOrRestoreButtonEnabled &&
-                                resizable &&
-                                windowState.placement != WindowPlacement.Fullscreen
-                        )
-                        LinuxCaptionButtonClose(
-                            onClick = {
-                                window.dispatchEvent(
-                                    WindowEvent(window, WindowEvent.WINDOW_CLOSING)
-                                )
-                            }
-                        )
-                    }
-                }
+            val contentShape = if (shadowMargin > 0.dp) {
+                RoundedCornerShape(LinuxClientShadow.cornerRadius)
+            } else {
+                RectangleShape
             }
 
-            undecoratedWindowResizer.Content(
-                modifier = Modifier.layoutId("UndecoratedWindowResizer")
-            )
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .thenIf(shadowMargin > 0.dp) {
+                        linuxClientShadow()
+                    }
+                    .thenIf(clientShadow) {
+                        // WindowBackgroundBox does not paint the background for transparent
+                        // windows, so the frame paints it itself with the shadow shape
+                        background(SaltTheme.colors.background, contentShape)
+                            .clip(contentShape)
+                    }
+            ) {
+                content()
+
+                ChangeSaltThemeIsDark(
+                    isDarkTheme = properties.captionButtonIsDarkTheme
+                ) {
+                    if (properties.captionButtonsVisible) {
+                        Row(
+                            modifier = Modifier
+                                .align(Alignment.TopEnd)
+                        ) {
+                            LinuxCaptionButtonMinimize(
+                                onClick = {
+                                    windowState.isMinimized = true
+                                },
+                                enabled = properties.minimizeButtonEnabled
+                            )
+                            val isMaximized = windowState.placement == WindowPlacement.Maximized
+                            LinuxCaptionButtonMaximize(
+                                onClick = {
+                                    if (isMaximized) {
+                                        windowState.placement = WindowPlacement.Floating
+                                    } else {
+                                        windowState.placement = WindowPlacement.Maximized
+                                    }
+                                },
+                                maximized = isMaximized,
+                                enabled = properties.maximizeOrRestoreButtonEnabled &&
+                                    resizable &&
+                                    windowState.placement != WindowPlacement.Fullscreen
+                            )
+                            LinuxCaptionButtonClose(
+                                onClick = {
+                                    window.dispatchEvent(
+                                        WindowEvent(window, WindowEvent.WINDOW_CLOSING)
+                                    )
+                                }
+                            )
+                        }
+                    }
+                }
+
+                undecoratedWindowResizer.Content(
+                    modifier = Modifier.layoutId("UndecoratedWindowResizer")
+                )
+            }
         }
     }
 }
