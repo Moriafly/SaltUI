@@ -82,7 +82,6 @@ internal fun DialogWindowScope.LinuxSaltDialogWindowFrame(
         if (currentProperties.moveable) {
             LinuxCaptionBarDragHandler(
                 window = window,
-                captionBarHeight = properties.captionBarHeight,
                 isMoveable = properties.moveable,
                 isHitTestInCaptionBar = isHitTestInCaptionBar.value
             )

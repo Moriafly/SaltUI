@@ -21,7 +21,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberUpdatedState
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.window.WindowPlacement
 import androidx.compose.ui.window.WindowState
 import com.moriafly.salt.ui.UnstableSaltUiApi
@@ -38,7 +37,6 @@ import java.awt.event.MouseMotionAdapter
  * subsequent drags.
  *
  * @param window The AWT window to attach mouse listeners to.
- * @param captionBarHeight The height of the caption bar.
  * @param isMoveable Whether the window is moveable.
  * @param isHitTestInCaptionBar Whether the pointer is in the caption bar area.
  * @param canDrag Whether dragging is currently allowed (e.g., not in fullscreen).
@@ -48,13 +46,11 @@ import java.awt.event.MouseMotionAdapter
 @Composable
 internal fun LinuxCaptionBarDragHandler(
     window: Window,
-    captionBarHeight: Dp,
     isMoveable: Boolean,
     isHitTestInCaptionBar: Boolean,
     canDrag: Boolean = true,
     windowState: WindowState? = null,
 ) {
-    val currentCaptionBarHeight by rememberUpdatedState(captionBarHeight)
     val currentIsMoveable by rememberUpdatedState(isMoveable)
     val currentIsHitTestInCaptionBar by rememberUpdatedState(isHitTestInCaptionBar)
     val currentCanDrag by rememberUpdatedState(canDrag)
@@ -126,7 +122,6 @@ internal fun LinuxCaptionBarDragHandler(
                 if (!currentIsHitTestInCaptionBar) return
                 if (!currentIsMoveable) return
                 if (!currentCanDrag) return
-                if (!isCaptionBarHit(e, currentCaptionBarHeight, window)) return
 
                 pendingDrag = true
                 pendingDragEvent = e
@@ -147,7 +142,6 @@ internal fun LinuxCaptionBarDragHandler(
                 if (e.button != MouseEvent.BUTTON1) return
                 if (e.clickCount != 2) return
                 if (!currentIsHitTestInCaptionBar) return
-                if (!isCaptionBarHit(e, currentCaptionBarHeight, window)) return
 
                 val state = currentWindowState ?: return
                 if (state.placement == WindowPlacement.Maximized) {
@@ -168,15 +162,4 @@ internal fun LinuxCaptionBarDragHandler(
             window.removeMouseMotionListener(mouseMotionListener)
         }
     }
-}
-
-/**
- * Check whether [event] falls within the caption bar region.
- */
-private fun isCaptionBarHit(event: MouseEvent, captionBarHeight: Dp, window: Window): Boolean {
-    val captionBarHeightPx = (
-        captionBarHeight.value *
-            window.graphicsConfiguration.defaultTransform.scaleY
-    ).toInt()
-    return event.y <= captionBarHeightPx
 }

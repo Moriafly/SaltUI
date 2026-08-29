@@ -87,7 +87,6 @@ internal fun FrameWindowScope.LinuxSaltWindowFrame(
         if (currentProperties.moveable) {
             LinuxCaptionBarDragHandler(
                 window = window,
-                captionBarHeight = properties.captionBarHeight,
                 isMoveable = properties.moveable,
                 isHitTestInCaptionBar = isHitTestInCaptionBar.value,
                 canDrag = windowState.placement != WindowPlacement.Fullscreen,
