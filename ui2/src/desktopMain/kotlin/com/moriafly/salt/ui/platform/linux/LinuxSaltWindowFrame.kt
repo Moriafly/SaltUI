@@ -143,13 +143,6 @@ internal fun FrameWindowScope.LinuxSaltWindowFrame(
                 }
             }
 
-            val isMaximizedOrFullscreen =
-                windowState.placement == WindowPlacement.Maximized ||
-                    windowState.placement == WindowPlacement.Fullscreen
-            if (!isMaximizedOrFullscreen) {
-                LinuxWindowBorder()
-            }
-
             undecoratedWindowResizer.Content(
                 modifier = Modifier.layoutId("UndecoratedWindowResizer")
             )
