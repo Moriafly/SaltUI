@@ -76,7 +76,7 @@ fun ScreenCard(
                         vertical = 8.dp
                     ),
                 color = SaltTheme.colors.subText,
-                fontWeight = FontWeight.SemiBold,
+                fontWeight = FontWeight.Medium,
                 style = SaltTheme.textStyles.sub
             )
         }
