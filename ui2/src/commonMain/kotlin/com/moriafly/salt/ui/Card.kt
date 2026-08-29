@@ -13,13 +13,12 @@
  * Lesser General Public License for more details.
  */
 
-@file:Suppress("unused")
-
 package com.moriafly.salt.ui
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -30,39 +29,70 @@ import androidx.compose.ui.unit.Dp
 import com.moriafly.salt.ui.material.subMaterial
 
 /**
- * A card-like container that clips its content to [shape] and applies Salt UI styling.
+ * A card container that arranges [content] vertically.
  *
- * When [color] is specified, the card uses it as the fallback color for the sub-material
- * background and draws a hairline border with [SaltColors.stroke]. Passing [Color.Unspecified]
- * skips both the background material and the border, while preserving the shape clipping.
+ * The card always clips its content to [shape]. When [color] is specified, the card applies the
+ * sub-material effect and uses [color] as its fallback background. The [border] is configured
+ * independently and follows the same [shape]. This component does not add content padding.
  *
- * @param modifier The modifier to apply to the card.
- * @param color The fallback background color used by the sub-material effect.
- * @param shape The shape used to clip the card and draw its border.
- * @param content The content of the card, with a [BoxScope] receiver for box-specific modifiers.
+ * @param modifier [Modifier] applied to the card.
+ * @param shape Shape used to clip the card and draw its [border].
+ * @param color Fallback background color for the sub-material effect. Pass [Color.Unspecified] to
+ * omit the material effect.
+ * @param border Stroke drawn around the card, or `null` for no border.
+ * @param content Content arranged vertically inside the card, with a [ColumnScope] receiver.
  *
- * @see Box
+ * @see CardDefaults
+ * @see Column
  */
 @UnstableSaltUiApi
 @Composable
 fun Card(
     modifier: Modifier = Modifier,
-    color: Color = SaltTheme.colors.subBackground,
-    shape: Shape = SaltTheme.shapes.medium,
-    content: @Composable BoxScope.() -> Unit
+    shape: Shape = CardDefaults.shape,
+    color: Color = CardDefaults.color,
+    border: BorderStroke? = CardDefaults.border,
+    content: @Composable ColumnScope.() -> Unit
 ) {
-    Box(
+    Column(
         modifier = modifier
             .clip(shape)
             .thenIf(color.isSpecified) {
-                this
-                    .subMaterial(fallback = color)
-                    .border(
-                        width = Dp.Hairline,
-                        color = SaltTheme.colors.stroke,
-                        shape = shape
-                    )
+                subMaterial(fallback = color)
+            }
+            .thenIf(border != null) {
+                border(
+                    border = border,
+                    shape = shape
+                )
             },
         content = content
     )
+}
+
+/**
+ * Default appearance values for [Card] and components built on it.
+ */
+@UnstableSaltUiApi
+object CardDefaults {
+    /**
+     * Default card shape, resolved from the current [SaltTheme].
+     */
+    val shape: Shape
+        @Composable get() = SaltTheme.shapes.medium
+
+    /**
+     * Default fallback background color, resolved from the current [SaltTheme].
+     */
+    val color: Color
+        @Composable get() = SaltTheme.colors.subBackground
+
+    /**
+     * Default hairline border, using the stroke color from the current [SaltTheme].
+     */
+    val border: BorderStroke
+        @Composable get() = BorderStroke(
+            width = Dp.Hairline,
+            color = SaltTheme.colors.stroke
+        )
 }

@@ -15,6 +15,7 @@
 
 package com.moriafly.salt.ui.screen
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
@@ -22,33 +23,44 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.moriafly.salt.ui.Card
+import com.moriafly.salt.ui.CardDefaults
 import com.moriafly.salt.ui.SaltTheme
 import com.moriafly.salt.ui.Text
 import com.moriafly.salt.ui.UnstableSaltUiApi
 
 /**
- * Displays a card section for grouping related controls within a [BasicScreen].
+ * A full-width [Card] section for grouping related content within a [BasicScreen].
  *
- * An optional [header] and [footer] are placed above and below the card, while [content] is
- * arranged vertically inside the card. This component applies the standard horizontal screen
- * inset and trailing section spacing, allowing multiple card sections to be placed consecutively.
+ * The optional [header] and [footer] are placed above and below the card, and [content] is arranged
+ * vertically inside it. The outer section applies [ScreenCardDefaults.paddingValues], while the
+ * card fills the remaining width. The [shape], [color], and [border] are forwarded to [Card].
  *
- * This component should be used inside the content area of [BasicScreen]. Apply the padding values
- * supplied by [BasicScreen] to the surrounding content container so the card remains clear of the
- * title bar and window insets.
+ * When used in a [BasicScreen], the surrounding content container remains responsible for applying
+ * the padding values supplied by [BasicScreen].
  *
  * @param modifier [Modifier] applied to the outer section container.
- * @param header Optional section heading displayed above the card.
- * @param footer Optional supporting text displayed below the card.
- * @param content Content displayed vertically inside the card, with a [ColumnScope] receiver.
+ * @param shape Shape used to clip the card and draw its [border].
+ * @param color Fallback background color for the card's sub-material effect. Pass
+ * [Color.Unspecified] to omit the material effect.
+ * @param border Stroke drawn around the card, or `null` for no border.
+ * @param header Optional section heading displayed above the card; `null` omits it.
+ * @param footer Optional supporting text displayed below the card; `null` omits it.
+ * @param content Content arranged vertically inside the card, with a [ColumnScope] receiver.
+ *
+ * @see ScreenCardDefaults
  */
 @UnstableSaltUiApi
 @Composable
 fun ScreenCard(
     modifier: Modifier = Modifier,
+    shape: Shape = CardDefaults.shape,
+    color: Color = CardDefaults.color,
+    border: BorderStroke? = CardDefaults.border,
     header: String? = null,
     footer: String? = null,
     content: @Composable ColumnScope.() -> Unit
@@ -73,12 +85,12 @@ fun ScreenCard(
         }
         Card(
             modifier = Modifier
-                .fillMaxWidth()
-        ) {
-            Column {
-                content()
-            }
-        }
+                .fillMaxWidth(),
+            shape = shape,
+            color = color,
+            border = border,
+            content = content
+        )
         footer?.let {
             Text(
                 text = footer,
@@ -94,8 +106,14 @@ fun ScreenCard(
     }
 }
 
+/**
+ * Default layout values for [ScreenCard].
+ */
 @UnstableSaltUiApi
 object ScreenCardDefaults {
+    /**
+     * Padding around the complete section, including its header, card, and footer.
+     */
     val paddingValues: PaddingValues =
         PaddingValues(
             horizontal = 16.dp,
