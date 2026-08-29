@@ -98,8 +98,7 @@ fun ScreenCard(
 object ScreenCardDefaults {
     val paddingValues: PaddingValues =
         PaddingValues(
-            start = 16.dp,
-            top = 16.dp,
-            end = 16.dp
+            horizontal = 16.dp,
+            vertical = 8.dp
         )
 }

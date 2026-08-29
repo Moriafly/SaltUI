@@ -34,7 +34,6 @@ import com.moriafly.salt.ui.sample.ui.navigation.ScreenRoute
 import com.moriafly.salt.ui.sample.ui.screen.basic.BasicScreenColumn
 import com.moriafly.salt.ui.sample.util.AppConfig
 import com.moriafly.salt.ui.screen.ScreenCard
-import com.moriafly.salt.ui.screen.ScreenFooter
 import com.moriafly.salt.ui.screen.TitleBarButton
 
 @Suppress("ktlint:compose:modifier-missing-check")
@@ -160,7 +159,5 @@ fun MainScreen() {
                 )
             }
         }
-
-        ScreenFooter()
     }
 }
