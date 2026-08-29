@@ -43,8 +43,8 @@ import androidx.compose.ui.window.WindowDecoration
 import androidx.compose.ui.window.rememberDialogState
 import com.moriafly.salt.core.os.OS
 import com.moriafly.salt.ui.UnstableSaltUiApi
+import com.moriafly.salt.ui.platform.linux.LinuxClientShadow
 import com.moriafly.salt.ui.platform.linux.LinuxSaltDialogWindowFrame
-import com.moriafly.salt.ui.platform.linux.LinuxWindowDecoration
 import com.moriafly.salt.ui.platform.macos.MacOSSaltDialogWindowFrame
 import com.moriafly.salt.ui.platform.windows.WindowsSaltDialogWindowFrame
 import com.moriafly.salt.ui.util.findSkiaLayer
@@ -70,13 +70,11 @@ import java.awt.event.WindowEvent
  * which composition context it was created.
  *
  * Note: On Linux, the dialog is always created undecorated at the AWT level so that the client
- * area extends to the whole window. When [decoration] is [WindowDecoration.SystemDefault] and
- * the window manager supports border-only Motif decorations (e.g. KWin), a native border-only
- * frame is requested via `_MOTIF_WM_HINTS`, which provides the native window shadow and border
- * without a title bar. On window managers without support (e.g. GNOME Shell/Mutter, which would
- * add a full title bar), a client-drawn shadow is used instead: the dialog becomes transparent,
- * the content is inset by a shadow margin, and `_GTK_FRAME_EXTENTS` keeps window snapping and
- * positioning aligned with the content. If neither is available, the dialog stays fully
+ * area extends to the whole window. When [decoration] is [WindowDecoration.SystemDefault], a
+ * client-drawn shadow provides the window decoration: the dialog becomes transparent, the
+ * content is inset by a shadow margin and rounded, and `_GTK_FRAME_EXTENTS` keeps window
+ * snapping and positioning aligned with the content. If per-pixel translucency is not
+ * available, or [decoration] is [WindowDecoration.Undecorated], the dialog stays fully
  * undecorated.
  *
  * @param properties [SaltWindowProperties]
@@ -123,7 +121,7 @@ fun SaltDialogWindow(
 
     // The client-drawn shadow on Linux requires a transparent window for the shadow area
     val resolvedTransparent = transparent ||
-        (OS.isLinux() && LinuxWindowDecoration.shouldUseClientShadow(decoration))
+        (OS.isLinux() && LinuxClientShadow.shouldUseClientShadow(decoration))
 
     SaltWindowEnvironment {
         SwingDialog(

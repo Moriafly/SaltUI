@@ -49,8 +49,8 @@ import androidx.compose.ui.window.rememberWindowState
 import com.moriafly.salt.core.os.OS
 import com.moriafly.salt.ui.SaltTheme
 import com.moriafly.salt.ui.UnstableSaltUiApi
+import com.moriafly.salt.ui.platform.linux.LinuxClientShadow
 import com.moriafly.salt.ui.platform.linux.LinuxSaltWindowFrame
-import com.moriafly.salt.ui.platform.linux.LinuxWindowDecoration
 import com.moriafly.salt.ui.platform.macos.MacOSSaltWindowFrame
 import com.moriafly.salt.ui.platform.windows.WindowsSaltWindowFrame
 import com.moriafly.salt.ui.thenIf
@@ -73,13 +73,11 @@ import java.awt.event.WindowEvent
  * the window will be disposed and closed.
  *
  * Note: On Linux, the window is always created undecorated at the AWT level so that the client
- * area extends to the whole window. When [decoration] is [WindowDecoration.SystemDefault] and
- * the window manager supports border-only Motif decorations (e.g. KWin), a native border-only
- * frame is requested via `_MOTIF_WM_HINTS`, which provides the native window shadow and border
- * without a title bar. On window managers without support (e.g. GNOME Shell/Mutter, which would
- * add a full title bar), a client-drawn shadow is used instead: the window becomes transparent,
- * the content is inset by a shadow margin, and `_GTK_FRAME_EXTENTS` keeps window snapping and
- * positioning aligned with the content. If neither is available, the window stays fully
+ * area extends to the whole window. When [decoration] is [WindowDecoration.SystemDefault], a
+ * client-drawn shadow provides the window decoration: the window becomes transparent, the
+ * content is inset by a shadow margin and rounded, and `_GTK_FRAME_EXTENTS` keeps window
+ * snapping and positioning aligned with the content. If per-pixel translucency is not
+ * available, or [decoration] is [WindowDecoration.Undecorated], the window stays fully
  * undecorated.
  *
  * @see [Window]
@@ -119,7 +117,7 @@ fun SaltWindow(
 
     // The client-drawn shadow on Linux requires a transparent window for the shadow area
     val resolvedTransparent = transparent ||
-        (OS.isLinux() && LinuxWindowDecoration.shouldUseClientShadow(decoration))
+        (OS.isLinux() && LinuxClientShadow.shouldUseClientShadow(decoration))
 
     SaltWindowEnvironment {
         SwingWindow(

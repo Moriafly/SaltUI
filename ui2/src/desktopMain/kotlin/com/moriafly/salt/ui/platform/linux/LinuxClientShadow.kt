@@ -20,6 +20,7 @@ package com.moriafly.salt.ui.platform.linux
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.CornerRadius
@@ -27,6 +28,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.WindowDecoration
 import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.sun.jna.Library
 import com.sun.jna.Memory
@@ -46,12 +48,33 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 
+private const val MAX_WAIT_FOR_SHOWING_MS = 10_000L
+private const val SHOWING_POLL_INTERVAL_MS = 50L
+
 /**
- * Client-drawn window shadow for Linux window managers that cannot provide a native shadow
- * without a full native title bar (e.g. GNOME Shell/Mutter).
+ * Suspends until window is showing or a timeout is reached.
  *
- * The window is created transparent, the content is inset by [margin] and a drop shadow is
- * drawn into the transparent area by the frame composable. This object handles the X11 side:
+ * X11 window properties such as `_GTK_FRAME_EXTENTS` must only be written after the window is
+ * mapped, because AWT rewrites them when the window is mapped and would override earlier values.
+ *
+ * @return `true` if the window is showing, `false` on timeout.
+ */
+internal suspend fun Window.awaitShowing(): Boolean {
+    var waited = 0L
+    while (!isShowing && waited < MAX_WAIT_FOR_SHOWING_MS) {
+        delay(SHOWING_POLL_INTERVAL_MS.milliseconds)
+        waited += SHOWING_POLL_INTERVAL_MS
+    }
+    return isShowing
+}
+
+/**
+ * Client-drawn window shadow for Linux.
+ *
+ * Salt windows are always created undecorated at the AWT level, so the window manager provides
+ * no shadow or frame. When [WindowDecoration.SystemDefault] is requested, the window is created
+ * transparent, the content is inset by [margin] and a drop shadow is drawn into the transparent
+ * area by the frame composable. This object handles the X11 side:
  *
  * - `_GTK_FRAME_EXTENTS` tells the window manager which part of the window is the actual
  *   content, so snapping and positioning ignore the shadow area (same mechanism GTK CSD
@@ -90,6 +113,17 @@ internal object LinuxClientShadow {
             false
         }
     }
+
+    /**
+     * Returns whether a window with [decoration] should use the client-drawn shadow decoration:
+     * [WindowDecoration.SystemDefault] requests the platform window look, which on Linux is
+     * provided entirely by the client-drawn shadow, and the shadow requires per-pixel
+     * translucency for its transparent area. [WindowDecoration.Undecorated] windows stay
+     * fully undecorated.
+     */
+    @OptIn(ExperimentalComposeUiApi::class)
+    fun shouldUseClientShadow(decoration: WindowDecoration): Boolean =
+        decoration == WindowDecoration.SystemDefault && isTranslucencySupported
 
     /**
      * Sets or removes the `_GTK_FRAME_EXTENTS` property (left, right, top, bottom) so the window

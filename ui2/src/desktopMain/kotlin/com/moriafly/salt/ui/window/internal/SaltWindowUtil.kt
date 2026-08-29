@@ -30,10 +30,9 @@ import com.moriafly.salt.ui.UnstableSaltUiApi
  * regardless of the requested decoration, because [WindowDecoration.SystemDefault]
  * implicitly renders the native desktop environment's title bar, which conflicts
  * with the unified custom window appearance across all platforms. When
- * [WindowDecoration.SystemDefault] is requested on Linux, a native border-only frame
- * (without a title bar) is applied separately via `_MOTIF_WM_HINTS` on window managers
- * that support it; see
- * [com.moriafly.salt.ui.platform.linux.LinuxWindowDecoration].
+ * [WindowDecoration.SystemDefault] is requested on Linux, a client-drawn shadow
+ * decoration is used instead; see
+ * [com.moriafly.salt.ui.platform.linux.LinuxClientShadow].
  *
  * On other platforms, the original decoration is returned as-is.
  */

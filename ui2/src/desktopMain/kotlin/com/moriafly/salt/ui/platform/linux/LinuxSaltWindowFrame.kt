@@ -94,7 +94,7 @@ internal fun FrameWindowScope.LinuxSaltWindowFrame(
             )
         }
 
-        val clientShadow = LinuxWindowDecoration.shouldUseClientShadow(decoration)
+        val clientShadow = LinuxClientShadow.shouldUseClientShadow(decoration)
         val isMaximizedOrFullScreen = windowState.placement == WindowPlacement.Maximized ||
             windowState.placement == WindowPlacement.Fullscreen
         // Maximized and fullscreen windows drop the shadow, matching the platform convention
@@ -104,17 +104,11 @@ internal fun FrameWindowScope.LinuxSaltWindowFrame(
             0.dp
         }
 
-        if (decoration == WindowDecoration.SystemDefault) {
-            LinuxNativeBorderOnlyFrameEffect(
+        if (clientShadow) {
+            LinuxClientShadowEffect(
                 window = window,
-                resizable = resizable
+                margin = shadowMargin
             )
-            if (clientShadow) {
-                LinuxClientShadowEffect(
-                    window = window,
-                    margin = shadowMargin
-                )
-            }
         }
 
         LaunchedEffect(window.undecoratedResizerThickness) {

@@ -39,7 +39,7 @@ import com.moriafly.salt.core.os.OS
 import com.moriafly.salt.ui.SaltTheme
 import com.moriafly.salt.ui.Text
 import com.moriafly.salt.ui.UnstableSaltUiApi
-import com.moriafly.salt.ui.platform.linux.LinuxWindowDecoration
+import com.moriafly.salt.ui.platform.linux.LinuxClientShadow
 import com.moriafly.salt.ui.util.findSkiaLayer
 import java.awt.Color
 import java.awt.Dimension
@@ -83,7 +83,7 @@ class SaltWindowTest {
         // With the Linux client-drawn shadow the window background becomes fully transparent
         // once the window is undecorated
         val clientShadow = OS.isLinux() &&
-            LinuxWindowDecoration.shouldUseClientShadow(WindowDecoration.SystemDefault)
+            LinuxClientShadow.shouldUseClientShadow(WindowDecoration.SystemDefault)
         if (clientShadow) {
             waitUntil(timeoutMillis = 5_000) { composeWindow.background.alpha == 0 }
         } else {

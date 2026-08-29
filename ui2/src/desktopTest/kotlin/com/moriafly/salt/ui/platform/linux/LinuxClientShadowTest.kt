@@ -54,12 +54,13 @@ import java.awt.event.MouseEvent
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import org.junit.Assume.assumeTrue
 
 /**
- * Tests for the client-drawn shadow used on Linux window managers that cannot provide a native
- * shadow without a full title bar (e.g. GNOME Shell/Mutter).
+ * Tests for the client-drawn shadow used for Linux windows with
+ * [WindowDecoration.SystemDefault].
  *
  * The window-level tests are skipped unless the client shadow is actually active for
  * [WindowDecoration.SystemDefault] on the host.
@@ -266,15 +267,110 @@ class LinuxClientShadowTest {
         assumeTrue(OS.isLinux())
         assumeTrue(
             "Client shadow is not active for this host",
-            LinuxWindowDecoration.shouldUseClientShadow(WindowDecoration.SystemDefault)
+            LinuxClientShadow.shouldUseClientShadow(WindowDecoration.SystemDefault)
         )
+    }
+
+    /**
+     * A [WindowDecoration.Undecorated] window requests no decoration at all: the client-drawn
+     * shadow must not be applied — the window stays opaque and gets no `_GTK_FRAME_EXTENTS`.
+     */
+    @Test
+    fun saltWindow_undecoratedDecoration_noClientShadow() {
+        assumeTrue(OS.isLinux())
+
+        runDesktopComposeUiTest {
+            lateinit var composeWindow: ComposeWindow
+            setContent {
+                SaltTheme {
+                    SaltWindow(
+                        onCloseRequest = {},
+                        state = rememberWindowState(),
+                        title = "Linux Undecorated Window",
+                        decoration = WindowDecoration.Undecorated(),
+                        init = { composeWindow = it }
+                    ) {
+                        Box(
+                            modifier = Modifier.testTag("undecoratedContent")
+                        ) {
+                            Text("Hello Linux")
+                        }
+                    }
+                }
+            }
+
+            onNodeWithTag("undecoratedContent").assertIsDisplayed()
+            waitForIdle()
+
+            // Give the shadow effect a chance to (not) apply
+            Thread.sleep(500)
+
+            assertEquals(Color.BLACK, composeWindow.background)
+            assertNull(gtkFrameExtents(composeWindow))
+        }
+    }
+
+    /**
+     * Salt windows are always undecorated at the AWT level; regardless of the window manager,
+     * no native frame may appear around a [SaltWindow] with the default
+     * [WindowDecoration.SystemDefault] decoration.
+     */
+    @Test
+    fun saltWindow_defaultDecoration_hasNoNativeFrameExtents() {
+        assumeTrue(OS.isLinux())
+
+        runDesktopComposeUiTest {
+            lateinit var composeWindow: ComposeWindow
+            setContent {
+                SaltTheme {
+                    SaltWindow(
+                        onCloseRequest = {},
+                        state = rememberWindowState(),
+                        title = "Linux Frameless Window",
+                        init = { composeWindow = it }
+                    ) {
+                        Box(
+                            modifier = Modifier.testTag("linuxFramelessContent")
+                        ) {
+                            Text("Hello Linux")
+                        }
+                    }
+                }
+            }
+
+            onNodeWithTag("linuxFramelessContent").assertIsDisplayed()
+            waitForIdle()
+
+            // Give the window manager a chance to (not) apply a native frame
+            Thread.sleep(500)
+
+            val extents = netFrameExtents(composeWindow)
+            assertTrue(
+                extents == null || extents.all { it == 0L },
+                "Expected no native frame extents, but was ${extents?.toList()}"
+            )
+        }
     }
 
     /**
      * Reads the `_GTK_FRAME_EXTENTS` (left, right, top, bottom) of [window], or `null` if the
      * property is absent or cannot be read.
      */
-    private fun gtkFrameExtents(window: Window): LongArray? {
+    private fun gtkFrameExtents(window: Window): LongArray? =
+        readCardinalProperty(window, "_GTK_FRAME_EXTENTS")
+
+    /**
+     * Reads the `_NET_FRAME_EXTENTS` (left, right, top, bottom) of [window], or `null` if the
+     * property is absent or cannot be read.
+     */
+    private fun netFrameExtents(window: Window): LongArray? =
+        readCardinalProperty(window, "_NET_FRAME_EXTENTS")
+
+    /**
+     * Reads the 32-bit cardinal window property [propertyName] (left, right, top, bottom) of
+     * [window], or `null` if the property is absent or cannot be read.
+     */
+    private fun readCardinalProperty(window: Window, propertyName: String): LongArray? {
         if (!window.isDisplayable) return null
 
         val x11 = try {
@@ -288,8 +384,8 @@ class LinuxClientShadowTest {
             val windowId = Native.getComponentID(window)
             if (windowId == 0L) return null
 
-            val gtkFrameExtents = x11.XInternAtom(display, "_GTK_FRAME_EXTENTS", false)
-            if (gtkFrameExtents == null || gtkFrameExtents.toLong() == 0L) return null
+            val property = x11.XInternAtom(display, propertyName, false)
+            if (property == null || property.toLong() == 0L) return null
 
             val actualType = X11.AtomByReference()
             val actualFormat = IntByReference()
@@ -300,7 +396,7 @@ class LinuxClientShadowTest {
             val result = x11.XGetWindowProperty(
                 display,
                 X11.Window(windowId),
-                gtkFrameExtents,
+                property,
                 NativeLong(0),
                 NativeLong(4),
                 false,

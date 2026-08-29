@@ -93,14 +93,7 @@ internal fun DialogWindowScope.LinuxSaltDialogWindowFrame(
             }
         }
 
-        if (decoration == WindowDecoration.SystemDefault) {
-            LinuxNativeBorderOnlyFrameEffect(
-                window = window,
-                resizable = resizable
-            )
-        }
-
-        val clientShadow = LinuxWindowDecoration.shouldUseClientShadow(decoration)
+        val clientShadow = LinuxClientShadow.shouldUseClientShadow(decoration)
         // Dialogs are never maximized, so the shadow margin is constant
         val shadowMargin = if (clientShadow) LinuxClientShadow.margin else 0.dp
 
