@@ -145,11 +145,11 @@ internal fun DialogWindowScope.LinuxSaltDialogWindowFrame(
                         }
                     }
                 }
-
-                undecoratedWindowResizer.Content(
-                    modifier = Modifier.layoutId("UndecoratedWindowResizer")
-                )
             }
+
+            undecoratedWindowResizer.Content(
+                modifier = Modifier.layoutId("UndecoratedWindowResizer")
+            )
         }
     }
 }

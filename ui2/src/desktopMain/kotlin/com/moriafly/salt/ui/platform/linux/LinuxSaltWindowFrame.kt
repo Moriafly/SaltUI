@@ -185,11 +185,11 @@ internal fun FrameWindowScope.LinuxSaltWindowFrame(
                         }
                     }
                 }
-
-                undecoratedWindowResizer.Content(
-                    modifier = Modifier.layoutId("UndecoratedWindowResizer")
-                )
             }
+
+            undecoratedWindowResizer.Content(
+                modifier = Modifier.layoutId("UndecoratedWindowResizer")
+            )
         }
     }
 }
