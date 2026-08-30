@@ -49,6 +49,7 @@ import java.awt.Color
 import java.awt.Frame
 import java.awt.MouseInfo
 import java.awt.Robot
+import java.awt.Toolkit
 import java.awt.Window
 import java.awt.event.InputEvent
 import java.awt.event.MouseAdapter
@@ -233,6 +234,10 @@ class LinuxClientShadowTest {
     @Test
     fun saltWindow_clientShadow_removedWhenMaximized() {
         assumeClientShadowActive()
+        assumeTrue(
+            "Window manager does not support maximized windows",
+            Toolkit.getDefaultToolkit().isFrameStateSupported(Frame.MAXIMIZED_BOTH)
+        )
 
         runDesktopComposeUiTest {
             lateinit var composeWindow: ComposeWindow
