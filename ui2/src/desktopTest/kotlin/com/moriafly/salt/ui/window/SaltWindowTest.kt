@@ -204,6 +204,10 @@ class SaltWindowTest {
                     composeWindow.height >= initialSize.height + 60
             }
 
+            assertEquals(
+                Dimension(initialSize.width + 120, initialSize.height + 80),
+                composeWindow.size
+            )
             assertTrue(resizeMessageCount.get() > 0)
             assertTrue(composeWindow.isShowing)
             java.lang.ref.Reference.reachabilityFence(resizeProbe)

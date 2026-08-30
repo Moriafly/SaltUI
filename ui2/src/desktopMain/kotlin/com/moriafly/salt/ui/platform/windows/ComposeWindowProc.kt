@@ -217,7 +217,13 @@ internal class ComposeWindowProc(
                 )
                 // Keep the custom client-area result while allowing chained procedures, including Skiko's
                 // synchronous Direct3D live-resize hook, to observe the pending resize.
-                super.callback(hwnd, uMsg, wParam, lParam)
+                val params = Pointer(lParam.toLong())
+                val clientRects = params.getByteArray(0, WinDef.RECT().size() * 3)
+                try {
+                    super.callback(hwnd, uMsg, wParam, lParam)
+                } finally {
+                    params.write(0, clientRects, 0, clientRects.size)
+                }
                 LRESULT(0)
             }
         }
