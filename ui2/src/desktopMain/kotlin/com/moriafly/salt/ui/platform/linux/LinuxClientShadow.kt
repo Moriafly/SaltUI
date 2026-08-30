@@ -26,6 +26,7 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.WindowDecoration
@@ -292,10 +293,8 @@ internal fun LinuxClientShadowEffect(
     window: Window,
     margin: Dp
 ) {
-    // Approximate the AWT device-pixel margin from the dp value; the Compose density may differ
-    // from the AWT scale when extraDisplayScale is customized
-    val scale = window.graphicsConfiguration?.defaultTransform?.scaleX ?: 1.0
-    val marginPx = (margin.value * scale).roundToInt().coerceAtLeast(0)
+    val density = LocalDensity.current
+    val marginPx = with(density) { margin.roundToPx() }.coerceAtLeast(0)
 
     LaunchedEffect(window, marginPx) {
         if (window.awaitShowing()) {
@@ -328,6 +327,8 @@ internal fun LinuxClientShadowEffect(
         window.addComponentListener(listener)
         onDispose {
             window.removeComponentListener(listener)
+            LinuxClientShadow.applyGtkFrameExtents(window, 0)
+            LinuxClientShadow.updateInputShape(window, 0)
         }
     }
 }

@@ -38,6 +38,7 @@ import com.moriafly.salt.ui.SaltTheme
 import com.moriafly.salt.ui.Text
 import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.moriafly.salt.ui.window.SaltWindow
+import com.moriafly.salt.ui.window.SaltWindowProperties
 import com.sun.jna.Native
 import com.sun.jna.NativeLong
 import com.sun.jna.platform.unix.X11
@@ -45,6 +46,7 @@ import com.sun.jna.ptr.IntByReference
 import com.sun.jna.ptr.NativeLongByReference
 import com.sun.jna.ptr.PointerByReference
 import java.awt.Color
+import java.awt.Frame
 import java.awt.MouseInfo
 import java.awt.Robot
 import java.awt.Window
@@ -54,7 +56,6 @@ import java.awt.event.MouseEvent
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertNull
 import kotlin.test.assertTrue
 import org.junit.Assume.assumeTrue
 
@@ -83,6 +84,9 @@ class LinuxClientShadowTest {
                         onCloseRequest = {},
                         state = rememberWindowState(),
                         title = "Linux Client Shadow",
+                        properties = SaltWindowProperties.default(
+                            extraDisplayScale = 1.5f
+                        ),
                         init = { composeWindow = it }
                     ) {
                         Box(
@@ -99,8 +103,12 @@ class LinuxClientShadowTest {
             // The shadow area requires a transparent window background
             waitUntil(timeoutMillis = 5_000) { composeWindow.background.alpha == 0 }
 
-            val scale = composeWindow.graphicsConfiguration.defaultTransform.scaleX
-            val expectedMargin = (LinuxClientShadow.margin.value * scale).toLong()
+            val expectedMargin = onNodeWithTag("clientShadowContent")
+                .fetchSemanticsNode()
+                .boundsInRoot
+                .left
+                .toLong()
+            assertTrue(expectedMargin > LinuxClientShadow.margin.value)
             waitUntil(timeoutMillis = 5_000) {
                 val extents = gtkFrameExtents(composeWindow)
                 extents != null && extents.all { it == expectedMargin }
@@ -127,6 +135,7 @@ class LinuxClientShadowTest {
                             size = DpSize(640.dp, 480.dp)
                         ),
                         title = "Linux Client Shadow Input",
+                        alwaysOnTop = true,
                         init = { composeWindow = it }
                     ) {
                         Box(
@@ -254,10 +263,16 @@ class LinuxClientShadowTest {
             }
 
             // The shadow and its frame extents are dropped for maximized windows
+            waitUntil(timeoutMillis = 10_000) {
+                composeWindow.extendedState and Frame.MAXIMIZED_BOTH == Frame.MAXIMIZED_BOTH
+            }
             waitUntil(timeoutMillis = 10_000) { gtkFrameExtents(composeWindow) == null }
 
             runOnUiThread {
                 windowState.placement = WindowPlacement.Floating
+            }
+            waitUntil(timeoutMillis = 10_000) {
+                composeWindow.extendedState and Frame.MAXIMIZED_BOTH == 0
             }
             waitUntil(timeoutMillis = 10_000) { gtkFrameExtents(composeWindow) != null }
         }
@@ -306,7 +321,11 @@ class LinuxClientShadowTest {
             Thread.sleep(500)
 
             assertEquals(Color.BLACK, composeWindow.background)
-            assertNull(gtkFrameExtents(composeWindow))
+            val extents = gtkFrameExtents(composeWindow)
+            assertTrue(
+                extents == null || extents.all { it == 0L },
+                "Expected no client shadow extents, but was ${extents?.toList()}"
+            )
         }
     }
 
