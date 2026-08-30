@@ -215,6 +215,9 @@ internal class ComposeWindowProc(
                         }
                     )
                 )
+                // Keep the custom client-area result while allowing chained procedures, including Skiko's
+                // synchronous Direct3D live-resize hook, to observe the pending resize.
+                super.callback(hwnd, uMsg, wParam, lParam)
                 LRESULT(0)
             }
         }

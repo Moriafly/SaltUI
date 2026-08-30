@@ -40,12 +40,19 @@ import com.moriafly.salt.ui.SaltTheme
 import com.moriafly.salt.ui.Text
 import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.moriafly.salt.ui.platform.linux.LinuxClientShadow
+import com.moriafly.salt.ui.platform.windows.BasicWindowProc
+import com.moriafly.salt.ui.platform.windows.ComposeWindowProc
+import com.moriafly.salt.ui.platform.windows.HitTestResult
+import com.moriafly.salt.ui.platform.windows.WinUserConst.WM_NCCALCSIZE
 import com.moriafly.salt.ui.util.findSkiaLayer
+import com.moriafly.salt.ui.util.hwnd
+import com.sun.jna.platform.win32.WinDef
 import java.awt.Color
 import java.awt.Dimension
 import java.awt.MouseInfo
 import java.awt.Robot
 import java.awt.event.InputEvent
+import java.util.concurrent.atomic.AtomicInteger
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -113,6 +120,95 @@ class SaltWindowTest {
         }
 
         onNodeWithTag("transparentWindowContent").assertIsDisplayed()
+    }
+
+    @Test
+    fun saltWindow_windowsResizeKeepsNativeResizeChainActive() {
+        if (OS.current !is OS.Windows) return
+
+        runDesktopComposeUiTest {
+            lateinit var composeWindow: ComposeWindow
+            lateinit var resizeProbe: BasicWindowProc
+            lateinit var testWindowProc: ComposeWindowProc
+            val resizeMessageCount = AtomicInteger()
+            setContent {
+                SaltTheme {
+                    SaltWindow(
+                        onCloseRequest = {},
+                        state = rememberWindowState(
+                            position = WindowPosition.Absolute(120.dp, 120.dp),
+                            size = DpSize(640.dp, 480.dp)
+                        ),
+                        title = "Native Resize Chain",
+                        init = { window ->
+                            composeWindow = window
+                        }
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .testTag("nativeResizeChainContent")
+                        )
+                    }
+                }
+            }
+
+            onNodeWithTag("nativeResizeChainContent").assertIsDisplayed()
+            runOnUiThread {
+                composeWindow.toFront()
+                resizeProbe = object : BasicWindowProc(composeWindow.hwnd) {
+                    override fun callback(
+                        hwnd: WinDef.HWND,
+                        uMsg: Int,
+                        wParam: WinDef.WPARAM,
+                        lParam: WinDef.LPARAM
+                    ): WinDef.LRESULT {
+                        if (uMsg == WM_NCCALCSIZE && wParam.toInt() != 0) {
+                            resizeMessageCount.incrementAndGet()
+                        }
+                        return super.callback(hwnd, uMsg, wParam, lParam)
+                    }
+                }
+                testWindowProc = ComposeWindowProc(
+                    window = composeWindow,
+                    hitTest = { _, _ -> HitTestResult.HTCLIENT },
+                    onWindowInsetUpdate = {},
+                    onResizeEdgeChange = {}
+                )
+            }
+            waitForIdle()
+
+            val robot = Robot().apply { autoDelay = 30 }
+            assumeTrue(
+                "java.awt.Robot cannot synthesize input events",
+                robot.canControlPointer()
+            )
+            val initialSize = composeWindow.size
+            robot.mouseMove(
+                composeWindow.x + composeWindow.width / 2,
+                composeWindow.y + composeWindow.height / 2
+            )
+            robot.mousePress(InputEvent.BUTTON1_DOWN_MASK)
+            robot.mouseRelease(InputEvent.BUTTON1_DOWN_MASK)
+            waitUntil(timeoutMillis = 5_000) { composeWindow.isFocused }
+
+            resizeMessageCount.set(0)
+            runOnUiThread {
+                composeWindow.size = Dimension(
+                    initialSize.width + 120,
+                    initialSize.height + 80
+                )
+            }
+            waitUntil(timeoutMillis = 5_000) {
+                composeWindow.width >= initialSize.width + 100 &&
+                    composeWindow.height >= initialSize.height + 60
+            }
+
+            assertTrue(resizeMessageCount.get() > 0)
+            assertTrue(composeWindow.isShowing)
+            java.lang.ref.Reference.reachabilityFence(resizeProbe)
+            java.lang.ref.Reference.reachabilityFence(testWindowProc)
+        }
     }
 
     @Test
