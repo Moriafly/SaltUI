@@ -56,19 +56,21 @@ fun Modifier.verticalEdge(
     top: Dp = 0.dp,
     bottom: Dp = 0.dp
 ): Modifier = drawWithCache {
+    val topEdgeOffset = top.toPx() / size.height
+    val bottomEdgeOffset = 1f - bottom.toPx() / size.height
+
+    val brush = Brush.verticalGradient(
+        0f to Color.Transparent,
+        topEdgeOffset to Color.Black,
+        bottomEdgeOffset to Color.Black,
+        1f to Color.Transparent
+    )
+
     onDrawWithContent {
         drawContent()
 
-        val topEdgeOffset = top.toPx() / size.height
-        val bottomEdgeOffset = 1f - bottom.toPx() / size.height
-
         drawRect(
-            brush = Brush.verticalGradient(
-                0f to Color.Transparent,
-                topEdgeOffset to Color.Black,
-                bottomEdgeOffset to Color.Black,
-                1f to Color.Transparent
-            ),
+            brush = brush,
             blendMode = BlendMode.DstIn
         )
     }
@@ -102,19 +104,21 @@ fun Modifier.horizontalEdge(
     start: Dp = 0.dp,
     end: Dp = 0.dp
 ): Modifier = drawWithCache {
+    val startEdgeOffset = start.toPx() / size.width
+    val endEdgeOffset = 1f - end.toPx() / size.width
+
+    val brush = Brush.horizontalGradient(
+        0f to Color.Transparent,
+        startEdgeOffset to Color.Black,
+        endEdgeOffset to Color.Black,
+        1f to Color.Transparent
+    )
+
     onDrawWithContent {
         drawContent()
 
-        val startEdgeOffset = start.toPx() / size.width
-        val endEdgeOffset = 1f - end.toPx() / size.width
-
         drawRect(
-            brush = Brush.horizontalGradient(
-                0f to Color.Transparent,
-                startEdgeOffset to Color.Black,
-                endEdgeOffset to Color.Black,
-                1f to Color.Transparent
-            ),
+            brush = brush,
             blendMode = BlendMode.DstIn
         )
     }
