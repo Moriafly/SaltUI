@@ -27,18 +27,27 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
 /**
- * Vertical edge.
+ * Fades the content to transparent at its top and bottom edges.
  *
- * Call with：
+ * At each edge, the content transitions between complete transparency at the boundary and its
+ * original opacity over the distance specified by [top] or [bottom]. A distance of zero disables
+ * the fade for that edge.
+ *
+ * This modifier uses an alpha mask and must be placed after an offscreen graphics layer:
  *
  * ```kotlin
- * .graphicsLayer {
- *     compositingStrategy = CompositingStrategy.Offscreen
- * }
+ * Modifier
+ *     .graphicsLayer {
+ *         compositingStrategy = CompositingStrategy.Offscreen
+ *     }
+ *     .verticalEdge(
+ *         top = 16.dp,
+ *         bottom = 16.dp
+ *     )
  * ```
  *
- * @param top Edge height for the top.
- * @param bottom Edge height for the bottom.
+ * @param top height of the fade at the top edge.
+ * @param bottom height of the fade at the bottom edge.
  */
 @Stable
 fun Modifier.verticalEdge(
@@ -64,18 +73,27 @@ fun Modifier.verticalEdge(
 }
 
 /**
- * Horizontal edge.
+ * Fades the content to transparent at its start and end edges.
  *
- * Call with:
+ * At each edge, the content transitions between complete transparency at the boundary and its
+ * original opacity over the distance specified by [start] or [end]. A distance of zero disables
+ * the fade for that edge.
+ *
+ * This modifier uses an alpha mask and must be placed after an offscreen graphics layer:
  *
  * ```kotlin
- * .graphicsLayer {
- *     compositingStrategy = CompositingStrategy.Offscreen
- * }
+ * Modifier
+ *     .graphicsLayer {
+ *         compositingStrategy = CompositingStrategy.Offscreen
+ *     }
+ *     .horizontalEdge(
+ *         start = 16.dp,
+ *         end = 16.dp
+ *     )
  * ```
  *
- * @param start Edge width for the start.
- * @param end Edge width for the end.
+ * @param start width of the fade at the start edge.
+ * @param end width of the fade at the end edge.
  */
 @Stable
 fun Modifier.horizontalEdge(
