@@ -18,7 +18,7 @@
 package com.moriafly.salt.ui.window
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
@@ -140,6 +140,8 @@ internal fun defaultCaptionBarHeight(os: OS = OS.current): Dp = when (os) {
 }
 
 @UnstableSaltUiApi
-val LocalSaltWindowProperties = staticCompositionLocalOf<SaltWindowProperties<Window>> {
+// Caption appearance and interaction flags can change while the window stays open. Track readers
+// so a caption update does not invalidate unrelated content throughout the window.
+val LocalSaltWindowProperties = compositionLocalOf<SaltWindowProperties<Window>> {
     error("SaltWindowProperties is not provided")
 }

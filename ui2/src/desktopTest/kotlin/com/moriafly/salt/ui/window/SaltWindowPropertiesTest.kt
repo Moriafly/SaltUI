@@ -17,11 +17,30 @@
 
 package com.moriafly.salt.ui.window
 
+import androidx.compose.foundation.layout.Column
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.ExperimentalComposeUiApi
+import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.v2.runDesktopComposeUiTest
+import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.rememberWindowState
 import com.moriafly.salt.core.os.OS
+import com.moriafly.salt.ui.SaltTheme
+import com.moriafly.salt.ui.Text
+import com.moriafly.salt.ui.UnstableSaltUiApi
+import java.util.concurrent.atomic.AtomicInteger
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
+@OptIn(ExperimentalTestApi::class, ExperimentalComposeUiApi::class, UnstableSaltUiApi::class)
 class SaltWindowPropertiesTest {
     @Test
     fun captionBarHeightUsesPlatformDefault() {
@@ -38,4 +57,57 @@ class SaltWindowPropertiesTest {
             actual = defaultCaptionBarHeight(OS.Linux(version = "", distro = ""))
         )
     }
+
+    @Test
+    fun captionAppearanceUpdatesReadersWithoutRecomposingWindowContent() = runDesktopComposeUiTest {
+        var darkCaption by mutableStateOf(false)
+        val contentCompositions = AtomicInteger()
+        setContent {
+            SaltTheme {
+                SaltWindow(
+                    onCloseRequest = {},
+                    title = "Caption property invalidation",
+                    state = rememberWindowState(size = DpSize(640.dp, 480.dp)),
+                    properties = SaltWindowProperties.default(captionButtonIsDarkTheme = darkCaption)
+                ) {
+                    Column {
+                        CaptionAppearanceReadout()
+                        UnrelatedWindowContent(contentCompositions)
+                    }
+                }
+            }
+        }
+        onNodeWithText("Light caption", useUnmergedTree = true).assertIsDisplayed()
+        onNodeWithText("Persistent library content").assertIsDisplayed()
+        val initialCompositions = runOnIdle { contentCompositions.get() }
+
+        runOnIdle { darkCaption = true }
+        waitUntil(timeoutMillis = 5_000) {
+            onAllNodesWithText("Dark caption", useUnmergedTree = true).fetchSemanticsNodes().size == 1
+        }
+        onNodeWithText("Dark caption", useUnmergedTree = true).assertIsDisplayed()
+        onNodeWithText("Persistent library content").assertIsDisplayed()
+        runOnIdle { assertEquals(initialCompositions, contentCompositions.get()) }
+
+        runOnIdle { darkCaption = false }
+        waitUntil(timeoutMillis = 5_000) {
+            onAllNodesWithText("Light caption", useUnmergedTree = true).fetchSemanticsNodes().size == 1
+        }
+        onNodeWithText("Light caption", useUnmergedTree = true).assertIsDisplayed()
+        onNodeWithText("Persistent library content").assertIsDisplayed()
+        runOnIdle { assertEquals(initialCompositions, contentCompositions.get()) }
+    }
+}
+
+@OptIn(UnstableSaltUiApi::class)
+@Composable
+private fun CaptionAppearanceReadout() {
+    val properties = LocalSaltWindowProperties.current
+    Text(if (properties.captionButtonIsDarkTheme) "Dark caption" else "Light caption")
+}
+
+@Composable
+private fun UnrelatedWindowContent(compositions: AtomicInteger) {
+    SideEffect { compositions.incrementAndGet() }
+    Text("Persistent library content")
 }
