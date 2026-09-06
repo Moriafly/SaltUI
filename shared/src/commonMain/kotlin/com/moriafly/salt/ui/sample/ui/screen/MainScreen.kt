@@ -92,6 +92,13 @@ fun MainScreen() {
         ScreenCard {
             Item(
                 onClick = {
+                    navBackStack.add(ScreenRoute.Component)
+                },
+                text = "Components",
+                sub = "ItemSwitcher examples"
+            )
+            Item(
+                onClick = {
                     navBackStack.add(ScreenRoute.List)
                 },
                 text = "List"
