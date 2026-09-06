@@ -1,4 +1,4 @@
-[![stable](https://img.shields.io/github/v/release/Moriafly/SaltUI?sort=semver&display_name=release&label=stable&color=brightgreen)](https://github.com/JetBrains/compose-multiplatform/releases/latest)[![Maven Central](https://img.shields.io/maven-central/v/io.github.moriafly/salt-ui)](https://search.maven.org/search?q=g:io.github.moriafly) [![CodeFactor](https://www.codefactor.io/repository/github/moriafly/saltui/badge/main)](https://www.codefactor.io/repository/github/moriafly/saltui/overview/main)
+[![stable](https://img.shields.io/github/v/release/Moriafly/SaltUI?sort=semver&display_name=release&label=stable&color=brightgreen)](https://github.com/Moriafly/SaltUI/releases/latest) [![Maven Central](https://img.shields.io/maven-central/v/io.github.moriafly/salt-ui)](https://search.maven.org/search?q=g:io.github.moriafly) [![CodeFactor](https://www.codefactor.io/repository/github/moriafly/saltui/badge/main)](https://www.codefactor.io/repository/github/moriafly/saltui/overview/main)
 
 # Salt UI
 
@@ -10,7 +10,7 @@ Add dependency:
 
 ```kotlin
 // Replace <TAG> with the latest version
-// e.g. implementation("io.github.moriafly:salt-ui:3.0.0-alpha01")
+// e.g. implementation("io.github.moriafly:salt-ui:3.0.0-beta01")
 implementation("io.github.moriafly:salt-ui:<TAG>")
 ```
 
@@ -54,6 +54,7 @@ Salt UI performs operations related to internal ART APIs. Please refer to the fo
 
 | Salt UI        | Compose Multiplatform | Jetpack Compose |
 |----------------|-----------------------|-----------------|
+| 3.0.0-beta01+  | 1.12.0                | 1.12.0          |
 | 3.0.0-alpha02+ | 1.12.0-rc01           | 1.12.0-rc01     |
 | 3.0.0-alpha01+ | 1.12.0-alpha01        | 1.12.0-alpha02  |
 | 2.9.0-beta02+  | 1.11.0-beta02         | 1.11.0-beta02   |
@@ -96,3 +97,4 @@ See [Contributor Covenant Code of Conduct](CODE_OF_CONDUCT.md).
 - [compose-native-look](https://github.com/ComposeNativeLook/compose-native-look)
 - [compose-fluent-ui](https://github.com/compose-fluent/compose-fluent-ui)
 - [haze](https://github.com/chrisbanes/haze)
+- [Switcher](https://github.com/bitvale/Switcher)
