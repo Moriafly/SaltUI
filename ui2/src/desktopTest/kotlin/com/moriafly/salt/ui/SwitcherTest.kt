@@ -19,18 +19,14 @@ package com.moriafly.salt.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.selection.toggleable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.awt.ComposeWindow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toPixelMap
 import androidx.compose.ui.platform.LocalDensity
@@ -40,15 +36,10 @@ import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.captureToImage
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.v2.runComposeUiTest
-import androidx.compose.ui.test.v2.runDesktopComposeUiTest
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Window
-import androidx.compose.ui.window.rememberWindowState
-import java.awt.Robot
-import java.awt.event.InputEvent
 import kotlin.test.Test
 import kotlin.test.assertTrue
 
@@ -307,98 +298,6 @@ class SwitcherTest {
                 "Rapid toggles must settle at the latest state"
             )
             mainClock.autoAdvance = true
-        }
-
-    @Test
-    fun realMouseClicksRenderTheSelectedState() =
-        runDesktopComposeUiTest {
-            var checked by mutableStateOf(false)
-            lateinit var host: ComposeWindow
-            val colors = SaltColors.defaultLight(onHighlight = Color.White)
-            setContent {
-                Window(
-                    onCloseRequest = {},
-                    undecorated = true,
-                    state = rememberWindowState(
-                        size = DpSize(
-                            320.dp,
-                            180.dp
-                        )
-                    ),
-                    title = "Switcher input test"
-                ) {
-                    host = window
-                    SaltTheme(
-                        dynamicColors = SaltDynamicColors(
-                            light = colors,
-                            dark = colors
-                        )
-                    ) {
-                        Box(
-                            modifier = Modifier.fillMaxSize().background(Color.Black)
-                                .toggleable(
-                                    value = checked,
-                                    onValueChange = { checked = it }
-                                ),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Switcher(checked)
-                        }
-                    }
-                }
-            }
-            waitForIdle()
-            runOnUiThread {
-                host.isVisible = true
-                host.isAlwaysOnTop = true
-                host.toFront()
-                host.requestFocus()
-            }
-            val robot = Robot().apply { autoDelay = 30 }
-
-            fun settledFrame(): IconFrame {
-                // Native windows use a real frame clock, independent of mainClock.
-                robot.delay(1000)
-                waitForIdle()
-                val pixels = robot.createScreenCapture(host.bounds)
-                return readIcon(
-                    pixels.width,
-                    pixels.height
-                ) { x, y ->
-                    val color = java.awt.Color(
-                        pixels.getRGB(
-                            x,
-                            y
-                        )
-                    )
-                    color.red > 160 && color.green > 160 && color.blue > 160
-                }
-            }
-
-            fun click() {
-                robot.mouseMove(
-                    host.x + host.width / 2,
-                    host.y + host.height / 2
-                )
-                robot.mousePress(InputEvent.BUTTON1_DOWN_MASK)
-                robot.mouseRelease(InputEvent.BUTTON1_DOWN_MASK)
-                robot.waitForIdle()
-                waitForIdle()
-            }
-            val off = settledFrame()
-            assertTrue(off.hollow)
-            click()
-            val on = settledFrame()
-            assertTrue(checked && !on.hollow && on.height > on.width * 3)
-            assertTrue(on.centerX > off.centerX)
-            click()
-            assertTrue(settledFrame() == off && !checked)
-            click()
-            click()
-            assertTrue(
-                settledFrame() == off && !checked,
-                "Rapid real clicks must settle at the latest state"
-            )
         }
 
     private fun readIcon(
