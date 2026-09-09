@@ -90,11 +90,11 @@ enum class MaterialLayer {
  * Note: Do not use [Modifier.material] or [Modifier.subMaterial] inside [content], as [content] is
  * typically the wallpaper image.
  *
- * Additionally, the hierarchy of MicaSource needs to be placed before elements using
+ * Additionally, the hierarchy of MaterialSource needs to be placed before elements using
  * [Modifier.material] or [Modifier.subMaterial] to achieve the correct effect.
  *
  * Using a Composable instead of a Modifier here is intentional - it encourages developers to
- * explicitly specify the hierarchy of MicaSource and use it only once.
+ * explicitly specify the hierarchy of MaterialSource and use it only once.
  */
 @UnstableSaltUiApi
 @Composable
@@ -103,14 +103,14 @@ fun MaterialSource(
     materialSelf: Boolean = true,
     content: @Composable BoxScope.() -> Unit
 ) {
-    val hazeState = LocalHazeState.current
     Box(
         modifier = modifier
     ) {
+        val hazeState = LocalHazeState.current
         Box(
             modifier = Modifier
                 .thenIf(hazeState != null) {
-                    hazeSource(hazeState!!)
+                    hazeSource(hazeState)
                 },
             content = content
         )
