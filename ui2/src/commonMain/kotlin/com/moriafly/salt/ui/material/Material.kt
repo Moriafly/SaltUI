@@ -36,21 +36,50 @@ import dev.chrisbanes.haze.blur.blurEffect
 import dev.chrisbanes.haze.hazeEffect
 import dev.chrisbanes.haze.hazeSource
 
+/**
+ * Material effect applied by [Modifier.material] and [Modifier.subMaterial].
+ */
 @UnstableSaltUiApi
 enum class MaterialType {
     /**
      * Without material.
      */
     None,
+
+    /**
+     * Blurred glass effect with theme-aware tinting and subtle noise.
+     */
     BlurryGlass,
+
+    /**
+     * Fluent acrylic effect using base and default styles for the material layers.
+     */
     Acrylic,
+
+    /**
+     * Fluent mica effect using alternate and regular styles for the material layers.
+     */
     Mica,
+
+    /**
+     * Strongly blurred effect with layered color blending and subtle noise on the sub-background.
+     */
     Premium
 }
 
+/**
+ * Background layer used to select the styling of a [MaterialType].
+ */
 @UnstableSaltUiApi
 enum class MaterialLayer {
+    /**
+     * Primary background layer used by [Modifier.material].
+     */
     Background,
+
+    /**
+     * Secondary background layer used by [Modifier.subMaterial].
+     */
     SubBackground
 }
 
