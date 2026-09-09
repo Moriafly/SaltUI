@@ -43,6 +43,7 @@ import androidx.compose.ui.layout.SubcomposeLayout
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.offset
 import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.moriafly.salt.ui.nested.NestedHeaderState.Companion.Saver
 import kotlin.math.roundToInt
@@ -56,11 +57,16 @@ import kotlin.math.roundToInt
  * that the focus system and accessibility services perceive it as fully visible. To prevent
  * the content from being obscured by the header, a [PaddingValues] is passed to the [content]
  * lambda, which must be applied to the internal list (e.g., via `contentPadding`).
+ * The supplied padding combines [contentPadding] with the visible header height. The header
+ * is inset by the top and horizontal padding; only the header itself collapses, so the
+ * supplied top padding never becomes smaller than [contentPadding]'s top padding.
  *
  * @param header The composable content for the collapsible header.
  * @param modifier The modifier to be applied to the layout.
  * @param state The state object to be used to control or observe the header's offset.
- * @param content The primary scrollable content of the layout. Accepts [PaddingValues] to apply top padding.
+ * @param contentPadding Padding around the content, such as the insets provided by a screen.
+ * @param content The primary scrollable content. Apply the supplied [PaddingValues] once,
+ * either to its scrollable container or to a containing pager, without adding [contentPadding] again.
  */
 @UnstableSaltUiApi
 @Composable
@@ -68,6 +74,7 @@ fun NestedHeaderLayout(
     header: @Composable () -> Unit,
     modifier: Modifier = Modifier,
     state: NestedHeaderState = rememberNestedHeaderState(),
+    contentPadding: PaddingValues = PaddingValues(0.dp),
     content: @Composable (PaddingValues) -> Unit
 ) {
     // Connection to handle nested scroll events from the child (e.g., LazyColumn)
@@ -123,23 +130,26 @@ fun NestedHeaderLayout(
 
     // Create a mutable PaddingValues object that allows us to update the top padding
     // during the measurement phase without causing a full recomposition loop
-    val contentPadding = remember {
+    val innerPadding = remember(contentPadding) {
         object : PaddingValues {
-            var topPadding by mutableStateOf(0.dp)
+            var visibleHeaderHeight by mutableStateOf(0.dp)
 
-            override fun calculateLeftPadding(layoutDirection: LayoutDirection): Dp = 0.dp
+            override fun calculateLeftPadding(layoutDirection: LayoutDirection): Dp =
+                contentPadding.calculateLeftPadding(layoutDirection)
 
-            override fun calculateTopPadding(): Dp = topPadding
+            override fun calculateTopPadding(): Dp =
+                contentPadding.calculateTopPadding() + visibleHeaderHeight
 
-            override fun calculateRightPadding(layoutDirection: LayoutDirection): Dp = 0.dp
+            override fun calculateRightPadding(layoutDirection: LayoutDirection): Dp =
+                contentPadding.calculateRightPadding(layoutDirection)
 
-            override fun calculateBottomPadding(): Dp = 0.dp
+            override fun calculateBottomPadding(): Dp = contentPadding.calculateBottomPadding()
         }
     }
 
     // Wrap the content lambda to inject our mutable padding
-    val contentWithPadding: @Composable () -> Unit = remember(content, contentPadding) {
-        { content(contentPadding) }
+    val contentWithPadding: @Composable () -> Unit = remember(content, innerPadding) {
+        { content(innerPadding) }
     }
 
     SubcomposeLayout(
@@ -152,7 +162,16 @@ fun NestedHeaderLayout(
                 flingBehavior = ScrollableDefaults.flingBehavior()
             )
     ) { constraints ->
-        val looseConstraints = constraints.copy(minWidth = 0, minHeight = 0)
+        val leftPadding = contentPadding.calculateLeftPadding(layoutDirection).roundToPx()
+        val rightPadding = contentPadding.calculateRightPadding(layoutDirection).roundToPx()
+        val topPadding = contentPadding.calculateTopPadding().roundToPx()
+        val bottomPadding = contentPadding.calculateBottomPadding().roundToPx()
+        val looseConstraints = constraints
+            .offset(
+                horizontal = -(leftPadding + rightPadding),
+                vertical = -(topPadding + bottomPadding)
+            )
+            .copy(minWidth = 0, minHeight = 0)
 
         // 1. Measure Header
         val headerPlaceables = subcompose(NestedHeaderSlots.Header, header)
@@ -169,7 +188,7 @@ fun NestedHeaderLayout(
         val visibleHeaderHeight = (headerHeight + currentHeaderOffset).coerceAtLeast(0f).toDp()
 
         // Update the backing value for PaddingValues directly
-        contentPadding.topPadding = visibleHeaderHeight
+        innerPadding.visibleHeaderHeight = visibleHeaderHeight
 
         // 3. Measure Content
         // Content gets the full height constraints since it starts at (0,0)
@@ -193,7 +212,7 @@ fun NestedHeaderLayout(
 
             // Place Header (Moves up and down visually)
             headerPlaceables.forEach {
-                it.place(0, currentOffsetInt)
+                it.place(leftPadding, topPadding + currentOffsetInt)
             }
         }
     }
