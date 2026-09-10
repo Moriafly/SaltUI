@@ -47,63 +47,70 @@ object SaltHazeStyles {
     fun blurryGlass(
         layer: MaterialLayer,
         isDarkTheme: Boolean = SaltTheme.configs.isDarkTheme
-    ): HazeBlurStyle = when (layer) {
-        MaterialLayer.Background ->
-            HazeBlurStyle(
-                backgroundColor = SaltTheme.colors.background,
-                colorEffects = if (isDarkTheme) {
-                    listOf(
-                        HazeColorEffect.tint(
-                            color = Color(0x80000000)
-                        )
+    ): HazeBlurStyle {
+        val background = SaltTheme.colors.background
+        return when (layer) {
+            MaterialLayer.Background ->
+                HazeBlurStyle {
+                    backgroundColor(background)
+                    colorEffects(
+                        if (isDarkTheme) {
+                            listOf(
+                                HazeColorEffect.tint(
+                                    color = Color(0x80000000)
+                                )
+                            )
+                        } else {
+                            listOf(
+                                HazeColorEffect.tint(
+                                    color = Color(0x80FFFFFF)
+                                )
+                            )
+                        }
                     )
-                } else {
-                    listOf(
-                        HazeColorEffect.tint(
-                            color = Color(0x80FFFFFF)
-                        )
-                    )
-                },
-                blurRadius = 45.dp,
-                noiseFactor = 0.01f
-            )
+                    blurRadius(45.dp)
+                    noiseFactor(0.01f)
+                }
 
-        MaterialLayer.SubBackground ->
-            HazeBlurStyle(
-                backgroundColor = SaltTheme.colors.background,
-                colorEffects = if (isDarkTheme) {
-                    listOf(
-                        HazeColorEffect.tint(
-                            color = Color(0x60333333)
-                        ),
-                        HazeColorEffect.tint(
-                            color = Color(0x80000000),
-                            blendMode = BlendMode.Overlay
-                        )
+            MaterialLayer.SubBackground ->
+                HazeBlurStyle {
+                    backgroundColor(background)
+                    colorEffects(
+                        if (isDarkTheme) {
+                            listOf(
+                                HazeColorEffect.tint(
+                                    color = Color(0x60333333)
+                                ),
+                                HazeColorEffect.tint(
+                                    color = Color(0x80000000),
+                                    blendMode = BlendMode.Overlay
+                                )
+                            )
+                        } else {
+                            listOf(
+                                HazeColorEffect.tint(
+                                    color = Color(0x99585858),
+                                    blendMode = BlendMode.Luminosity
+                                ),
+                                HazeColorEffect.tint(
+                                    color = Color(0x60404040),
+                                    blendMode = BlendMode.Screen
+                                ),
+                                HazeColorEffect.tint(
+                                    color = Color(0xFF808080),
+                                    blendMode = BlendMode.ColorDodge
+                                ),
+                                HazeColorEffect.tint(
+                                    color = Color(0x8CFFFFFF),
+                                    blendMode = BlendMode.Luminosity
+                                )
+                            )
+                        }
                     )
-                } else {
-                    listOf(
-                        HazeColorEffect.tint(
-                            color = Color(0x99585858),
-                            blendMode = BlendMode.Luminosity
-                        ),
-                        HazeColorEffect.tint(
-                            color = Color(0x60404040),
-                            blendMode = BlendMode.Screen
-                        ),
-                        HazeColorEffect.tint(
-                            color = Color(0xFF808080),
-                            blendMode = BlendMode.ColorDodge
-                        ),
-                        HazeColorEffect.tint(
-                            color = Color(0x8CFFFFFF),
-                            blendMode = BlendMode.Luminosity
-                        )
-                    )
-                },
-                blurRadius = 45.dp,
-                noiseFactor = 0.01f
-            )
+                    blurRadius(45.dp)
+                    noiseFactor(0.01f)
+                }
+        }
     }
 
     /**
@@ -147,57 +154,61 @@ object SaltHazeStyles {
     fun premium(
         layer: MaterialLayer,
         isDarkTheme: Boolean = SaltTheme.configs.isDarkTheme
-    ): HazeBlurStyle = when (layer) {
-        MaterialLayer.Background ->
-            HazeBlurStyle(
-                backgroundColor = SaltTheme.colors.background,
-                colorEffects = listOf(
-                    HazeColorEffect.tint(
-                        color = Color(0x10000000),
-                        blendMode = BlendMode.Luminosity
-                    )
-                ),
-                blurRadius = 90.dp
-            )
-        MaterialLayer.SubBackground ->
-            HazeBlurStyle(
-                backgroundColor = SaltTheme.colors.background,
-                colorEffects = if (isDarkTheme) {
-                    listOf(
-                        HazeColorEffect.tint(
-                            color = Color(0x35666666)
-                        ),
-                        HazeColorEffect.tint(
-                            color = Color(0x15333333),
-                            blendMode = BlendMode.Softlight
-                        ),
-                        HazeColorEffect.tint(
-                            color = Color(0x99000000),
-                            blendMode = BlendMode.Overlay
-                        ),
-                        HazeColorEffect.tint(
-                            color = Color(0x18000000),
-                            blendMode = BlendMode.Luminosity
+    ): HazeBlurStyle {
+        val background = SaltTheme.colors.background
+        return when (layer) {
+            MaterialLayer.Background ->
+                HazeBlurStyle {
+                    backgroundColor(background)
+                    colorEffects(
+                        listOf(
+                            HazeColorEffect.tint(
+                                color = Color(0x10000000),
+                                blendMode = BlendMode.Luminosity
+                            )
                         )
                     )
-                } else {
-                    listOf(
-                        HazeColorEffect.tint(
-                            color = Color(0x65DBDBDB),
-                            blendMode = BlendMode.Softlight
-                        ),
-                        HazeColorEffect.tint(
-                            color = Color(0x38EFEFEF),
-                            blendMode = BlendMode.Plus
-                        )
+                    blurRadius(90.dp)
+                }
+
+            MaterialLayer.SubBackground ->
+                HazeBlurStyle {
+                    backgroundColor(background)
+                    colorEffects(
+                        if (isDarkTheme) {
+                            listOf(
+                                HazeColorEffect.tint(
+                                    color = Color(0x35666666)
+                                ),
+                                HazeColorEffect.tint(
+                                    color = Color(0x15333333),
+                                    blendMode = BlendMode.Softlight
+                                ),
+                                HazeColorEffect.tint(
+                                    color = Color(0x99000000),
+                                    blendMode = BlendMode.Overlay
+                                ),
+                                HazeColorEffect.tint(
+                                    color = Color(0x18000000),
+                                    blendMode = BlendMode.Luminosity
+                                )
+                            )
+                        } else {
+                            listOf(
+                                HazeColorEffect.tint(
+                                    color = Color(0x65DBDBDB),
+                                    blendMode = BlendMode.Softlight
+                                ),
+                                HazeColorEffect.tint(
+                                    color = Color(0x38EFEFEF),
+                                    blendMode = BlendMode.Plus
+                                )
+                            )
+                        }
                     )
-                },
-                blurRadius = if (isDarkTheme) {
-                    110.dp
-                } else {
-                    90.dp
-                },
-                noiseFactor = 0.01f
-            )
+                    blurRadius(if (isDarkTheme) 110.dp else 90.dp)
+                    noiseFactor(0.01f)
+                }
+        }
     }
 }

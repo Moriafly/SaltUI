@@ -68,11 +68,11 @@ import com.moriafly.salt.ui.ext.safeMainIgnoringVisibility
 import com.moriafly.salt.ui.icons.Back
 import com.moriafly.salt.ui.icons.SaltIcons
 import com.moriafly.salt.ui.verticalEdge
-import dev.chrisbanes.haze.HazeInputScale
+import dev.chrisbanes.haze.HazeInput
+import dev.chrisbanes.haze.HazeProgressive
 import dev.chrisbanes.haze.HazeState
-import dev.chrisbanes.haze.blur.HazeProgressive
-import dev.chrisbanes.haze.blur.blurEffect
-import dev.chrisbanes.haze.hazeEffect
+import dev.chrisbanes.haze.blur.HazeBlurStyle
+import dev.chrisbanes.haze.blur.hazeBlur
 import dev.chrisbanes.haze.hazeSource
 import dev.chrisbanes.haze.rememberHazeState
 import kotlin.math.abs
@@ -356,16 +356,18 @@ private fun TitleBarBackdrop(
                     compositingStrategy = CompositingStrategy.Offscreen
                 }
                 .verticalEdge(top = height)
-                .hazeEffect(hazeState) {
-                    blurEffect {
-                        blurRadius = 8.dp
-                        noiseFactor = 0f
-                        inputScale = HazeInputScale.Auto
-                        mask = Brush.verticalGradient(
-                            colors = listOf(Color.Transparent, Color.Black)
+                .hazeBlur(
+                    input = HazeInput.Sources(hazeState),
+                    style = HazeBlurStyle {
+                        blurRadius(8.dp)
+                        noiseFactor(0f)
+                        mask(
+                            Brush.verticalGradient(
+                                colors = listOf(Color.Transparent, Color.Black)
+                            )
                         )
                     }
-                }
+                )
 
         BasicScreenStyle.TitleBarBackdropType.Progressive ->
             Modifier
@@ -376,17 +378,19 @@ private fun TitleBarBackdrop(
                     compositingStrategy = CompositingStrategy.Offscreen
                 }
                 .verticalEdge(top = height)
-                .hazeEffect(hazeState) {
-                    blurEffect {
-                        noiseFactor = 0f
-                        inputScale = HazeInputScale.Auto
-                        progressive = HazeProgressive.verticalGradient(
-                            easing = EaseInOut,
-                            startIntensity = 1f,
-                            endIntensity = 0f
+                .hazeBlur(
+                    input = HazeInput.Sources(hazeState),
+                    style = HazeBlurStyle {
+                        noiseFactor(0f)
+                        progressive(
+                            HazeProgressive.verticalGradient(
+                                easing = EaseInOut,
+                                startIntensity = 1f,
+                                endIntensity = 0f
+                            )
                         )
                     }
-                }
+                )
     }
 
     Box(

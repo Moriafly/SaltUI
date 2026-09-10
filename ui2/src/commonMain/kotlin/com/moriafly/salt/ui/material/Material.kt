@@ -31,11 +31,10 @@ import androidx.compose.ui.graphics.Color
 import com.moriafly.salt.ui.SaltTheme
 import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.moriafly.salt.ui.thenIf
-import dev.chrisbanes.haze.HazeInputScale
+import dev.chrisbanes.haze.HazeInput
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.blur.HazeBlurStyle
-import dev.chrisbanes.haze.blur.blurEffect
-import dev.chrisbanes.haze.hazeEffect
+import dev.chrisbanes.haze.blur.hazeBlur
 import dev.chrisbanes.haze.hazeSource
 
 /**
@@ -178,23 +177,19 @@ internal fun Modifier.basicMaterial(
 
     return if (hazeState != null) {
         val blurStyle = when (type) {
-            MaterialType.None -> HazeBlurStyle.Unspecified
+            MaterialType.None -> HazeBlurStyle
             MaterialType.BlurryGlass -> SaltHazeStyles.blurryGlass(layer, isDarkTheme)
             MaterialType.Acrylic -> SaltHazeStyles.acrylic(layer, isDarkTheme)
             MaterialType.Mica -> SaltHazeStyles.mica(layer, isDarkTheme)
             MaterialType.Premium -> SaltHazeStyles.premium(layer, isDarkTheme)
         }
-        hazeEffect(state = hazeState) {
-            blurEffect {
-                style = blurStyle
-            }
-            inputScale = HazeInputScale.Fixed(InputScale)
-        }
+        hazeBlur(
+            input = HazeInput.Sources(hazeState),
+            style = blurStyle
+        )
     } else {
         background(fallback)
     }
 }
 
 internal val LocalHazeState = compositionLocalOf<HazeState?> { null }
-
-private const val InputScale = 0.67f
