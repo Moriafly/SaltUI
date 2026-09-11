@@ -25,5 +25,6 @@ SaltUI 2.0 is now available!
   accessibility font scale requires it.
 - `YesDialog`, `YesNoDialog`, and `InputDialog` now use `BasicAdaptiveDialog`; `BasicDialog` uses
   the standard adaptive width internally.
+- Fixed oversized native macOS window buttons with Liquid Glass while preserving legacy button sizing.
 
 ___

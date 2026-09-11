@@ -29,8 +29,9 @@ import java.awt.Window
 
 /**
  * Native macOS window geometry expressed from the visible window-button artwork. The default
- * title bar is 14pt of artwork plus 19pt of padding on both sides; the 16pt AppKit control frame
- * remains centered inside the same 52pt height.
+ * title bar is 14pt of artwork plus 19pt of padding on both sides. Liquid Glass uses its native
+ * 14pt control size; legacy artwork is enlarged within a 16pt-high frame, centered in the same
+ * 52pt title bar.
  */
 internal object MacOSWindowMetrics {
     const val WINDOW_BUTTON_ARTWORK_DIAMETER = 14.0

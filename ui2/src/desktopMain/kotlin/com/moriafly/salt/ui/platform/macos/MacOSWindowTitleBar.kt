@@ -156,6 +156,7 @@ private class MacOSNativeWindowTitleBar private constructor(
     private val getClass = objectiveC.getFunction("objc_getClass")
     private val registerSelector = objectiveC.getFunction("sel_registerName")
     private val sendMessage = objectiveC.getFunction("objc_msgSend")
+
     // Intel returns a 32-byte NSRect through objc_msgSend_stret's hidden result pointer. arm64
     // returns it through objc_msgSend and does not expose objc_msgSend_stret.
     private val sendStructMessage = if (
@@ -359,11 +360,25 @@ private class MacOSNativeWindowTitleBar private constructor(
         val decorationViews = titlebarContainerSubviews.filter { view ->
             view != titlebar && className(view).contains("TitlebarDecoration")
         }
-        val scaledButtons = if (usesModernWindowButtonLayout) {
-            buttons
+        // AppKit can use either artwork on macOS 26+, depending on the launcher's linked SDK
+        // Read the cell's natural size before changing its frame; Liquid Glass buttons already
+        // have 14pt artwork and must not receive the legacy artwork enlargement
+        val nativeButtonSizes = if (usesModernWindowButtonLayout) {
+            buttons.associateWith { button ->
+                messagePointer(button, "cell")?.let { cell ->
+                    messageSize(cell, "cellSize")
+                } ?: messageRect(button, "frame").size
+            }
         } else {
-            emptyList()
+            emptyMap()
         }
+        val scaledButtons = nativeButtonSizes
+            .filterValues { size ->
+                size.width == WINDOW_BUTTON_FRAME_WIDTH &&
+                    size.height == WINDOW_BUTTON_FRAME_HEIGHT
+            }
+            .keys
+            .toList()
         val retainedConstraints = mutableListOf<Pointer>()
         var changedViews = emptyList<ViewState>()
 
@@ -405,11 +420,12 @@ private class MacOSNativeWindowTitleBar private constructor(
                     constraint(button, "centerYAnchor", titlebar, "centerYAnchor")
                 }
                 if (usesModernWindowButtonLayout) {
+                    val nativeSize = nativeButtonSizes.getValue(button)
                     rememberConstraint(retainedConstraints) {
-                        constantConstraint(button, "widthAnchor", WINDOW_BUTTON_FRAME_WIDTH)
+                        constantConstraint(button, "widthAnchor", nativeSize.width)
                     }
                     rememberConstraint(retainedConstraints) {
-                        constantConstraint(button, "heightAnchor", WINDOW_BUTTON_FRAME_HEIGHT)
+                        constantConstraint(button, "heightAnchor", nativeSize.height)
                     }
                     rememberConstraint(retainedConstraints) {
                         constraint(
@@ -924,6 +940,13 @@ private class MacOSNativeWindowTitleBar private constructor(
         ) as NSRect
     }
 
+    // NSSize fits in registers on both arm64 and x86_64, unlike the larger NSRect
+    private fun messageSize(receiver: Pointer, name: String): NSSize =
+        sendMessage.invoke(
+            NSSize.ByValue::class.java,
+            arrayOf(receiver, selector(name))
+        ) as NSSize
+
     private fun messageVoid(receiver: Pointer, name: String, vararg arguments: Any?) {
         sendMessage.invokeVoid(arrayOf(receiver, selector(name), *arguments))
     }
@@ -1090,6 +1113,7 @@ private class MacOSNativeWindowTitleBar private constructor(
     }
 }
 
+@Suppress("FunctionName")
 private interface TitleBarDispatch : com.sun.jna.Library {
     fun dispatch_async_f(
         queue: Pointer,
@@ -1124,7 +1148,8 @@ internal open class NSSize(
     class ByValue(
         width: Double = 0.0,
         height: Double = 0.0
-    ) : NSSize(width, height), Structure.ByValue
+    ) : NSSize(width, height),
+        Structure.ByValue
 }
 
 @Structure.FieldOrder("x", "y")
@@ -1135,7 +1160,8 @@ internal open class NSPoint(
     class ByValue(
         x: Double = 0.0,
         y: Double = 0.0
-    ) : NSPoint(x, y), Structure.ByValue
+    ) : NSPoint(x, y),
+        Structure.ByValue
 }
 
 @Structure.FieldOrder("origin", "size")
@@ -1143,5 +1169,7 @@ internal open class NSRect(
     @JvmField var origin: NSPoint = NSPoint(),
     @JvmField var size: NSSize = NSSize()
 ) : Structure() {
-    class ByValue : NSRect(), Structure.ByValue
+    class ByValue :
+        NSRect(),
+        Structure.ByValue
 }
