@@ -35,8 +35,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.awt.ComposeWindow
-import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.CompositingStrategy
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.layoutId
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.FrameWindowScope
@@ -139,10 +140,16 @@ internal fun FrameWindowScope.LinuxSaltWindowFrame(
                         linuxClientShadow()
                     }
                     .thenIf(clientShadow) {
-                        // WindowBackgroundBox does not paint the background for transparent
-                        // windows, so the frame paints it itself with the shadow shape
-                        background(SaltTheme.colors.background, contentShape)
-                            .clip(contentShape)
+                        graphicsLayer {
+                            shape = contentShape
+                            clip = true
+                            compositingStrategy = if (shadowMargin > 0.dp) {
+                                CompositingStrategy.Offscreen
+                            } else {
+                                CompositingStrategy.Auto
+                            }
+                        }
+                            .background(SaltTheme.colors.background)
                     }
             ) {
                 content()

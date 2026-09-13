@@ -35,7 +35,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.awt.ComposeDialog
-import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.CompositingStrategy
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.layoutId
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogWindowScope
@@ -119,10 +120,12 @@ internal fun DialogWindowScope.LinuxSaltDialogWindowFrame(
                     .thenIf(clientShadow) {
                         val contentShape = RoundedCornerShape(LinuxClientShadow.cornerRadius)
                         linuxClientShadow()
-                            // WindowBackgroundBox does not paint the background for transparent
-                            // windows, so the frame paints it itself with the shadow shape
-                            .background(SaltTheme.colors.background, contentShape)
-                            .clip(contentShape)
+                            .graphicsLayer {
+                                shape = contentShape
+                                clip = true
+                                compositingStrategy = CompositingStrategy.Offscreen
+                            }
+                            .background(SaltTheme.colors.background)
                     }
             ) {
                 content()
