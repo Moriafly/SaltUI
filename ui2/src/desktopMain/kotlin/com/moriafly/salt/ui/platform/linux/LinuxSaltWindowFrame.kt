@@ -23,7 +23,6 @@ import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -35,9 +34,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.awt.ComposeWindow
-import androidx.compose.ui.graphics.CompositingStrategy
-import androidx.compose.ui.graphics.RectangleShape
-import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.layout.layoutId
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.FrameWindowScope
@@ -127,12 +124,6 @@ internal fun FrameWindowScope.LinuxSaltWindowFrame(
                 .fillMaxSize()
                 .padding(shadowMargin)
         ) {
-            val contentShape = if (shadowMargin > 0.dp) {
-                RoundedCornerShape(LinuxClientShadow.cornerRadius)
-            } else {
-                RectangleShape
-            }
-
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -140,15 +131,7 @@ internal fun FrameWindowScope.LinuxSaltWindowFrame(
                         linuxClientShadow()
                     }
                     .thenIf(clientShadow) {
-                        graphicsLayer {
-                            shape = contentShape
-                            clip = true
-                            compositingStrategy = if (shadowMargin > 0.dp) {
-                                CompositingStrategy.Offscreen
-                            } else {
-                                CompositingStrategy.Auto
-                            }
-                        }
+                        clipToBounds()
                             .background(SaltTheme.colors.background)
                     }
             ) {
