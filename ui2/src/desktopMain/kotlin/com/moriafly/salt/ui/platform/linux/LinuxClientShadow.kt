@@ -22,10 +22,16 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.geometry.RoundRect
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.BlendMode
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.PathFillType
+import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -259,27 +265,42 @@ private val shadowBaseColor = androidx.compose.ui.graphics.Color.Black
  * Must be applied before the background in the modifier chain.
  */
 @UnstableSaltUiApi
-internal fun Modifier.linuxClientShadow(): Modifier = drawBehind {
+internal fun Modifier.linuxClientShadow(): Modifier = drawWithCache {
     val cornerRadiusPx = LinuxClientShadow.cornerRadius.toPx()
+    val contentRadiusPx = cornerRadiusPx.coerceAtMost(minOf(size.width, size.height) / 2)
+    val contentBounds = Rect(Offset.Zero, size)
+    val cornerCutout = Path().apply {
+        fillType = PathFillType.EvenOdd
+        addRect(contentBounds)
+        addRoundRect(RoundRect(contentBounds, CornerRadius(contentRadiusPx)))
+    }
     val offsetYPx = LinuxClientShadow.shadowOffsetY.toPx()
     val maxGrowPx = (LinuxClientShadow.margin - 2.dp).toPx().coerceAtLeast(1f)
     val maxAlpha = LinuxClientShadow.shadowAlpha
 
-    // Layered from outside in; per-layer alpha chosen so the cumulative alpha at normalized
-    // distance t from the content edge is maxAlpha * (1 - t)^2
-    val layers = 24
-    for (i in layers downTo 1) {
-        val t = i.toFloat() / layers
-        val tInner = (i - 1).toFloat() / layers
-        val alpha = maxAlpha * ((1 - tInner) * (1 - tInner) - (1 - t) * (1 - t))
-        val grow = maxGrowPx * t
-        drawRoundRect(
-            color = shadowBaseColor,
-            topLeft = Offset(-grow, -grow + offsetYPx),
-            size = Size(size.width + 2 * grow, size.height + 2 * grow),
-            cornerRadius = CornerRadius(cornerRadiusPx + grow),
-            alpha = alpha
-        )
+    onDrawWithContent {
+        clipRect {
+            this@onDrawWithContent.drawContent()
+            drawPath(cornerCutout, shadowBaseColor, blendMode = BlendMode.DstOut)
+        }
+
+        // Layered from outside in; per-layer alpha chosen so the cumulative alpha at normalized
+        // distance t from the content edge is maxAlpha * (1 - t)^2
+        val layers = 24
+        for (i in layers downTo 1) {
+            val t = i.toFloat() / layers
+            val tInner = (i - 1).toFloat() / layers
+            val alpha = maxAlpha * ((1 - tInner) * (1 - tInner) - (1 - t) * (1 - t))
+            val grow = maxGrowPx * t
+            drawRoundRect(
+                color = shadowBaseColor,
+                topLeft = Offset(-grow, -grow + offsetYPx),
+                size = Size(size.width + 2 * grow, size.height + 2 * grow),
+                cornerRadius = CornerRadius(cornerRadiusPx + grow),
+                alpha = alpha,
+                blendMode = BlendMode.DstOver
+            )
+        }
     }
 }
 
