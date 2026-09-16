@@ -27,28 +27,36 @@ import androidx.annotation.Keep
  */
 abstract class SaltApplication : Application() {
     /**
-     * Disables the MEIZU Flyme's automatic color inversion algorithm in night mode for the app.
+     * Disables the automatic color inversion of Flyme night mode.
+     *
+     * Flyme reads this method via reflection to decide how the application is
+     * rendered in night mode, so it must keep its exact name and signature;
+     * [Keep] prevents R8 from renaming or removing it.
+     *
+     * Returns [MeizuFlymeNightMode.Disable] to opt the application out of the
+     * inversion, which suits applications that provide their own dark theme.
+     * Applicable to [Flyme 7](https://www.flyme.com/flyme7/index.html) and above.
      */
     @Keep
     fun mzNightModeUseOf(): Int = MeizuFlymeNightMode.Disable.value
 
     /**
-     * Controls how a view behaves in Meizu Flyme's night mode.
+     * Night mode behavior recognized by the Flyme system.
      *
-     * Applicable to [Flyme 7](https://www.flyme.com/flyme7/index.html) and above versions.
+     * Applicable to [Flyme 7](https://www.flyme.com/flyme7/index.html) and above.
      *
-     * @property value Integer value used by the platform.
+     * @property value The integer value recognized by the Flyme system.
      */
     private enum class MeizuFlymeNightMode(
         val value: Int
     ) {
         /**
-         * System handles night mode (default).
+         * Follows the system night mode behavior (default).
          */
         System(1),
 
         /**
-         * Disables night mode for this view.
+         * Uses the colors defined by the application instead of inverting them.
          */
         Disable(2),
 
@@ -58,7 +66,7 @@ abstract class SaltApplication : Application() {
         Invert(3),
 
         /**
-         * Reduces brightness in night mode.
+         * Reduces brightness in night mode instead of inverting colors.
          */
         Dim(4)
     }
