@@ -21,10 +21,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
+import com.moriafly.salt.ui.ItemContainer
 import com.moriafly.salt.ui.ItemSwitcher
+import com.moriafly.salt.ui.Switcher
 import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.moriafly.salt.ui.sample.ui.icons.SimpleIcons
 import com.moriafly.salt.ui.sample.ui.icons.Star
@@ -39,8 +40,17 @@ fun ComponentScreen() {
         title = "Components"
     ) {
         ScreenCard(
-            header = "ItemSwitcher Basic"
+            header = "Switcher"
         ) {
+            ItemContainer {
+                var switch by remember { mutableStateOf(false) }
+                Switcher(
+                    state = switch,
+                    onChange = {
+                        switch = it
+                    },
+                )
+            }
             var initiallyOff by remember { mutableStateOf(false) }
             ItemSwitcher(
                 state = initiallyOff,
@@ -53,11 +63,6 @@ fun ComponentScreen() {
                 onChange = { initiallyOn = it },
                 text = "Initially on"
             )
-        }
-
-        ScreenCard(
-            header = "ItemSwitcher Content"
-        ) {
             var withDescription by remember { mutableStateOf(false) }
             ItemSwitcher(
                 state = withDescription,
@@ -73,11 +78,6 @@ fun ComponentScreen() {
                 iconPainter = rememberVectorPainter(SimpleIcons.Star),
                 sub = "Show favorite items first"
             )
-        }
-
-        ScreenCard(
-            header = "ItemSwitcher Disabled"
-        ) {
             ItemSwitcher(
                 state = false,
                 onChange = {},

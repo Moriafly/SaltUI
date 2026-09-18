@@ -28,9 +28,12 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.selection.toggleable
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
@@ -52,13 +55,10 @@ import kotlin.math.pow
 import kotlin.math.roundToInt
 
 /**
- * Displays an animated switch indicator using [SaltTheme] colors.
+ * A switch indicator that only renders [state], without its own input handling.
  *
- * The unchecked ring morphs into a vertical bar when checked. The containing component owns
- * input handling and accessibility semantics; this indicator only renders [state].
- *
- * Geometry and easing are adapted from Alexander Kolpakov's Apache-2.0-licensed
- * [SwitcherX](https://github.com/bitvale/Switcher/tree/568ea7a) implementation.
+ * Use as the internal UI of a component that owns interaction and semantics itself, such as
+ * [ItemSwitcher]. For a standalone clickable switch, use the overload with `onChange`.
  *
  * @param state Whether the indicator is checked.
  * @param modifier Modifier applied to the indicator.
@@ -66,6 +66,59 @@ import kotlin.math.roundToInt
 @Composable
 fun Switcher(
     state: Boolean,
+    modifier: Modifier = Modifier
+) {
+    BasicSwitcher(
+        state = state,
+        onChange = null,
+        modifier = modifier
+    )
+}
+
+/**
+ * A standalone switch that toggles on click.
+ *
+ * Handles input and toggle semantics itself, invoking [onChange] with the new state. When the
+ * switch is embedded in a larger interactive component such as [ItemSwitcher], use the overload
+ * without `onChange` instead.
+ *
+ * @param state Whether the switch is checked.
+ * @param onChange Invoked with the new checked state on click.
+ * @param modifier Modifier applied to the switch.
+ */
+@UnstableSaltUiApi
+@Composable
+fun Switcher(
+    state: Boolean,
+    onChange: (Boolean) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    BasicSwitcher(
+        state = state,
+        onChange = onChange,
+        modifier = modifier
+    )
+}
+
+/**
+ * Shared implementation of the animated switch indicator using [SaltTheme] colors.
+ *
+ * The unchecked ring morphs into a vertical bar when checked. When [onChange] is null the
+ * indicator only renders [state] and the containing component owns input handling and
+ * accessibility semantics; otherwise this switch also handles toggling itself.
+ *
+ * Geometry and easing are adapted from Alexander Kolpakov's Apache-2.0-licensed
+ * [SwitcherX](https://github.com/bitvale/Switcher/tree/568ea7a) implementation.
+ *
+ * @param state Whether the indicator is checked.
+ * @param onChange Invoked with the new checked state on click, or null to render a
+ * non-interactive indicator.
+ * @param modifier Modifier applied to the indicator.
+ */
+@Composable
+private fun BasicSwitcher(
+    state: Boolean,
+    onChange: ((Boolean) -> Unit)?,
     modifier: Modifier = Modifier
 ) {
     val transition = updateTransition(
@@ -114,6 +167,14 @@ fun Switcher(
     Box(
         modifier = modifier
             .size(46.dp, 26.dp)
+            .clip(CircleShape)
+            .thenIf(onChange != null) {
+                toggleable(
+                    value = state
+                ) {
+                    onChange(!state)
+                }
+            }
             .drawWithCache {
                 val iconPaint = Paint().apply { color = iconColor }
                 val clearPaint = Paint().apply { blendMode = BlendMode.Clear }
