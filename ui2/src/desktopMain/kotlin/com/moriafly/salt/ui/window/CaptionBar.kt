@@ -29,6 +29,7 @@ import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.onPointerEvent
 import com.moriafly.salt.core.os.OS
 import com.moriafly.salt.ui.UnstableSaltUiApi
+import com.moriafly.salt.ui.platform.windows.windowsCaptionBarTouchInput
 
 /**
  * The CaptionBarHitTest is a crucial component. It should be placed between the content and the
@@ -45,10 +46,16 @@ fun CaptionBarHitTest(
     if (OS.isDesktop()) {
         val saltWindowInfo = LocalSaltWindowInfo.current
         val isHitTestInCaptionBarState = LocalIsHitTestInCaptionBarState.current
+        val touchModifier = if (OS.isWindows()) {
+            Modifier.windowsCaptionBarTouchInput(LocalSaltWindowProperties.current.moveable)
+        } else {
+            Modifier
+        }
         Spacer(
             modifier = modifier
                 .fillMaxWidth()
                 .height(saltWindowInfo.captionBarHeight)
+                .then(touchModifier)
                 .onPointerEvent(PointerEventType.Enter) {
                     isHitTestInCaptionBarState.value = true
                 }

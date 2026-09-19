@@ -48,15 +48,32 @@ internal class SkiaLayerWindowProc(
     private var isTrackingMouseLeave = false
     private val touchInput = WindowsTouchInput.create(window, skiaLayer.canvas, originalHwnd)
 
+    val isCaptionDragInProgress: Boolean
+        get() = touchInput?.isCaptionDragInProgress == true
+
+    fun handleTouchMessage(
+        message: Int,
+        wParam: WinDef.WPARAM,
+        lParam: WinDef.LPARAM
+    ): Boolean =
+        touchInput?.handleMessage(message, wParam, lParam) == true
+
     override fun callback(
         hwnd: HWND,
         uMsg: Int,
         wParam: WinDef.WPARAM,
         lParam: WinDef.LPARAM
     ): LRESULT {
-        if (touchInput?.handleMessage(uMsg, wParam) == true) return LRESULT(0)
+        if (handleTouchMessage(uMsg, wParam, lParam)) {
+            if (uMsg == WM_MOUSELEAVE) {
+                isTrackingMouseLeave = false
+                onMouseLeave()
+            }
+            return LRESULT(0)
+        }
         return when (uMsg) {
             WM_NCHITTEST -> {
+                if (isCaptionDragInProgress) return HitTestResult.HTTRANSPARENT.toLRESULT()
                 val x = lParam.x
                 val y = lParam.y
 
@@ -69,6 +86,7 @@ internal class SkiaLayerWindowProc(
                     HitTestResult.HTMINBUTTON,
                     HitTestResult.HTMAXBUTTON,
                     HitTestResult.HTCLOSE -> hitResult.toLRESULT()
+
                     else -> HitTestResult.HTTRANSPARENT.toLRESULT()
                 }
             }

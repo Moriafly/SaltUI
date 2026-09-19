@@ -175,6 +175,22 @@ internal class ComposeWindowProc(
         uMsg: Int,
         wParam: WPARAM,
         lParam: LPARAM
+    ): LRESULT {
+        // HTTRANSPARENT on the canvas routes caption touches to the top-level window
+        if (skiaLayerProc.handleTouchMessage(uMsg, wParam, lParam)) return LRESULT(0)
+        return handleWindowMessage(
+            hwnd = hwnd,
+            uMsg = uMsg,
+            wParam = wParam,
+            lParam = lParam
+        )
+    }
+
+    private fun handleWindowMessage(
+        hwnd: WinDef.HWND,
+        uMsg: Int,
+        wParam: WPARAM,
+        lParam: LPARAM
     ): LRESULT = when (uMsg) {
         // Returns 0 to make the window not draw the non-client area (title bar and border)
         // thus effectively making all the window our client area
@@ -229,7 +245,9 @@ internal class ComposeWindowProc(
             }
         }
 
-        WM_NCHITTEST -> {
+        WM_NCHITTEST -> if (skiaLayerProc.isCaptionDragInProgress) {
+            HitTestResult.HTCAPTION.toLRESULT()
+        } else {
             hitResult.toLRESULT()
         }
 
