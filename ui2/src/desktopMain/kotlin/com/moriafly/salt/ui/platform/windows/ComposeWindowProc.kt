@@ -109,6 +109,7 @@ internal class ComposeWindowProc(
     var isWindowActive by mutableStateOf(true)
 
     val skiaLayerProc = SkiaLayerWindowProc(
+        window = window,
         skiaLayer = skiaLayer,
         hitTest = { x, y ->
             updateWindowInfo()

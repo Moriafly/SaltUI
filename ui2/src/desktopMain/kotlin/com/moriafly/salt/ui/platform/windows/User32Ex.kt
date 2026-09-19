@@ -21,6 +21,7 @@ package com.moriafly.salt.ui.platform.windows
 
 import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.moriafly.salt.ui.platform.windows.structure.MENUITEMINFO
+import com.moriafly.salt.ui.platform.windows.structure.POINTER_INFO
 import com.moriafly.salt.ui.platform.windows.structure.TRACKMOUSEEVENT
 import com.sun.jna.Native
 import com.sun.jna.Pointer
@@ -55,6 +56,10 @@ internal interface User32Ex : User32 {
     fun GetDpiForWindow(hWnd: HWND): UINT
 
     fun ScreenToClient(hWnd: HWND, lpPoint: POINT): Boolean
+
+    fun GetPointerInfo(pointerId: Int, pointerInfo: POINTER_INFO): Boolean
+
+    fun GetKeyState(virtualKey: Int): Short
 
     fun GetSystemMenu(hWnd: HWND, bRevert: Boolean): HMENU?
 

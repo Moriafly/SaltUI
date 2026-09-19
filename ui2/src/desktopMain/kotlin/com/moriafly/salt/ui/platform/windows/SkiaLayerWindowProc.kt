@@ -34,9 +34,11 @@ import com.sun.jna.platform.win32.WinDef.HWND
 import com.sun.jna.platform.win32.WinDef.LRESULT
 import com.sun.jna.platform.win32.WinDef.POINT
 import org.jetbrains.skiko.SkiaLayer
+import java.awt.Window
 
 @UnstableSaltUiApi
 internal class SkiaLayerWindowProc(
+    window: Window,
     skiaLayer: SkiaLayer,
     private val hitTest: (x: Float, y: Float) -> HitTestResult,
     private val onMouseLeave: () -> Unit
@@ -44,78 +46,82 @@ internal class SkiaLayerWindowProc(
     private val skiaLayerHwnd = HWND(Pointer(skiaLayer.windowHandle))
     private var hitResult = HitTestResult.HTCLIENT
     private var isTrackingMouseLeave = false
+    private val touchInput = WindowsTouchInput.create(window, skiaLayer.canvas, originalHwnd)
 
     override fun callback(
         hwnd: HWND,
         uMsg: Int,
         wParam: WinDef.WPARAM,
         lParam: WinDef.LPARAM
-    ): LRESULT = when (uMsg) {
-        WM_NCHITTEST -> {
-            val x = lParam.x
-            val y = lParam.y
+    ): LRESULT {
+        if (touchInput?.handleMessage(uMsg, wParam) == true) return LRESULT(0)
+        return when (uMsg) {
+            WM_NCHITTEST -> {
+                val x = lParam.x
+                val y = lParam.y
 
-            val point = POINT(x, y)
-            User32Ex.INSTANCE.ScreenToClient(skiaLayerHwnd, point)
-            hitResult = hitTest(point.x.toFloat(), point.y.toFloat())
+                val point = POINT(x, y)
+                User32Ex.INSTANCE.ScreenToClient(skiaLayerHwnd, point)
+                hitResult = hitTest(point.x.toFloat(), point.y.toFloat())
 
-            when (hitResult) {
-                HitTestResult.HTCLIENT,
-                HitTestResult.HTMINBUTTON,
-                HitTestResult.HTMAXBUTTON,
-                HitTestResult.HTCLOSE -> hitResult.toLRESULT()
-                else -> HitTestResult.HTTRANSPARENT.toLRESULT()
-            }
-        }
-
-        WM_MOUSEMOVE -> {
-            if (!isTrackingMouseLeave) {
-                val tme = TRACKMOUSEEVENT.ByReference().apply {
-                    cbSize = WinDef.DWORD(size().toLong())
-                    dwFlags = WinDef.DWORD(TRACKMOUSEEVENT.TME_LEAVE.toLong())
-                    hwndTrack = hwnd
-                }
-                User32Ex.INSTANCE.TrackMouseEvent(tme)
-                isTrackingMouseLeave = true
-            }
-            super.callback(hwnd, uMsg, wParam, lParam)
-        }
-
-        WM_MOUSELEAVE -> {
-            isTrackingMouseLeave = false
-            onMouseLeave()
-            super.callback(hwnd, uMsg, wParam, lParam)
-        }
-
-        WM_NCMOUSEMOVE -> {
-            when (hitResult) {
-                // Only forward move events to the window when located within the drawing area
-                HitTestResult.HTCLIENT,
-                HitTestResult.HTCAPTION,
-                HitTestResult.HTMINBUTTON,
-                HitTestResult.HTMAXBUTTON,
-                HitTestResult.HTCLOSE -> {
-                    User32Ex.INSTANCE.SendMessage(originalHwnd, WM_MOUSEMOVE, wParam, lParam)
-                }
-
-                else -> {
-                    // Do nothing
+                when (hitResult) {
+                    HitTestResult.HTCLIENT,
+                    HitTestResult.HTMINBUTTON,
+                    HitTestResult.HTMAXBUTTON,
+                    HitTestResult.HTCLOSE -> hitResult.toLRESULT()
+                    else -> HitTestResult.HTTRANSPARENT.toLRESULT()
                 }
             }
-            HitTestResult.HTNOWHERE.toLRESULT()
-        }
 
-        WM_NCLBUTTONDOWN -> {
-            User32Ex.INSTANCE.SendMessage(originalHwnd, WM_LBUTTONDOWN, wParam, lParam)
-            HitTestResult.HTNOWHERE.toLRESULT()
-        }
+            WM_MOUSEMOVE -> {
+                if (!isTrackingMouseLeave) {
+                    val tme = TRACKMOUSEEVENT.ByReference().apply {
+                        cbSize = WinDef.DWORD(size().toLong())
+                        dwFlags = WinDef.DWORD(TRACKMOUSEEVENT.TME_LEAVE.toLong())
+                        hwndTrack = hwnd
+                    }
+                    User32Ex.INSTANCE.TrackMouseEvent(tme)
+                    isTrackingMouseLeave = true
+                }
+                super.callback(hwnd, uMsg, wParam, lParam)
+            }
 
-        WM_NCLBUTTONUP -> {
-            User32Ex.INSTANCE.SendMessage(originalHwnd, WM_LBUTTONUP, wParam, lParam)
-            HitTestResult.HTNOWHERE.toLRESULT()
-        }
+            WM_MOUSELEAVE -> {
+                isTrackingMouseLeave = false
+                onMouseLeave()
+                super.callback(hwnd, uMsg, wParam, lParam)
+            }
 
-        else -> super.callback(hwnd, uMsg, wParam, lParam)
+            WM_NCMOUSEMOVE -> {
+                when (hitResult) {
+                    // Only forward move events to the window when located within the drawing area
+                    HitTestResult.HTCLIENT,
+                    HitTestResult.HTCAPTION,
+                    HitTestResult.HTMINBUTTON,
+                    HitTestResult.HTMAXBUTTON,
+                    HitTestResult.HTCLOSE -> {
+                        User32Ex.INSTANCE.SendMessage(originalHwnd, WM_MOUSEMOVE, wParam, lParam)
+                    }
+
+                    else -> {
+                        // Do nothing
+                    }
+                }
+                HitTestResult.HTNOWHERE.toLRESULT()
+            }
+
+            WM_NCLBUTTONDOWN -> {
+                User32Ex.INSTANCE.SendMessage(originalHwnd, WM_LBUTTONDOWN, wParam, lParam)
+                HitTestResult.HTNOWHERE.toLRESULT()
+            }
+
+            WM_NCLBUTTONUP -> {
+                User32Ex.INSTANCE.SendMessage(originalHwnd, WM_LBUTTONUP, wParam, lParam)
+                HitTestResult.HTNOWHERE.toLRESULT()
+            }
+
+            else -> super.callback(hwnd, uMsg, wParam, lParam)
+        }
     }
 }
 
