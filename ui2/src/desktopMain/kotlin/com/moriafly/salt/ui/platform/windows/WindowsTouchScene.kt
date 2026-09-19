@@ -64,7 +64,8 @@ internal class WindowsTouchScene private constructor(
             val panel = windowClass.field("composePanel").get(window)
             val composeContainer = panel.javaClass.field("_composeContainer").get(panel)
             val mediator = composeContainer.javaClass.field("mediator").get(composeContainer)
-            val sceneDelegate = mediator.javaClass.field("scene\$delegate").get(mediator) as Lazy<*>
+            val sceneDelegate = mediator.javaClass
+                .field($$"scene$delegate").get(mediator) as Lazy<*>
             WindowsTouchScene(
                 scene = sceneDelegate.value as ComposeScene,
                 mediator = mediator,
