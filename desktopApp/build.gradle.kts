@@ -18,6 +18,14 @@ compose.desktop {
     application {
         mainClass = "MainKt"
 
+        if (System.getProperty("os.name").startsWith("Linux")) {
+            jvmArgs += listOf(
+                "--add-opens=java.desktop/sun.awt=ALL-UNNAMED",
+                "--add-opens=java.desktop/sun.awt.X11=ALL-UNNAMED",
+                "--add-opens=java.desktop/java.awt=ALL-UNNAMED"
+            )
+        }
+
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "com.moriafly.salt.ui"
