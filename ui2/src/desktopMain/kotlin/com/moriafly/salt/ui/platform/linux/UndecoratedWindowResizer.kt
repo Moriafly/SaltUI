@@ -19,12 +19,14 @@ package com.moriafly.salt.ui.platform.linux
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.PointerIcon
 import androidx.compose.ui.input.pointer.isPrimaryPressed
+import androidx.compose.ui.input.pointer.onPointerEvent
 import androidx.compose.ui.input.pointer.pointerHoverIcon
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.Layout
@@ -33,6 +35,7 @@ import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.moriafly.salt.ui.UnstableSaltUiApi
+import com.moriafly.salt.ui.onPointerEventCompat
 import com.moriafly.salt.ui.window.WindowResizeEdge
 import java.awt.Cursor
 import java.awt.Dimension
@@ -143,8 +146,18 @@ internal class UndecoratedWindowResizer(
         }
     )
 
-    private fun Modifier.cursor(awtCursorId: Int) =
-        pointerHoverIcon(PointerIcon(Cursor(awtCursorId)))
+    @Composable
+    private fun Modifier.cursor(awtCursorId: Int): Modifier {
+        var cursor by remember(awtCursorId) { mutableStateOf(LinuxResizeCursor.get(awtCursorId)) }
+        return this
+            .onPointerEvent(PointerEventType.Enter) {
+                cursor = LinuxResizeCursor.get(awtCursorId)
+            }
+            .onPointerEvent(PointerEventType.Press) {
+                cursor = LinuxResizeCursor.get(awtCursorId)
+            }
+            .pointerHoverIcon(PointerIcon(cursor))
+    }
 
     private fun Int.toWindowResizeEdge(): WindowResizeEdge {
         fun Int.contains(value: Int) = this and value == value
