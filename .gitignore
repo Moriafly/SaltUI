@@ -10,3 +10,4 @@
 secret_key.gpg
 .kotlin
 gradle.properties
+/.workbuddy
