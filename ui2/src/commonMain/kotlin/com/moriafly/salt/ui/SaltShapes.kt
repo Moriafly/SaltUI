@@ -1,5 +1,5 @@
 /*
- * Salt UI
+ * SaltUI
  * Copyright (C) 2025 Moriafly
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -25,7 +25,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.graphics.Shape
 
 /**
- * # Shapes of Salt UI
+ * # Shapes of SaltUI
  *
  * @param small small shape, commonly used within elements like [RoundedColumn].
  * @param medium medium shape.

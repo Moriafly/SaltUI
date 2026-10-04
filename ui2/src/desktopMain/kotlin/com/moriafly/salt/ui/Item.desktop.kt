@@ -1,5 +1,5 @@
 /*
- * Salt UI
+ * SaltUI
  * Copyright (C) 2023 Moriafly
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -25,11 +25,11 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import org.jetbrains.compose.resources.painterResource
 import com.moriafly.salt.ui.generated.resources.Res
 import com.moriafly.salt.ui.generated.resources.ic_item_arrow
 import com.moriafly.salt.ui.generated.resources.ic_item_expand_arrow
 import com.moriafly.salt.ui.generated.resources.ic_item_link
+import org.jetbrains.compose.resources.painterResource
 
 @Composable
 actual fun ItemArrow(

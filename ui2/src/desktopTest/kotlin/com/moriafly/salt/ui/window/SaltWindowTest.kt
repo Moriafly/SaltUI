@@ -1,5 +1,5 @@
 /*
- * Salt UI
+ * SaltUI
  * Copyright (C) 2026 Moriafly
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -47,6 +47,7 @@ import com.moriafly.salt.ui.platform.windows.WinUserConst.WM_NCCALCSIZE
 import com.moriafly.salt.ui.util.findSkiaLayer
 import com.moriafly.salt.ui.util.hwnd
 import com.sun.jna.platform.win32.WinDef
+import org.junit.Assume.assumeTrue
 import java.awt.Color
 import java.awt.Dimension
 import java.awt.MouseInfo
@@ -56,7 +57,6 @@ import java.util.concurrent.atomic.AtomicInteger
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
-import org.junit.Assume.assumeTrue
 
 @OptIn(
     ExperimentalTestApi::class,

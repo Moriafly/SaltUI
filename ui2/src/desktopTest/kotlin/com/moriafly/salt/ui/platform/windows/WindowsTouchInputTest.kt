@@ -1,5 +1,5 @@
 /*
- * Salt UI
+ * SaltUI
  * Copyright (C) 2026 Moriafly
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -46,12 +46,13 @@ import com.sun.jna.Native
 import com.sun.jna.Pointer
 import com.sun.jna.Structure
 import com.sun.jna.platform.win32.WinDef.HWND
-import com.sun.jna.platform.win32.WinDef.LRESULT
 import com.sun.jna.platform.win32.WinDef.LPARAM
-import com.sun.jna.platform.win32.WinDef.WPARAM
+import com.sun.jna.platform.win32.WinDef.LRESULT
 import com.sun.jna.platform.win32.WinDef.POINT
 import com.sun.jna.platform.win32.WinDef.RECT
+import com.sun.jna.platform.win32.WinDef.WPARAM
 import com.sun.jna.win32.StdCallLibrary
+import org.junit.Assume.assumeTrue
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.Executors
 import javax.swing.SwingUtilities
@@ -59,9 +60,13 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import kotlin.test.assertTrue
-import org.junit.Assume.assumeTrue
 
-@OptIn(ExperimentalTestApi::class, ExperimentalComposeUiApi::class, InternalComposeUiApi::class, UnstableSaltUiApi::class)
+@OptIn(
+    ExperimentalTestApi::class,
+    ExperimentalComposeUiApi::class,
+    InternalComposeUiApi::class,
+    UnstableSaltUiApi::class
+)
 class WindowsTouchInputTest {
     @Test
     fun sceneAdapterSupportsComposeDialogAndDetectsDisposal() {
@@ -103,7 +108,12 @@ class WindowsTouchInputTest {
                                         events += TouchEvent(
                                             event.type,
                                             event.changes.map {
-                                                TouchContact(it.id.value, it.position, it.pressed, it.type)
+                                                TouchContact(
+                                                    it.id.value,
+                                                    it.position,
+                                                    it.pressed,
+                                                    it.type
+                                                )
                                             }
                                         )
                                     }
@@ -123,7 +133,12 @@ class WindowsTouchInputTest {
                 val canvas = window.findSkiaLayer()!!.canvas
                 target = assertNotNull(WindowsTouchScene.create(window))
                 probe = object : BasicWindowProc(HWND(Native.getComponentPointer(canvas))) {
-                    override fun callback(hwnd: HWND, uMsg: Int, wParam: WPARAM, lParam: LPARAM): LRESULT {
+                    override fun callback(
+                        hwnd: HWND,
+                        uMsg: Int,
+                        wParam: WPARAM,
+                        lParam: LPARAM
+                    ): LRESULT {
                         if (uMsg in 0x0240..0x0250) messages += uMsg
                         return super.callback(hwnd, uMsg, wParam, lParam)
                     }
@@ -135,13 +150,15 @@ class WindowsTouchInputTest {
             events.clear()
 
             val buffer = InjectedTouchInfo().toArray(2)
+
             fun inject(vararg contacts: Triple<Int, Int, Int>) {
                 contacts.forEachIndexed { index, (id, flags, deltaX) ->
                     val contact = buffer[index] as InjectedTouchInfo
                     contact.pointerInfo.pointerType = 2
                     contact.pointerInfo.pointerId = id
                     contact.pointerInfo.pointerFlags = flags
-                    contact.pointerInfo.ptPixelLocation = POINT(origin.x + 160 * id + deltaX, origin.y + 200)
+                    contact.pointerInfo.ptPixelLocation =
+                        POINT(origin.x + 160 * id + deltaX, origin.y + 200)
                     contact.write()
                 }
                 // Windows requires at least 0.1 ms between frames without explicit timestamps.
@@ -184,15 +201,23 @@ class WindowsTouchInputTest {
                 assertTrue(two.contacts.all { it.type == PointerType.Touch })
                 assertEquals(2, two.contacts.map { it.id }.distinct().size)
                 assertEquals(160f, two.contacts[1].position.x - two.contacts[0].position.x, 1f)
-                assertTrue(events.any {
-                    it.type == PointerEventType.Release && it.contacts.count { c -> c.pressed } == 1
-                })
-                assertTrue(events.any {
-                    it.type == PointerEventType.Move && it.contacts.size == 1 && it.contacts[0].pressed
-                })
+                assertTrue(
+                    events.any {
+                        it.type == PointerEventType.Release &&
+                            it.contacts.count { c -> c.pressed } == 1
+                    }
+                )
+                assertTrue(
+                    events.any {
+                        it.type == PointerEventType.Move && it.contacts.size == 1 &&
+                            it.contacts[0].pressed
+                    }
+                )
                 assertEquals(1, events.last { it.type == PointerEventType.Press }.contacts.size)
-                assertTrue(events.filter { it.type == PointerEventType.Press }
-                    .flatMap { it.contacts }.all { it.type == PointerType.Touch })
+                assertTrue(
+                    events.filter { it.type == PointerEventType.Press }
+                        .flatMap { it.contacts }.all { it.type == PointerType.Touch }
+                )
                 assertTrue(0x0246 in messages && 0x0247 in messages)
             } finally {
                 executor.shutdownNow()
@@ -205,7 +230,11 @@ class WindowsTouchInputTest {
         }
     }
 
-    private data class TouchEvent(val type: PointerEventType, val contacts: List<TouchContact>)
+    private data class TouchEvent(
+        val type: PointerEventType,
+        val contacts: List<TouchContact>
+    )
+
     private data class TouchContact(
         val id: Long,
         val position: Offset,
@@ -224,19 +253,33 @@ class WindowsTouchInputTest {
 @Suppress("FunctionName")
 internal interface TouchInjectionUser32 : StdCallLibrary {
     fun InitializeTouchInjection(maxCount: Int, feedbackMode: Int): Boolean
+
     fun InjectTouchInput(count: Int, contacts: Pointer): Boolean
+
     fun ClientToScreen(hwnd: HWND, point: POINT): Boolean
 }
 
 @Structure.FieldOrder(
-    "pointerInfo", "touchFlags", "touchMask", "rcContact", "rcContactRaw", "orientation", "pressure"
+    "pointerInfo",
+    "touchFlags",
+    "touchMask",
+    "rcContact",
+    "rcContactRaw",
+    "orientation",
+    "pressure"
 )
 internal class InjectedTouchInfo : Structure() {
     @JvmField var pointerInfo: POINTER_INFO = POINTER_INFO()
+
     @JvmField var touchFlags: Int = 0
+
     @JvmField var touchMask: Int = 0
+
     @JvmField var rcContact: RECT = RECT()
+
     @JvmField var rcContactRaw: RECT = RECT()
+
     @JvmField var orientation: Int = 0
+
     @JvmField var pressure: Int = 0
 }

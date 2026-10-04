@@ -1,5 +1,5 @@
 /*
- * Salt UI
+ * SaltUI
  * Copyright (C) 2026 Moriafly
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -45,7 +45,7 @@ fun MainScreen() {
     BasicScreenColumn(
         actionButton = null,
         title = "Main",
-        subtitle = "Salt UI 3",
+        subtitle = "SaltUI 3",
         toolButtons = {
             TitleBarButton(
                 onClick = {}
@@ -66,7 +66,7 @@ fun MainScreen() {
         }
     ) {
         ItemOuterLargeTitle(
-            text = "Salt UI 3",
+            text = "SaltUI 3",
             sub = "UI Components for Compose Multiplatform (Android/Desktop/iOS)"
         )
 

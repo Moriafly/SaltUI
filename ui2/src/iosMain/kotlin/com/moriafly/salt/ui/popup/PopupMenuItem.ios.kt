@@ -1,5 +1,5 @@
 /*
- * Salt UI
+ * SaltUI
  * Copyright (C) 2024 Moriafly
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,4 +22,7 @@ import androidx.compose.runtime.Composable
 import com.moriafly.salt.ui.SaltTheme
 
 internal actual val popupMenuItemPadding: PaddingValues
-    @Composable get() = PaddingValues(horizontal = SaltTheme.dimens.padding, vertical = SaltTheme.dimens.subPadding)
+    @Composable get() = PaddingValues(
+        horizontal = SaltTheme.dimens.padding,
+        vertical = SaltTheme.dimens.subPadding
+    )

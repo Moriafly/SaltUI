@@ -1,5 +1,5 @@
 /*
- * Salt UI
+ * SaltUI
  * Copyright (C) 2024 Moriafly
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,7 +22,7 @@ package com.moriafly.salt.ui
 import androidx.compose.ui.graphics.Color
 
 /**
- * Some colors of Salt UI.
+ * Some colors of SaltUI.
  */
 object SaltPalette {
     val WarningLightIcon = Color(0xFF9D5D00)

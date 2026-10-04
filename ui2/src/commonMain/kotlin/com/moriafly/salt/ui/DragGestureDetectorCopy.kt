@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * Salt UI
+ * SaltUI
  * Copyright (C) 2024 Moriafly
  *
  * Licensed under the Apache License, Version 2.0 (the "License");

@@ -56,7 +56,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 /**
- * Salt UI modified some codes to solve some issues.
+ * SaltUI modified some codes to solve some issues.
  *
  * A wrapper around the Android View WebView to provide a basic WebView composable.
  *
@@ -131,7 +131,7 @@ fun WebView(
 }
 
 /**
- * Salt UI modified some codes to solve some issues.
+ * SaltUI modified some codes to solve some issues.
  *
  * A wrapper around the Android View WebView to provide a basic WebView composable.
  *

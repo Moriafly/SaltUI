@@ -1,5 +1,5 @@
 /*
- * Salt UI
+ * SaltUI
  * Copyright (C) 2026 Moriafly
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -45,6 +45,7 @@ import com.sun.jna.platform.unix.X11
 import com.sun.jna.ptr.IntByReference
 import com.sun.jna.ptr.NativeLongByReference
 import com.sun.jna.ptr.PointerByReference
+import org.junit.Assume.assumeTrue
 import java.awt.Color
 import java.awt.Frame
 import java.awt.MouseInfo
@@ -58,7 +59,6 @@ import java.util.concurrent.atomic.AtomicInteger
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
-import org.junit.Assume.assumeTrue
 
 /**
  * Tests for the client-drawn shadow used for Linux windows with

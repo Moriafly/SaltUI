@@ -1,5 +1,5 @@
 /*
- * Salt UI
+ * SaltUI
  * Copyright (C) 2026 Moriafly
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -43,6 +43,9 @@ import com.sun.jna.Native
 import com.sun.jna.NativeLong
 import com.sun.jna.Pointer
 import com.sun.jna.platform.unix.X11
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.withContext
 import java.awt.Color
 import java.awt.GraphicsDevice
 import java.awt.GraphicsEnvironment
@@ -51,9 +54,6 @@ import java.awt.event.ComponentAdapter
 import java.awt.event.ComponentEvent
 import kotlin.math.roundToInt
 import kotlin.time.Duration.Companion.milliseconds
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.withContext
 
 private const val MAX_WAIT_FOR_SHOWING_MS = 10_000L
 private const val SHOWING_POLL_INTERVAL_MS = 50L

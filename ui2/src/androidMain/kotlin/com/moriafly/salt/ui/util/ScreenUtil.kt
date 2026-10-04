@@ -1,5 +1,5 @@
 /*
- * Salt UI
+ * SaltUI
  * Copyright (C) 2024 Moriafly
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -45,7 +45,9 @@ object ScreenUtil {
     @SuppressLint("DiscouragedApi")
     fun getRoundedCornerRadiusTop(context: Context): Int {
         val resourceId = context.resources.getIdentifier(
-            "rounded_corner_radius_top", "dimen", "android"
+            "rounded_corner_radius_top",
+            "dimen",
+            "android"
         )
         if (resourceId != 0) {
             return context.resources.getDimensionPixelSize(resourceId)

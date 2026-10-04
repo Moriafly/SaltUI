@@ -1,5 +1,5 @@
 /*
- * Salt UI
+ * SaltUI
  * Copyright (C) 2025 Moriafly
  * Copyright 2020 The Android Open Source Project
  *

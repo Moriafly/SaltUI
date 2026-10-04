@@ -1,5 +1,5 @@
 /*
- * Salt UI
+ * SaltUI
  * Copyright (C) 2026 Moriafly
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -38,7 +38,7 @@ mavenPublishing {
     )
 
     pom {
-        name.set("Salt UI Navigation")
+        name.set("SaltUI Navigation")
         description.set("Navigation components for Compose Multiplatform (Android/Desktop/iOS)")
         inceptionYear.set("2026")
         url.set("https://github.com/Moriafly/SaltUI")

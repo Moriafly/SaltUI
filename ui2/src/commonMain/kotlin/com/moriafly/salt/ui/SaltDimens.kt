@@ -1,5 +1,5 @@
 /*
- * Salt UI
+ * SaltUI
  * Copyright (C) 2023 Moriafly
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -29,7 +29,7 @@ import androidx.compose.ui.unit.dp
 import com.moriafly.salt.core.os.OS
 
 /**
- * Dimens for Salt UI.
+ * Dimens for SaltUI.
  *
  *   ╭──────────────────────────────────────────────────╮
  *   │ ------------------[padding] * 0.5f               │
@@ -108,7 +108,7 @@ class SaltDimens(
     )
 
     /**
-     * Here, some hard-coded values defined in the Salt UI are included.
+     * Here, some hard-coded values defined in the SaltUI are included.
      * In actual design and development, certain values (such as padding) do not require additional
      * customization, which is also a common practice in most UI frameworks.
      */

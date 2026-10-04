@@ -1,5 +1,5 @@
 /*
- * Salt UI
+ * SaltUI
  * Copyright (C) 2025 Moriafly
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,7 +23,7 @@ import android.app.Application
 import androidx.annotation.Keep
 
 /**
- * Base [Application] class for Salt UI-powered applications.
+ * Base [Application] class for SaltUI-powered applications.
  */
 abstract class SaltApplication : Application() {
     /**

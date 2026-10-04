@@ -1,5 +1,5 @@
 /*
- * Salt UI
+ * SaltUI
  * Copyright (C) 2026 Moriafly
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -283,7 +283,9 @@ private object ScrollInterruptionTestState {
     }
 }
 
-private class InjectedTouchGesture(startPosition: Offset) : AutoCloseable {
+private class InjectedTouchGesture(
+    startPosition: Offset
+) : AutoCloseable {
     private val instrumentation = InstrumentationRegistry.getInstrumentation()
     private val downTime = SystemClock.uptimeMillis()
     private var position = startPosition

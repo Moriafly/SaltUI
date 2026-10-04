@@ -1,5 +1,5 @@
 /*
- * Salt UI
+ * SaltUI
  * Copyright (C) 2025 Moriafly
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -29,7 +29,7 @@ import dev.chrisbanes.haze.blur.HazeColorEffect
 import dev.chrisbanes.haze.blur.materials.FluentMaterials
 
 /**
- * Provides predefined [HazeBlurStyle]s for Salt UI's material components.
+ * Provides predefined [HazeBlurStyle]s for SaltUI's material components.
  *
  * This can also be conveniently used with the Haze library to achieve custom effects in certain
  * scenarios.

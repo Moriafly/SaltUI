@@ -1,5 +1,5 @@
 /*
- * Salt UI
+ * SaltUI
  * Copyright (C) 2024 Moriafly
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,23 +18,17 @@
 package com.moriafly.salt.ui.internal
 
 import androidx.compose.runtime.Composable
-import org.jetbrains.compose.resources.stringResource
 import com.moriafly.salt.ui.generated.resources.Res
 import com.moriafly.salt.ui.generated.resources.back
 import com.moriafly.salt.ui.generated.resources.cancel
 import com.moriafly.salt.ui.generated.resources.confirm
+import org.jetbrains.compose.resources.stringResource
 
 @Composable
-internal actual fun stringResourceBack(): String {
-    return stringResource(Res.string.back)
-}
+internal actual fun stringResourceBack(): String = stringResource(Res.string.back)
 
 @Composable
-internal actual fun stringResourceCancel(): String {
-    return stringResource(Res.string.cancel)
-}
+internal actual fun stringResourceCancel(): String = stringResource(Res.string.cancel)
 
 @Composable
-internal actual fun stringResourceConfirm(): String {
-    return stringResource(Res.string.confirm)
-}
+internal actual fun stringResourceConfirm(): String = stringResource(Res.string.confirm)

@@ -1,5 +1,5 @@
 /*
- * Salt UI
+ * SaltUI
  * Copyright (C) 2026 Moriafly
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -30,7 +30,7 @@ import java.awt.event.ComponentAdapter
 import java.awt.event.ComponentEvent
 
 /**
- * Installs Salt UI's custom macOS title bar without relying on private AppKit subview indexes.
+ * Installs SaltUI's custom macOS title bar without relying on private AppKit subview indexes.
  * The actual title bar is resolved from a standard window button, while optional background and
  * decoration views are discovered by their runtime roles. Only constraints owned by this class
  * are removed during full-screen transitions and disposal.

@@ -1,5 +1,5 @@
 /*
- * Salt UI
+ * SaltUI
  * Copyright (C) 2024 Moriafly
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,14 +21,8 @@ package com.moriafly.salt.ui.util
 
 internal actual fun os(): SystemUtil.OS = SystemUtil.OS.IOS
 
-internal actual fun androidVersionSdk(): Int {
-    throw UnsupportedOperationException()
-}
+internal actual fun androidVersionSdk(): Int = throw UnsupportedOperationException()
 
-internal actual fun windowsBuild(): Int {
-    throw UnsupportedOperationException()
-}
+internal actual fun windowsBuild(): Int = throw UnsupportedOperationException()
 
-internal actual fun macOSVersion(): String {
-    throw UnsupportedOperationException()
-}
+internal actual fun macOSVersion(): String = throw UnsupportedOperationException()

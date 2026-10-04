@@ -1,5 +1,5 @@
 /*
- * Salt UI
+ * SaltUI
  * Copyright (C) 2023 Moriafly
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,7 +20,7 @@
 package com.moriafly.salt.ui
 
 @RequiresOptIn(
-    message = "This Salt UI API is experimental and may change or be removed in the future",
+    message = "This SaltUI API is experimental and may change or be removed in the future",
     level = RequiresOptIn.Level.ERROR
 )
 @Retention(AnnotationRetention.BINARY)

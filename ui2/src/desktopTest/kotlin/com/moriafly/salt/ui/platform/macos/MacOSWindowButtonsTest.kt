@@ -1,5 +1,5 @@
 /*
- * Salt UI
+ * SaltUI
  * Copyright (C) 2026 Moriafly
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -38,6 +38,7 @@ import com.moriafly.salt.ui.Button
 import com.moriafly.salt.ui.SaltTheme
 import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.moriafly.salt.ui.window.SaltWindow
+import org.junit.Assume.assumeTrue
 import java.awt.Color
 import java.awt.Frame
 import java.awt.MouseInfo
@@ -48,7 +49,6 @@ import java.nio.file.Files
 import javax.imageio.ImageIO
 import kotlin.test.Test
 import kotlin.test.assertTrue
-import org.junit.Assume.assumeTrue
 
 @OptIn(ExperimentalTestApi::class, ExperimentalComposeUiApi::class, UnstableSaltUiApi::class)
 class MacOSWindowButtonsTest {
@@ -69,7 +69,7 @@ class MacOSWindowButtonsTest {
                         SaltWindow(
                             onCloseRequest = { visible = false },
                             state = windowState,
-                            title = "Salt UI Native Button Test",
+                            title = "SaltUI Native Button Test",
                             init = { window = it }
                         ) {
                             Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -126,7 +126,10 @@ class MacOSWindowButtonsTest {
 
                 val floatingBounds = window.bounds
                 clickButton(robot, window, buttons[2])
-                waitUntil(timeoutMillis = 8_000) { windowState.placement == WindowPlacement.Fullscreen }
+                waitUntil(timeoutMillis = 8_000) {
+                    windowState.placement ==
+                        WindowPlacement.Fullscreen
+                }
                 robot.delay(1_000)
                 // The fixture provides an exit control because JavaExec has no application's
                 // native Window menu or full-screen keyboard shortcut
@@ -136,7 +139,10 @@ class MacOSWindowButtonsTest {
                 )
                 robot.mousePress(InputEvent.BUTTON1_DOWN_MASK)
                 robot.mouseRelease(InputEvent.BUTTON1_DOWN_MASK)
-                waitUntil(timeoutMillis = 8_000) { windowState.placement != WindowPlacement.Fullscreen }
+                waitUntil(timeoutMillis = 8_000) {
+                    windowState.placement !=
+                        WindowPlacement.Fullscreen
+                }
                 waitUntil(timeoutMillis = 8_000) { window.bounds == floatingBounds }
                 robot.mouseMove(window.x + 300, window.y + 180)
                 robot.delay(1_500)
@@ -151,7 +157,10 @@ class MacOSWindowButtonsTest {
     }
 
     private fun clickButton(robot: Robot, window: ComposeWindow, button: Rectangle) {
-        robot.mouseMove(window.x + button.x + button.width / 2, window.y + button.y + button.height / 2)
+        robot.mouseMove(
+            window.x + button.x + button.width / 2,
+            window.y + button.y + button.height / 2
+        )
         robot.mousePress(InputEvent.BUTTON1_DOWN_MASK)
         robot.mouseRelease(InputEvent.BUTTON1_DOWN_MASK)
     }
@@ -160,7 +169,11 @@ class MacOSWindowButtonsTest {
         val buttons = captureButtonArtwork(robot, Rectangle(window.x, window.y, 110, 52))
         val expectedDiameter = if (
             System.getProperty("os.version").substringBefore('.').toInt() >= 26
-        ) 14 else 12
+        ) {
+            14
+        } else {
+            12
+        }
         buttons.forEachIndexed { index, bounds ->
             // Measure the rendered artwork, including antialiasing tolerance, not NSView bounds
             assertTrue(

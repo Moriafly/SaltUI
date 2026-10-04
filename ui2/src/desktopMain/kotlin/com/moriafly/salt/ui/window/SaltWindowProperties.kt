@@ -1,5 +1,5 @@
 /*
- * Salt UI
+ * SaltUI
  * Copyright (C) 2025 Moriafly
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -139,9 +139,9 @@ internal fun defaultCaptionBarHeight(os: OS = OS.current): Dp = when (os) {
     else -> 40.dp
 }
 
-@UnstableSaltUiApi
 // Caption appearance and interaction flags can change while the window stays open. Track readers
 // so a caption update does not invalidate unrelated content throughout the window.
+@UnstableSaltUiApi
 val LocalSaltWindowProperties = compositionLocalOf<SaltWindowProperties<Window>> {
     error("SaltWindowProperties is not provided")
 }

@@ -1,5 +1,5 @@
 /*
- * Salt UI
+ * SaltUI
  * Copyright (C) 2025 Moriafly
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,7 +20,7 @@ package com.moriafly.salt.ui
 import kotlin.jvm.JvmField
 
 /**
- * Salt UI Flags.
+ * SaltUI Flags.
  */
 @UnstableSaltUiApi
 object SaltUiFlags {

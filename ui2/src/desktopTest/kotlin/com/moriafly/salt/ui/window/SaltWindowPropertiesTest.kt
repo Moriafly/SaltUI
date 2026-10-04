@@ -1,5 +1,5 @@
 /*
- * Salt UI
+ * SaltUI
  * Copyright (C) 2026 Moriafly
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -68,7 +68,9 @@ class SaltWindowPropertiesTest {
                     onCloseRequest = {},
                     title = "Caption property invalidation",
                     state = rememberWindowState(size = DpSize(640.dp, 480.dp)),
-                    properties = SaltWindowProperties.default(captionButtonIsDarkTheme = darkCaption)
+                    properties = SaltWindowProperties.default(
+                        captionButtonIsDarkTheme = darkCaption
+                    )
                 ) {
                     Column {
                         CaptionAppearanceReadout()
@@ -83,7 +85,8 @@ class SaltWindowPropertiesTest {
 
         runOnIdle { darkCaption = true }
         waitUntil(timeoutMillis = 5_000) {
-            onAllNodesWithText("Dark caption", useUnmergedTree = true).fetchSemanticsNodes().size == 1
+            onAllNodesWithText("Dark caption", useUnmergedTree = true).fetchSemanticsNodes().size ==
+                1
         }
         onNodeWithText("Dark caption", useUnmergedTree = true).assertIsDisplayed()
         onNodeWithText("Persistent library content").assertIsDisplayed()
@@ -91,7 +94,11 @@ class SaltWindowPropertiesTest {
 
         runOnIdle { darkCaption = false }
         waitUntil(timeoutMillis = 5_000) {
-            onAllNodesWithText("Light caption", useUnmergedTree = true).fetchSemanticsNodes().size == 1
+            onAllNodesWithText(
+                "Light caption",
+                useUnmergedTree = true
+            ).fetchSemanticsNodes().size ==
+                1
         }
         onNodeWithText("Light caption", useUnmergedTree = true).assertIsDisplayed()
         onNodeWithText("Persistent library content").assertIsDisplayed()

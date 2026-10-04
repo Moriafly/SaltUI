@@ -1,5 +1,5 @@
 /*
- * Salt UI
+ * SaltUI
  * Copyright (C) 2026 Moriafly
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -49,7 +49,7 @@ fun main() = application {
                 size = DpSize(960.dp, 720.dp),
                 position = WindowPosition.Aligned(Alignment.Center)
             ),
-            title = "Salt UI",
+            title = "SaltUI",
             resizable = true,
             properties = SaltWindowProperties.default(
                 captionButtonIsDarkTheme = AppConfig.isDarkTheme,
@@ -77,7 +77,7 @@ fun main() = application {
                     ComposeIcon()
                     Spacer(Modifier.width(8.dp))
                     Text(
-                        text = "Salt UI"
+                        text = "SaltUI"
                     )
                 }
             }

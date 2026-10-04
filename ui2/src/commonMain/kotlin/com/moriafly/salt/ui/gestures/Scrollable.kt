@@ -1,5 +1,5 @@
 /*
- * Salt UI
+ * SaltUI
  * Copyright (C) 2025 Moriafly
  * Copyright 2020 The Android Open Source Project
  *
@@ -113,7 +113,6 @@ internal class ScrollableNode(
     ),
     KeyInputModifierNode,
     OnScrollChangedDispatcher {
-
     // Placeholder fling behavior, we'll initialize it when the density is available.
     override val defaultFlingBehavior = platformScrollableDefaultFlingBehavior()
 
@@ -368,8 +367,8 @@ internal class ScrollableNode(
         // A tap catches the animation without becoming a click.
         if (
             !trackedChange.isConsumed &&
-                (trackedChange.position - interruption.downPosition).getDistance() <
-                    interruption.pointerSlop
+            (trackedChange.position - interruption.downPosition).getDistance() <
+            interruption.pointerSlop
         ) {
             trackedChange.consume()
         }
@@ -388,7 +387,9 @@ internal class ScrollableNode(
                     canDrag.invoke(it.type) &&
                     it.changedToDownIgnoreConsumed()
             }
-        ) return
+        ) {
+            return
+        }
 
         if (!scrollLogic.shouldScrollImmediately()) return
 
@@ -416,8 +417,8 @@ internal class ScrollableNode(
         // This runs in Final, after DragGestureNode completes orientation arbitration in Main.
         if (
             trackedChange.isConsumed ||
-                (trackedChange.position - interruption.downPosition).getDistance() >=
-                    interruption.pointerSlop
+            (trackedChange.position - interruption.downPosition).getDistance() >=
+            interruption.pointerSlop
         ) {
             finishScrollInterruption()
         }

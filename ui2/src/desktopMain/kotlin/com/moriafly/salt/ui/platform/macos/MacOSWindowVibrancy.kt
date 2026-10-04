@@ -1,5 +1,5 @@
 /*
- * Salt UI
+ * SaltUI
  * Copyright (C) 2026 Moriafly
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -234,7 +234,8 @@ private class MacOSNativeVibrancy private constructor(
                 "NSAppearanceNameVibrantLight"
             }
         ) ?: return
-        val appearance = messagePointer(appearanceClass, "appearanceNamed:", appearanceName) ?: return
+        val appearance =
+            messagePointer(appearanceClass, "appearanceNamed:", appearanceName) ?: return
         messageVoid(effectView, "setAppearance:", appearance)
     }
 

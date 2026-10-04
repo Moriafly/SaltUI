@@ -1,5 +1,5 @@
 /*
- * Salt UI
+ * SaltUI
  * Copyright (C) 2026 Moriafly
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -86,7 +86,12 @@ class NestedHeaderLayoutTest {
                     },
                     modifier = Modifier.fillMaxSize().testTag("layout"),
                     state = headerState,
-                    contentPadding = PaddingValues(start = 20.dp, top = 48.dp, end = 32.dp, bottom = 64.dp)
+                    contentPadding = PaddingValues(
+                        start = 20.dp,
+                        top = 48.dp,
+                        end = 32.dp,
+                        bottom = 64.dp
+                    )
                 ) { innerPadding ->
                     HorizontalPager(
                         state = rememberPagerState { 1 },
@@ -130,13 +135,23 @@ class NestedHeaderLayoutTest {
         waitUntil(timeoutMillis = 5_000) { selected == 0 }
         waitForIdle()
         onNodeWithTag("list").assertIsFocused()
-        assertEquals(0f, headerState.offset, 1f, "Focusing a visible list must not collapse the header")
+        assertEquals(
+            0f,
+            headerState.offset,
+            1f,
+            "Focusing a visible list must not collapse the header"
+        )
         assertEquals(168f * scale, bounds("row-0").top, 1f)
 
         robot.mouseWheel(30)
         waitUntil(timeoutMillis = 5_000) { headerState.offset == headerState.minOffset }
         waitForIdle()
-        assertEquals(48f * scale, bounds("list").top, 1f, "Collapsed list must remain below the screen inset")
+        assertEquals(
+            48f * scale,
+            bounds("list").top,
+            1f,
+            "Collapsed list must remain below the screen inset"
+        )
         assertEquals(20f * scale, bounds("list").left, 1f)
         assertEquals(468f * scale, bounds("list").right, 1f)
         assertEquals(436f * scale, bounds("list").bottom, 1f)
@@ -156,7 +171,9 @@ class NestedHeaderLayoutTest {
     @Test
     fun lazyListUpdatesPaddingAndDirectionWithoutLosingContent() = runDesktopComposeUiTest {
         val headerState = NestedHeaderState()
-        var padding by mutableStateOf(PaddingValues(start = 20.dp, top = 48.dp, end = 32.dp, bottom = 64.dp))
+        var padding by mutableStateOf(
+            PaddingValues(start = 20.dp, top = 48.dp, end = 32.dp, bottom = 64.dp)
+        )
         var direction by mutableStateOf(LayoutDirection.Ltr)
         setContent {
             Window(
@@ -210,7 +227,9 @@ class NestedHeaderLayoutTest {
         assertEquals(bounds("layout").width, bounds("row").width, 1f)
     }
 
-    private fun ComposeUiTest.bounds(tag: String) = onNodeWithTag(tag).fetchSemanticsNode().boundsInRoot
+    private fun ComposeUiTest.bounds(tag: String) = onNodeWithTag(
+        tag
+    ).fetchSemanticsNode().boundsInRoot
 
     private fun ComposeUiTest.onAllNodesWithTagCount(tag: String) =
         onAllNodesWithTag(tag).fetchSemanticsNodes().size

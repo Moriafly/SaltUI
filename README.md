@@ -1,8 +1,8 @@
 [![stable](https://img.shields.io/github/v/release/Moriafly/SaltUI?sort=semver&display_name=release&label=stable&color=brightgreen)](https://github.com/Moriafly/SaltUI/releases/latest) [![Maven Central](https://img.shields.io/maven-central/v/io.github.moriafly/salt-ui)](https://search.maven.org/search?q=g:io.github.moriafly) [![CodeFactor](https://www.codefactor.io/repository/github/moriafly/saltui/badge/main)](https://www.codefactor.io/repository/github/moriafly/saltui/overview/main)
 
-# Salt UI
+# SaltUI
 
-Salt UI is UI components based on [Compose Multiplatform](https://github.com/JetBrains/compose-multiplatform). The 1.0 version is derived from some UI components of [Salt Player](https://github.com/Moriafly/SaltPlayerSource). Currently, Salt UI is used in Salt Player, Emo Scroll, Qinalt and other App to serve hundreds of thousands of users.
+SaltUI is UI components based on [Compose Multiplatform](https://github.com/JetBrains/compose-multiplatform). The 1.0 version is derived from some UI components of [Salt Player](https://github.com/Moriafly/SaltPlayerSource). Currently, SaltUI is used in Salt Player, Emo Scroll, Qinalt and other App to serve hundreds of thousands of users.
 
 ## Get started
 
@@ -31,11 +31,11 @@ See demo: [shared](https://github.com/Moriafly/SaltUI/tree/main/shared).
 
 ## Text Description and Translation Standards
 
-See: [Salt UI Text Description and Translation Standards](https://moriafly.com/standards/tdts).
+See: [SaltUI Text Description and Translation Standards](https://moriafly.com/standards/tdts).
 
 ## Google Play
 
-Salt UI performs operations related to internal ART APIs. Please refer to the following solution for publishing on the Google Play platform.
+SaltUI performs operations related to internal ART APIs. Please refer to the following solution for publishing on the Google Play platform.
 
 > Google Play doesn't allow apps to use hidden APIs, reporting library usage will cause your app to fail app review, you need to disable dependencies info reporting in build.gradle. Remember to update this library to latest version to be compatible with new Android version.
 >
@@ -52,7 +52,7 @@ Salt UI performs operations related to internal ART APIs. Please refer to the fo
 
 ## Compatibility
 
-| Salt UI        | Compose Multiplatform | Jetpack Compose |
+| SaltUI         | Compose Multiplatform | Jetpack Compose |
 |----------------|-----------------------|-----------------|
 | 3.0.0-beta01+  | 1.12.0                | 1.12.0          |
 | 3.0.0-alpha02+ | 1.12.0-rc01           | 1.12.0-rc01     |
