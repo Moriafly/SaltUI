@@ -51,9 +51,17 @@ internal class UndecoratedWindowResizer(
     var enabled: Boolean by mutableStateOf(false)
     var resizerThickness: Dp by mutableStateOf(4.dp)
 
+    private var pressedCursor by mutableStateOf<Cursor?>(null)
+
     private var initialPointPos = Point()
     private var initialWindowPos = Point()
     private var initialWindowSize = Dimension()
+
+    val dragCursorModifier: Modifier
+        get() = Modifier.pointerHoverIcon(
+            icon = pressedCursor?.let(::PointerIcon) ?: PointerIcon.Default,
+            overrideDescendants = pressedCursor != null
+        )
 
     @Composable
     fun Content(modifier: Modifier = Modifier) {
@@ -100,7 +108,7 @@ internal class UndecoratedWindowResizer(
         )
     }
 
-    private fun Modifier.resizeOnDrag(sides: Int) = pointerInput(Unit) {
+    private fun Modifier.resizeOnDrag(awtCursorId: Int, sides: Int) = pointerInput(Unit) {
         var isResizing = false
         awaitPointerEventScope {
             while (true) {
@@ -114,10 +122,12 @@ internal class UndecoratedWindowResizer(
                     initialWindowPos = Point(window.x, window.y)
                     initialWindowSize = Dimension(window.width, window.height)
                     isResizing = true
+                    pressedCursor = LinuxResizeCursor.get(awtCursorId)
                 }
 
                 if (!event.buttons.isPrimaryPressed || (mouseLocation == null)) {
                     isResizing = false
+                    pressedCursor = null
                 }
 
                 if (event.type == PointerEventType.Enter) {
@@ -140,7 +150,7 @@ internal class UndecoratedWindowResizer(
     @Composable
     private fun Side(cursorId: Int, sides: Int) = Layout(
         {},
-        Modifier.cursor(cursorId).resizeOnDrag(sides),
+        Modifier.cursor(cursorId).resizeOnDrag(cursorId, sides),
         measurePolicy = { _, constraints ->
             layout(constraints.maxWidth, constraints.maxHeight) {}
         }

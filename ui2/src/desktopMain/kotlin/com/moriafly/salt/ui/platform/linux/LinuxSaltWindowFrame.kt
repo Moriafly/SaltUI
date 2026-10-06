@@ -123,6 +123,9 @@ internal fun FrameWindowScope.LinuxSaltWindowFrame(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(shadowMargin)
+                // Ancestor of both the content and the resizer edges, so the resize
+                // cursor survives the drag without blocking any hit testing
+                .then(undecoratedWindowResizer.dragCursorModifier)
         ) {
             Box(
                 modifier = Modifier
