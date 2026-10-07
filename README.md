@@ -54,6 +54,7 @@ SaltUI performs operations related to internal ART APIs. Please refer to the fol
 
 | SaltUI         | Compose Multiplatform | Jetpack Compose |
 |----------------|-----------------------|-----------------|
+| 3.0.0-beta02+  | 1.12.1                | 1.12.1          |
 | 3.0.0-beta01+  | 1.12.0                | 1.12.0          |
 | 3.0.0-alpha02+ | 1.12.0-rc01           | 1.12.0-rc01     |
 | 3.0.0-alpha01+ | 1.12.0-alpha01        | 1.12.0-alpha02  |

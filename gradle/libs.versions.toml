@@ -1,5 +1,5 @@
 [versions]
-version = "3.0.0-beta01"
+version = "3.0.0-beta02"
 mavenLocalVersion = "3.0.0-SNAPSHOT"
 agp = "9.1.1"
 kotlin = "2.4.20"
