@@ -47,18 +47,19 @@ fun CaptionBarHitTest(
     if (OS.isDesktop()) {
         val saltWindowInfo = LocalSaltWindowInfo.current
         val isHitTestInCaptionBarState = LocalIsHitTestInCaptionBarState.current
-        val touchModifier = if (OS.isWindows()) {
-            Modifier.windowsCaptionBarTouchInput(LocalSaltWindowProperties.current.moveable)
-        } else if (OS.isLinux()) {
-            Modifier.linuxCaptionBarHitTest()
-        } else {
-            Modifier
-        }
+        val saltWindowProperties = LocalSaltWindowProperties.current
+
         Spacer(
             modifier = modifier
                 .fillMaxWidth()
                 .height(saltWindowInfo.captionBarHeight)
-                .then(touchModifier)
+                .run {
+                    when (OS.current) {
+                        is OS.Windows -> windowsCaptionBarTouchInput(saltWindowProperties.moveable)
+                        is OS.Linux -> linuxCaptionBarHitTest()
+                        else -> this
+                    }
+                }
                 .onPointerEvent(PointerEventType.Enter) {
                     isHitTestInCaptionBarState.value = true
                 }
