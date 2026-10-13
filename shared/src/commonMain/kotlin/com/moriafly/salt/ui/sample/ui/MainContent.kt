@@ -18,7 +18,6 @@
 package com.moriafly.salt.ui.sample.ui
 
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -33,6 +32,9 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.savedstate.serialization.SavedStateConfiguration
+import com.moriafly.salt.adaptive.window.LocalSaltAdaptiveWindow
+import com.moriafly.salt.adaptive.window.UnstableSaltAdaptiveWindowApi
+import com.moriafly.salt.adaptive.window.WindowSizeClass
 import com.moriafly.salt.core.os.OS
 import com.moriafly.salt.ui.Layer
 import com.moriafly.salt.ui.UnstableSaltUiApi
@@ -58,24 +60,23 @@ private val navBackStackConfig = SavedStateConfiguration {
 }
 
 @Suppress("ktlint:compose:modifier-missing-check")
-@OptIn(UnstableSaltUiApi::class)
+@OptIn(UnstableSaltUiApi::class, UnstableSaltAdaptiveWindowApi::class)
 @Composable
 fun MainContent(
     windowCaptionBarHeight: Dp = 0.dp
 ) {
     val navBackStack = rememberNavBackStack(navBackStackConfig, ScreenRoute.Main)
+    val expandedLayout = LocalSaltAdaptiveWindow.current.sizeClass != WindowSizeClass.Compact
 
     CompositionLocalProvider(
         LocalNavBackStack provides navBackStack
     ) {
-        BoxWithConstraints(
+        Box(
             modifier = Modifier
                 .fillMaxSize()
         ) {
-            val maxWidth = maxWidth
             Row {
-                val pad = maxWidth > 600.dp
-                if (pad) {
+                if (expandedLayout) {
                     Box(
                         modifier = Modifier
                             .padding(top = windowCaptionBarHeight)

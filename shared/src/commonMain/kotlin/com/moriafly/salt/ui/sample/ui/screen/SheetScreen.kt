@@ -135,8 +135,8 @@ fun SheetScreen() {
     ) {
         ScreenCard(
             header = "Open a sheet",
-            footer = "Automatic: bottom in portrait on phones, " +
-                "floating in landscape or on large screens. Choose a mode to override."
+            footer = "Automatic: bottom on phones in either orientation, " +
+                "floating on tablets and desktops. Choose a mode to override."
         ) {
             SheetOptionItem(
                 text = "Example content",

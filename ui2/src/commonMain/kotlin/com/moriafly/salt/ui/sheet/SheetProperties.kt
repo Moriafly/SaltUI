@@ -89,7 +89,8 @@ enum class SheetContentLayout {
  * [dragEnabled] controls pointer resizing and drag dismissal in Bottom presentation.
  * The drag handle is shown automatically when resizing or drag dismissal is available.
  * Accessibility height actions remain available when pointer dragging is disabled.
- * [presentation] defaults to Bottom in narrow portrait windows and Centered elsewhere.
+ * Adaptive [presentation] uses Bottom on phones in either orientation and Centered on tablets
+ * and desktops. Other form factors adapt to the owning window's width and orientation.
  * Centered heights are capped by the safe viewport, the panel width and an internal maximum.
  * [contentLayout] only affects an empty action slot; actions always retain their safe area.
  */

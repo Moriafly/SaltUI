@@ -16,6 +16,7 @@
  */
 
 @file:Suppress("ktlint:standard:filename")
+@file:OptIn(com.moriafly.salt.adaptive.window.UnstableSaltAdaptiveWindowApi::class)
 
 package com.moriafly.salt.ui.sheet.internal
 
@@ -26,6 +27,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
+import com.moriafly.salt.adaptive.window.SaltAdaptiveWindow
 import com.moriafly.salt.ui.sheet.SheetPresentation
 
 // A focusable scene popup covers its owning window and leaves other windows usable.
@@ -35,6 +37,7 @@ import com.moriafly.salt.ui.sheet.SheetPresentation
 internal actual fun SheetHost(
     inputEnabled: Boolean,
     presentation: SheetPresentation,
+    adaptiveWindow: SaltAdaptiveWindow,
     backgroundColor: Color,
     onDismissRequest: () -> Unit,
     content: @Composable (SheetHostEnvironment) -> Unit
@@ -64,7 +67,8 @@ internal actual fun SheetHost(
             ) {
                 content(
                     sheetHostEnvironment(
-                        windowSize = ownerSize
+                        windowSize = ownerSize,
+                        adaptiveWindow = adaptiveWindow
                     )
                 )
             }

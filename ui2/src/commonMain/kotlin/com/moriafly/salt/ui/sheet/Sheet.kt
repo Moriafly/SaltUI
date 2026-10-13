@@ -15,7 +15,10 @@
  * limitations under the License.
  */
 
-@file:OptIn(com.moriafly.salt.ui.UnstableSaltUiApi::class)
+@file:OptIn(
+    com.moriafly.salt.ui.UnstableSaltUiApi::class,
+    com.moriafly.salt.adaptive.window.UnstableSaltAdaptiveWindowApi::class
+)
 
 package com.moriafly.salt.ui.sheet
 
@@ -36,6 +39,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
+import com.moriafly.salt.adaptive.window.LocalSaltAdaptiveWindow
 import com.moriafly.salt.ui.SaltTheme
 import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.moriafly.salt.ui.material.DisableMaterial
@@ -55,7 +59,8 @@ import kotlinx.coroutines.launch
  * [onDismissRequest] is called once per user dismissal attempt. It never changes [visible];
  * keep it true to confirm a draft first. Programmatic hiding never sends a dismissal request.
  * [modifier] applies to the surface, not to the full-window scrim.
- * Bottom presentation supports detents; landscape and wide windows default to centered.
+ * Bottom presentation supports detents; phones use it in either orientation by default.
+ * Tablets and desktops default to centered presentation.
  * Only one Sheet in the same owning window may have [visible] set to true.
  * Use [SheetContentLayout.EdgeToEdge] with [SheetScope.contentPadding] for edge-to-edge scrolling.
  */
@@ -118,6 +123,7 @@ fun Sheet(
         SheetHost(
             inputEnabled = visible,
             presentation = properties.presentation,
+            adaptiveWindow = LocalSaltAdaptiveWindow.current,
             backgroundColor = SaltTheme.colors.background,
             onDismissRequest = requestDismiss
         ) { environment ->

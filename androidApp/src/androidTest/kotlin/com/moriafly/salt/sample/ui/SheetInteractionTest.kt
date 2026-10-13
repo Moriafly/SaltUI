@@ -15,14 +15,20 @@
  * limitations under the License.
  */
 
-@file:OptIn(com.moriafly.salt.ui.UnstableSaltUiApi::class)
+@file:OptIn(
+    com.moriafly.salt.ui.UnstableSaltUiApi::class,
+    com.moriafly.salt.adaptive.window.UnstableSaltAdaptiveWindowApi::class
+)
 
 package com.moriafly.salt.sample.ui
 
+import android.content.res.Configuration
 import android.graphics.Point
 import android.os.Build
 import android.os.SystemClock
+import android.view.InputDevice
 import android.view.KeyEvent
+import android.view.MotionEvent
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -34,9 +40,11 @@ import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Rect
@@ -45,11 +53,15 @@ import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogWindowProvider
+import androidx.core.graphics.Insets
+import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
 import androidx.test.core.app.ActivityScenario
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
@@ -57,6 +69,8 @@ import androidx.test.uiautomator.By
 import androidx.test.uiautomator.BySelector
 import androidx.test.uiautomator.UiDevice
 import androidx.test.uiautomator.Until
+import com.moriafly.salt.adaptive.window.DeviceFormFactor
+import com.moriafly.salt.adaptive.window.currentSaltAdaptiveWindow
 import com.moriafly.salt.ui.Button
 import com.moriafly.salt.ui.ItemButton
 import com.moriafly.salt.ui.ItemEdit
@@ -81,6 +95,86 @@ import java.util.concurrent.atomic.AtomicReference
 @RunWith(AndroidJUnit4::class)
 class SheetInteractionTest {
     private val device get() = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
+
+    @Test
+    fun tabletKeepsCenteredSheetWithCompactResourceConfiguration() {
+        val fixture = AndroidSheetFixture(presentation = SheetPresentation.Adaptive)
+        ActivityScenario.launch(MainActivity::class.java).use { scenario ->
+            scenario.onActivity { it.setContent { fixture.Content() } }
+            shown(By.text("Open sheet"))
+            assumeTrue(fixture.formFactor.get() == DeviceFormFactor.Tablet)
+            scenario.onActivity {
+                it.setContent {
+                    val configuration = LocalConfiguration.current
+                    val compactConfiguration = remember(configuration) {
+                        Configuration(configuration).apply { smallestScreenWidthDp = 320 }
+                    }
+                    CompositionLocalProvider(LocalConfiguration provides compactConfiguration) {
+                        fixture.Content()
+                    }
+                }
+            }
+            click(By.text("Open sheet"))
+            shown(By.text("Fixture sheet"))
+            SystemClock.sleep(600)
+            val panel = fixture.panel.get()
+            assertEquals(device.displayWidth / 2f, panel.center.x, 2f)
+            assertEquals(device.displayHeight / 2f, panel.center.y, 2f)
+            assertTrue(panel.bottom < device.displayHeight)
+            click(By.text("Inside"))
+            shown(By.text("Inside: 1"))
+            click(By.text("Program close"))
+            click(By.text("Background"))
+            shown(By.text("Background: 1"))
+            scenario.onActivity { assertEquals(0, fixture.requests) }
+        }
+    }
+
+    @Test
+    fun phoneLandscapeKeepsAdaptiveSheetBottomCenteredAndUsable() {
+        val fixture = AndroidSheetFixture(retain = true, presentation = SheetPresentation.Adaptive)
+        try {
+            ActivityScenario.launch(MainActivity::class.java).use { scenario ->
+                scenario.onActivity { it.setContent { fixture.Content() } }
+                shown(By.text("Open sheet"))
+                assumeTrue(fixture.formFactor.get() == DeviceFormFactor.Phone)
+                device.setOrientationLeft()
+                device.waitForIdle()
+                assertTrue(device.displayWidth > device.displayHeight)
+                click(By.text("Open sheet"))
+                shown(By.text("Fixture sheet"))
+                SystemClock.sleep(600)
+                val panel = fixture.panel.get()
+                assertEquals(device.displayHeight.toFloat(), panel.bottom, 2f)
+                assertEquals(device.displayWidth / 2f, panel.center.x, 2f)
+                scenario.onActivity {
+                    assertTrue(panel.width <= 540f * it.resources.displayMetrics.density + 2f)
+                    val navigation = fixture.navigationBarInsets?.invoke() ?: Insets.NONE
+                    val expectedDarkIcons = fixture.lightBackground &&
+                        navigation.left == 0 && navigation.right == 0
+                    assertEquals(expectedDarkIcons, fixture.navigationDarkIcons?.invoke())
+                }
+                val edgeY = device.findObject(By.text("Program close")).visibleBounds
+                    .centerY().toFloat()
+                touch(panel.left, edgeY)
+                touch(panel.right - 1f, edgeY)
+                scenario.onActivity { assertEquals(0, fixture.requests) }
+                touch(panel.left - 1f, edgeY)
+                shown(By.text("Requests: 1"))
+                touch(panel.right, edgeY)
+                shown(By.text("Requests: 2"))
+                click(By.text("Inside"))
+                shown(By.text("Inside: 1"))
+                click(By.text("Program close"))
+                click(By.text("Background"))
+                shown(By.text("Background: 1"))
+                scenario.onActivity { assertEquals(2, fixture.requests) }
+            }
+        } finally {
+            device.setOrientationNatural()
+            device.unfreezeRotation()
+        }
+    }
 
     @Test
     fun noActionListDrawsToTheBottomAndItsLastButtonScrollsIntoTheSafeArea() {
@@ -485,6 +579,21 @@ class SheetInteractionTest {
         }
     }
 
+    private fun touch(x: Float, y: Float) {
+        val time = SystemClock.uptimeMillis()
+        val automation = InstrumentationRegistry.getInstrumentation().uiAutomation
+        for (action in listOf(MotionEvent.ACTION_DOWN, MotionEvent.ACTION_UP)) {
+            val event = MotionEvent.obtain(time, SystemClock.uptimeMillis(), action, x, y, 0)
+            event.source = InputDevice.SOURCE_TOUCHSCREEN
+            try {
+                assertTrue(automation.injectInputEvent(event, true))
+            } finally {
+                event.recycle()
+            }
+        }
+        device.waitForIdle()
+    }
+
     private fun click(selector: BySelector) {
         val node = device.wait(Until.findObject(selector), 5_000)
         if (node == null) {
@@ -520,7 +629,8 @@ private class AndroidSheetFixture(
     private val list: Boolean = false,
     private val rounded: Boolean = false,
     private val noActions: Boolean = false,
-    private val edgeToEdge: Boolean = false
+    private val edgeToEdge: Boolean = false,
+    private val presentation: SheetPresentation = SheetPresentation.Bottom
 ) {
     var visible by mutableStateOf(false)
     var requests by mutableIntStateOf(0)
@@ -534,11 +644,14 @@ private class AndroidSheetFixture(
     var sheetBackground = 0
     var lightBackground = false
     var navigationDarkIcons: (() -> Boolean)? = null
+    var navigationBarInsets: (() -> Insets)? = null
+    val formFactor = AtomicReference(DeviceFormFactor.Unknown)
     var contentMargin = 0f
 
     @Composable
     fun Content() {
         SaltTheme {
+            formFactor.set(currentSaltAdaptiveWindow().formFactor)
             sheetBackground = SaltTheme.colors.background.toArgb()
             lightBackground = SaltTheme.colors.background.luminance() > 0.179f
             contentMargin = with(LocalDensity.current) { SaltTheme.dimens.padding.toPx() }
@@ -562,7 +675,7 @@ private class AndroidSheetFixture(
                 modifier = Modifier.onGloballyPositioned { panel.set(it.boundsInWindow()) },
                 title = "Fixture sheet",
                 properties = SheetProperties(
-                    presentation = SheetPresentation.Bottom,
+                    presentation = presentation,
                     contentLayout = if (edgeToEdge) {
                         SheetContentLayout.EdgeToEdge
                     } else {
@@ -582,7 +695,12 @@ private class AndroidSheetFixture(
                     if (!noActions) Button(onClick = { visible = false }, text = "Program close")
                 }
             ) {
-                val dialogWindow = (LocalView.current.parent as? DialogWindowProvider)?.window
+                val dialogView = LocalView.current
+                val dialogWindow = (dialogView.parent as? DialogWindowProvider)?.window
+                navigationBarInsets = {
+                    ViewCompat.getRootWindowInsets(dialogView)
+                        ?.getInsets(WindowInsetsCompat.Type.navigationBars()) ?: Insets.NONE
+                }
                 navigationDarkIcons = dialogWindow?.let { window ->
                     {
                         WindowCompat.getInsetsController(

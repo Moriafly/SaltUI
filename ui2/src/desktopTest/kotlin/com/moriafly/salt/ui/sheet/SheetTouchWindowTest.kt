@@ -17,6 +17,7 @@
 
 @file:OptIn(
     androidx.compose.ui.test.ExperimentalTestApi::class,
+    com.moriafly.salt.adaptive.window.UnstableSaltAdaptiveWindowApi::class,
     com.moriafly.salt.ui.UnstableSaltUiApi::class
 )
 

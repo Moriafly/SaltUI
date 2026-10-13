@@ -20,12 +20,15 @@
 package com.moriafly.salt.adaptive.window
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalAccessorScope
 import androidx.compose.ui.platform.LocalWindowInfo
 
 @Composable
-actual fun currentSaltAdaptiveWindow(): SaltAdaptiveWindow = SaltAdaptiveWindow(
-    // The desktop target only ever runs on a desktop OS, so the form factor is a constant and only
-    // the window width can vary, when the user resizes the window.
-    formFactor = DeviceFormFactor.Desktop,
-    sizeClass = calculateWindowSizeClass(LocalWindowInfo.current.containerDpSize.width)
-)
+actual fun currentSaltAdaptiveWindow(): SaltAdaptiveWindow = currentPlatformSaltAdaptiveWindow()
+
+internal actual fun CompositionLocalAccessorScope.platformSaltAdaptiveWindow(): SaltAdaptiveWindow =
+    saltAdaptiveWindow(
+        // The form factor stays constant while the owning window's dimensions change.
+        formFactor = DeviceFormFactor.Desktop,
+        windowSize = LocalWindowInfo.currentValue.containerDpSize
+    )

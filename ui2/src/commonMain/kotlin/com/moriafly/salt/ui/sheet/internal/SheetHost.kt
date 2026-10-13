@@ -15,6 +15,8 @@
  * limitations under the License.
  */
 
+@file:OptIn(com.moriafly.salt.adaptive.window.UnstableSaltAdaptiveWindowApi::class)
+
 package com.moriafly.salt.ui.sheet.internal
 
 import androidx.compose.foundation.layout.WindowInsets
@@ -33,6 +35,7 @@ import androidx.compose.ui.unit.IntRect
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.window.PopupPositionProvider
+import com.moriafly.salt.adaptive.window.SaltAdaptiveWindow
 import com.moriafly.salt.ui.sheet.SheetPresentation
 
 /**
@@ -41,30 +44,35 @@ import com.moriafly.salt.ui.sheet.SheetPresentation
 internal class SheetHostEnvironment(
     val windowSize: DpSize,
     val safeInsets: WindowInsets,
-    val imeInsets: WindowInsets
+    val imeInsets: WindowInsets,
+    val adaptiveWindow: SaltAdaptiveWindow
 ) {
     val contentInsets = safeInsets.union(imeInsets)
 }
 
 @Composable
 internal fun sheetHostEnvironment(
-    windowSize: DpSize
+    windowSize: DpSize,
+    adaptiveWindow: SaltAdaptiveWindow
 ): SheetHostEnvironment = SheetHostEnvironment(
     windowSize = windowSize,
     safeInsets = WindowInsets.systemBars
         .union(WindowInsets.displayCutout)
         .union(WindowInsets.waterfall),
-    imeInsets = WindowInsets.ime
+    imeInsets = WindowInsets.ime,
+    adaptiveWindow = adaptiveWindow
 )
 
 /**
  * The full-window scrim and the panel resolve their insets separately.
+ * Owner adaptation is passed explicitly so nested native windows keep their own automatic locals.
  */
 @Composable
 @OptIn(com.moriafly.salt.ui.UnstableSaltUiApi::class)
 internal expect fun SheetHost(
     inputEnabled: Boolean,
     presentation: SheetPresentation,
+    adaptiveWindow: SaltAdaptiveWindow,
     backgroundColor: Color,
     onDismissRequest: () -> Unit,
     content: @Composable (SheetHostEnvironment) -> Unit

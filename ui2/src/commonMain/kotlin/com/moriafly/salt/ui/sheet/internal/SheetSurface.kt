@@ -15,7 +15,10 @@
  * limitations under the License.
  */
 
-@file:OptIn(com.moriafly.salt.ui.UnstableSaltUiApi::class)
+@file:OptIn(
+    com.moriafly.salt.ui.UnstableSaltUiApi::class,
+    com.moriafly.salt.adaptive.window.UnstableSaltAdaptiveWindowApi::class
+)
 
 package com.moriafly.salt.ui.sheet.internal
 
@@ -46,6 +49,7 @@ import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.hideFromAccessibility
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.moriafly.salt.adaptive.window.WindowSizeClass
 import com.moriafly.salt.ui.sheet.SheetProperties
 import com.moriafly.salt.ui.sheet.SheetScope
 import com.moriafly.salt.ui.thenIf
@@ -64,7 +68,10 @@ internal fun SheetSurface(
     content: @Composable SheetScope.() -> Unit
 ) {
     val directInput = remember { SheetDirectInput() }
-    val bottom = properties.presentation.isBottom(windowSize = environment.windowSize)
+    val bottom = properties.presentation.isBottom(
+        adaptiveWindow = environment.adaptiveWindow,
+        windowSize = environment.windowSize
+    )
     val nestedScroll = rememberSheetNestedScroll(
         state = state,
         directInput = directInput,
@@ -153,7 +160,11 @@ private fun SheetViewport(
             .fillMaxSize()
             .windowInsetsPadding(viewportInsets)
     ) {
-        val panelWidth = sheetPanelWidth(availableWidth = maxWidth, bottom = bottom)
+        val panelWidth = sheetPanelWidth(
+            availableWidth = maxWidth,
+            bottom = bottom,
+            sizeClass = environment.adaptiveWindow.sizeClass
+        )
         val heightLimit = sheetPanelHeight(
             availableHeight = maxHeight,
             panelWidth = panelWidth,
@@ -188,7 +199,12 @@ private fun sheetViewportInsets(
     bottom: Boolean,
     environment: SheetHostEnvironment
 ): WindowInsets = if (bottom) {
-    environment.contentInsets.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)
+    environment.contentInsets.only(WindowInsetsSides.Top).union(
+        SheetSymmetricInsets(
+            insets = environment.contentInsets,
+            minimum = 0.dp
+        ).only(WindowInsetsSides.Horizontal)
+    )
 } else {
     SheetSymmetricInsets(
         insets = environment.safeInsets,
@@ -198,10 +214,11 @@ private fun sheetViewportInsets(
 
 private fun sheetPanelWidth(
     availableWidth: Dp,
-    bottom: Boolean
+    bottom: Boolean,
+    sizeClass: WindowSizeClass
 ): Dp {
     val maximumWidth = if (bottom) SheetDefaults.BottomMaxWidth else SheetDefaults.CenteredMaxWidth
-    val margin = if (bottom && availableWidth >= SheetDefaults.AdaptiveBreakpoint) {
+    val margin = if (bottom && sizeClass != WindowSizeClass.Compact) {
         SheetDefaults.WindowMargin
     } else {
         0.dp

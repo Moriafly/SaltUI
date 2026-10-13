@@ -20,11 +20,16 @@ package com.moriafly.salt.ui.sheet.internal
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.isSpecified
+import com.moriafly.salt.adaptive.window.DeviceFormFactor
+import com.moriafly.salt.adaptive.window.SaltAdaptiveWindow
+import com.moriafly.salt.adaptive.window.UnstableSaltAdaptiveWindowApi
+import com.moriafly.salt.adaptive.window.WindowSizeClass
+import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.moriafly.salt.ui.sheet.SheetPresentation
 
 internal object SheetDefaults {
-    val AdaptiveBreakpoint = 600.dp
-    val BottomMaxWidth = 640.dp
+    val BottomMaxWidth = 540.dp
     val CenteredMaxWidth = 540.dp
     val CenteredMaxHeight = 640.dp
     val WindowMargin = 16.dp
@@ -48,13 +53,21 @@ internal object SheetDefaults {
     const val CENTERED_HEIGHT_TO_WIDTH_RATIO = 1.2f
 }
 
-@OptIn(com.moriafly.salt.ui.UnstableSaltUiApi::class)
+@OptIn(UnstableSaltUiApi::class, UnstableSaltAdaptiveWindowApi::class)
 internal fun SheetPresentation.isBottom(
+    adaptiveWindow: SaltAdaptiveWindow,
     windowSize: DpSize
 ): Boolean = when (this) {
-    SheetPresentation.Adaptive ->
-        windowSize.width < SheetDefaults.AdaptiveBreakpoint &&
-            windowSize.height >= windowSize.width
+    SheetPresentation.Adaptive -> {
+        when (adaptiveWindow.formFactor) {
+            DeviceFormFactor.Phone -> true
+            DeviceFormFactor.Tablet, DeviceFormFactor.Desktop -> false
+            else -> {
+                val size = adaptiveWindow.windowSize.takeIf { it.isSpecified } ?: windowSize
+                adaptiveWindow.sizeClass == WindowSizeClass.Compact && size.height >= size.width
+            }
+        }
+    }
     SheetPresentation.Bottom -> true
     SheetPresentation.Centered -> false
 }

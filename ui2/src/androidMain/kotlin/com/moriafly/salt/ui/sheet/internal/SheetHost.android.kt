@@ -16,6 +16,7 @@
  */
 
 @file:Suppress("ktlint:standard:filename")
+@file:OptIn(com.moriafly.salt.adaptive.window.UnstableSaltAdaptiveWindowApi::class)
 
 package com.moriafly.salt.ui.sheet.internal
 
@@ -29,12 +30,14 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.ime
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.LocalWindowInfo
@@ -43,6 +46,7 @@ import androidx.compose.ui.window.DialogProperties
 import androidx.compose.ui.window.DialogWindowProvider
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
+import com.moriafly.salt.adaptive.window.SaltAdaptiveWindow
 import com.moriafly.salt.ui.sheet.SheetPresentation
 import androidx.compose.ui.graphics.Color as ComposeColor
 
@@ -51,13 +55,17 @@ import androidx.compose.ui.graphics.Color as ComposeColor
 internal actual fun SheetHost(
     inputEnabled: Boolean,
     presentation: SheetPresentation,
+    adaptiveWindow: SaltAdaptiveWindow,
     backgroundColor: ComposeColor,
     onDismissRequest: () -> Unit,
     content: @Composable (SheetHostEnvironment) -> Unit
 ) {
     val ownerSize = LocalWindowInfo.current.containerDpSize
     val ownerView = LocalView.current
-    val bottom = presentation.isBottom(windowSize = ownerSize)
+    val bottom = presentation.isBottom(
+        adaptiveWindow = adaptiveWindow,
+        windowSize = ownerSize
+    )
     Dialog(
         onDismissRequest = onDismissRequest,
         properties = DialogProperties(
@@ -71,6 +79,11 @@ internal actual fun SheetHost(
         val keyboard = LocalSoftwareKeyboardController.current
         val imeInsets = WindowInsets.ime
         val density = LocalDensity.current
+        val layoutDirection = LocalLayoutDirection.current
+        val navigationInsets = WindowInsets.navigationBars
+        val darkNavigationBarIcons = backgroundColor.luminance() > 0.179f &&
+            navigationInsets.getLeft(density, layoutDirection) == 0 &&
+            navigationInsets.getRight(density, layoutDirection) == 0
         val dialogView = LocalView.current
         val accessibilityImportance = remember(dialogView) { dialogView.importantForAccessibility }
         SideEffect {
@@ -83,7 +96,7 @@ internal actual fun SheetHost(
                 inputEnabled = inputEnabled,
                 ownerView = ownerView,
                 bottom = bottom,
-                lightBackground = backgroundColor.luminance() > 0.179f
+                darkNavigationBarIcons = darkNavigationBarIcons
             )
         }
         // Collection completes only on commit. Cancellation leaves the sheet unchanged.
@@ -101,7 +114,8 @@ internal actual fun SheetHost(
         ) {
             content(
                 sheetHostEnvironment(
-                    windowSize = ownerSize
+                    windowSize = ownerSize,
+                    adaptiveWindow = adaptiveWindow
                 )
             )
         }
@@ -112,7 +126,7 @@ private fun Window.configureSheetWindow(
     inputEnabled: Boolean,
     ownerView: View,
     bottom: Boolean,
-    lightBackground: Boolean
+    darkNavigationBarIcons: Boolean
 ) {
     // Native dialog transitions would also transform the full-window scrim.
     setWindowAnimations(0)
@@ -135,7 +149,7 @@ private fun Window.configureSheetWindow(
         isAppearanceLightStatusBars = !inputEnabled &&
             ownerController?.isAppearanceLightStatusBars == true
         isAppearanceLightNavigationBars = if (inputEnabled && bottom) {
-            lightBackground
+            darkNavigationBarIcons
         } else {
             ownerController?.isAppearanceLightNavigationBars == true
         }

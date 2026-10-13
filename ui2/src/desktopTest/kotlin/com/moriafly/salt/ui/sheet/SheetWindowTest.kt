@@ -18,12 +18,14 @@
 @file:OptIn(
     androidx.compose.ui.test.ExperimentalTestApi::class,
     androidx.compose.ui.ExperimentalComposeUiApi::class,
+    com.moriafly.salt.adaptive.window.UnstableSaltAdaptiveWindowApi::class,
     com.moriafly.salt.ui.UnstableSaltUiApi::class
 )
 
 package com.moriafly.salt.ui.sheet
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
@@ -59,7 +61,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.WindowState
 import androidx.compose.ui.window.rememberWindowState
+import com.moriafly.salt.adaptive.window.DeviceFormFactor
+import com.moriafly.salt.adaptive.window.LocalSaltAdaptiveWindow
+import com.moriafly.salt.adaptive.window.ProvideSaltAdaptiveWindow
+import com.moriafly.salt.adaptive.window.currentSaltAdaptiveWindow
 import com.moriafly.salt.ui.Button
+import com.moriafly.salt.ui.ControlSize
+import com.moriafly.salt.ui.LocalControlSize
 import com.moriafly.salt.ui.SaltTheme
 import com.moriafly.salt.ui.Text
 import com.moriafly.salt.ui.util.findSkiaLayer
@@ -541,7 +549,12 @@ internal class SheetFixture(
     private val configuredDetents: List<SheetDetent>? = null,
     private val noActions: Boolean = false,
     private val layoutControls: Boolean = false,
-    private val windowX: Dp = 100.dp
+    private val windowX: Dp = 100.dp,
+    private val presentation: SheetPresentation? = null,
+    private val initialWindowSize: DpSize = DpSize(720.dp, 640.dp),
+    private val adaptiveControls: Boolean = false,
+    private val extraSheetContent: @Composable () -> Unit = {},
+    private val formFactor: DeviceFormFactor? = null
 ) {
     lateinit var window: ComposeWindow
     val bounds = ConcurrentHashMap<String, Rect>()
@@ -567,7 +580,7 @@ internal class SheetFixture(
     fun Content() {
         SaltTheme {
             val windowState = rememberWindowState(
-                size = DpSize(720.dp, 640.dp),
+                size = initialWindowSize,
                 position = WindowPosition.Absolute(windowX, 100.dp)
             )
             SaltWindow(
@@ -577,10 +590,23 @@ internal class SheetFixture(
                 title = "SaltUI Sheet real input test",
                 init = { window = it }
             ) {
-                PrimaryContent(windowState)
-                if (handoff) NextSheet()
+                if (formFactor == null) {
+                    WindowContent(windowState)
+                } else {
+                    ProvideSaltAdaptiveWindow(
+                        currentSaltAdaptiveWindow().copy(formFactor = formFactor)
+                    ) {
+                        WindowContent(windowState)
+                    }
+                }
             }
         }
+    }
+
+    @Composable
+    private fun WindowContent(windowState: WindowState) {
+        PrimaryContent(windowState)
+        if (handoff) NextSheet()
     }
 
     @Composable
@@ -589,6 +615,13 @@ internal class SheetFixture(
         CompositionLocalProvider(
             LocalDensity provides Density(density.density, density.fontScale * fontScale)
         ) {
+            if (adaptiveControls) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .then(probe("owner"))
+                )
+            }
             BackgroundContent()
             PrimarySheet(windowState)
         }
@@ -630,11 +663,16 @@ internal class SheetFixture(
                     visible = true
                 }
             }
+            extraSheetContent()
         }
     }
 
     private fun sheetProperties() = SheetProperties(
-        presentation = if (bottom) SheetPresentation.Bottom else SheetPresentation.Centered,
+        presentation = presentation ?: if (bottom) {
+            SheetPresentation.Bottom
+        } else {
+            SheetPresentation.Centered
+        },
         dismissible = dismissible,
         contentInteraction = interaction,
         detents = configuredDetents ?: if (bottom) {
@@ -690,8 +728,11 @@ internal class SheetFixture(
         onReopen: () -> Unit
     ) {
         FixtureButton("Inside") { insideClicks++ }
-        FixtureButton(text = "Reopen", onClick = onReopen)
-        Text("Inside clicks: $insideClicks")
+        if (!adaptiveControls) {
+            FixtureButton(text = "Reopen", onClick = onReopen)
+            Text("Inside clicks: $insideClicks")
+        }
+        if (adaptiveControls) AdaptiveWindowControls(windowState)
         if (resizeWindow) {
             FixtureButton("Resize window") {
                 windowState.size = DpSize(580.dp, if (compact) 200.dp else 400.dp)
@@ -703,6 +744,14 @@ internal class SheetFixture(
                 nextVisible = true
             }
         }
+    }
+
+    @Composable
+    private fun AdaptiveWindowControls(windowState: WindowState) {
+        Text("Window class: ${LocalSaltAdaptiveWindow.current.sizeClass}")
+        FixtureButton("Portrait window") { windowState.size = DpSize(500.dp, 700.dp) }
+        FixtureButton("Landscape window") { windowState.size = DpSize(580.dp, 400.dp) }
+        FixtureButton("Wide landscape window") { windowState.size = DpSize(900.dp, 400.dp) }
     }
 
     @Composable
@@ -723,7 +772,12 @@ internal class SheetFixture(
         key: String = text,
         onClick: () -> Unit
     ) {
-        Button(onClick = onClick, text = text, modifier = probe(key))
+        Button(
+            onClick = onClick,
+            text = text,
+            modifier = probe(key),
+            size = if (adaptiveControls) ControlSize.Small else LocalControlSize.current
+        )
     }
 
     private fun probe(key: String) = Modifier
