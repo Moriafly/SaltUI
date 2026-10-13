@@ -27,9 +27,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.BlendMode
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.unit.DpSize
@@ -136,17 +135,12 @@ private fun sheetPopupLayout(nativeLayers: Boolean): SheetPopupLayout {
     val contentShape = remember(decoration.cornerRadius) {
         RoundedCornerShape(decoration.cornerRadius)
     }
-    // Keep both the scrim and a bottom panel inside the client-drawn frame.
+    // Keep the scrim and panel inside the client-drawn frame. Their opacity must remain
+    // independent of the owner's pixels, including transparent and native-material backgrounds.
     val contentModifier = Modifier
         .fillMaxSize()
         .thenIf(!nativeLayers) {
-            graphicsLayer {
-                shape = contentShape
-                clip = true
-                // Dialog preserves the transparent owner's alpha with SrcAtop.
-                // Include the panel so its antialiased edges preserve it too.
-                blendMode = BlendMode.SrcAtop
-            }
+            clip(contentShape)
         }
     return SheetPopupLayout(
         contentPixels = contentPixels,
