@@ -20,15 +20,30 @@
 
 package com.moriafly.salt.ui.sheet.internal
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.ExperimentalComposeUiApi
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalWindowInfo
+import androidx.compose.ui.unit.DpSize
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.IntRect
+import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.window.Popup
+import androidx.compose.ui.window.PopupPositionProvider
 import androidx.compose.ui.window.PopupProperties
 import com.moriafly.salt.adaptive.window.SaltAdaptiveWindow
 import com.moriafly.salt.ui.sheet.SheetDisplayMode
+import com.moriafly.salt.ui.thenIf
+import com.moriafly.salt.ui.window.internal.LocalSaltWindowContentDecoration
 
 // A focusable scene popup covers its owning window and leaves other windows usable.
 // The platform layer also follows owner movement/resizing and restores the previous focus.
@@ -46,10 +61,9 @@ internal actual fun SheetHost(
     // Native popup backends still own their drawing region. Remove them immediately on dismissal
     // rather than retaining a full-window native component that intercepts background input.
     if (!inputEnabled && nativeLayers) return
-    val ownerSize = LocalWindowInfo.current.containerDpSize
-    val ownerPixels = LocalWindowInfo.current.containerSize
+    val popupLayout = sheetPopupLayout(nativeLayers)
     Popup(
-        popupPositionProvider = SheetPopupPositionProvider,
+        popupPositionProvider = popupLayout.positionProvider,
         onDismissRequest = onDismissRequest,
         properties = PopupProperties(
             focusable = inputEnabled,
@@ -63,16 +77,82 @@ internal actual fun SheetHost(
         content = {
             SheetHostLayout(
                 inputEnabled = inputEnabled,
-                windowSize = ownerPixels
+                windowSize = popupLayout.contentPixels
             ) {
-                content(
-                    sheetHostEnvironment(
-                        windowSize = ownerSize,
-                        adaptiveWindow = adaptiveWindow
+                Box(modifier = popupLayout.contentModifier) {
+                    content(
+                        sheetHostEnvironment(
+                            windowSize = popupLayout.contentSize,
+                            adaptiveWindow = adaptiveWindow
+                        )
                     )
-                )
+                }
             }
         }
+    )
+}
+
+private class SheetPopupLayout(
+    val contentPixels: IntSize,
+    val contentSize: DpSize,
+    val positionProvider: PopupPositionProvider,
+    val contentModifier: Modifier
+)
+
+@OptIn(ExperimentalComposeUiApi::class)
+@Composable
+private fun sheetPopupLayout(nativeLayers: Boolean): SheetPopupLayout {
+    val density = LocalDensity.current
+    val decoration = LocalSaltWindowContentDecoration.current
+    val ownerInfo = LocalWindowInfo.current
+    val ownerPixels = ownerInfo.containerSize
+    val inset = if (nativeLayers) {
+        0
+    } else {
+        with(density) { decoration.inset.roundToPx() }
+            .coerceIn(0, minOf(ownerPixels.width, ownerPixels.height) / 2)
+    }
+    val contentPixels = IntSize(
+        width = (ownerPixels.width - inset * 2).coerceAtLeast(0),
+        height = (ownerPixels.height - inset * 2).coerceAtLeast(0)
+    )
+    val contentSize = if (nativeLayers) {
+        ownerInfo.containerDpSize
+    } else {
+        with(density) {
+            DpSize(contentPixels.width.toDp(), contentPixels.height.toDp())
+        }
+    }
+    val positionProvider = remember(inset) {
+        object : PopupPositionProvider {
+            override fun calculatePosition(
+                anchorBounds: IntRect,
+                windowSize: IntSize,
+                layoutDirection: LayoutDirection,
+                popupContentSize: IntSize
+            ): IntOffset = IntOffset(inset, inset)
+        }
+    }
+    val contentShape = remember(decoration.cornerRadius) {
+        RoundedCornerShape(decoration.cornerRadius)
+    }
+    // Keep both the scrim and a bottom panel inside the client-drawn frame.
+    val contentModifier = Modifier
+        .fillMaxSize()
+        .thenIf(!nativeLayers) {
+            graphicsLayer {
+                shape = contentShape
+                clip = true
+                // Dialog preserves the transparent owner's alpha with SrcAtop.
+                // Include the panel so its antialiased edges preserve it too.
+                blendMode = BlendMode.SrcAtop
+            }
+        }
+    return SheetPopupLayout(
+        contentPixels = contentPixels,
+        contentSize = contentSize,
+        positionProvider = positionProvider,
+        contentModifier = contentModifier
     )
 }
 

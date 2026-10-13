@@ -19,10 +19,25 @@ package com.moriafly.salt.ui.window.internal
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.ui.ExperimentalComposeUiApi
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.LocalWindowExceptionHandlerFactory
 import com.moriafly.salt.ui.SaltUiFlags
 import com.moriafly.salt.ui.UnstableSaltUiApi
+
+/**
+ * The client-drawn frame is outside the area covered by window-modal popups.
+ */
+internal data class SaltWindowContentDecoration(
+    val inset: Dp = 0.dp,
+    val cornerRadius: Dp = 0.dp
+)
+
+internal val LocalSaltWindowContentDecoration = compositionLocalOf {
+    SaltWindowContentDecoration()
+}
 
 /**
  * Provides the environment for [com.moriafly.salt.ui.window.SaltWindow] and [com.moriafly.salt.ui.window.SaltDialogWindow].
@@ -35,6 +50,7 @@ internal fun SaltWindowEnvironment(
 ) {
     val windowExceptionHandlerFactory = LocalWindowExceptionHandlerFactory.current
     CompositionLocalProvider(
+        LocalSaltWindowContentDecoration provides SaltWindowContentDecoration(),
         LocalWindowExceptionHandlerFactory provides
             if (SaltUiFlags.isDisableDefaultWindowExceptionHandler) {
                 SaltWindowExceptionHandlerFactory

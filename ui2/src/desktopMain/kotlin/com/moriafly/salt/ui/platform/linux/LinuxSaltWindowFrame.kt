@@ -54,6 +54,8 @@ import com.moriafly.salt.ui.window.LocalSaltWindowInfo
 import com.moriafly.salt.ui.window.LocalWindowState
 import com.moriafly.salt.ui.window.SaltWindowInfo
 import com.moriafly.salt.ui.window.SaltWindowProperties
+import com.moriafly.salt.ui.window.internal.LocalSaltWindowContentDecoration
+import com.moriafly.salt.ui.window.internal.SaltWindowContentDecoration
 import java.awt.event.WindowEvent
 
 @OptIn(ExperimentalLayoutApi::class, ExperimentalComposeUiApi::class)
@@ -76,6 +78,16 @@ internal fun FrameWindowScope.LinuxSaltWindowFrame(
             }
         )
     }
+    val windowState = LocalWindowState.current
+    val clientShadow = LinuxClientShadow.shouldUseClientShadow(decoration)
+    val isMaximizedOrFullScreen = windowState.placement == WindowPlacement.Maximized ||
+        windowState.placement == WindowPlacement.Fullscreen
+    // Maximized and fullscreen windows drop the shadow, matching the platform convention
+    val shadowMargin = if (clientShadow && !isMaximizedOrFullScreen) {
+        LinuxClientShadow.margin
+    } else {
+        0.dp
+    }
 
     CompositionLocalProvider(
         LocalSaltWindowInfo provides SaltWindowInfo(
@@ -83,11 +95,13 @@ internal fun FrameWindowScope.LinuxSaltWindowFrame(
             captionButtonsAlign = CaptionButtonsAlign.End,
             captionButtonsFullWidth = LinuxCaptionButtonWidth * 3f
         ),
+        LocalSaltWindowContentDecoration provides SaltWindowContentDecoration(
+            inset = shadowMargin,
+            cornerRadius = if (shadowMargin > 0.dp) LinuxClientShadow.cornerRadius else 0.dp
+        ),
         LocalLinuxCaptionBarHitTest provides captionBarHitTest,
         LocalIsHitTestInCaptionBarState provides isHitTestInCaptionBar,
     ) {
-        val windowState = LocalWindowState.current
-
         if (currentProperties.moveable) {
             LinuxCaptionBarDragHandler(
                 window = window,
@@ -97,16 +111,6 @@ internal fun FrameWindowScope.LinuxSaltWindowFrame(
                 canDrag = windowState.placement != WindowPlacement.Fullscreen,
                 canMaximize = resizable && properties.maximizeOrRestoreButtonEnabled,
             )
-        }
-
-        val clientShadow = LinuxClientShadow.shouldUseClientShadow(decoration)
-        val isMaximizedOrFullScreen = windowState.placement == WindowPlacement.Maximized ||
-            windowState.placement == WindowPlacement.Fullscreen
-        // Maximized and fullscreen windows drop the shadow, matching the platform convention
-        val shadowMargin = if (clientShadow && !isMaximizedOrFullScreen) {
-            LinuxClientShadow.margin
-        } else {
-            0.dp
         }
 
         if (clientShadow) {

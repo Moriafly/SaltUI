@@ -52,6 +52,8 @@ import com.moriafly.salt.ui.window.LocalIsHitTestInCaptionBarState
 import com.moriafly.salt.ui.window.LocalSaltWindowInfo
 import com.moriafly.salt.ui.window.SaltWindowInfo
 import com.moriafly.salt.ui.window.SaltWindowProperties
+import com.moriafly.salt.ui.window.internal.LocalSaltWindowContentDecoration
+import com.moriafly.salt.ui.window.internal.SaltWindowContentDecoration
 import java.awt.event.WindowEvent
 
 @OptIn(ExperimentalLayoutApi::class, ExperimentalComposeUiApi::class)
@@ -74,12 +76,19 @@ internal fun DialogWindowScope.LinuxSaltDialogWindowFrame(
             }
         )
     }
+    val clientShadow = LinuxClientShadow.shouldUseClientShadow(decoration)
+    // Dialogs are never maximized, so the shadow margin is constant
+    val shadowMargin = if (clientShadow) LinuxClientShadow.margin else 0.dp
 
     CompositionLocalProvider(
         LocalSaltWindowInfo provides SaltWindowInfo(
             captionBarHeight = properties.captionBarHeight,
             captionButtonsAlign = CaptionButtonsAlign.End,
             captionButtonsFullWidth = LinuxCaptionButtonWidth
+        ),
+        LocalSaltWindowContentDecoration provides SaltWindowContentDecoration(
+            inset = shadowMargin,
+            cornerRadius = if (clientShadow) LinuxClientShadow.cornerRadius else 0.dp
         ),
         LocalLinuxCaptionBarHitTest provides captionBarHitTest,
         LocalIsHitTestInCaptionBarState provides isHitTestInCaptionBar
@@ -102,10 +111,6 @@ internal fun DialogWindowScope.LinuxSaltDialogWindowFrame(
                 }
             window.undecoratedResizerThickness = 0.dp
         }
-
-        val clientShadow = LinuxClientShadow.shouldUseClientShadow(decoration)
-        // Dialogs are never maximized, so the shadow margin is constant
-        val shadowMargin = if (clientShadow) LinuxClientShadow.margin else 0.dp
 
         if (clientShadow) {
             LinuxClientShadowEffect(
