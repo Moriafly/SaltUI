@@ -29,6 +29,7 @@ import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.onPointerEvent
 import com.moriafly.salt.core.os.OS
 import com.moriafly.salt.ui.UnstableSaltUiApi
+import com.moriafly.salt.ui.platform.linux.linuxCaptionBarHitTest
 import com.moriafly.salt.ui.platform.windows.windowsCaptionBarTouchInput
 
 /**
@@ -48,6 +49,8 @@ fun CaptionBarHitTest(
         val isHitTestInCaptionBarState = LocalIsHitTestInCaptionBarState.current
         val touchModifier = if (OS.isWindows()) {
             Modifier.windowsCaptionBarTouchInput(LocalSaltWindowProperties.current.moveable)
+        } else if (OS.isLinux()) {
+            Modifier.linuxCaptionBarHitTest()
         } else {
             Modifier
         }

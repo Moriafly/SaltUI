@@ -21,145 +21,155 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberUpdatedState
-import androidx.compose.ui.window.WindowPlacement
-import androidx.compose.ui.window.WindowState
 import com.moriafly.salt.ui.UnstableSaltUiApi
+import java.awt.Frame
+import java.awt.Point
 import java.awt.Window
-import java.awt.event.MouseAdapter
+import java.awt.event.ComponentAdapter
+import java.awt.event.ComponentEvent
 import java.awt.event.MouseEvent
-import java.awt.event.MouseMotionAdapter
 
 /**
- * Shared caption bar drag handler for Linux window and dialog window frames.
- *
- * Tries native X11 `_NET_WM_MOVERESIZE` first. If it fails,
- * automatically switches to a fallback AWT-based implementation for all
- * subsequent drags.
- *
- * @param window The AWT window to attach mouse listeners to.
- * @param isMoveable Whether the window is moveable.
- * @param isHitTestInCaptionBar Whether the pointer is in the caption bar area.
- * @param canDrag Whether dragging is currently allowed (e.g., not in fullscreen).
- * @param windowState The Compose [WindowState] for placement control.
+ * Handles caption gestures before a modal Compose scene can consume them.
+ * Native X11 movement retains window-manager snapping, with an AWT fallback.
  */
 @UnstableSaltUiApi
 @Composable
 internal fun LinuxCaptionBarDragHandler(
     window: Window,
+    hitTest: LinuxCaptionBarHitTest,
     isMoveable: Boolean,
     isHitTestInCaptionBar: Boolean,
     canDrag: Boolean = true,
-    windowState: WindowState? = null,
+    canMaximize: Boolean = false,
 ) {
     val currentIsMoveable by rememberUpdatedState(isMoveable)
     val currentIsHitTestInCaptionBar by rememberUpdatedState(isHitTestInCaptionBar)
     val currentCanDrag by rememberUpdatedState(canDrag)
-    val currentWindowState by rememberUpdatedState(windowState)
+    val currentCanMaximize by rememberUpdatedState(canMaximize)
 
-    DisposableEffect(window) {
+    DisposableEffect(window, hitTest) {
         val fallbackMover = LinuxFallbackWindowMover(window)
-
-        // Attempt native drag on the first attempt, disable if it fails
         var useNativeDrag = true
-
-        // Window width when not maximized,
-        // used to restore size when dragging out of maximized state
         var restoreWidth = window.width
+        val handler = object : LinuxWindowMouseInput.Handler {
+            private var pressed = false
+            private var suppressClick = false
+            private var pendingDragEvent: MouseEvent? = null
+            private var latestDragEvent: MouseEvent? = null
+            private var restoreDragOffset: Point? = null
 
-        val componentListener = object : java.awt.event.ComponentAdapter() {
-            override fun componentResized(e: java.awt.event.ComponentEvent) {
-                if ((window as? java.awt.Frame)?.extendedState != java.awt.Frame.MAXIMIZED_BOTH) {
-                    restoreWidth = window.width
+            fun onWindowResized() {
+                if ((window as? Frame)?.extendedState == Frame.MAXIMIZED_BOTH) return
+                restoreWidth = window.width
+                val offset = restoreDragOffset ?: return
+                val event = latestDragEvent ?: return
+                restoreDragOffset = null
+                // Wait for the native restore to complete before positioning the restored window.
+                // Moving it while maximized overwrites the window manager's saved geometry.
+                window.setLocation(event.xOnScreen - offset.x, event.yOnScreen - offset.y)
+                startMover(event)
+            }
+
+            private fun startMover(event: MouseEvent) {
+                if (useNativeDrag && LinuxX11WindowMover.tryMove(window, event)) return
+                useNativeDrag = false
+                fallbackMover.startDrag(event)
+            }
+
+            override fun onMouseEvent(event: MouseEvent): Boolean {
+                when (event.id) {
+                    MouseEvent.MOUSE_PRESSED -> {
+                        if (event.button != MouseEvent.BUTTON1) return pressed
+                        cancel()
+                        if (!currentIsMoveable || !currentCanDrag) return false
+                        if (!hitTest.contains(
+                                position = LinuxWindowMouseInput.positionInContent(event, window),
+                                window = window,
+                                isHovered = currentIsHitTestInCaptionBar
+                            )
+                        ) {
+                            return false
+                        }
+                        pressed = true
+                        pendingDragEvent = event
+                        return true
+                    }
+
+                    MouseEvent.MOUSE_DRAGGED -> {
+                        if (!pressed) return false
+                        latestDragEvent = event
+                        if (restoreDragOffset != null) return true
+                        pendingDragEvent?.let { startEvent ->
+                            pendingDragEvent = null
+                            val frame = window as? Frame
+                            if (frame?.extendedState == Frame.MAXIMIZED_BOTH) {
+                                val localX = startEvent.xOnScreen - window.x
+                                val localY = startEvent.yOnScreen - window.y
+                                restoreDragOffset = Point(
+                                    (restoreWidth * localX.toFloat() / window.width).toInt(),
+                                    localY
+                                )
+                                frame.extendedState = Frame.NORMAL
+                                return true
+                            }
+                            startMover(startEvent)
+                        }
+                        fallbackMover.updateDrag(event)
+                        return true
+                    }
+
+                    MouseEvent.MOUSE_RELEASED -> {
+                        if (!pressed) return false
+                        if (event.button == MouseEvent.BUTTON1) {
+                            pressed = false
+                            pendingDragEvent = null
+                            latestDragEvent = null
+                            restoreDragOffset = null
+                            fallbackMover.endDrag()
+                            suppressClick = true
+                        }
+                        return true
+                    }
+
+                    MouseEvent.MOUSE_CLICKED -> {
+                        if (event.button != MouseEvent.BUTTON1 || !suppressClick) return false
+                        suppressClick = false
+                        if (event.clickCount == 2 && currentCanDrag && currentCanMaximize) {
+                            (window as? Frame)?.let { frame ->
+                                frame.extendedState =
+                                    if (frame.extendedState == Frame.MAXIMIZED_BOTH) {
+                                        Frame.NORMAL
+                                    } else {
+                                        Frame.MAXIMIZED_BOTH
+                                    }
+                            }
+                        }
+                        return true
+                    }
                 }
+                return false
+            }
+
+            override fun cancel() {
+                pressed = false
+                suppressClick = false
+                pendingDragEvent = null
+                latestDragEvent = null
+                restoreDragOffset = null
+                fallbackMover.endDrag()
+            }
+        }
+        val componentListener = object : ComponentAdapter() {
+            override fun componentResized(e: ComponentEvent) {
+                handler.onWindowResized()
             }
         }
         window.addComponentListener(componentListener)
-
-        var pendingDrag = false
-        var pendingDragEvent: MouseEvent? = null
-
-        val mouseMotionListener = object : MouseMotionAdapter() {
-            @Suppress("AssignedValueIsNeverRead")
-            override fun mouseDragged(e: MouseEvent) {
-                if (pendingDrag) {
-                    pendingDrag = false
-                    val startEvent = pendingDragEvent ?: e
-                    pendingDragEvent = null
-
-                    // Restore the window if it is currently in a maximized state
-                    val state = currentWindowState
-                    if (state != null && state.placement == WindowPlacement.Maximized) {
-                        val oldWidth = window.width
-                        val ratio = startEvent.x.toFloat() / oldWidth
-                        state.placement = WindowPlacement.Floating
-                        window.setLocation(
-                            (startEvent.xOnScreen - restoreWidth * ratio).toInt(),
-                            startEvent.yOnScreen - startEvent.y
-                        )
-                    }
-
-                    if (useNativeDrag) {
-                        if (LinuxX11WindowMover.tryMove(window)) {
-                            e.consume()
-                            return
-                        }
-                        // The native method failed
-                        useNativeDrag = false
-                    }
-
-                    fallbackMover.startDrag(startEvent)
-                }
-
-                if (!fallbackMover.dragging) return
-                fallbackMover.updateDrag(e)
-                e.consume()
-            }
-        }
-
-        val mouseListener = object : MouseAdapter() {
-            override fun mousePressed(e: MouseEvent) {
-                if (e.button != MouseEvent.BUTTON1) return
-                if (!currentIsHitTestInCaptionBar) return
-                if (!currentIsMoveable) return
-                if (!currentCanDrag) return
-
-                pendingDrag = true
-                pendingDragEvent = e
-                e.consume()
-            }
-
-            override fun mouseReleased(e: MouseEvent) {
-                if (e.button != MouseEvent.BUTTON1) return
-                // Cancel the pending state on click or similar events to prevent accidental drag
-                // triggers
-                pendingDrag = false
-                pendingDragEvent = null
-                if (fallbackMover.dragging) e.consume()
-                fallbackMover.endDrag()
-            }
-
-            override fun mouseClicked(e: MouseEvent) {
-                if (e.button != MouseEvent.BUTTON1) return
-                if (e.clickCount != 2) return
-                if (!currentIsHitTestInCaptionBar) return
-
-                val state = currentWindowState ?: return
-                if (state.placement == WindowPlacement.Maximized) {
-                    state.placement = WindowPlacement.Floating
-                } else {
-                    state.placement = WindowPlacement.Maximized
-                }
-                e.consume()
-            }
-        }
-
-        window.addMouseListener(mouseListener)
-        window.addMouseMotionListener(mouseMotionListener)
-
+        val unregister = LinuxWindowMouseInput.register(window, handler)
         onDispose {
+            unregister()
             window.removeComponentListener(componentListener)
-            window.removeMouseListener(mouseListener)
-            window.removeMouseMotionListener(mouseMotionListener)
         }
     }
 }

@@ -25,6 +25,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -35,7 +36,10 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.awt.ComposeWindow
 import androidx.compose.ui.draw.clipToBounds
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.layoutId
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.FrameWindowScope
 import androidx.compose.ui.window.WindowDecoration
@@ -63,11 +67,12 @@ internal fun FrameWindowScope.LinuxSaltWindowFrame(
 ) {
     val currentProperties by rememberUpdatedState(properties)
     val isHitTestInCaptionBar = remember { mutableStateOf(false) }
+    val captionBarHitTest = remember { LinuxCaptionBarHitTest() }
     val undecoratedWindowResizer = remember {
         UndecoratedWindowResizer(
             window = window,
             onResizeEdgeChange = { edge ->
-                properties.onResizeEdgeChange(window, edge)
+                currentProperties.onResizeEdgeChange(window, edge)
             }
         )
     }
@@ -78,6 +83,7 @@ internal fun FrameWindowScope.LinuxSaltWindowFrame(
             captionButtonsAlign = CaptionButtonsAlign.End,
             captionButtonsFullWidth = LinuxCaptionButtonWidth * 3f
         ),
+        LocalLinuxCaptionBarHitTest provides captionBarHitTest,
         LocalIsHitTestInCaptionBarState provides isHitTestInCaptionBar,
     ) {
         val windowState = LocalWindowState.current
@@ -85,10 +91,11 @@ internal fun FrameWindowScope.LinuxSaltWindowFrame(
         if (currentProperties.moveable) {
             LinuxCaptionBarDragHandler(
                 window = window,
+                hitTest = captionBarHitTest,
                 isMoveable = properties.moveable,
                 isHitTestInCaptionBar = isHitTestInCaptionBar.value,
                 canDrag = windowState.placement != WindowPlacement.Fullscreen,
-                windowState = windowState,
+                canMaximize = resizable && properties.maximizeOrRestoreButtonEnabled,
             )
         }
 
@@ -109,10 +116,16 @@ internal fun FrameWindowScope.LinuxSaltWindowFrame(
             )
         }
 
-        LaunchedEffect(window.undecoratedResizerThickness) {
-            if (window.undecoratedResizerThickness != 0.dp) {
-                window.undecoratedResizerThickness = 0.dp
-            }
+        LaunchedEffect(decoration) {
+            // Read the requested thickness through Compose's public window property before
+            // replacing its Compose input layer with our native window input handler.
+            undecoratedWindowResizer.resizerThickness =
+                if (decoration == WindowDecoration.SystemDefault) {
+                    4.dp
+                } else {
+                    window.undecoratedResizerThickness
+                }
+            window.undecoratedResizerThickness = 0.dp
         }
 
         LaunchedEffect(resizable, windowState.placement) {
@@ -123,9 +136,6 @@ internal fun FrameWindowScope.LinuxSaltWindowFrame(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(shadowMargin)
-                // Ancestor of both the content and the resizer edges, so the resize
-                // cursor survives the drag without blocking any hit testing
-                .then(undecoratedWindowResizer.dragCursorModifier)
         ) {
             Box(
                 modifier = Modifier
@@ -144,9 +154,15 @@ internal fun FrameWindowScope.LinuxSaltWindowFrame(
                     isDarkTheme = properties.captionButtonIsDarkTheme
                 ) {
                     if (properties.captionButtonsVisible) {
+                        DisposableEffect(captionBarHitTest) {
+                            onDispose { captionBarHitTest.buttonsBounds = Rect.Zero }
+                        }
                         Row(
                             modifier = Modifier
                                 .align(Alignment.TopEnd)
+                                .onGloballyPositioned {
+                                    captionBarHitTest.buttonsBounds = it.boundsInWindow()
+                                }
                         ) {
                             LinuxCaptionButtonMinimize(
                                 onClick = {

@@ -23,8 +23,8 @@ import com.sun.jna.NativeLong
 import com.sun.jna.platform.unix.X11
 import com.sun.jna.ptr.IntByReference
 import com.sun.jna.ptr.PointerByReference
-import java.awt.MouseInfo
 import java.awt.Window
+import java.awt.event.MouseEvent
 
 /**
  * Native X11 window mover using `_NET_WM_MOVERESIZE` protocol.
@@ -42,7 +42,7 @@ internal object LinuxX11WindowMover {
      * @return `true` if the native move was successfully initiated, `false` otherwise
      * (e.g., on Wayland or if X11 calls fail).
      */
-    fun tryMove(window: Window): Boolean {
+    fun tryMove(window: Window, startEvent: MouseEvent): Boolean {
         if (!window.isDisplayable) return false
 
         val x11: X11Ext
@@ -63,16 +63,35 @@ internal object LinuxX11WindowMover {
             val netWmMoveresize = x11.XInternAtom(display, "_NET_WM_MOVERESIZE", false)
             if (netWmMoveresize == null || netWmMoveresize.toLong() == 0L) return false
 
-            val pointerInfo = MouseInfo.getPointerInfo() ?: return false
-            val mouseX = pointerInfo.location.x
-            val mouseY = pointerInfo.location.y
+            // EWMH requires X11 root pixels, not AWT's logical screen coordinates on HiDPI.
+            val rootX = IntByReference()
+            val rootY = IntByReference()
+            val windowX = IntByReference()
+            val windowY = IntByReference()
+            if (!x11.XQueryPointer(
+                    display,
+                    xWindow,
+                    X11.WindowByReference(),
+                    X11.WindowByReference(),
+                    rootX,
+                    rootY,
+                    windowX,
+                    windowY,
+                    IntByReference()
+                )
+            ) {
+                return false
+            }
 
+            // Anchor the operation at the initiating event. The pointer may already have moved
+            // while AWT queued the event or JNA loaded X11, especially on the first drag.
+            val position = LinuxWindowMouseInput.positionInWindow(startEvent, window)
             val event = buildMoveResizeEvent(
                 display = display,
                 xWindow = xWindow,
                 atom = netWmMoveresize,
-                mouseX = mouseX,
-                mouseY = mouseY
+                mouseX = rootX.value - windowX.value + position.x.toInt(),
+                mouseY = rootY.value - windowY.value + position.y.toInt()
             )
 
             // Release AWT exclusive mouse lock to allow window manager takeover
