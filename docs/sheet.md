@@ -98,7 +98,7 @@ Sheet(
 | `presentation` | Adaptive 在窄屏竖向窗口采用 Bottom，横向或宽窗口采用 Centered；也可显式指定 |
 | `contentInteraction` | ResizeFirst 先扩展后滚动；ScrollFirst 优先滚动正文 |
 | `contentLayout` | 默认 Inset 自动避让底部；EdgeToEdge 允许无 action 的正文延伸到底边，并由调用方应用 contentPadding |
-| `dismissible = false` | 禁止用户关闭，业务主动设置 false 仍有效 |
+| `dismissible = false` | 禁止用户关闭并隐藏关闭按钮，业务主动设置 false 仍有效 |
 | `dragEnabled = false` | 禁止指针调整高度与拖拽关闭，并隐藏手柄；保留有效的无障碍高度动作 |
 
 等高停靠点合并，只显示有效操作。Centered 将当前停靠点视为高度上限，不提供拖动柄或下滑关闭。初始停靠点是该实例的初始配置；同一实例重开会保留用户选择和正文中的 `rememberSaveable` 状态。

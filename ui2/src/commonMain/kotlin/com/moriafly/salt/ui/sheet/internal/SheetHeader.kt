@@ -99,35 +99,41 @@ internal fun SheetHeader(
                 verticalScroll(state = scrollState)
             }
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .heightIn(min = closeButtonSize + SheetDefaults.CloseButtonInset * 2)
-                .padding(
-                    start = 16.dp,
-                    top = 8.dp,
-                    end = SheetDefaults.CloseButtonInset + closeButtonSize + 12.dp,
-                    bottom = 8.dp
-                )
-                .thenIf(!compactChrome) {
-                    then(dragModifier)
-                },
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            if (title != null) {
-                Text(
-                    text = title,
-                    modifier = Modifier
-                        .weight(weight = 1f),
-                    fontWeight = FontWeight.SemiBold,
-                    fontSize = 18.sp,
-                    maxLines = 2
-                )
-            } else {
-                Spacer(
-                    modifier = Modifier
-                        .weight(weight = 1f)
-                )
+        if (title != null || properties.dismissible) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = closeButtonSize + SheetDefaults.CloseButtonInset * 2)
+                    .padding(
+                        start = 16.dp,
+                        top = 8.dp,
+                        end = if (properties.dismissible) {
+                            SheetDefaults.CloseButtonInset + closeButtonSize + 12.dp
+                        } else {
+                            16.dp
+                        },
+                        bottom = 8.dp
+                    )
+                    .thenIf(!compactChrome) {
+                        then(dragModifier)
+                    },
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                if (title != null) {
+                    Text(
+                        text = title,
+                        modifier = Modifier
+                            .weight(weight = 1f),
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 18.sp,
+                        maxLines = 2
+                    )
+                } else {
+                    Spacer(
+                        modifier = Modifier
+                            .weight(weight = 1f)
+                    )
+                }
             }
         }
         if (showHandle) {
@@ -146,16 +152,18 @@ internal fun SheetHeader(
                 }
             )
         }
-        SheetCloseButton(
-            onClick = onDismissRequest,
-            enabled = visible && properties.dismissible,
-            modifier = Modifier
-                .align(alignment = Alignment.TopEnd)
-                .padding(
-                    top = SheetDefaults.CloseButtonInset,
-                    end = SheetDefaults.CloseButtonInset
-                )
-        )
+        if (properties.dismissible) {
+            SheetCloseButton(
+                onClick = onDismissRequest,
+                enabled = visible,
+                modifier = Modifier
+                    .align(alignment = Alignment.TopEnd)
+                    .padding(
+                        top = SheetDefaults.CloseButtonInset,
+                        end = SheetDefaults.CloseButtonInset
+                    )
+            )
+        }
     }
 }
 

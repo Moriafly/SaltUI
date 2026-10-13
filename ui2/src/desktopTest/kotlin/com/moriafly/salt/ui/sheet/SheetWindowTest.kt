@@ -86,6 +86,43 @@ import kotlin.test.assertTrue
  */
 class SheetWindowTest {
     @Test
+    fun disablingDismissalRemovesTheCloseButtonAndItsHitRegion() = runDesktopComposeUiTest {
+        val fixture = SheetFixture()
+        setContent { fixture.Content() }
+        val robot = fixture.activate()
+        fixture.click(robot, "Open")
+        val closeButton = SemanticsMatcher.keyIsDefined(SemanticsProperties.ContentDescription)
+        val region = onNode(closeButton).fetchSemanticsNode().boundsInWindow
+        runOnIdle { fixture.dismissible = false }
+        waitForIdle()
+        onNode(closeButton).assertDoesNotExist()
+        val pixelStep = fixture.window.graphicsConfiguration.defaultTransform.scaleX.toFloat()
+        val left = ceil(region.left / pixelStep) * pixelStep
+        val right = ceil(region.right / pixelStep) * pixelStep
+        for (x in listOf(left - pixelStep, left, region.center.x, right, right + pixelStep)) {
+            fixture.clickPoint(robot, x, region.center.y)
+            waitForIdle()
+            runOnIdle {
+                assertEquals(0, fixture.requests)
+                assertEquals(0, fixture.backgroundClicks)
+                assertTrue(fixture.visible)
+            }
+        }
+        fixture.click(robot, "Inside")
+        runOnIdle { assertEquals(1, fixture.insideClicks) }
+        runOnIdle { fixture.dismissible = true }
+        waitForIdle()
+        onNode(closeButton).assertIsDisplayed()
+        fixture.clickPoint(robot, region.center.x, region.center.y)
+        waitForIdle()
+        runOnIdle {
+            assertEquals(1, fixture.requests)
+            assertFalse(fixture.visible)
+        }
+        fixture.restorePointer(robot)
+    }
+
+    @Test
     fun readingPaddingKeepsTheDefaultViewportAndListInputUsable() = runDesktopComposeUiTest {
         val fixture =
             SheetFixture(bottom = true, list = true, noActions = true, layoutControls = true)
@@ -243,6 +280,9 @@ class SheetWindowTest {
         val robot = fixture.activate()
         fixture.click(robot, "Open")
         waitForIdle()
+        onNode(
+            SemanticsMatcher.keyIsDefined(SemanticsProperties.ContentDescription)
+        ).assertDoesNotExist()
         fixture.click(robot, "Background")
         robot.pressKey(KeyEvent.VK_ESCAPE)
         val panel = fixture.bounds.getValue("panel")
@@ -491,7 +531,7 @@ class SheetWindowTest {
 
 internal class SheetFixture(
     private val retainRequest: Boolean = false,
-    private val dismissible: Boolean = true,
+    dismissible: Boolean = true,
     private val bottom: Boolean = false,
     private val list: Boolean = false,
     private val resizeWindow: Boolean = false,
@@ -505,6 +545,7 @@ internal class SheetFixture(
 ) {
     lateinit var window: ComposeWindow
     val bounds = ConcurrentHashMap<String, Rect>()
+    var dismissible by mutableStateOf(dismissible)
     var visible by mutableStateOf(false)
     private var nextVisible by mutableStateOf(false)
     private var readPadding by mutableStateOf(false)

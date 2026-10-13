@@ -292,7 +292,9 @@ class SheetInteractionTest {
                 5_000
             ).visibleBounds
             click(By.text("Open sheet"))
-            click(By.desc(java.util.regex.Pattern.compile("Close sheet|关闭面板")))
+            assertTrue(
+                !device.hasObject(By.desc(java.util.regex.Pattern.compile("Close sheet|关闭面板")))
+            )
             device.click(background.centerX(), background.centerY())
             device.pressBack()
             SystemClock.sleep(300)

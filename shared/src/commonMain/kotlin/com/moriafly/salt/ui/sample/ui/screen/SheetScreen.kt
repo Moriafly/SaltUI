@@ -209,7 +209,7 @@ fun SheetScreen() {
                 state = dismissible,
                 onChange = { dismissible = it },
                 text = "Allow dismissal",
-                sub = "Scrim, Back, Escape, downward swipes, and the close button"
+                sub = "Turning off hides the close button and disables other dismissal methods"
             )
             ItemSwitcher(
                 state = retainOnRequest,

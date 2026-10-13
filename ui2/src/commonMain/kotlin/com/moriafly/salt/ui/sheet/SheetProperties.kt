@@ -85,6 +85,7 @@ enum class SheetContentLayout {
  * Declarative Sheet configuration. Use a new list to change [detents].
  * [initialDetent] seeds the height once; reopening the same Sheet preserves the user's height.
  * [dismissible] gates user requests, and never prevents programmatic `visible = false`.
+ * The header close button is hidden when dismissal is disabled.
  * [dragEnabled] controls pointer resizing and drag dismissal in Bottom presentation.
  * The drag handle is shown automatically when resizing or drag dismissal is available.
  * Accessibility height actions remain available when pointer dragging is disabled.
