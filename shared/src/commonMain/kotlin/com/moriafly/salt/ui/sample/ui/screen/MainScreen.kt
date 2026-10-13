@@ -17,8 +17,21 @@
 
 package com.moriafly.salt.ui.sample.ui.screen
 
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.text.AnnotatedString
+import com.moriafly.salt.ui.Button
+import com.moriafly.salt.ui.ButtonAppearance
 import com.moriafly.salt.ui.Icon
 import com.moriafly.salt.ui.Item
 import com.moriafly.salt.ui.ItemInfo
@@ -37,22 +50,24 @@ import com.moriafly.salt.ui.sample.ui.screen.basic.BasicScreenColumn
 import com.moriafly.salt.ui.sample.util.AppConfig
 import com.moriafly.salt.ui.screen.ScreenCard
 import com.moriafly.salt.ui.screen.TitleBarButton
+import com.moriafly.salt.ui.sheet.Sheet
 
 @Suppress("ktlint:compose:modifier-missing-check")
 @OptIn(UnstableSaltUiApi::class)
 @Composable
 fun MainScreen() {
+    var welcomeSheetVisible by rememberSaveable { mutableStateOf(false) }
     BasicScreenColumn(
         actionButton = null,
         title = "Main",
         subtitle = "SaltUI 3",
         toolButtons = {
             TitleBarButton(
-                onClick = {}
+                onClick = { welcomeSheetVisible = true }
             ) {
                 Icon(
                     painter = rememberVectorPainter(SimpleIcons.Like),
-                    contentDescription = null
+                    contentDescription = "About SaltUI"
                 )
             }
             TitleBarButton(
@@ -124,6 +139,10 @@ fun MainScreen() {
                 text = "Dialog"
             )
             Item(
+                onClick = { navBackStack.add(ScreenRoute.Sheet) },
+                text = "Sheet"
+            )
+            Item(
                 onClick = {
                     navBackStack.add(ScreenRoute.Material)
                 },
@@ -167,6 +186,55 @@ fun MainScreen() {
                     value = "测试 ABC"
                 )
             }
+        }
+    }
+    MainWelcomeSheet(
+        visible = welcomeSheetVisible,
+        onDismissRequest = { welcomeSheetVisible = false }
+    )
+}
+
+@Suppress("DEPRECATION")
+@OptIn(UnstableSaltUiApi::class)
+@Composable
+private fun MainWelcomeSheet(
+    visible: Boolean,
+    onDismissRequest: () -> Unit
+) {
+    val clipboard = LocalClipboardManager.current
+    var linkCopied by remember(visible) { mutableStateOf(false) }
+    Sheet(
+        visible = visible,
+        onDismissRequest = onDismissRequest,
+        title = "Hi，SaltUI",
+        actions = {
+            Button(
+                onClick = {
+                    clipboard.setText(AnnotatedString("https://github.com/Moriafly/SaltUI"))
+                    linkCopied = true
+                },
+                text = if (linkCopied) "Link copied" else "Share",
+                appearance = ButtonAppearance.Subtle,
+                modifier = Modifier
+                    .weight(weight = 1f)
+            )
+            Button(
+                onClick = onDismissRequest,
+                text = "Got it",
+                modifier = Modifier
+                    .weight(weight = 1f)
+            )
+        }
+    ) {
+        Column(
+            modifier = Modifier
+                .verticalScroll(state = rememberScrollState())
+        ) {
+            ItemOuterLargeTitle(
+                text = "Little details. A big difference.",
+                sub = "Thoughtful components for Android, desktop, and iOS. " +
+                    "Build something you love, and share it with the world."
+            )
         }
     }
 }

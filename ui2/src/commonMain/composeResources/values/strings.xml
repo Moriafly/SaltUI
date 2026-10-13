@@ -3,4 +3,9 @@
     <string name="back">Back</string>
     <string name="cancel">Cancel</string>
     <string name="confirm">Confirm</string>
+    <string name="sheet_close">Close sheet</string>
+    <string name="sheet_resize">Resize sheet</string>
+    <string name="sheet_drag">Drag sheet</string>
+    <string name="sheet_expand">Expand</string>
+    <string name="sheet_collapse">Collapse</string>
 </resources>
