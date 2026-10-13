@@ -82,6 +82,7 @@ import com.moriafly.salt.ui.sheet.SheetContentLayout
 import com.moriafly.salt.ui.sheet.SheetDetent
 import com.moriafly.salt.ui.sheet.SheetPresentation
 import com.moriafly.salt.ui.sheet.SheetProperties
+import com.moriafly.salt.ui.sheet.SheetScope
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Assume.assumeTrue
@@ -712,119 +713,143 @@ private class AndroidSheetFixture(
             sheetBackground = SaltTheme.colors.background.toArgb()
             lightBackground = SaltTheme.colors.background.luminance() > 0.179f
             contentMargin = with(LocalDensity.current) { SaltTheme.dimens.padding.toPx() }
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(color = Color(0xFFF8F8F8))
-                    .padding(24.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                Button(onClick = { visible = true }, text = "Open sheet")
-                Button(onClick = { backgroundClicks++ }, text = "Background")
-                Text("Background: $backgroundClicks")
-            }
-            Sheet(
-                visible = visible,
-                onDismissRequest = {
-                    requests++
-                    if (!retain) visible = false
-                },
-                modifier = Modifier.onGloballyPositioned { panel.set(it.boundsInWindow()) },
-                title = "Fixture sheet",
-                properties = SheetProperties(
-                    presentation = presentation,
-                    contentLayout = if (edgeToEdge) {
-                        SheetContentLayout.EdgeToEdge
-                    } else {
-                        SheetContentLayout.Inset
-                    },
-                    dismissible = dismissible,
-                    detents = if (list) {
-                        listOf(
-                            SheetDetent.Medium,
-                            SheetDetent.Large
-                        )
-                    } else {
-                        listOf(SheetDetent.Content)
-                    }
-                ),
-                actions = {
-                    if (!noActions) Button(onClick = { visible = false }, text = "Program close")
-                }
-            ) {
-                val dialogView = LocalView.current
-                val dialogWindow = (dialogView.parent as? DialogWindowProvider)?.window
-                navigationBarInsets = {
-                    ViewCompat.getRootWindowInsets(dialogView)
-                        ?.getInsets(WindowInsetsCompat.Type.navigationBars()) ?: Insets.NONE
-                }
-                navigationDarkIcons = dialogWindow?.let { window ->
-                    {
-                        WindowCompat.getInsetsController(
-                            window,
-                            window.decorView
-                        ).isAppearanceLightNavigationBars
-                    }
-                }
-                if (list) {
-                    val padding = contentPadding
-                    navigationInset = with(LocalDensity.current) {
-                        WindowInsets.navigationBars.getBottom(this)
-                    }
-                    LazyColumn(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .onGloballyPositioned { body.set(it.boundsInWindow()) },
-                        contentPadding = if (edgeToEdge) padding else PaddingValues()
-                    ) {
-                        items(100) { Text("Row $it", Modifier.padding(12.dp)) }
-                        if (noActions) {
-                            item {
-                                Button(
-                                    onClick = { insideClicks++ },
-                                    text = if (insideClicks >
-                                        0
-                                    ) {
-                                        "Last item selected"
-                                    } else {
-                                        "Select last item"
-                                    }
-                                )
-                            }
-                        }
-                    }
-                } else {
-                    Button(onClick = { insideClicks++ }, text = "Inside")
-                    if (handoff) {
-                        Button(
-                            onClick = {
-                                visible = false
-                                nextVisible = true
-                            },
-                            text = "Switch sheet"
-                        )
-                    }
-                    Text("Inside: $insideClicks")
-                    Text("Requests: $requests")
-                    if (rounded) {
-                        RoundedColumn {
-                            ItemButton(
-                                onClick = { insideClicks++ },
-                                text = "Rounded content action",
-                                modifier = Modifier.onGloballyPositioned {
-                                    roundedButton.set(it.boundsInWindow())
-                                }
-                            )
-                        }
-                    }
-                    if (form) {
-                        ItemEdit(text = draft, onChange = {
-                            draft = it
-                        }, hint = "Draft input")
-                    }
-                }
-            }
+            Background()
+            PrimarySheet()
             if (handoff) NextSheet()
+        }
+    }
+
+    @Composable
+    private fun Background() {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(color = Color(0xFFF8F8F8))
+                .padding(24.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Button(onClick = { visible = true }, text = "Open sheet")
+            Button(onClick = { backgroundClicks++ }, text = "Background")
+            Text("Background: $backgroundClicks")
+        }
+    }
+
+    @Composable
+    private fun PrimarySheet() {
+        Sheet(
+            visible = visible,
+            onDismissRequest = {
+                requests++
+                if (!retain) visible = false
+            },
+            modifier = Modifier.onGloballyPositioned { panel.set(it.boundsInWindow()) },
+            title = "Fixture sheet",
+            properties = sheetProperties(),
+            actions = {
+                if (!noActions) Button(onClick = { visible = false }, text = "Program close")
+            }
+        ) {
+            PrimarySheetContent()
+        }
+    }
+
+    private fun sheetProperties() = SheetProperties(
+        presentation = presentation,
+        contentLayout = if (edgeToEdge) {
+            SheetContentLayout.EdgeToEdge
+        } else {
+            SheetContentLayout.Inset
+        },
+        dismissible = dismissible,
+        detents = if (list) {
+            listOf(SheetDetent.Medium, SheetDetent.Large)
+        } else {
+            listOf(SheetDetent.Content)
+        }
+    )
+
+    @Composable
+    private fun SheetScope.PrimarySheetContent() {
+        RecordSheetWindow()
+        if (list) {
+            ListContent(contentPadding)
+        } else {
+            ButtonContent()
+        }
+    }
+
+    @Composable
+    private fun RecordSheetWindow() {
+        val dialogView = LocalView.current
+        val dialogWindow = (dialogView.parent as? DialogWindowProvider)?.window
+        navigationBarInsets = {
+            ViewCompat.getRootWindowInsets(dialogView)
+                ?.getInsets(WindowInsetsCompat.Type.navigationBars()) ?: Insets.NONE
+        }
+        navigationDarkIcons = dialogWindow?.let { window ->
+            {
+                WindowCompat.getInsetsController(
+                    window,
+                    window.decorView
+                ).isAppearanceLightNavigationBars
+            }
+        }
+    }
+
+    @Composable
+    private fun ListContent(contentPadding: PaddingValues) {
+        navigationInset = with(LocalDensity.current) {
+            WindowInsets.navigationBars.getBottom(this)
+        }
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .onGloballyPositioned { body.set(it.boundsInWindow()) },
+            contentPadding = if (edgeToEdge) contentPadding else PaddingValues()
+        ) {
+            items(100) { Text("Row $it", Modifier.padding(12.dp)) }
+            if (noActions) {
+                item {
+                    Button(
+                        onClick = { insideClicks++ },
+                        text = if (insideClicks > 0) {
+                            "Last item selected"
+                        } else {
+                            "Select last item"
+                        }
+                    )
+                }
+            }
+        }
+    }
+
+    @Composable
+    private fun ButtonContent() {
+        Button(onClick = { insideClicks++ }, text = "Inside")
+        if (handoff) {
+            Button(
+                onClick = {
+                    visible = false
+                    nextVisible = true
+                },
+                text = "Switch sheet"
+            )
+        }
+        Text("Inside: $insideClicks")
+        Text("Requests: $requests")
+        if (rounded) {
+            RoundedColumn {
+                ItemButton(
+                    onClick = { insideClicks++ },
+                    text = "Rounded content action",
+                    modifier = Modifier.onGloballyPositioned {
+                        roundedButton.set(it.boundsInWindow())
+                    }
+                )
+            }
+        }
+        if (form) {
+            ItemEdit(text = draft, onChange = { draft = it }, hint = "Draft input")
         }
     }
 
