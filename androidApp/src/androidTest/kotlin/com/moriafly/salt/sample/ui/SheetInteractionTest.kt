@@ -567,7 +567,7 @@ class SheetInteractionTest {
             }
             click(By.text("Sheet"))
             shown(By.text("Open a sheet"))
-            click(By.text("Presentation"))
+            click(By.text("Display mode"))
             click(By.text("Bottom"))
             click(By.text("Open Short content"))
             click(By.text("Show more content"))
