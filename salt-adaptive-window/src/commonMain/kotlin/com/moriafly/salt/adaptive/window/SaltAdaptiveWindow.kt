@@ -179,8 +179,9 @@ fun ProvideSaltAdaptiveWindow(
  *
  * The underlying window metrics and configuration invalidate their readers when the window is
  * resized, rotated, or moved between displays. The value follows the current platform window
- * independently of explicit [ProvideSaltAdaptiveWindow] overrides. Hence the `current` prefix,
- * matching `currentWindowAdaptiveInfo` in `androidx.compose.material3.adaptive`.
+ * independently of explicit [ProvideSaltAdaptiveWindow] overrides.
+ * The `current` prefix follows the naming of `currentWindowAdaptiveInfo` in
+ * `androidx.compose.material3.adaptive`.
  *
  * Most components can read the automatic local directly:
  * ```
