@@ -74,7 +74,7 @@ internal fun SheetPanel(
         properties.detents.distinct().size > 1
     }
     val canDrag = bottom && properties.dragEnabled && (canResize || properties.dismissible)
-    val shape = if (bottom) SheetDefaults.BottomShape else SheetDefaults.CenteredShape
+    val shape = if (bottom) SheetDefaults.BottomShape else SheetDefaults.FloatingShape
     ProvideContentColorTextStyle(
         contentColor = SaltTheme.colors.text,
         textStyle = SaltTheme.textStyles.main

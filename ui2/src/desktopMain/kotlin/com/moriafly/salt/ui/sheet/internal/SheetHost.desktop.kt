@@ -28,7 +28,7 @@ import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
 import com.moriafly.salt.adaptive.window.SaltAdaptiveWindow
-import com.moriafly.salt.ui.sheet.SheetPresentation
+import com.moriafly.salt.ui.sheet.SheetDisplayMode
 
 // A focusable scene popup covers its owning window and leaves other windows usable.
 // The platform layer also follows owner movement/resizing and restores the previous focus.
@@ -36,7 +36,7 @@ import com.moriafly.salt.ui.sheet.SheetPresentation
 @Composable
 internal actual fun SheetHost(
     inputEnabled: Boolean,
-    presentation: SheetPresentation,
+    displayMode: SheetDisplayMode,
     adaptiveWindow: SaltAdaptiveWindow,
     backgroundColor: Color,
     onDismissRequest: () -> Unit,

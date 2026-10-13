@@ -91,27 +91,36 @@ Sheet(
 
 `contentPadding` 是无副作用的只读布局信息。只有显式选择 `EdgeToEdge` 且无 action 时它提供滚动尾部边距；默认 `Inset` 和存在 action 时均为零，安全区仍由 Sheet 保护。无 action 时仅导航栏安全区与 8 dp 留白进入滚动尾部，IME 始终在视口外避让；浮动呈现仅提供 8 dp 留白，不重复添加已处理的系统边距。
 
+呈现模式使用 `SheetDisplayMode`，正文滚动与面板展开的顺序使用 `SheetScrollBehavior`。默认配置如下：
+
+```kotlin
+SheetProperties(
+    displayMode = SheetDisplayMode.Auto,
+    scrollBehavior = SheetScrollBehavior.ExpandFirst
+)
+```
+
 | 配置 | 用途 |
 | --- | --- |
 | `Content` | 测量内容的自然高度，也是默认配置 |
 | `Medium` / `Large` | 可用高度的一半 / 最大可用高度；空间不足时 Medium 会退化 |
 | `Height(320.dp)` | 固定高度，自动受可用空间约束 |
 | `Fraction(0.75f)` | 可用安全区域高度的比例，范围 `(0, 1]` |
-| `presentation` | Adaptive 在手机横竖屏均采用 Bottom，平板与桌面采用 Centered；其他设备按窗口空间适配，也可显式指定 |
-| `contentInteraction` | ResizeFirst 先扩展后滚动；ScrollFirst 优先滚动正文 |
+| `displayMode` | SheetDisplayMode.Auto 在手机横竖屏均采用 Bottom，平板与桌面采用 Floating；其他设备按窗口空间适配，也可显式指定 |
+| `scrollBehavior` | SheetScrollBehavior.ExpandFirst 向上拖动时先扩展后滚动；ScrollFirst 优先滚动正文，仅在滚动到边界后调整面板高度。两种策略均先将正文滚回顶部再向下收起或请求关闭 |
 | `contentLayout` | 默认 Inset 自动避让底部；EdgeToEdge 允许无 action 的正文延伸到底边，并由调用方应用 contentPadding |
 | `dismissible = false` | 禁止用户关闭并隐藏关闭按钮，业务主动设置 false 仍有效 |
 | `dragEnabled = false` | 禁止指针调整高度与拖拽关闭，并隐藏手柄；保留有效的无障碍高度动作 |
 
-等高停靠点合并，只显示有效操作。Centered 将当前停靠点视为高度上限，不提供拖动柄或下滑关闭。初始停靠点是该实例的初始配置；同一实例重开会保留用户选择和正文中的 `rememberSaveable` 状态。
+等高停靠点合并，只显示有效操作。Floating 将当前停靠点视为高度上限，不提供拖动柄或下滑关闭。初始停靠点是该实例的初始配置；同一实例重开会保留用户选择和正文中的 `rememberSaveable` 状态。
 
 浮动高度上限动态取扣除安全边距后的绘制区域高度、面板宽度的 1.2 倍与 640 dp 三者的最小值。16 dp 是安全边距的最小值，不在系统边距之外再叠加。矮窗口中，长内容或填满视口的列表可利用全部可用高度；高窗口不让面板无限长，窄窗口同时按宽度缩小上限。短内容仍按自然高度显示。浮动的 Height、Fraction、Medium 与 Large 均在这个上限内解析。
 
 手柄不提供单独的显示开关。Bottom 允许拖拽且有多个有效高度，或允许拖拽关闭时自动显示。因此默认的单一 Content 高度也会显示手柄；单一高度且禁止关闭、禁止拖拽或浮动呈现时隐藏。点击手柄切换高度仅在有多个有效高度时可用。
 
-默认外观参考 [Apple Sheet 指南与示意图](https://developer.apple.com/design/human-interface-guidelines/sheets)：Bottom 仅顶部两角使用 34 dp 圆角，底部两角为直角；Centered 四角均为 34 dp。拖动柄为 44 × 3 dp，颜色透明度为 0.3，交互区域为 48 × 48 dp，保留高度描述与展开、收起动作。关闭按钮使用 `PillButton` 的默认圆形模式与 `SaltIcons.Close`，复用默认背景、细描边、点击反馈和禁用样式。按钮尺寸继承 LocalControlSize，并与同尺寸的 Button 共用高度、图标和间距。Regular 默认直径与图标大小在 Android 为 48 dp 与 20 dp、iOS 为 44 dp 与 20 dp、Desktop 为 32 dp 与 16 dp，Sheet 不额外覆盖尺寸。按钮距顶部和右边各 16 dp，标题栏同步适配按钮尺寸；显示拖动柄不会移动关闭按钮。这些尺寸是 SaltUI 的适配值。
+默认外观参考 [Apple Sheet 指南与示意图](https://developer.apple.com/design/human-interface-guidelines/sheets)：Bottom 仅顶部两角使用 34 dp 圆角，底部两角为直角；Floating 四角均为 34 dp。拖动柄为 44 × 3 dp，颜色透明度为 0.3，交互区域为 48 × 48 dp，保留高度描述与展开、收起动作。关闭按钮使用 `PillButton` 的默认圆形模式与 `SaltIcons.Close`，复用默认背景、细描边、点击反馈和禁用样式。按钮尺寸继承 LocalControlSize，并与同尺寸的 Button 共用高度、图标和间距。Regular 默认直径与图标大小在 Android 为 48 dp 与 20 dp、iOS 为 44 dp 与 20 dp、Desktop 为 32 dp 与 16 dp，Sheet 不额外覆盖尺寸。按钮距顶部和右边各 16 dp，标题栏同步适配按钮尺寸；显示拖动柄不会移动关闭按钮。这些尺寸是 SaltUI 的适配值。
 
-遮罩始终覆盖完整窗口，只改变透明度；平台窗口动画已禁用。Bottom 的背景延伸到物理底边，最大宽度与浮动呈现一致，为 540 dp，并相对整个窗口水平居中；左右安全区取两侧 inset 的最大值，避免单侧切口或侧边导航栏推偏中心。普通内容和 action 的底部安全区与 IME 取并集并由内部 Spacer 预留；接管 contentPadding 的滚动正文仅在视口外避让 IME，导航栏 inset 进入滚动尾部。高度配置基于可用安全区域，底部 inset 另外添加，正文不需要重复处理；顶部只避让状态栏与切口，Large 没有额外上边距。Centered 的对称安全边距至少为 16 dp。
+遮罩始终覆盖完整窗口，只改变透明度；平台窗口动画已禁用。Bottom 的背景延伸到物理底边，最大宽度与浮动呈现一致，为 540 dp，并相对整个窗口水平居中；左右安全区取两侧 inset 的最大值，避免单侧切口或侧边导航栏推偏中心。普通内容和 action 的底部安全区与 IME 取并集并由内部 Spacer 预留；接管 contentPadding 的滚动正文仅在视口外避让 IME，导航栏 inset 进入滚动尾部。高度配置基于可用安全区域，底部 inset 另外添加，正文不需要重复处理；顶部只避让状态栏与切口，Large 没有额外上边距。Floating 的对称安全边距至少为 16 dp。
 
 面板背景使用 `SaltTheme.colors.background`。浮动呈现将系统安全区对称处理：上下取顶部 inset、底部 inset 与 16 dp 的最大值，左右同样取左右 inset 与 16 dp 的最大值，保证面板位于窗口中央，不再重复叠加外部间距。比如状态栏 30 dp、底部导航栏 20 dp，则上下各避让 30 dp；二者都低于 16 dp 时，上下各避让 16 dp。IME 单独参与可用区域计算，避免将键盘高度复制到顶部。
 
@@ -133,7 +142,7 @@ action 保留标准 SaltUI Button 的胶囊形状，不覆盖按钮圆角。四�
 
 页面提供四类内容：短内容动态增减、100 项播放队列、带放弃确认的草稿表单，以及水平 Pager、Slider、文本选择与普通按钮。内容、呈现方式和高度配置使用 ItemPopup 菜单选择；打开等列表操作使用 ItemButton，说明文字使用 ItemOuterTip；停靠点配置、action 按钮和普通滚动容器分别抽为私有函数，Lazy 播放队列保持独立。另有拖动、滚动优先、标题、操作区、长文案、关闭许可、请求保留和草稿保护开关。
 
-默认手机横竖屏均使用 Bottom，平板与桌面使用 Centered；折叠设备及其他设备仍按窗口方向与宽度适配，键盘出现不会改变方向判断。体验拖动可选择 **Bottom** 和 **Medium / Large**。短内容和表单内提供显示期间的关闭开关、程序关闭及退场途中重开。关闭后重开队列可以检查位置保留。
+默认手机横竖屏均使用 Bottom，平板与桌面使用 Floating；折叠设备及其他设备仍按窗口方向与宽度适配，键盘出现不会改变方向判断。体验拖动可选择 **Bottom** 和 **Medium / Large**。短内容和表单内提供显示期间的关闭开关、程序关闭及退场途中重开。关闭后重开队列可以检查位置保留。
 
 自适应判断共用 `salt-adaptive-window` 的窗口信息，ui2 已通过 API 依赖提供该模块。`LocalSaltAdaptiveWindow.current` 自动读取当前原生窗口，应用入口和主题不需要手动添加 Provider；Sheet 通过内部宿主参数使用所属窗口的信息，不覆盖正文中的窗口 Local。旋转、分屏和 Desktop 多窗口分别跟随自己的窗口尺寸，在 Sheet 内创建的新原生窗口也自动使用自身信息；安全区与键盘仍由 Sheet 宿主负责。受控预览与兼容说明见[自适应窗口](adaptive-window.md)。
 

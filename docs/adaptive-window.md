@@ -29,7 +29,7 @@ fun Example() {
 
 `SaltTheme` 和 Sample 的 `AppTheme` 只管理主题。自适应信息直接来自当前窗口，忘记添加包装不会影响默认行为。Sample 的宽布局和 Sheet 的默认呈现方式共用 `WindowSizeClass`，没有各自重复定义的宽度阈值。
 
-Sheet 在手机横竖屏均默认从底部呈现，平板与桌面默认浮动居中。折叠设备及其他设备按窗口空间适配：Compact 竖向窗口使用 Bottom，其余使用 Centered。面板的实际宽度、高度与安全区仍受所属窗口空间约束。它通过内部宿主参数保存所属窗口的自适应信息，避免 Dialog 或 Popup 的尺寸影响自身呈现判断，不覆盖正文中的窗口 Local。在 Sheet 正文中创建新的原生窗口时，新窗口仍自动读取自己的尺寸。系统安全区、键盘和实际绘制范围仍由 Sheet 的平台宿主处理。显式指定 `SheetPresentation.Bottom` 或 `Centered` 可以覆盖自动策略。
+Sheet 在手机横竖屏均默认从底部呈现，平板与桌面默认浮动居中。折叠设备及其他设备按窗口空间适配：Compact 竖向窗口使用 Bottom，其余使用 Floating。面板的实际宽度、高度与安全区仍受所属窗口空间约束。它通过内部宿主参数保存所属窗口的自适应信息，避免 Dialog 或 Popup 的尺寸影响自身呈现判断，不覆盖正文中的窗口 Local。在 Sheet 正文中创建新的原生窗口时，新窗口仍自动读取自己的尺寸。系统安全区、键盘和实际绘制范围仍由 Sheet 的平台宿主处理。显式指定 `SheetDisplayMode.Bottom` 或 `SheetDisplayMode.Floating` 可以覆盖自动策略。
 
 ## 可选覆盖
 

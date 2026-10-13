@@ -560,12 +560,12 @@ internal class SheetFixture(
     private val resizeWindow: Boolean = false,
     private val compact: Boolean = false,
     private val handoff: Boolean = false,
-    private val interaction: SheetContentInteraction = SheetContentInteraction.ResizeFirst,
+    private val scrollBehavior: SheetScrollBehavior = SheetScrollBehavior.ExpandFirst,
     private val configuredDetents: List<SheetDetent>? = null,
     private val noActions: Boolean = false,
     private val layoutControls: Boolean = false,
     private val windowX: Dp = 100.dp,
-    private val presentation: SheetPresentation? = null,
+    private val displayMode: SheetDisplayMode? = null,
     private val initialWindowSize: DpSize = DpSize(720.dp, 640.dp),
     private val adaptiveControls: Boolean = false,
     private val extraSheetContent: @Composable () -> Unit = {},
@@ -683,13 +683,13 @@ internal class SheetFixture(
     }
 
     private fun sheetProperties() = SheetProperties(
-        presentation = presentation ?: if (bottom) {
-            SheetPresentation.Bottom
+        displayMode = displayMode ?: if (bottom) {
+            SheetDisplayMode.Bottom
         } else {
-            SheetPresentation.Centered
+            SheetDisplayMode.Floating
         },
         dismissible = dismissible,
-        contentInteraction = interaction,
+        scrollBehavior = scrollBehavior,
         detents = configuredDetents ?: if (bottom) {
             listOf(SheetDetent.Medium, SheetDetent.Large)
         } else {

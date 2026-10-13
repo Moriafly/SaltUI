@@ -26,19 +26,19 @@ import com.moriafly.salt.adaptive.window.SaltAdaptiveWindow
 import com.moriafly.salt.adaptive.window.UnstableSaltAdaptiveWindowApi
 import com.moriafly.salt.adaptive.window.WindowSizeClass
 import com.moriafly.salt.ui.UnstableSaltUiApi
-import com.moriafly.salt.ui.sheet.SheetPresentation
+import com.moriafly.salt.ui.sheet.SheetDisplayMode
 
 internal object SheetDefaults {
     val BottomMaxWidth = 540.dp
-    val CenteredMaxWidth = 540.dp
-    val CenteredMaxHeight = 640.dp
+    val FloatingMaxWidth = 540.dp
+    val FloatingMaxHeight = 640.dp
     val WindowMargin = 16.dp
     val CornerRadius = 34.dp
     val ActionsHorizontalPadding = 16.dp
     val ActionsTopPadding = 16.dp
     val ActionsBottomPadding = 16.dp
     val NoActionsBottomPadding = 8.dp
-    val CenteredShape = RoundedCornerShape(size = CornerRadius)
+    val FloatingShape = RoundedCornerShape(size = CornerRadius)
     val BottomShape = RoundedCornerShape(
         topStart = CornerRadius,
         topEnd = CornerRadius
@@ -50,15 +50,15 @@ internal object SheetDefaults {
     val CloseButtonInset = 16.dp
     const val DRAG_HANDLE_OPACITY = 0.3f
     const val SCRIM_OPACITY = 0.32f
-    const val CENTERED_HEIGHT_TO_WIDTH_RATIO = 1.2f
+    const val FLOATING_HEIGHT_TO_WIDTH_RATIO = 1.2f
 }
 
 @OptIn(UnstableSaltUiApi::class, UnstableSaltAdaptiveWindowApi::class)
-internal fun SheetPresentation.isBottom(
+internal fun SheetDisplayMode.isBottom(
     adaptiveWindow: SaltAdaptiveWindow,
     windowSize: DpSize
 ): Boolean = when (this) {
-    SheetPresentation.Adaptive -> {
+    SheetDisplayMode.Auto -> {
         when (adaptiveWindow.formFactor) {
             DeviceFormFactor.Phone -> true
             DeviceFormFactor.Tablet, DeviceFormFactor.Desktop -> false
@@ -68,6 +68,6 @@ internal fun SheetPresentation.isBottom(
             }
         }
     }
-    SheetPresentation.Bottom -> true
-    SheetPresentation.Centered -> false
+    SheetDisplayMode.Bottom -> true
+    SheetDisplayMode.Floating -> false
 }

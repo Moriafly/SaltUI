@@ -80,7 +80,7 @@ import com.moriafly.salt.ui.Text
 import com.moriafly.salt.ui.sheet.Sheet
 import com.moriafly.salt.ui.sheet.SheetContentLayout
 import com.moriafly.salt.ui.sheet.SheetDetent
-import com.moriafly.salt.ui.sheet.SheetPresentation
+import com.moriafly.salt.ui.sheet.SheetDisplayMode
 import com.moriafly.salt.ui.sheet.SheetProperties
 import com.moriafly.salt.ui.sheet.SheetScope
 import org.junit.Assert.assertEquals
@@ -99,8 +99,8 @@ class SheetInteractionTest {
 
     @Test
     fun pendingHandoffBlocksNativeBackgroundAndKeyboardInput() {
-        for (presentation in listOf(SheetPresentation.Bottom, SheetPresentation.Centered)) {
-            val fixture = AndroidSheetFixture(handoff = true, presentation = presentation)
+        for (displayMode in listOf(SheetDisplayMode.Bottom, SheetDisplayMode.Floating)) {
+            val fixture = AndroidSheetFixture(handoff = true, displayMode = displayMode)
             ActivityScenario.launch(MainActivity::class.java).use { scenario ->
                 scenario.onActivity { it.setContent { fixture.Content() } }
                 shown(By.text("Open sheet"))
@@ -153,8 +153,8 @@ class SheetInteractionTest {
     }
 
     @Test
-    fun tabletKeepsCenteredSheetWithCompactResourceConfiguration() {
-        val fixture = AndroidSheetFixture(presentation = SheetPresentation.Adaptive)
+    fun tabletKeepsFloatingSheetWithCompactResourceConfiguration() {
+        val fixture = AndroidSheetFixture(displayMode = SheetDisplayMode.Auto)
         ActivityScenario.launch(MainActivity::class.java).use { scenario ->
             scenario.onActivity { it.setContent { fixture.Content() } }
             shown(By.text("Open sheet"))
@@ -188,7 +188,7 @@ class SheetInteractionTest {
 
     @Test
     fun phoneLandscapeKeepsAdaptiveSheetBottomCenteredAndUsable() {
-        val fixture = AndroidSheetFixture(retain = true, presentation = SheetPresentation.Adaptive)
+        val fixture = AndroidSheetFixture(retain = true, displayMode = SheetDisplayMode.Auto)
         try {
             ActivityScenario.launch(MainActivity::class.java).use { scenario ->
                 scenario.onActivity { it.setContent { fixture.Content() } }
@@ -686,7 +686,7 @@ private class AndroidSheetFixture(
     private val rounded: Boolean = false,
     private val noActions: Boolean = false,
     private val edgeToEdge: Boolean = false,
-    private val presentation: SheetPresentation = SheetPresentation.Bottom,
+    private val displayMode: SheetDisplayMode = SheetDisplayMode.Bottom,
     private val handoff: Boolean = false
 ) {
     var visible by mutableStateOf(false)
@@ -754,7 +754,7 @@ private class AndroidSheetFixture(
     }
 
     private fun sheetProperties() = SheetProperties(
-        presentation = presentation,
+        displayMode = displayMode,
         contentLayout = if (edgeToEdge) {
             SheetContentLayout.EdgeToEdge
         } else {
@@ -862,7 +862,7 @@ private class AndroidSheetFixture(
                 if (!retain) nextVisible = false
             },
             title = "Next fixture sheet",
-            properties = SheetProperties(presentation = presentation, dismissible = dismissible),
+            properties = SheetProperties(displayMode = displayMode, dismissible = dismissible),
             actions = {
                 Button(onClick = { nextVisible = false }, text = "Close next sheet")
             }

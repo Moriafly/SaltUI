@@ -68,7 +68,7 @@ internal fun SheetSurface(
     content: @Composable SheetScope.() -> Unit
 ) {
     val directInput = remember { SheetDirectInput() }
-    val bottom = properties.presentation.isBottom(
+    val bottom = properties.displayMode.isBottom(
         adaptiveWindow = environment.adaptiveWindow,
         windowSize = environment.windowSize
     )
@@ -132,7 +132,7 @@ private fun rememberSheetNestedScroll(
                     (currentProperties.dismissible || state.points.size > 1) &&
                     directInput.active
             },
-            interaction = { currentProperties.contentInteraction },
+            scrollBehavior = { currentProperties.scrollBehavior },
             dismissible = { currentProperties.dismissible },
             onDismissRequest = { currentDismissRequest() }
         )
@@ -217,7 +217,7 @@ private fun sheetPanelWidth(
     bottom: Boolean,
     sizeClass: WindowSizeClass
 ): Dp {
-    val maximumWidth = if (bottom) SheetDefaults.BottomMaxWidth else SheetDefaults.CenteredMaxWidth
+    val maximumWidth = if (bottom) SheetDefaults.BottomMaxWidth else SheetDefaults.FloatingMaxWidth
     val margin = if (bottom && sizeClass != WindowSizeClass.Compact) {
         SheetDefaults.WindowMargin
     } else {
@@ -235,8 +235,8 @@ private fun sheetPanelHeight(
 } else {
     availableHeight
         .coerceAtLeast(0.dp)
-        .coerceAtMost(SheetDefaults.CenteredMaxHeight)
-        .coerceAtMost(panelWidth * SheetDefaults.CENTERED_HEIGHT_TO_WIDTH_RATIO)
+        .coerceAtMost(SheetDefaults.FloatingMaxHeight)
+        .coerceAtMost(panelWidth * SheetDefaults.FLOATING_HEIGHT_TO_WIDTH_RATIO)
 }
 
 @Composable

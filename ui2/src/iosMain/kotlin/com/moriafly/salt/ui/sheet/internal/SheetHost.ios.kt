@@ -27,13 +27,13 @@ import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupProperties
 import com.moriafly.salt.adaptive.window.SaltAdaptiveWindow
-import com.moriafly.salt.ui.sheet.SheetPresentation
+import com.moriafly.salt.ui.sheet.SheetDisplayMode
 
 @OptIn(ExperimentalComposeUiApi::class, com.moriafly.salt.ui.UnstableSaltUiApi::class)
 @Composable
 internal actual fun SheetHost(
     inputEnabled: Boolean,
-    presentation: SheetPresentation,
+    displayMode: SheetDisplayMode,
     adaptiveWindow: SaltAdaptiveWindow,
     backgroundColor: Color,
     onDismissRequest: () -> Unit,

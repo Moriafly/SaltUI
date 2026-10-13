@@ -43,16 +43,16 @@ import kotlin.test.assertTrue
 class SheetTouchWindowTest {
     @Test
     fun nativeNestedTouchExpandsThenScrollsWithoutPrematureCollapse() =
-        verifyNestedTouch(SheetContentInteraction.ResizeFirst)
+        verifyNestedTouch(SheetScrollBehavior.ExpandFirst)
 
     @Test
     fun nativeScrollFirstKeepsHeightUntilTheHandleIsDragged() =
-        verifyNestedTouch(SheetContentInteraction.ScrollFirst)
+        verifyNestedTouch(SheetScrollBehavior.ScrollFirst)
 
-    private fun verifyNestedTouch(interaction: SheetContentInteraction) {
+    private fun verifyNestedTouch(scrollBehavior: SheetScrollBehavior) {
         assumeTrue(OS.isWindows())
         runDesktopComposeUiTest {
-            val fixture = SheetFixture(bottom = true, list = true, interaction = interaction)
+            val fixture = SheetFixture(bottom = true, list = true, scrollBehavior = scrollBehavior)
             setContent { fixture.Content() }
             val robot = fixture.activate()
             fixture.click(robot, "Open")
@@ -105,7 +105,7 @@ class SheetTouchWindowTest {
                 runOnIdle { assertEquals(0, fixture.requests) }
                 val list = fixture.bounds.getValue("list")
                 swipe(list.center.x, list.bottom - 30f, -medium.height * 0.65f)
-                if (interaction == SheetContentInteraction.ScrollFirst) {
+                if (scrollBehavior == SheetScrollBehavior.ScrollFirst) {
                     assertEquals(medium.height, fixture.bounds.getValue("panel").height, 2f)
                     onNodeWithText("Row 0").assertDoesNotExist()
                     swipe(medium.center.x, medium.top + 36f, -medium.height * 0.65f)

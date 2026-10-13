@@ -36,7 +36,7 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.window.PopupPositionProvider
 import com.moriafly.salt.adaptive.window.SaltAdaptiveWindow
-import com.moriafly.salt.ui.sheet.SheetPresentation
+import com.moriafly.salt.ui.sheet.SheetDisplayMode
 
 /**
  * Owner geometry stays independent of the dialog and its keyboard insets.
@@ -71,7 +71,7 @@ internal fun sheetHostEnvironment(
 @OptIn(com.moriafly.salt.ui.UnstableSaltUiApi::class)
 internal expect fun SheetHost(
     inputEnabled: Boolean,
-    presentation: SheetPresentation,
+    displayMode: SheetDisplayMode,
     adaptiveWindow: SaltAdaptiveWindow,
     backgroundColor: Color,
     onDismissRequest: () -> Unit,

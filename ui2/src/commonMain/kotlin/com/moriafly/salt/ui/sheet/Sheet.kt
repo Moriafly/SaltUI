@@ -60,8 +60,8 @@ import kotlinx.coroutines.launch
  * [onDismissRequest] is called once per user dismissal attempt. It never changes [visible];
  * keep it true to confirm a draft first. Programmatic hiding never sends a dismissal request.
  * [modifier] applies to the surface, not to the full-window scrim.
- * Bottom presentation supports detents; phones use it in either orientation by default.
- * Tablets and desktops default to centered presentation.
+ * [SheetDisplayMode.Bottom] supports detents; phones use it in either orientation by default.
+ * Tablets and desktops default to [SheetDisplayMode.Floating].
  * Only one Sheet in the same owning window may have [visible] set to true.
  * A pending Sheet keeps the window modal while the previous Sheet finishes exiting.
  * Use [SheetContentLayout.EdgeToEdge] with [SheetScope.contentPadding] for edge-to-edge scrolling.
@@ -124,7 +124,7 @@ fun Sheet(
     if (visible || retained) {
         SheetHost(
             inputEnabled = visible,
-            presentation = properties.presentation,
+            displayMode = properties.displayMode,
             adaptiveWindow = LocalSaltAdaptiveWindow.current,
             backgroundColor = SaltTheme.colors.background,
             onDismissRequest = requestDismiss

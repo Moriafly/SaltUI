@@ -23,7 +23,7 @@ import com.moriafly.salt.ui.UnstableSaltUiApi
 
 /**
  * Heights include the header, body, action padding or the empty-action bottom inset.
- * The host adds the bottom safe-area or keyboard inset to Bottom presentation.
+ * The host adds the bottom safe-area or keyboard inset in [SheetDisplayMode.Bottom].
  */
 @UnstableSaltUiApi
 @Immutable
@@ -58,11 +58,57 @@ sealed interface SheetDetent {
     }
 }
 
+/**
+ * Determines whether a [Sheet] attaches to the bottom or floats within its owning window.
+ *
+ * [Auto] selects a mode from the device form factor and window size. [Bottom] and [Floating]
+ * override that selection without changing the window's adaptive information.
+ */
 @UnstableSaltUiApi
-enum class SheetPresentation { Adaptive, Bottom, Centered }
+enum class SheetDisplayMode {
+    /**
+     * Uses [Bottom] on phones in either orientation and [Floating] on tablets and desktops.
+     * Other form factors use [Bottom] in compact windows that are at least as tall as they are wide,
+     * and [Floating] otherwise. Uses the owning window, independently of the Sheet host or keyboard.
+     */
+    Auto,
 
+    /**
+     * Attaches to the bottom edge and stays horizontally centered within the owning window.
+     * Width is capped, so the Sheet can leave space on either side in a wide window.
+     * Supports height detents, pointer resizing and drag dismissal when enabled.
+     */
+    Bottom,
+
+    /**
+     * Floats in the center of the available safe area, with limited width and height.
+     * The selected detent caps the content height rather than providing a draggable stop.
+     * Does not show a drag handle or support pointer resizing or drag dismissal.
+     */
+    Floating
+}
+
+/**
+ * Coordinates vertical pointer drags between a scrollable body and the Sheet's height detents.
+ *
+ * Applies only in [SheetDisplayMode.Bottom] with [SheetProperties.dragEnabled] enabled.
+ * In either mode, downward drags scroll the body back to its start before collapsing the Sheet
+ * or requesting dismissal. Does not affect direct header or handle drags, or mouse-wheel scrolling.
+ */
 @UnstableSaltUiApi
-enum class SheetContentInteraction { ResizeFirst, ScrollFirst }
+enum class SheetScrollBehavior {
+    /**
+     * An upward drag expands the Sheet to its largest detent before scrolling the body.
+     * Once the Sheet reaches that height, the remaining drag movement scrolls the body.
+     */
+    ExpandFirst,
+
+    /**
+     * The body scrolls first in either direction. The Sheet resizes only when the body leaves
+     * unconsumed movement at a scroll boundary. The header and handle can still resize it directly.
+     */
+    ScrollFirst
+}
 
 /**
  * Determines who applies the bottom safe area when the action slot is empty.
@@ -86,22 +132,22 @@ enum class SheetContentLayout {
  * [initialDetent] seeds the height once; reopening the same Sheet preserves the user's height.
  * [dismissible] gates user requests, and never prevents programmatic `visible = false`.
  * The header close button is hidden when dismissal is disabled.
- * [dragEnabled] controls pointer resizing and drag dismissal in Bottom presentation.
+ * [dragEnabled] controls pointer resizing and drag dismissal in [SheetDisplayMode.Bottom].
  * The drag handle is shown automatically when resizing or drag dismissal is available.
  * Accessibility height actions remain available when pointer dragging is disabled.
- * Adaptive [presentation] uses Bottom on phones in either orientation and Centered on tablets
- * and desktops. Other form factors adapt to the owning window's width and orientation.
- * Centered heights are capped by the safe viewport, the panel width and an internal maximum.
+ * [displayMode] defaults to [SheetDisplayMode.Auto], using Bottom on phones and Floating on tablets
+ * and desktops. Floating heights are capped by the safe viewport, panel width and internal maximum.
+ * [scrollBehavior] defaults to expanding the Sheet before scrolling its body upward.
  * [contentLayout] only affects an empty action slot; actions always retain their safe area.
  */
 @UnstableSaltUiApi
 data class SheetProperties(
-    val presentation: SheetPresentation = SheetPresentation.Adaptive,
+    val displayMode: SheetDisplayMode = SheetDisplayMode.Auto,
     val dismissible: Boolean = true,
     val dragEnabled: Boolean = true,
     val detents: List<SheetDetent> = listOf(SheetDetent.Content),
     val initialDetent: SheetDetent = detents.first(),
-    val contentInteraction: SheetContentInteraction = SheetContentInteraction.ResizeFirst,
+    val scrollBehavior: SheetScrollBehavior = SheetScrollBehavior.ExpandFirst,
     val contentLayout: SheetContentLayout = SheetContentLayout.Inset
 ) {
     init {

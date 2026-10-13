@@ -65,11 +65,11 @@ import com.moriafly.salt.ui.popup.rememberPopupState
 import com.moriafly.salt.ui.sample.ui.screen.basic.BasicScreenColumn
 import com.moriafly.salt.ui.screen.ScreenCard
 import com.moriafly.salt.ui.sheet.Sheet
-import com.moriafly.salt.ui.sheet.SheetContentInteraction
 import com.moriafly.salt.ui.sheet.SheetContentLayout
 import com.moriafly.salt.ui.sheet.SheetDetent
-import com.moriafly.salt.ui.sheet.SheetPresentation
+import com.moriafly.salt.ui.sheet.SheetDisplayMode
 import com.moriafly.salt.ui.sheet.SheetProperties
+import com.moriafly.salt.ui.sheet.SheetScrollBehavior
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -95,11 +95,11 @@ private val heightNames = listOf(
 fun SheetScreen() {
     var visible by rememberSaveable { mutableStateOf(false) }
     var example by rememberSaveable { mutableIntStateOf(0) }
-    var presentation by rememberSaveable { mutableIntStateOf(0) }
+    var displayMode by rememberSaveable { mutableIntStateOf(0) }
     var heights by rememberSaveable { mutableIntStateOf(0) }
     var dismissible by rememberSaveable { mutableStateOf(true) }
     var dragEnabled by rememberSaveable { mutableStateOf(true) }
-    var resizeFirst by rememberSaveable { mutableStateOf(true) }
+    var expandFirst by rememberSaveable { mutableStateOf(true) }
     var showTitle by rememberSaveable { mutableStateOf(true) }
     var showActions by rememberSaveable { mutableStateOf(true) }
     var edgeToEdge by rememberSaveable { mutableStateOf(true) }
@@ -111,7 +111,7 @@ fun SheetScreen() {
     var confirmDiscard by rememberSaveable { mutableStateOf(false) }
     var details by rememberSaveable { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
-    val presentations = SheetPresentation.entries
+    val displayModes = SheetDisplayMode.entries
     val requestClose = {
         if (!retainOnRequest) {
             if (example == 2 && protectDraft && draft != savedDraft) {
@@ -155,10 +155,10 @@ fun SheetScreen() {
             header = "Layout and height"
         ) {
             SheetOptionItem(
-                text = "Presentation",
-                options = presentations.map { it.name },
-                selected = presentation,
-                onSelect = { presentation = it }
+                text = "Display mode",
+                options = displayModes.map { it.name },
+                selected = displayMode,
+                onSelect = { displayMode = it }
             )
             SheetOptionItem(
                 text = "Height",
@@ -173,10 +173,10 @@ fun SheetScreen() {
                 sub = "Bottom sheets show a handle when resizing or drag dismissal is available"
             )
             ItemSwitcher(
-                state = resizeFirst,
-                onChange = { resizeFirst = it },
+                state = expandFirst,
+                onChange = { expandFirst = it },
                 text = "Expand before scrolling",
-                sub = "Turn off to use ScrollFirst"
+                sub = "Turn off to scroll content first"
             )
             ItemSwitcher(
                 state = showTitle,
@@ -236,7 +236,7 @@ fun SheetScreen() {
             exampleNames[example]
         },
         properties = SheetProperties(
-            presentation = presentations[presentation],
+            displayMode = displayModes[displayMode],
             contentLayout = if (edgeToEdge) {
                 SheetContentLayout.EdgeToEdge
             } else {
@@ -245,10 +245,10 @@ fun SheetScreen() {
             dismissible = dismissible,
             dragEnabled = dragEnabled,
             detents = sheetExampleDetents(index = heights),
-            contentInteraction = if (resizeFirst) {
-                SheetContentInteraction.ResizeFirst
+            scrollBehavior = if (expandFirst) {
+                SheetScrollBehavior.ExpandFirst
             } else {
-                SheetContentInteraction.ScrollFirst
+                SheetScrollBehavior.ScrollFirst
             }
         ),
         actions = {

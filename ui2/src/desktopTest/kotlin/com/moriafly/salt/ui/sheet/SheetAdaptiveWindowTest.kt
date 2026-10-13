@@ -44,37 +44,37 @@ import kotlin.test.assertTrue
  */
 class SheetAdaptiveWindowTest {
     @Test
-    fun desktopWindowsRemainCenteredWithoutAProvider() = verifyPresentationAcrossNativeSizes(
+    fun desktopWindowsRemainFloatingWithoutAProvider() = verifyDisplayModeAcrossNativeSizes(
         formFactor = null,
         bottom = false
     )
 
     @Test
-    fun phonesRemainBottomInPortraitAndLandscape() = verifyPresentationAcrossNativeSizes(
+    fun phonesRemainBottomInPortraitAndLandscape() = verifyDisplayModeAcrossNativeSizes(
         formFactor = DeviceFormFactor.Phone,
         bottom = true
     )
 
     @Test
-    fun tabletsRemainCenteredInNarrowAndWideWindows() = verifyPresentationAcrossNativeSizes(
+    fun tabletsRemainFloatingInNarrowAndWideWindows() = verifyDisplayModeAcrossNativeSizes(
         formFactor = DeviceFormFactor.Tablet,
         bottom = false
     )
 
     @Test
-    fun explicitCenteredOverridesThePhoneDefault() = verifyPresentationAcrossNativeSizes(
+    fun explicitFloatingOverridesThePhoneDefault() = verifyDisplayModeAcrossNativeSizes(
         formFactor = DeviceFormFactor.Phone,
         bottom = false,
-        presentation = SheetPresentation.Centered
+        displayMode = SheetDisplayMode.Floating
     )
 
-    private fun verifyPresentationAcrossNativeSizes(
+    private fun verifyDisplayModeAcrossNativeSizes(
         formFactor: DeviceFormFactor?,
         bottom: Boolean,
-        presentation: SheetPresentation = SheetPresentation.Adaptive
+        displayMode: SheetDisplayMode = SheetDisplayMode.Auto
     ) = runDesktopComposeUiTest {
         val fixture = SheetFixture(
-            presentation = presentation,
+            displayMode = displayMode,
             initialWindowSize = DpSize(500.dp, 700.dp),
             adaptiveControls = true,
             formFactor = formFactor
@@ -114,7 +114,7 @@ class SheetAdaptiveWindowTest {
         val owner = adaptiveFixture(windowX = 50.dp)
         val other = SheetFixture(
             windowX = 650.dp,
-            presentation = SheetPresentation.Adaptive,
+            displayMode = SheetDisplayMode.Auto,
             initialWindowSize = DpSize(700.dp, 520.dp),
             adaptiveControls = true
         )
@@ -156,7 +156,7 @@ class SheetAdaptiveWindowTest {
     fun aWindowOpenedInsideTheSheetUsesItsOwnMetricsAndInput() = runDesktopComposeUiTest {
         val nested = SheetFixture(
             windowX = 650.dp,
-            presentation = SheetPresentation.Adaptive,
+            displayMode = SheetDisplayMode.Auto,
             initialWindowSize = DpSize(700.dp, 520.dp),
             adaptiveControls = true
         )
@@ -233,7 +233,7 @@ class SheetAdaptiveWindowTest {
 
     private fun adaptiveFixture(windowX: Dp = 100.dp) = SheetFixture(
         windowX = windowX,
-        presentation = SheetPresentation.Adaptive,
+        displayMode = SheetDisplayMode.Auto,
         initialWindowSize = DpSize(500.dp, 700.dp),
         adaptiveControls = true
     )
@@ -242,7 +242,7 @@ class SheetAdaptiveWindowTest {
         val open = mutableStateOf(false)
         return SheetFixture(
             windowX = 50.dp,
-            presentation = SheetPresentation.Adaptive,
+            displayMode = SheetDisplayMode.Auto,
             initialWindowSize = DpSize(500.dp, 700.dp),
             adaptiveControls = true,
             extraSheetContent = {

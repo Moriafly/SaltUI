@@ -23,7 +23,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.unit.Velocity
-import com.moriafly.salt.ui.sheet.SheetContentInteraction
+import com.moriafly.salt.ui.sheet.SheetScrollBehavior
 
 internal class SheetDirectInput {
     var active = false
@@ -32,7 +32,7 @@ internal class SheetDirectInput {
 internal class SheetNestedScroll(
     private val state: SheetTransitionState,
     private val enabled: () -> Boolean,
-    private val interaction: () -> SheetContentInteraction,
+    private val scrollBehavior: () -> SheetScrollBehavior,
     private val dismissible: () -> Boolean,
     private val onDismissRequest: () -> Unit
 ) : NestedScrollConnection {
@@ -47,7 +47,7 @@ internal class SheetNestedScroll(
 
     override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset =
         if (enabled() && source == NestedScrollSource.UserInput && available.y < 0f &&
-            interaction() == SheetContentInteraction.ResizeFirst
+            scrollBehavior() == SheetScrollBehavior.ExpandFirst
         ) {
             consume(available.y)
         } else {

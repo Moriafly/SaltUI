@@ -47,14 +47,14 @@ import androidx.compose.ui.window.DialogWindowProvider
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import com.moriafly.salt.adaptive.window.SaltAdaptiveWindow
-import com.moriafly.salt.ui.sheet.SheetPresentation
+import com.moriafly.salt.ui.sheet.SheetDisplayMode
 import androidx.compose.ui.graphics.Color as ComposeColor
 
 @Composable
 @OptIn(com.moriafly.salt.ui.UnstableSaltUiApi::class)
 internal actual fun SheetHost(
     inputEnabled: Boolean,
-    presentation: SheetPresentation,
+    displayMode: SheetDisplayMode,
     adaptiveWindow: SaltAdaptiveWindow,
     backgroundColor: ComposeColor,
     onDismissRequest: () -> Unit,
@@ -62,7 +62,7 @@ internal actual fun SheetHost(
 ) {
     val ownerSize = LocalWindowInfo.current.containerDpSize
     val ownerView = LocalView.current
-    val bottom = presentation.isBottom(
+    val bottom = displayMode.isBottom(
         adaptiveWindow = adaptiveWindow,
         windowSize = ownerSize
     )
