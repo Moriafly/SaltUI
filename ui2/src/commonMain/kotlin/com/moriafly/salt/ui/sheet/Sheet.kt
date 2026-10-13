@@ -45,6 +45,7 @@ import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.moriafly.salt.ui.material.DisableMaterial
 import com.moriafly.salt.ui.sheet.internal.SheetDetentSaver
 import com.moriafly.salt.ui.sheet.internal.SheetHost
+import com.moriafly.salt.ui.sheet.internal.SheetPendingInput
 import com.moriafly.salt.ui.sheet.internal.SheetSurface
 import com.moriafly.salt.ui.sheet.internal.SheetTransitionState
 import com.moriafly.salt.ui.sheet.internal.rememberSheetLease
@@ -62,6 +63,7 @@ import kotlinx.coroutines.launch
  * Bottom presentation supports detents; phones use it in either orientation by default.
  * Tablets and desktops default to centered presentation.
  * Only one Sheet in the same owning window may have [visible] set to true.
+ * A pending Sheet keeps the window modal while the previous Sheet finishes exiting.
  * Use [SheetContentLayout.EdgeToEdge] with [SheetScope.contentPadding] for edge-to-edge scrolling.
  */
 @UnstableSaltUiApi
@@ -119,7 +121,7 @@ fun Sheet(
         }
     }
 
-    if (retained) {
+    if (visible || retained) {
         SheetHost(
             inputEnabled = visible,
             presentation = properties.presentation,
@@ -127,21 +129,25 @@ fun Sheet(
             backgroundColor = SaltTheme.colors.background,
             onDismissRequest = requestDismiss
         ) { environment ->
-            DisableMaterial {
-                contentState.SaveableStateProvider("sheet-content") {
-                    SheetSurface(
-                        state = state,
-                        progress = { progress.value },
-                        visible = visible,
-                        onDismissRequest = requestDismiss,
-                        modifier = modifier,
-                        environment = environment,
-                        title = title,
-                        properties = properties,
-                        actions = actions,
-                        content = content
-                    )
+            if (retained) {
+                DisableMaterial {
+                    contentState.SaveableStateProvider("sheet-content") {
+                        SheetSurface(
+                            state = state,
+                            progress = { progress.value },
+                            visible = visible,
+                            onDismissRequest = requestDismiss,
+                            modifier = modifier,
+                            environment = environment,
+                            title = title,
+                            properties = properties,
+                            actions = actions,
+                            content = content
+                        )
+                    }
                 }
+            } else {
+                SheetPendingInput()
             }
         }
         // Release ownership when the host leaves composition, including cancelled transitions.

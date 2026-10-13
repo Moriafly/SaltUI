@@ -19,8 +19,11 @@
 
 import androidx.compose.ui.window.ComposeUIViewController
 import com.moriafly.salt.ui.sample.ui.MainContent
+import com.moriafly.salt.ui.sample.ui.theme.AppTheme
 
 @Suppress("FunctionName")
 fun MainViewController() = ComposeUIViewController {
-    MainContent()
+    AppTheme {
+        MainContent()
+    }
 }

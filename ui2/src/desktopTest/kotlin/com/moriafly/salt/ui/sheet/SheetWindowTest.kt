@@ -464,31 +464,46 @@ class SheetWindowTest {
         val robot = fixture.activate()
         fixture.click(robot, "Open")
         val medium = fixture.bounds.getValue("panel").height
+        val pixelSize = fixture.window.graphicsConfiguration.defaultTransform.scaleX.toFloat()
+
+        fun boundary(value: Float) = ceil(value / pixelSize) * pixelSize
 
         fun handle() = onNode(
             SemanticsMatcher.keyIsDefined(SemanticsProperties.StateDescription)
         ).fetchSemanticsNode().boundsInWindow
         var region = handle()
-        fixture.clickPoint(robot, region.center.x, region.top)
+        fixture.clickPoint(robot, region.center.x, boundary(region.top))
         waitForIdle()
         val large = fixture.bounds.getValue("panel").height
         assertTrue(large > medium)
         region = handle()
-        fixture.clickPoint(robot, region.center.x, region.bottom)
+        fixture.clickPoint(robot, region.center.x, boundary(region.bottom))
         waitForIdle()
         assertEquals(large, fixture.bounds.getValue("panel").height, 2f)
-        fixture.clickPoint(robot, region.left, region.bottom - 4f)
+        fixture.clickPoint(robot, boundary(region.left), boundary(region.bottom) - pixelSize)
         waitForIdle()
         assertEquals(medium, fixture.bounds.getValue("panel").height, 2f)
         region = handle()
-        fixture.clickPoint(robot, region.right, region.bottom - 4f)
-        fixture.clickPoint(robot, region.center.x, region.top - 2f)
+        fixture.clickPoint(robot, boundary(region.right), boundary(region.bottom) - pixelSize)
+        fixture.clickPoint(
+            robot,
+            boundary(region.right) + pixelSize,
+            boundary(region.bottom) - pixelSize
+        )
+        waitForIdle()
+        assertEquals(medium, fixture.bounds.getValue("panel").height, 2f)
+        runOnIdle { assertEquals(0, fixture.requests) }
+        fixture.clickPoint(robot, region.center.x, boundary(region.top) - pixelSize)
         waitForIdle()
         runOnIdle {
-            assertEquals(2, fixture.requests)
+            assertEquals(1, fixture.requests)
             assertEquals(0, fixture.backgroundClicks)
         }
+        fixture.click(robot, "Inside")
+        runOnIdle { assertEquals(1, fixture.insideClicks) }
         fixture.click(robot, "Program close")
+        fixture.click(robot, "Background")
+        runOnIdle { assertEquals(1, fixture.backgroundClicks) }
         fixture.restorePointer(robot)
     }
 
@@ -826,7 +841,8 @@ internal class SheetFixture(
         x: Float,
         y: Float,
         delta: Float,
-        stepDelay: Int = 20
+        stepDelay: Int = 20,
+        releaseDelay: Int = 0
     ) {
         movePoint(robot, x, y)
         robot.mousePress(InputEvent.BUTTON1_DOWN_MASK)
@@ -834,6 +850,7 @@ internal class SheetFixture(
             movePoint(robot, x, y + delta * (it + 1) / 16)
             robot.delay(stepDelay)
         }
+        if (releaseDelay > 0) robot.delay(releaseDelay)
         robot.mouseRelease(InputEvent.BUTTON1_DOWN_MASK)
         robot.delay(650)
     }

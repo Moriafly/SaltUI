@@ -97,6 +97,61 @@ class SheetInteractionTest {
     private val device get() = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
 
     @Test
+    fun pendingHandoffBlocksNativeBackgroundAndKeyboardInput() {
+        for (presentation in listOf(SheetPresentation.Bottom, SheetPresentation.Centered)) {
+            val fixture = AndroidSheetFixture(handoff = true, presentation = presentation)
+            ActivityScenario.launch(MainActivity::class.java).use { scenario ->
+                scenario.onActivity { it.setContent { fixture.Content() } }
+                shown(By.text("Open sheet"))
+                val background = device.findObject(By.text("Background")).visibleBounds
+                for ((index, position) in listOf("inside", "boundary", "outside").withIndex()) {
+                    click(By.text("Open sheet"))
+                    shown(By.text("Fixture sheet"))
+                    SystemClock.sleep(600)
+                    val switch = device.findObject(By.text("Switch sheet")).visibleBounds
+                    device.click(switch.centerX(), switch.centerY())
+                    SystemClock.sleep(40)
+                    val x = when (position) {
+                        "boundary" -> background.left
+                        "outside" -> background.left - 1
+                        else -> background.centerX()
+                    }
+                    // Do not wait for UI idle before injecting into the handoff interval.
+                    touch(x.toFloat(), background.centerY().toFloat(), waitForIdle = false)
+                    val automation = InstrumentationRegistry.getInstrumentation().uiAutomation
+                    val time = SystemClock.uptimeMillis()
+                    for (action in listOf(KeyEvent.ACTION_DOWN, KeyEvent.ACTION_UP)) {
+                        assertTrue(
+                            automation.injectInputEvent(
+                                KeyEvent(
+                                    time,
+                                    SystemClock.uptimeMillis(),
+                                    action,
+                                    KeyEvent.KEYCODE_ENTER,
+                                    0
+                                ),
+                                true
+                            )
+                        )
+                    }
+                    shown(By.text("Next fixture sheet"))
+                    SystemClock.sleep(600)
+                    click(By.text("Inside next sheet"))
+                    scenario.onActivity {
+                        assertTrue(!fixture.visible)
+                        assertEquals(index + 1, fixture.insideClicks)
+                        assertEquals(0, fixture.backgroundClicks)
+                        assertEquals(0, fixture.requests)
+                    }
+                    click(By.text("Close next sheet"))
+                }
+                click(By.text("Background"))
+                shown(By.text("Background: 1"))
+            }
+        }
+    }
+
+    @Test
     fun tabletKeepsCenteredSheetWithCompactResourceConfiguration() {
         val fixture = AndroidSheetFixture(presentation = SheetPresentation.Adaptive)
         ActivityScenario.launch(MainActivity::class.java).use { scenario ->
@@ -579,7 +634,7 @@ class SheetInteractionTest {
         }
     }
 
-    private fun touch(x: Float, y: Float) {
+    private fun touch(x: Float, y: Float, waitForIdle: Boolean = true) {
         val time = SystemClock.uptimeMillis()
         val automation = InstrumentationRegistry.getInstrumentation().uiAutomation
         for (action in listOf(MotionEvent.ACTION_DOWN, MotionEvent.ACTION_UP)) {
@@ -591,7 +646,7 @@ class SheetInteractionTest {
                 event.recycle()
             }
         }
-        device.waitForIdle()
+        if (waitForIdle) device.waitForIdle()
     }
 
     private fun click(selector: BySelector) {
@@ -630,9 +685,11 @@ private class AndroidSheetFixture(
     private val rounded: Boolean = false,
     private val noActions: Boolean = false,
     private val edgeToEdge: Boolean = false,
-    private val presentation: SheetPresentation = SheetPresentation.Bottom
+    private val presentation: SheetPresentation = SheetPresentation.Bottom,
+    private val handoff: Boolean = false
 ) {
     var visible by mutableStateOf(false)
+    private var nextVisible by mutableStateOf(false)
     var requests by mutableIntStateOf(0)
     var backgroundClicks by mutableIntStateOf(0)
     var insideClicks by mutableIntStateOf(0)
@@ -738,6 +795,15 @@ private class AndroidSheetFixture(
                     }
                 } else {
                     Button(onClick = { insideClicks++ }, text = "Inside")
+                    if (handoff) {
+                        Button(
+                            onClick = {
+                                visible = false
+                                nextVisible = true
+                            },
+                            text = "Switch sheet"
+                        )
+                    }
                     Text("Inside: $insideClicks")
                     Text("Requests: $requests")
                     if (rounded) {
@@ -758,6 +824,25 @@ private class AndroidSheetFixture(
                     }
                 }
             }
+            if (handoff) NextSheet()
+        }
+    }
+
+    @Composable
+    private fun NextSheet() {
+        Sheet(
+            visible = nextVisible,
+            onDismissRequest = {
+                requests++
+                if (!retain) nextVisible = false
+            },
+            title = "Next fixture sheet",
+            properties = SheetProperties(presentation = presentation, dismissible = dismissible),
+            actions = {
+                Button(onClick = { nextVisible = false }, text = "Close next sheet")
+            }
+        ) {
+            Button(onClick = { insideClicks++ }, text = "Inside next sheet")
         }
     }
 }
