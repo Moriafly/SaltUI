@@ -44,6 +44,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.hideFromAccessibility
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.moriafly.salt.ui.sheet.SheetProperties
 import com.moriafly.salt.ui.sheet.SheetScope
@@ -62,24 +63,61 @@ internal fun SheetSurface(
     actions: @Composable RowScope.() -> Unit,
     content: @Composable SheetScope.() -> Unit
 ) {
-    val density = LocalDensity.current
     val directInput = remember { SheetDirectInput() }
     val bottom = properties.presentation.isBottom(windowSize = environment.windowSize)
-    val viewportInsets = if (bottom) {
-        environment.contentInsets.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)
-    } else {
-        SheetSymmetricInsets(
-            insets = environment.safeInsets,
-            minimum = SheetDefaults.WindowMargin
-        ).union(environment.imeInsets)
+    val nestedScroll = rememberSheetNestedScroll(
+        state = state,
+        directInput = directInput,
+        bottom = bottom,
+        visible = visible,
+        properties = properties,
+        onDismissRequest = onDismissRequest
+    )
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .thenIf(!visible) {
+                clearAndSetSemantics { hideFromAccessibility() }
+            }
+            .sheetModalInput(
+                visible = visible,
+                directInput = directInput
+            )
+    ) {
+        SheetScrim(
+            progress = progress,
+            onDismissRequest = onDismissRequest
+        )
+        SheetViewport(
+            state = state,
+            visible = visible,
+            onDismissRequest = onDismissRequest,
+            modifier = modifier,
+            environment = environment,
+            title = title,
+            properties = properties,
+            bottom = bottom,
+            nestedScroll = nestedScroll,
+            actions = actions,
+            content = content
+        )
     }
-    val bottomInsets = if (bottom) environment.contentInsets else WindowInsets()
-    val imeInsets = if (bottom) environment.imeInsets else WindowInsets()
+}
+
+@Composable
+private fun rememberSheetNestedScroll(
+    state: SheetTransitionState,
+    directInput: SheetDirectInput,
+    bottom: Boolean,
+    visible: Boolean,
+    properties: SheetProperties,
+    onDismissRequest: () -> Unit
+): SheetNestedScroll {
     val currentBottom by rememberUpdatedState(bottom)
     val currentVisible by rememberUpdatedState(visible)
     val currentProperties by rememberUpdatedState(properties)
     val currentDismissRequest by rememberUpdatedState(onDismissRequest)
-    val nestedScroll = remember(state, directInput) {
+    return remember(state, directInput) {
         SheetNestedScroll(
             state = state,
             enabled = {
@@ -92,74 +130,96 @@ internal fun SheetSurface(
             onDismissRequest = { currentDismissRequest() }
         )
     }
-    Box(
+}
+
+@Composable
+private fun SheetViewport(
+    state: SheetTransitionState,
+    visible: Boolean,
+    onDismissRequest: () -> Unit,
+    modifier: Modifier,
+    environment: SheetHostEnvironment,
+    title: String?,
+    properties: SheetProperties,
+    bottom: Boolean,
+    nestedScroll: SheetNestedScroll,
+    actions: @Composable RowScope.() -> Unit,
+    content: @Composable SheetScope.() -> Unit
+) {
+    val density = LocalDensity.current
+    val viewportInsets = sheetViewportInsets(bottom = bottom, environment = environment)
+    BoxWithConstraints(
         modifier = Modifier
             .fillMaxSize()
-            .thenIf(condition = !visible) {
-                clearAndSetSemantics { hideFromAccessibility() }
-            }
-            .sheetModalInput(
-                visible = visible,
-                directInput = directInput
-            )
+            .windowInsetsPadding(viewportInsets)
     ) {
-        SheetScrim(
-            progress = progress,
-            onDismissRequest = onDismissRequest
+        val panelWidth = sheetPanelWidth(availableWidth = maxWidth, bottom = bottom)
+        val heightLimit = sheetPanelHeight(
+            availableHeight = maxHeight,
+            panelWidth = panelWidth,
+            bottom = bottom
         )
-        BoxWithConstraints(
+        SheetPanel(
+            state = state,
+            visible = visible,
+            onDismissRequest = onDismissRequest,
+            title = title,
+            properties = properties,
+            bottom = bottom,
+            bottomInsets = if (bottom) environment.contentInsets else WindowInsets(),
+            imeInsets = if (bottom) environment.imeInsets else WindowInsets(),
+            availableHeight = with(density) { heightLimit.roundToPx() },
+            floatingHiddenBase = {
+                maxHeight.toPx() / 2 + viewportInsets.getBottom(this)
+            },
             modifier = Modifier
-                .fillMaxSize()
-                .windowInsetsPadding(insets = viewportInsets)
-        ) {
-            val maximumWidth = if (bottom) {
-                SheetDefaults.BottomMaxWidth
-            } else {
-                SheetDefaults.CenteredMaxWidth
-            }
-            val horizontalMargin = if (bottom && maxWidth >= SheetDefaults.AdaptiveBreakpoint) {
-                SheetDefaults.WindowMargin
-            } else {
-                0.dp
-            }
-            val panelWidth = (maxWidth - horizontalMargin * 2)
-                .coerceAtLeast(0.dp)
-                .coerceAtMost(maximumWidth)
-            val heightLimit = if (bottom) {
-                maxHeight
-            } else {
-                maxHeight
-                    .coerceAtLeast(0.dp)
-                    .coerceAtMost(SheetDefaults.CenteredMaxHeight)
-                    .coerceAtMost(panelWidth * SheetDefaults.CENTERED_HEIGHT_TO_WIDTH_RATIO)
-            }
-            val availableHeight = with(density) { heightLimit.roundToPx() }
-            SheetPanel(
-                state = state,
-                visible = visible,
-                onDismissRequest = onDismissRequest,
-                title = title,
-                properties = properties,
-                bottom = bottom,
-                bottomInsets = bottomInsets,
-                imeInsets = imeInsets,
-                availableHeight = availableHeight,
-                floatingHiddenBase = {
-                    maxHeight.toPx() / 2 + viewportInsets.getBottom(this)
-                },
-                modifier = Modifier
-                    .align(if (bottom) Alignment.BottomCenter else Alignment.Center)
-                    .width(width = panelWidth)
-                    .consumeWindowInsets(
-                        insets = environment.contentInsets.only(WindowInsetsSides.Bottom)
-                    )
-                    .nestedScroll(nestedScroll)
-                    .then(modifier),
-                actions = actions,
-                content = content
-            )
-        }
+                .align(if (bottom) Alignment.BottomCenter else Alignment.Center)
+                .width(panelWidth)
+                .consumeWindowInsets(environment.contentInsets.only(WindowInsetsSides.Bottom))
+                .nestedScroll(nestedScroll)
+                .then(modifier),
+            actions = actions,
+            content = content
+        )
     }
+}
+
+private fun sheetViewportInsets(
+    bottom: Boolean,
+    environment: SheetHostEnvironment
+): WindowInsets = if (bottom) {
+    environment.contentInsets.only(WindowInsetsSides.Top + WindowInsetsSides.Horizontal)
+} else {
+    SheetSymmetricInsets(
+        insets = environment.safeInsets,
+        minimum = SheetDefaults.WindowMargin
+    ).union(environment.imeInsets)
+}
+
+private fun sheetPanelWidth(
+    availableWidth: Dp,
+    bottom: Boolean
+): Dp {
+    val maximumWidth = if (bottom) SheetDefaults.BottomMaxWidth else SheetDefaults.CenteredMaxWidth
+    val margin = if (bottom && availableWidth >= SheetDefaults.AdaptiveBreakpoint) {
+        SheetDefaults.WindowMargin
+    } else {
+        0.dp
+    }
+    return (availableWidth - margin * 2).coerceIn(0.dp, maximumWidth)
+}
+
+private fun sheetPanelHeight(
+    availableHeight: Dp,
+    panelWidth: Dp,
+    bottom: Boolean
+): Dp = if (bottom) {
+    availableHeight
+} else {
+    availableHeight
+        .coerceAtLeast(0.dp)
+        .coerceAtMost(SheetDefaults.CenteredMaxHeight)
+        .coerceAtMost(panelWidth * SheetDefaults.CENTERED_HEIGHT_TO_WIDTH_RATIO)
 }
 
 @Composable

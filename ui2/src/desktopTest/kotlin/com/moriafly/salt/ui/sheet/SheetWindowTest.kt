@@ -25,6 +25,7 @@ package com.moriafly.salt.ui.sheet
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -56,6 +57,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.WindowPosition
+import androidx.compose.ui.window.WindowState
 import androidx.compose.ui.window.rememberWindowState
 import com.moriafly.salt.ui.Button
 import com.moriafly.salt.ui.SaltTheme
@@ -534,148 +536,153 @@ internal class SheetFixture(
                 title = "SaltUI Sheet real input test",
                 init = { window = it }
             ) {
-                val density = LocalDensity.current
-                CompositionLocalProvider(
-                    LocalDensity provides Density(density.density, density.fontScale * fontScale)
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .padding(24.dp),
-                        verticalArrangement = Arrangement.spacedBy(16.dp)
-                    ) {
-                        Button(onClick = {
-                            visible = true
-                        }, text = "Open", modifier = probe("Open"))
-                        Button(onClick = {
-                            backgroundClicks++
-                        }, text = "Background", modifier = probe("Background"))
-                        Text("Background clicks: $backgroundClicks")
-                    }
-                    val scope = rememberCoroutineScope()
-                    Sheet(
-                        visible = visible,
-                        onDismissRequest = {
-                            requests++
-                            if (!retainRequest) visible = false
-                        },
-                        title = "Sheet test",
-                        modifier = probe("panel").testTag("sheet-panel"),
-                        properties = SheetProperties(
-                            presentation = if (bottom) {
-                                SheetPresentation.Bottom
-                            } else {
-                                SheetPresentation.Centered
-                            },
-                            dismissible = dismissible,
-                            contentInteraction = interaction,
-                            detents = configuredDetents ?: if (bottom) {
-                                listOf(
-                                    SheetDetent.Medium,
-                                    SheetDetent.Large
-                                )
-                            } else {
-                                listOf(SheetDetent.Content)
-                            }
-                        ),
-                        actions = {
-                            if (!noActions) {
-                                Button(onClick = {
-                                    visible = false
-                                }, text = "Program close", modifier = probe("Program close"))
-                            }
-                        }
-                    ) {
-                        val paddingText = if (readPadding) {
-                            "Padding: ${contentPadding.calculateBottomPadding()}"
-                        } else {
-                            "Read padding"
-                        }
-                        if (list) {
-                            LazyColumn(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .then(probe("list")),
-                                state = rememberLazyListState()
-                            ) {
-                                if (layoutControls) {
-                                    item {
-                                        Button(
-                                            onClick = { readPadding = !readPadding },
-                                            text = paddingText,
-                                            modifier = probe("Padding toggle")
-                                        )
-                                        Button(
-                                            onClick = { fontScale += 0.2f },
-                                            text = "Change font scale",
-                                            modifier = probe("Font scale")
-                                        )
-                                        Button(
-                                            onClick = { insideClicks++ },
-                                            text = "Inside",
-                                            modifier = probe("Inside")
-                                        )
-                                        if (noActions) {
-                                            Button(
-                                                onClick = { visible = false },
-                                                text = "Program close",
-                                                modifier = probe("Program close")
-                                            )
-                                        }
-                                    }
-                                }
-                                items(100) { Text("Row $it", Modifier.padding(12.dp)) }
-                            }
-                        } else {
-                            Button(onClick = {
-                                insideClicks++
-                            }, text = "Inside", modifier = probe("Inside"))
-                            Button(onClick = {
-                                scope.launch {
-                                    visible = false
-                                    delay(80)
-                                    visible = true
-                                }
-                            }, text = "Reopen", modifier = probe("Reopen"))
-                            Text("Inside clicks: $insideClicks")
-                            if (resizeWindow) {
-                                Button(
-                                    onClick = {
-                                        windowState.size =
-                                            DpSize(580.dp, if (compact) 200.dp else 400.dp)
-                                    },
-                                    text = "Resize window",
-                                    modifier = probe("Resize window")
-                                )
-                            }
-                            if (handoff) {
-                                Button(onClick = {
-                                    visible = false
-                                    nextVisible = true
-                                }, text = "Switch sheet", modifier = probe("Switch sheet"))
-                            }
-                        }
-                    }
-                }
-                if (handoff) {
-                    Sheet(
-                        visible = nextVisible,
-                        onDismissRequest = { nextVisible = false },
-                        title = "Next sheet"
-                    ) {
-                        Button(
-                            onClick = { insideClicks++ },
-                            text = "Next inside",
-                            modifier = probe("Next inside")
-                        )
-                        Button(
-                            onClick = { nextVisible = false },
-                            text = "Next close",
-                            modifier = probe("Next close")
-                        )
-                    }
+                PrimaryContent(windowState)
+                if (handoff) NextSheet()
+            }
+        }
+    }
+
+    @Composable
+    private fun PrimaryContent(windowState: WindowState) {
+        val density = LocalDensity.current
+        CompositionLocalProvider(
+            LocalDensity provides Density(density.density, density.fontScale * fontScale)
+        ) {
+            BackgroundContent()
+            PrimarySheet(windowState)
+        }
+    }
+
+    @Composable
+    private fun BackgroundContent() {
+        Column(
+            modifier = Modifier
+                .padding(24.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            FixtureButton("Open") { visible = true }
+            FixtureButton("Background") { backgroundClicks++ }
+            Text("Background clicks: $backgroundClicks")
+        }
+    }
+
+    @Composable
+    private fun PrimarySheet(windowState: WindowState) {
+        val scope = rememberCoroutineScope()
+        Sheet(
+            visible = visible,
+            onDismissRequest = {
+                requests++
+                if (!retainRequest) visible = false
+            },
+            title = "Sheet test",
+            modifier = probe("panel").testTag("sheet-panel"),
+            properties = sheetProperties(),
+            actions = {
+                if (!noActions) FixtureButton("Program close") { visible = false }
+            }
+        ) {
+            PrimarySheetContent(windowState) {
+                scope.launch {
+                    visible = false
+                    delay(80)
+                    visible = true
                 }
             }
         }
+    }
+
+    private fun sheetProperties() = SheetProperties(
+        presentation = if (bottom) SheetPresentation.Bottom else SheetPresentation.Centered,
+        dismissible = dismissible,
+        contentInteraction = interaction,
+        detents = configuredDetents ?: if (bottom) {
+            listOf(SheetDetent.Medium, SheetDetent.Large)
+        } else {
+            listOf(SheetDetent.Content)
+        }
+    )
+
+    @Composable
+    private fun SheetScope.PrimarySheetContent(
+        windowState: WindowState,
+        onReopen: () -> Unit
+    ) {
+        if (list) {
+            ListContent(contentPadding)
+        } else {
+            ButtonContent(windowState = windowState, onReopen = onReopen)
+        }
+    }
+
+    @Composable
+    private fun ListContent(contentPadding: PaddingValues) {
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .then(probe("list")),
+            state = rememberLazyListState()
+        ) {
+            if (layoutControls) {
+                item { ListControls(contentPadding) }
+            }
+            items(100) { Text("Row $it", Modifier.padding(12.dp)) }
+        }
+    }
+
+    @Composable
+    private fun ListControls(contentPadding: PaddingValues) {
+        val paddingText = if (readPadding) {
+            "Padding: ${contentPadding.calculateBottomPadding()}"
+        } else {
+            "Read padding"
+        }
+        FixtureButton(text = paddingText, key = "Padding toggle") { readPadding = !readPadding }
+        FixtureButton(text = "Change font scale", key = "Font scale") { fontScale += 0.2f }
+        FixtureButton("Inside") { insideClicks++ }
+        if (noActions) FixtureButton("Program close") { visible = false }
+    }
+
+    @Composable
+    private fun ButtonContent(
+        windowState: WindowState,
+        onReopen: () -> Unit
+    ) {
+        FixtureButton("Inside") { insideClicks++ }
+        FixtureButton(text = "Reopen", onClick = onReopen)
+        Text("Inside clicks: $insideClicks")
+        if (resizeWindow) {
+            FixtureButton("Resize window") {
+                windowState.size = DpSize(580.dp, if (compact) 200.dp else 400.dp)
+            }
+        }
+        if (handoff) {
+            FixtureButton("Switch sheet") {
+                visible = false
+                nextVisible = true
+            }
+        }
+    }
+
+    @Composable
+    private fun NextSheet() {
+        Sheet(
+            visible = nextVisible,
+            onDismissRequest = { nextVisible = false },
+            title = "Next sheet"
+        ) {
+            FixtureButton("Next inside") { insideClicks++ }
+            FixtureButton("Next close") { nextVisible = false }
+        }
+    }
+
+    @Composable
+    private fun FixtureButton(
+        text: String,
+        key: String = text,
+        onClick: () -> Unit
+    ) {
+        Button(onClick = onClick, text = text, modifier = probe(key))
     }
 
     private fun probe(key: String) = Modifier

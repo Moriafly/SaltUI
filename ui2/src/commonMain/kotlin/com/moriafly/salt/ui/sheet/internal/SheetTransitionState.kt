@@ -124,7 +124,7 @@ internal class SheetTransitionState(
             SheetAnchor.Hidden at viewportHeight
             points.forEach { (detent, resolvedHeight) ->
                 SheetAnchor.Detent(detent) at
-                    (viewportHeight - resolvedHeight)
+                    viewportHeight - resolvedHeight
             }
         }
         val anchorsChanged = anchors != position.anchors
@@ -244,7 +244,7 @@ internal class SheetTransitionState(
                 points.lastOrNull { it.second < currentHeight - 0.5f } ?: points.first()
             }
         } else {
-            points.minBy { abs((viewportHeight - it.second) - offset) }
+            points.minBy { abs(viewportHeight - it.second - offset) }
         }
         selected = target.first
         onDetentChanged(selected)
