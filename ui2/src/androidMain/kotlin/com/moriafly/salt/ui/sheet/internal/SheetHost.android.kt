@@ -45,13 +45,14 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.compose.ui.window.DialogWindowProvider
 import androidx.core.view.ViewCompat
-import androidx.core.view.WindowCompat
 import com.moriafly.salt.adaptive.window.SaltAdaptiveWindow
+import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.moriafly.salt.ui.sheet.SheetDisplayMode
+import com.moriafly.salt.ui.util.WindowUtil
 import androidx.compose.ui.graphics.Color as ComposeColor
 
 @Composable
-@OptIn(com.moriafly.salt.ui.UnstableSaltUiApi::class)
+@OptIn(UnstableSaltUiApi::class)
 internal actual fun SheetHost(
     inputEnabled: Boolean,
     displayMode: SheetDisplayMode,
@@ -122,6 +123,8 @@ internal actual fun SheetHost(
     }
 }
 
+@Suppress("DEPRECATION")
+@OptIn(UnstableSaltUiApi::class)
 private fun Window.configureSheetWindow(
     inputEnabled: Boolean,
     ownerView: View,
@@ -143,20 +146,31 @@ private fun Window.configureSheetWindow(
     val inputFlags = WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE or
         WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
     setFlags(if (inputEnabled) 0 else inputFlags, inputFlags)
-    @Suppress("DEPRECATION")
     val ownerController = ViewCompat.getWindowInsetsController(ownerView)
-    WindowCompat.getInsetsController(this, decorView).apply {
-        isAppearanceLightStatusBars = !inputEnabled &&
-            ownerController?.isAppearanceLightStatusBars == true
-        isAppearanceLightNavigationBars = if (inputEnabled && bottom) {
-            darkNavigationBarIcons
-        } else {
-            ownerController?.isAppearanceLightNavigationBars == true
-        }
+    val useDarkStatusBarIcons = !inputEnabled &&
+        ownerController?.isAppearanceLightStatusBars == true
+    val useDarkNavigationBarIcons = if (inputEnabled && bottom) {
+        darkNavigationBarIcons
+    } else {
+        ownerController?.isAppearanceLightNavigationBars == true
     }
-    @Suppress("DEPRECATION")
+    WindowUtil.setStatusBarForegroundColor(
+        window = this,
+        color = if (useDarkStatusBarIcons) {
+            WindowUtil.BarColor.Black
+        } else {
+            WindowUtil.BarColor.White
+        }
+    )
+    WindowUtil.setNavigationBarForegroundColor(
+        window = this,
+        color = if (useDarkNavigationBarIcons) {
+            WindowUtil.BarColor.Black
+        } else {
+            WindowUtil.BarColor.White
+        }
+    )
     statusBarColor = Color.TRANSPARENT
-    @Suppress("DEPRECATION")
     navigationBarColor = Color.TRANSPARENT
     if (Build.VERSION.SDK_INT >= 28) {
         attributes = attributes.apply {
@@ -165,7 +179,6 @@ private fun Window.configureSheetWindow(
         }
     }
     if (Build.VERSION.SDK_INT >= 29) {
-        @Suppress("DEPRECATION")
         isStatusBarContrastEnforced = false
         isNavigationBarContrastEnforced = false
     }

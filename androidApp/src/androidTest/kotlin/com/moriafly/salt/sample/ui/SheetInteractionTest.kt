@@ -83,6 +83,7 @@ import com.moriafly.salt.ui.sheet.SheetDetent
 import com.moriafly.salt.ui.sheet.SheetDisplayMode
 import com.moriafly.salt.ui.sheet.SheetProperties
 import com.moriafly.salt.ui.sheet.SheetScope
+import com.moriafly.salt.ui.util.WindowUtil
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Assume.assumeTrue
@@ -96,6 +97,84 @@ import java.util.concurrent.atomic.AtomicReference
 @RunWith(AndroidJUnit4::class)
 class SheetInteractionTest {
     private val device get() = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
+
+    @Test
+    fun bottomSheetRestoresOwnerSystemBarsConfiguredThroughWindowUtil() {
+        verifyWindowUtilSystemBars(SheetDisplayMode.Bottom)
+    }
+
+    @Test
+    fun floatingSheetPreservesOwnerNavigationBarsConfiguredThroughWindowUtil() {
+        verifyWindowUtilSystemBars(SheetDisplayMode.Floating)
+    }
+
+    private fun verifyWindowUtilSystemBars(displayMode: SheetDisplayMode) {
+        for (statusColor in WindowUtil.BarColor.entries) {
+            val navigationColor = if (statusColor == WindowUtil.BarColor.Black) {
+                WindowUtil.BarColor.White
+            } else {
+                WindowUtil.BarColor.Black
+            }
+            val fixture = AndroidSheetFixture(displayMode = displayMode)
+            ActivityScenario.launch(MainActivity::class.java).use { scenario ->
+                scenario.onActivity { it.setContent { fixture.Content() } }
+                shown(By.text("Open sheet"))
+                scenario.onActivity { activity ->
+                    val window = activity.window
+                    WindowUtil.setNavigationBarForegroundColor(window, navigationColor)
+                    WindowUtil.setStatusBarForegroundColor(window, statusColor)
+                    assertOwnerSystemBars(activity, statusColor, navigationColor)
+                }
+                click(By.text("Open sheet"))
+                scenario.onActivity { activity ->
+                    assertEquals(false, fixture.statusDarkIcons?.invoke())
+                    val navigation = fixture.navigationBarInsets?.invoke() ?: Insets.NONE
+                    val darkNavigationIcons = if (displayMode == SheetDisplayMode.Bottom) {
+                        fixture.lightBackground && navigation.left == 0 && navigation.right == 0
+                    } else {
+                        navigationColor == WindowUtil.BarColor.Black
+                    }
+                    assertEquals(
+                        darkNavigationIcons && Build.VERSION.SDK_INT >= Build.VERSION_CODES.O,
+                        fixture.navigationDarkIcons?.invoke()
+                    )
+                    assertOwnerSystemBars(activity, statusColor, navigationColor)
+                }
+                click(By.text("Inside"))
+                shown(By.text("Inside: 1"))
+                click(By.text("Program close"))
+                assertTrue(device.wait(Until.gone(By.text("Fixture sheet")), 5_000))
+                click(By.text("Background"))
+                shown(By.text("Background: 1"))
+                scenario.onActivity { activity ->
+                    assertOwnerSystemBars(activity, statusColor, navigationColor)
+                    assertEquals(0, fixture.requests)
+                    assertEquals(1, fixture.insideClicks)
+                    assertEquals(1, fixture.backgroundClicks)
+                }
+            }
+        }
+    }
+
+    private fun assertOwnerSystemBars(
+        activity: MainActivity,
+        statusColor: WindowUtil.BarColor,
+        navigationColor: WindowUtil.BarColor
+    ) {
+        val controller = WindowCompat.getInsetsController(
+            activity.window,
+            activity.window.decorView
+        )
+        assertEquals(
+            statusColor == WindowUtil.BarColor.Black,
+            controller.isAppearanceLightStatusBars
+        )
+        assertEquals(
+            navigationColor == WindowUtil.BarColor.Black &&
+                Build.VERSION.SDK_INT >= Build.VERSION_CODES.O,
+            controller.isAppearanceLightNavigationBars
+        )
+    }
 
     @Test
     fun pendingHandoffBlocksNativeBackgroundAndKeyboardInput() {
@@ -701,6 +780,7 @@ private class AndroidSheetFixture(
     var navigationInset = 0
     var sheetBackground = 0
     var lightBackground = false
+    var statusDarkIcons: (() -> Boolean)? = null
     var navigationDarkIcons: (() -> Boolean)? = null
     var navigationBarInsets: (() -> Insets)? = null
     val formFactor = AtomicReference(DeviceFormFactor.Unknown)
@@ -785,6 +865,14 @@ private class AndroidSheetFixture(
         navigationBarInsets = {
             ViewCompat.getRootWindowInsets(dialogView)
                 ?.getInsets(WindowInsetsCompat.Type.navigationBars()) ?: Insets.NONE
+        }
+        statusDarkIcons = dialogWindow?.let { window ->
+            {
+                WindowCompat.getInsetsController(
+                    window,
+                    window.decorView
+                ).isAppearanceLightStatusBars
+            }
         }
         navigationDarkIcons = dialogWindow?.let { window ->
             {
