@@ -41,7 +41,7 @@ class SheetMotionWindowTest {
     @Test
     fun slowAndFastHandleDragsToTheSamePositionChooseDifferentHeights() =
         runDesktopComposeUiTest {
-            val fixture = SheetFixture(bottom = true)
+            val fixture = SheetFixture(bottom = true, tracePointerEvents = true)
             setContent { fixture.Content() }
             val robot = fixture.activate()
             try {
@@ -57,6 +57,7 @@ class SheetMotionWindowTest {
                 )
                 waitForIdle()
                 assertEquals(medium.height, fixture.bounds.getValue("panel").height, 2f)
+                fixture.pointerTrace.clear()
                 fixture.drag(
                     robot = robot,
                     x = medium.center.x,
@@ -70,7 +71,8 @@ class SheetMotionWindowTest {
                 val expanded = fixture.bounds.getValue("panel")
                 assertTrue(
                     expanded.height > medium.height * 1.5f,
-                    "Fast drag settled at ${expanded.height}; medium was ${medium.height}"
+                    "Fast drag settled at ${expanded.height}; medium was ${medium.height}. " +
+                        fixture.pointerTrace.joinToString("\n")
                 )
                 fixture.click(robot, "Inside")
                 runOnIdle {
