@@ -24,8 +24,8 @@
 package com.moriafly.salt.ui.sheet
 
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.ComposeUiTest
+import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.v2.runDesktopComposeUiTest
 import androidx.compose.ui.unit.Dp
@@ -36,10 +36,10 @@ import com.moriafly.salt.adaptive.window.ProvideSaltAdaptiveWindow
 import com.moriafly.salt.adaptive.window.SaltAdaptiveWindow
 import com.moriafly.salt.adaptive.window.WindowSizeClass
 import com.moriafly.salt.ui.Button
+import kotlin.math.abs
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
-import kotlin.math.abs
 
 /**
  * Exercises automatic window scoping with real SaltWindow instances and native input.

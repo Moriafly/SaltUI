@@ -855,8 +855,28 @@ internal class SheetFixture(
     }
 
     fun click(robot: Robot, key: String) {
-        val rect = bounds.getValue(key)
+        val rect = awaitStableBounds(key)
         clickPoint(robot, rect.center.x, rect.center.y)
+    }
+
+    private fun awaitStableBounds(key: String): Rect {
+        val deadline = System.nanoTime() + 5_000_000_000L
+        var previous: Rect? = null
+        var stableSince = System.nanoTime()
+        while (System.nanoTime() < deadline) {
+            val current = bounds[key]
+            val now = System.nanoTime()
+            if (current == null || current.width <= 0f || current.height <= 0f) {
+                stableSince = now
+            } else if (current != previous) {
+                stableSince = now
+            } else if (now - stableSince >= 100_000_000L) {
+                return current
+            }
+            previous = current
+            Thread.sleep(20)
+        }
+        error("The native input target '$key' did not settle: ${bounds[key]}")
     }
 
     fun movePoint(robot: Robot, x: Float, y: Float) {
