@@ -22,7 +22,6 @@
 
 package com.moriafly.salt.ui.sheet
 
-import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.runtime.Composable
@@ -62,8 +61,11 @@ import kotlinx.coroutines.launch
  * [modifier] applies to the surface, not to the full-window scrim.
  * [SheetDisplayMode.Auto] selects a mode from the owning window's width and height.
  * [SheetDisplayMode.Bottom] supports height detents.
+ *
  * Only one Sheet in the same owning window may have [visible] set to true.
- * A pending Sheet keeps the window modal while the previous Sheet finishes exiting.
+ * To replace a Sheet, hide the current one and show the next in the same state update.
+ * Their surface animations overlap while the next Sheet takes over the scrim and input.
+ *
  * Use [SheetContentLayout.EdgeToEdge] with [SheetScope.contentPadding] for edge-to-edge scrolling.
  */
 @UnstableSaltUiApi
@@ -89,7 +91,6 @@ fun Sheet(
             )
         }
     val lease = rememberSheetLease(visible)
-    val progress = remember { Animatable(0f) }
     val contentState = rememberSaveableStateHolder()
     var retained by remember { mutableStateOf(false) }
     val currentVisible by rememberUpdatedState(visible)
@@ -106,14 +107,20 @@ fun Sheet(
     }
     LaunchedEffect(visible, lease) {
         if (visible) {
-            lease.coordinator.acquire(lease.token)
+            lease.coordinator.acquire(lease)
             retained = true
         } else if (!retained) {
             return@LaunchedEffect
         }
         snapshotFlow { state.ready }.first { it }
         coroutineScope {
-            launch { progress.animateTo(if (visible) 1f else 0f, tween(if (visible) 200 else 180)) }
+            launch {
+                val durationMillis = if (visible) 200 else 180
+                lease.scrimAnimation.animateTo(
+                    targetValue = if (visible) 1f else 0f,
+                    animationSpec = tween(durationMillis)
+                )
+            }
             launch { state.animateVisible(visible) }
         }
         if (!visible) {
@@ -134,7 +141,7 @@ fun Sheet(
                     contentState.SaveableStateProvider("sheet-content") {
                         SheetSurface(
                             state = state,
-                            progress = { progress.value },
+                            progress = { lease.scrimProgress },
                             visible = visible,
                             onDismissRequest = requestDismiss,
                             modifier = modifier,
@@ -153,7 +160,7 @@ fun Sheet(
         // Release ownership when the host leaves composition, including cancelled transitions.
         DisposableEffect(lease) {
             onDispose {
-                lease.coordinator.release(lease.token)
+                lease.coordinator.release(lease)
             }
         }
     }

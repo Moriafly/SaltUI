@@ -17,6 +17,7 @@
 
 package com.moriafly.salt.ui.sheet.internal
 
+import androidx.compose.animation.core.Animatable
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.State
@@ -25,10 +26,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.platform.WindowInfo
-import kotlinx.coroutines.flow.first
 
 /**
  * Main-thread registry: only the owning window's sheets share a presentation lease.
@@ -36,39 +35,48 @@ import kotlinx.coroutines.flow.first
 private val coordinators = mutableMapOf<WindowInfo, SheetHostCoordinator>()
 
 internal class SheetHostCoordinator {
-    val requests = mutableMapOf<Any, State<Boolean>>()
-    var holder: Any? by mutableStateOf(null)
+    val requests = mutableMapOf<SheetLease, State<Boolean>>()
+    var holder: SheetLease? by mutableStateOf(null)
+        private set
 
-    suspend fun acquire(token: Any) {
+    suspend fun acquire(lease: SheetLease) {
         check(requests.values.count { it.value } <= 1) {
             "Only one Sheet per window may have visible = true"
         }
-        snapshotFlow { holder == null || holder === token }.first { it }
-        holder = token
+        // Transfer the scrim without waiting for the previous surface to finish exiting.
+        val inheritedProgress = holder?.scrimAnimation?.value ?: lease.scrimAnimation.value
+        lease.scrimAnimation.snapTo(inheritedProgress)
+        holder = lease
     }
 
-    fun release(token: Any) {
-        if (holder === token) holder = null
+    fun release(lease: SheetLease) {
+        if (holder === lease) holder = null
     }
 }
 
 internal class SheetLease(
-    val coordinator: SheetHostCoordinator,
-    val token: Any
-)
+    val coordinator: SheetHostCoordinator
+) {
+    val scrimAnimation = Animatable(0f)
+
+    // Retained surfaces keep moving, but only the current host draws the shared scrim.
+    val scrimProgress: Float
+        get() = if (coordinator.holder === this) scrimAnimation.value else 0f
+}
 
 @Composable
 internal fun rememberSheetLease(visible: Boolean): SheetLease {
     val owner = LocalWindowInfo.current
     val request = rememberUpdatedState(visible)
     val lease = remember(owner) {
-        SheetLease(coordinators.getOrPut(owner) { SheetHostCoordinator() }, Any())
+        val coordinator = coordinators.getOrPut(owner) { SheetHostCoordinator() }
+        SheetLease(coordinator)
     }
     DisposableEffect(lease) {
-        lease.coordinator.requests[lease.token] = request
+        lease.coordinator.requests[lease] = request
         onDispose {
-            lease.coordinator.release(lease.token)
-            lease.coordinator.requests.remove(lease.token)
+            lease.coordinator.release(lease)
+            lease.coordinator.requests.remove(lease)
             if (lease.coordinator.requests.isEmpty()) coordinators.remove(owner)
         }
     }

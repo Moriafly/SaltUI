@@ -50,7 +50,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
 /**
- * Protects input while another Sheet is exiting, without composing pending business content.
+ * Protects input before the Sheet surface is composed, without exposing business content.
  */
 @Composable
 internal fun SheetPendingInput() {
