@@ -857,6 +857,7 @@ internal class SheetFixture(
     fun click(robot: Robot, key: String) {
         val rect = awaitStableBounds(key)
         clickPoint(robot, rect.center.x, rect.center.y)
+        if (visible) awaitStableBounds("panel")
     }
 
     private fun awaitStableBounds(key: String): Rect {
@@ -914,6 +915,7 @@ internal class SheetFixture(
         if (releaseDelay > 0) robot.delay(releaseDelay)
         robot.mouseRelease(InputEvent.BUTTON1_DOWN_MASK)
         robot.delay(650)
+        if (visible) awaitStableBounds("panel")
     }
 
     fun restorePointer(robot: Robot) {

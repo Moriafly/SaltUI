@@ -24,6 +24,7 @@
 package com.moriafly.salt.ui.sheet
 
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.onNodeWithText
@@ -37,6 +38,7 @@ import com.moriafly.salt.adaptive.window.SaltAdaptiveWindow
 import com.moriafly.salt.adaptive.window.WindowSizeClass
 import com.moriafly.salt.ui.Button
 import kotlin.math.abs
+import kotlin.math.roundToInt
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
@@ -99,7 +101,10 @@ class SheetAdaptiveWindowTest {
             fixture.click(robot, "Open")
             for ((index, size) in sizes.withIndex()) {
                 if (index > 0) fixture.click(robot, "Next window size")
-                waitForIdle()
+                waitUntil(timeoutMillis = 5_000) {
+                    fixture.window.width == size.first.width.value.roundToInt() &&
+                        fixture.window.height == size.first.height.value.roundToInt()
+                }
                 val bottom = when (displayMode) {
                     SheetDisplayMode.Auto -> size.second
                     SheetDisplayMode.Bottom -> true
@@ -294,34 +299,46 @@ class SheetAdaptiveWindowTest {
     }
 
     private fun ComposeUiTest.assertBottom(fixture: SheetFixture) {
-        waitForPanelGeometry(fixture = fixture, bottom = true)
-        val owner = fixture.bounds.getValue("owner")
-        val panel = fixture.bounds.getValue("panel")
+        val bounds = waitForPanelGeometry(fixture = fixture, bottom = true)
+        val owner = bounds.getValue("owner")
+        val panel = bounds.getValue("panel")
         assertEquals(owner.bottom, panel.bottom, 2f)
         assertEquals(owner.center.x, panel.center.x, 2f)
     }
 
     private fun ComposeUiTest.assertCentered(fixture: SheetFixture) {
-        waitForPanelGeometry(fixture = fixture, bottom = false)
-        val owner = fixture.bounds.getValue("owner")
-        val panel = fixture.bounds.getValue("panel")
+        val bounds = waitForPanelGeometry(fixture = fixture, bottom = false)
+        val owner = bounds.getValue("owner")
+        val panel = bounds.getValue("panel")
         assertEquals(owner.center.x, panel.center.x, 2f)
         assertEquals(owner.center.y, panel.center.y, 2f)
         assertTrue(panel.bottom < owner.bottom)
     }
 
-    private fun ComposeUiTest.waitForPanelGeometry(fixture: SheetFixture, bottom: Boolean) {
+    private fun ComposeUiTest.waitForPanelGeometry(
+        fixture: SheetFixture,
+        bottom: Boolean
+    ): Map<String, Rect> {
+        var settledBounds = emptyMap<String, Rect>()
         // The real window has its own frame clock, independent of the test harness's idle state.
         waitUntil(timeoutMillis = 5_000) {
             val bounds = fixture.bounds
             val owner = bounds["owner"] ?: return@waitUntil false
             val panel = bounds["panel"] ?: return@waitUntil false
+            val transform = fixture.window.graphicsConfiguration.defaultTransform
+            val ownerSizeIsCurrent =
+                abs(owner.right + owner.left - fixture.window.width * transform.scaleX) <= 2f &&
+                    abs(owner.bottom + owner.top - fixture.window.height * transform.scaleY) <= 2f
             val alignedVertically = if (bottom) {
                 abs(owner.bottom - panel.bottom) <= 2f
             } else {
                 abs(owner.center.y - panel.center.y) <= 2f && panel.bottom < owner.bottom
             }
-            panel.width > 0f && abs(owner.center.x - panel.center.x) <= 2f && alignedVertically
+            val aligned = ownerSizeIsCurrent && panel.width > 0f &&
+                abs(owner.center.x - panel.center.x) <= 2f && alignedVertically
+            if (aligned) settledBounds = bounds
+            aligned
         }
+        return settledBounds
     }
 }
