@@ -20,6 +20,7 @@
 package com.moriafly.salt.adaptive.window
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalAccessorScope
 import androidx.compose.ui.platform.LocalWindowInfo
 import platform.UIKit.UIDevice
 import platform.UIKit.UIUserInterfaceIdiomCarPlay
@@ -27,12 +28,15 @@ import platform.UIKit.UIUserInterfaceIdiomPad
 import platform.UIKit.UIUserInterfaceIdiomPhone
 
 @Composable
-actual fun currentSaltAdaptiveWindow(): SaltAdaptiveWindow = SaltAdaptiveWindow(
-    formFactor = UIDevice.currentDevice.deviceFormFactor(),
-    // Reading the window rather than the screen keeps the size class correct under iPad
-    // Split View and Stage Manager, where the app does not own the whole display.
-    sizeClass = calculateWindowSizeClass(LocalWindowInfo.current.containerDpSize.width)
-)
+actual fun currentSaltAdaptiveWindow(): SaltAdaptiveWindow = currentPlatformSaltAdaptiveWindow()
+
+internal actual fun CompositionLocalAccessorScope.platformSaltAdaptiveWindow(): SaltAdaptiveWindow =
+    saltAdaptiveWindow(
+        formFactor = UIDevice.currentDevice.deviceFormFactor(),
+        // Reading the window rather than the screen keeps the size class correct under iPad
+        // Split View and Stage Manager, where the app does not own the whole display.
+        windowSize = LocalWindowInfo.currentValue.containerDpSize
+    )
 
 private fun UIDevice.deviceFormFactor(): DeviceFormFactor = when (userInterfaceIdiom) {
     UIUserInterfaceIdiomPhone -> DeviceFormFactor.Phone

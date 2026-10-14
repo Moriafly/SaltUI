@@ -39,6 +39,6 @@ import com.moriafly.salt.ui.UnstableSaltUiApi
 @UnstableSaltUiApi
 @OptIn(ExperimentalComposeUiApi::class)
 internal fun WindowDecoration.resolveForPlatform(): WindowDecoration {
-    val requiresUndecorated = OS.isLinux()
+    val requiresUndecorated = OS.isLinux() && this == WindowDecoration.SystemDefault
     return if (requiresUndecorated) WindowDecoration.Undecorated(0.dp) else this
 }

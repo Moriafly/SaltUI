@@ -50,7 +50,4 @@ internal data class DialogMetrics(
     val titleFontWeight: FontWeight
 )
 
-/** Smoothing calibrated against Salt's concentric dialog reference geometry. */
-internal const val SaltContinuousCornerSmoothing = 0.65f
-
 internal expect fun platformDialogMetrics(): DialogMetrics

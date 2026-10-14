@@ -161,6 +161,7 @@ kotlin {
         val commonMain by getting
         commonMain.dependencies {
             api(project(":core"))
+            api(project(":salt-adaptive-window"))
             implementation(libs.compose.runtime)
             implementation(libs.compose.foundation)
             implementation(libs.compose.ui)

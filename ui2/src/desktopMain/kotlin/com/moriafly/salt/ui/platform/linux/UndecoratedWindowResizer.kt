@@ -17,54 +17,58 @@
 package com.moriafly.salt.ui.platform.linux
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.pointer.PointerEventType
-import androidx.compose.ui.input.pointer.PointerIcon
-import androidx.compose.ui.input.pointer.isPrimaryPressed
-import androidx.compose.ui.input.pointer.onPointerEvent
-import androidx.compose.ui.input.pointer.pointerHoverIcon
-import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.Measurable
+import androidx.compose.ui.layout.boundsInWindow
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.moriafly.salt.ui.UnstableSaltUiApi
-import com.moriafly.salt.ui.onPointerEventCompat
 import com.moriafly.salt.ui.window.WindowResizeEdge
+import java.awt.Component
 import java.awt.Cursor
 import java.awt.Dimension
-import java.awt.MouseInfo
 import java.awt.Point
 import java.awt.Window
+import java.awt.event.MouseEvent
 
-@OptIn(ExperimentalComposeUiApi::class, UnstableSaltUiApi::class)
+@OptIn(UnstableSaltUiApi::class)
 internal class UndecoratedWindowResizer(
     private val window: Window,
     private val onResizeEdgeChange: (WindowResizeEdge) -> Unit
-) {
+) : LinuxWindowMouseInput.Handler {
     var enabled: Boolean by mutableStateOf(false)
     var resizerThickness: Dp by mutableStateOf(4.dp)
 
-    private var pressedCursor by mutableStateOf<Cursor?>(null)
-
+    private val sideBounds = mutableMapOf<Int, Rect>()
+    private val sideCursors = mutableMapOf<Int, Int>()
+    private var resizingSide = 0
+    private var hoveredSide = 0
+    private var suppressClick = false
+    private var resizeCursor: Cursor? = null
+    private var cursorComponent: Component? = null
+    private var previousCursor: Cursor? = null
     private var initialPointPos = Point()
     private var initialWindowPos = Point()
     private var initialWindowSize = Dimension()
 
-    val dragCursorModifier: Modifier
-        get() = Modifier.pointerHoverIcon(
-            icon = pressedCursor?.let(::PointerIcon) ?: PointerIcon.Default,
-            overrideDescendants = pressedCursor != null
-        )
-
     @Composable
     fun Content(modifier: Modifier = Modifier) {
+        DisposableEffect(this, enabled) {
+            val unregister = LinuxWindowMouseInput.register(
+                window = window,
+                handler = this@UndecoratedWindowResizer,
+                priority = 1
+            )
+            onDispose { unregister() }
+        }
         if (!enabled) return
 
         Layout(
@@ -98,7 +102,7 @@ internal class UndecoratedWindowResizer(
                     left.place(0, b)
                     right.place(constraints.maxWidth - b, b)
                     top.place(b, 0)
-                    bottom.place(0, constraints.maxHeight - b)
+                    bottom.place(b, constraints.maxHeight - b)
                     leftTop.place(0, 0)
                     rightTop.place(constraints.maxWidth - b, 0)
                     leftBottom.place(0, constraints.maxHeight - b)
@@ -108,65 +112,101 @@ internal class UndecoratedWindowResizer(
         )
     }
 
-    private fun Modifier.resizeOnDrag(awtCursorId: Int, sides: Int) = pointerInput(Unit) {
-        var isResizing = false
-        awaitPointerEventScope {
-            while (true) {
-                val event = awaitPointerEvent()
-                val change = event.changes.first()
-                val changedToPressed = !change.previousPressed && change.pressed
+    override fun onMouseEvent(event: MouseEvent): Boolean {
+        if (!enabled) return false
+        val position = LinuxWindowMouseInput.positionInContent(event, window)
+        val side = sideBounds.entries.firstOrNull { it.value.contains(position) }?.key ?: 0
+        when (event.id) {
+            MouseEvent.MOUSE_MOVED, MouseEvent.MOUSE_ENTERED -> setHoveredSide(side)
+            MouseEvent.MOUSE_EXITED -> if (resizingSide == 0) setHoveredSide(0)
+            MouseEvent.MOUSE_PRESSED -> {
+                if (event.button != MouseEvent.BUTTON1) return resizingSide != 0
+                suppressClick = false
+                if (side == 0) return false
+                resizingSide = side
+                initialPointPos = event.locationOnScreen
+                initialWindowPos = window.location
+                initialWindowSize = window.size
+                setHoveredSide(side)
+                resizeCursor = LinuxResizeCursor.get(sideCursors.getValue(side))
+                return true
+            }
 
-                val mouseLocation = mouseLocationOnScreen()
-                if (event.buttons.isPrimaryPressed && changedToPressed && (mouseLocation != null)) {
-                    initialPointPos = mouseLocation
-                    initialWindowPos = Point(window.x, window.y)
-                    initialWindowSize = Dimension(window.width, window.height)
-                    isResizing = true
-                    pressedCursor = LinuxResizeCursor.get(awtCursorId)
-                }
+            MouseEvent.MOUSE_DRAGGED -> {
+                if (resizingSide == 0) return false
+                resize(resizingSide, event.locationOnScreen)
+                return true
+            }
 
-                if (!event.buttons.isPrimaryPressed || (mouseLocation == null)) {
-                    isResizing = false
-                    pressedCursor = null
+            MouseEvent.MOUSE_RELEASED -> {
+                if (resizingSide == 0) return false
+                if (event.button == MouseEvent.BUTTON1) {
+                    resizingSide = 0
+                    suppressClick = true
+                    setHoveredSide(side)
                 }
+                return true
+            }
 
-                if (event.type == PointerEventType.Enter) {
-                    onResizeEdgeChange(sides.toWindowResizeEdge())
-                }
-
-                if (event.type == PointerEventType.Exit) {
-                    onResizeEdgeChange(WindowResizeEdge.None)
-                }
-
-                if ((event.type == PointerEventType.Move) && (mouseLocation != null)) {
-                    if (isResizing) {
-                        resize(sides, mouseLocation)
-                    }
-                }
+            MouseEvent.MOUSE_CLICKED -> if (suppressClick && event.button == MouseEvent.BUTTON1) {
+                suppressClick = false
+                return true
             }
         }
+        return false
+    }
+
+    override fun afterMouseEvent(event: MouseEvent) {
+        val cursor = resizeCursor ?: return
+        val component = event.component
+        if (cursorComponent !== component) {
+            restoreCursor()
+            cursorComponent = component
+            previousCursor = component.cursor
+        }
+        // Compose may update the cursor while dispatching hover events to a Dialog.
+        component.cursor = cursor
+    }
+
+    override fun cancel() {
+        resizingSide = 0
+        suppressClick = false
+        setHoveredSide(0)
+        restoreCursor()
+    }
+
+    private fun setHoveredSide(side: Int) {
+        if (side == hoveredSide) return
+        hoveredSide = side
+        onResizeEdgeChange(side.toWindowResizeEdge())
+        resizeCursor = sideCursors[side]?.let(LinuxResizeCursor::get)
+        if (side == 0) restoreCursor()
+    }
+
+    private fun restoreCursor() {
+        cursorComponent?.cursor = previousCursor
+        cursorComponent = null
+        previousCursor = null
     }
 
     @Composable
-    private fun Side(cursorId: Int, sides: Int) = Layout(
-        {},
-        Modifier.cursor(cursorId).resizeOnDrag(cursorId, sides),
-        measurePolicy = { _, constraints ->
-            layout(constraints.maxWidth, constraints.maxHeight) {}
+    private fun Side(cursorId: Int, sides: Int) {
+        DisposableEffect(sides) {
+            sideCursors[sides] = cursorId
+            onDispose {
+                sideBounds.remove(sides)
+                sideCursors.remove(sides)
+            }
         }
-    )
-
-    @Composable
-    private fun Modifier.cursor(awtCursorId: Int): Modifier {
-        var cursor by remember(awtCursorId) { mutableStateOf(LinuxResizeCursor.get(awtCursorId)) }
-        return this
-            .onPointerEvent(PointerEventType.Enter) {
-                cursor = LinuxResizeCursor.get(awtCursorId)
+        Layout(
+            content = {},
+            modifier = Modifier.onGloballyPositioned {
+                sideBounds[sides] = it.boundsInWindow()
+            },
+            measurePolicy = { _, constraints ->
+                layout(constraints.maxWidth, constraints.maxHeight) {}
             }
-            .onPointerEvent(PointerEventType.Press) {
-                cursor = LinuxResizeCursor.get(awtCursorId)
-            }
-            .pointerHoverIcon(PointerIcon(cursor))
+        )
     }
 
     private fun Int.toWindowResizeEdge(): WindowResizeEdge {
@@ -224,11 +264,3 @@ internal class UndecoratedWindowResizer(
         const val Bottom = 0x1000
     }
 }
-
-/**
- * Returns the mouse pointer's location on the screen or `null` if none.
- *
- * Note that this can return null at any time, even if it previously returned a non-null value, and
- * even during a mouse-dispatching event.
- */
-private fun mouseLocationOnScreen(): Point? = MouseInfo.getPointerInfo()?.location

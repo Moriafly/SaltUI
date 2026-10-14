@@ -30,11 +30,18 @@ import androidx.graphics.shapes.CornerRounding
 import androidx.graphics.shapes.RoundedPolygon
 import androidx.graphics.shapes.rectangle
 
-/** A rounded rectangle with curvature that eases smoothly into its straight edges. */
+private const val DEFAULT_SMOOTHING = 0.65f
+
+/**
+ * A rounded rectangle with curvature that eases smoothly into its straight edges.
+ *
+ * [topOnly] keeps the bottom corners square for surfaces attached to a window edge.
+ */
 @Immutable
 internal data class SmoothRoundedRectangleShape(
     val radius: Dp,
-    val smoothing: Float
+    val smoothing: Float = DEFAULT_SMOOTHING,
+    val topOnly: Boolean = false
 ) : Shape {
     init {
         require(smoothing in 0f..1f) { "smoothing must be between 0 and 1" }
@@ -55,13 +62,18 @@ internal data class SmoothRoundedRectangleShape(
             return Outline.Rectangle(Rect(0f, 0f, size.width, size.height))
         }
 
+        val rounding = CornerRounding(radius = radiusPx, smoothing = smoothing)
+        val perVertexRounding = if (topOnly) {
+            // Rectangle vertices run bottom-right, bottom-left, top-left, top-right.
+            listOf(CornerRounding.Unrounded, CornerRounding.Unrounded, rounding, rounding)
+        } else {
+            null
+        }
         val polygon = RoundedPolygon.rectangle(
             width = size.width,
             height = size.height,
-            rounding = CornerRounding(
-                radius = radiusPx,
-                smoothing = smoothing
-            ),
+            rounding = rounding,
+            perVertexRounding = perVertexRounding,
             centerX = size.width / 2f,
             centerY = size.height / 2f
         )

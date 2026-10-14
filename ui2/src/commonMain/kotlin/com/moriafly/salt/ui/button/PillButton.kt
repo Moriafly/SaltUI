@@ -21,6 +21,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
@@ -34,8 +35,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
-import com.moriafly.salt.core.os.OS
+import com.moriafly.salt.ui.ButtonDefaults
+import com.moriafly.salt.ui.ControlSize
+import com.moriafly.salt.ui.LocalControlSize
 import com.moriafly.salt.ui.SaltTheme
 import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.moriafly.salt.ui.enabledAlpha
@@ -45,8 +47,8 @@ import com.moriafly.salt.ui.thenIf
 /**
  * A button that can be rendered as either a perfect circle or a pill (capsule) shape.
  *
- * - **Circle button**: When [text] is `null`, the button has a fixed width and height of
- *   [PillButtonDefaults.Height], rendering as a perfect circle containing only the [icon].
+ * - **Circle button**: When [text] is `null`, the button has equal width and height resolved from
+ *   [size], rendering as a perfect circle containing only the [icon].
  * - **Pill button**: When [text] is provided, the button expands horizontally into a capsule
  *   shape with the [icon] on the leading side and [text] on the trailing side.
  *
@@ -55,6 +57,7 @@ import com.moriafly.salt.ui.thenIf
  * @param enabled Whether the button is enabled and responds to click events.
  * @param text Optional text content displayed to the right of the [icon].
  * When provided, the button becomes a pill shape; when `null`, it is a perfect circle.
+ * @param size The control size, inherited from [LocalControlSize] unless specified explicitly.
  * @param icon Icon content displayed inside the button.
  */
 @UnstableSaltUiApi
@@ -64,15 +67,17 @@ fun PillButton(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     text: (@Composable () -> Unit)? = null,
+    size: ControlSize = LocalControlSize.current,
     icon: @Composable () -> Unit
 ) {
+    val containerHeight = PillButtonDefaults.containerHeight(size)
     BasicPillButton(
         modifier = modifier
             .run {
                 if (text != null) {
-                    height(PillButtonDefaults.Height)
+                    height(containerHeight)
                 } else {
-                    size(PillButtonDefaults.Height)
+                    size(containerHeight)
                 }
             }
             .clip(CircleShape)
@@ -84,10 +89,11 @@ fun PillButton(
                 onClick = onClick
             )
             .thenIf(text != null) {
-                padding(horizontal = PillButtonDefaults.HorizontalPadding)
+                padding(PillButtonDefaults.contentPadding(size))
             }
             .enabledAlpha(enabled),
         text = text,
+        size = size,
         icon = icon
     )
 }
@@ -100,6 +106,7 @@ fun PillButton(
  *
  * @param modifier [Modifier] to be applied to the container.
  * @param text Optional text content displayed to the right of the [icon].
+ * @param size The control size used for the icon and spacing, inherited from [LocalControlSize].
  * @param icon Icon content displayed inside the button.
  */
 @UnstableSaltUiApi
@@ -107,6 +114,7 @@ fun PillButton(
 fun BasicPillButton(
     modifier: Modifier = Modifier,
     text: (@Composable () -> Unit)? = null,
+    size: ControlSize = LocalControlSize.current,
     icon: @Composable () -> Unit
 ) {
     Row(
@@ -116,7 +124,7 @@ fun BasicPillButton(
     ) {
         Box(
             modifier = Modifier
-                .size(PillButtonDefaults.IconSize),
+                .size(PillButtonDefaults.iconSize(size)),
             contentAlignment = Alignment.Center,
             propagateMinConstraints = true
         ) {
@@ -124,10 +132,58 @@ fun BasicPillButton(
         }
 
         if (text != null) {
-            Spacer(Modifier.width(4.dp))
+            Spacer(Modifier.width(PillButtonDefaults.iconSpacing(size)))
             text()
         }
     }
+}
+
+/**
+ * Retains the original entry point for previously compiled callers.
+ */
+@Deprecated(
+    message = "Retained for binary compatibility. Use the overload with size.",
+    level = DeprecationLevel.HIDDEN
+)
+@UnstableSaltUiApi
+@Composable
+fun PillButton(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    text: (@Composable () -> Unit)? = null,
+    icon: @Composable () -> Unit
+) {
+    PillButton(
+        onClick = onClick,
+        modifier = modifier,
+        enabled = enabled,
+        text = text,
+        size = LocalControlSize.current,
+        icon = icon
+    )
+}
+
+/**
+ * Retains the original entry point for previously compiled callers.
+ */
+@Deprecated(
+    message = "Retained for binary compatibility. Use the overload with size.",
+    level = DeprecationLevel.HIDDEN
+)
+@UnstableSaltUiApi
+@Composable
+fun BasicPillButton(
+    modifier: Modifier = Modifier,
+    text: (@Composable () -> Unit)? = null,
+    icon: @Composable () -> Unit
+) {
+    BasicPillButton(
+        modifier = modifier,
+        text = text,
+        size = LocalControlSize.current,
+        icon = icon
+    )
 }
 
 /**
@@ -136,17 +192,24 @@ fun BasicPillButton(
 @UnstableSaltUiApi
 object PillButtonDefaults {
     /**
-     * The recommended icon size for content inside a [PillButton].
+     * The platform-resolved height, shared with standard buttons of the same [size].
      */
-    internal val IconSize: Dp = if (OS.isDesktop()) 18.dp else 22.dp
+    fun containerHeight(size: ControlSize): Dp = ButtonDefaults.containerHeight(size)
 
     /**
-     * The default height of a [PillButton].
+     * The content padding for a pill-shaped button of the given [size].
      */
-    internal val Height: Dp = if (OS.isDesktop()) 36.dp else 48.dp
+    fun contentPadding(
+        size: ControlSize
+    ): PaddingValues = ButtonDefaults.contentPadding(size)
 
     /**
-     * The default horizontal content padding for a pill-shaped [PillButton].
+     * The icon size for the given control [size].
      */
-    internal val HorizontalPadding: Dp = if (OS.isDesktop()) 10.dp else 16.dp
+    fun iconSize(size: ControlSize): Dp = ButtonDefaults.iconSize(size)
+
+    /**
+     * The spacing between the icon and text for the given control [size].
+     */
+    fun iconSpacing(size: ControlSize): Dp = ButtonDefaults.iconSpacing(size)
 }

@@ -22,29 +22,48 @@ package com.moriafly.salt.adaptive.window
 import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
+import android.util.DisplayMetrics
+import android.view.WindowManager
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalAccessorScope
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.platform.LocalWindowInfo
+import kotlin.math.min
 
 @Composable
-actual fun currentSaltAdaptiveWindow(): SaltAdaptiveWindow {
-    val context = LocalContext.current
-    val configuration = LocalConfiguration.current
+actual fun currentSaltAdaptiveWindow(): SaltAdaptiveWindow = currentPlatformSaltAdaptiveWindow()
 
-    return SaltAdaptiveWindow(
-        formFactor = context.deviceFormFactor(configuration.smallestScreenWidthDp),
-        sizeClass = calculateWindowSizeClass(configuration.screenWidthDp.dp)
+internal actual fun CompositionLocalAccessorScope.platformSaltAdaptiveWindow(): SaltAdaptiveWindow {
+    val context = LocalContext.currentValue
+    val configuration = LocalConfiguration.currentValue
+    return saltAdaptiveWindow(
+        formFactor = context.deviceFormFactor(
+            density = configuration.densityDpi / DisplayMetrics.DENSITY_DEFAULT.toFloat()
+        ),
+        windowSize = LocalWindowInfo.currentValue.containerDpSize
     )
 }
 
-private fun Context.deviceFormFactor(smallestScreenWidthDp: Int): DeviceFormFactor = when {
+private fun Context.deviceFormFactor(density: Float): DeviceFormFactor = when {
     isAutomotive() -> DeviceFormFactor.Car
     isFoldable() -> DeviceFormFactor.Foldable
-    // sw600dp is the platform's own tablet qualifier, so it agrees with the resources the
-    // framework selects for this device.
-    smallestScreenWidthDp >= 600 -> DeviceFormFactor.Tablet
+    // Window-specific resource qualifiers shrink in split-screen; device adaptation must not.
+    smallestDisplayWidthDp(density) >= 600f -> DeviceFormFactor.Tablet
     else -> DeviceFormFactor.Phone
+}
+
+private fun Context.smallestDisplayWidthDp(density: Float): Float {
+    val windowManager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
+    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+        val bounds = windowManager.maximumWindowMetrics.bounds
+        min(bounds.width(), bounds.height()) / density
+    } else {
+        val metrics = DisplayMetrics()
+        @Suppress("DEPRECATION")
+        windowManager.defaultDisplay.getRealMetrics(metrics)
+        min(metrics.widthPixels, metrics.heightPixels) / metrics.density
+    }
 }
 
 // Android Automotive only exists from API 24 onwards, so the guard is also semantically correct.
