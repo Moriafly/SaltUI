@@ -44,6 +44,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.awt.ComposeWindow
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
@@ -108,7 +109,9 @@ class SheetWindowTest {
         val closeButton = sheetCloseButton()
         val region = onNode(closeButton).fetchSemanticsNode().boundsInWindow
         runOnIdle { fixture.dismissible = false }
-        waitForIdle()
+        waitUntil(timeoutMillis = 5_000) {
+            onAllNodes(closeButton).fetchSemanticsNodes().isEmpty()
+        }
         onNode(closeButton).assertDoesNotExist()
         val pixelStep = fixture.window.graphicsConfiguration.defaultTransform.scaleX.toFloat()
         val left = ceil(region.left / pixelStep) * pixelStep
@@ -125,7 +128,9 @@ class SheetWindowTest {
         fixture.click(robot, "Inside")
         runOnIdle { assertEquals(1, fixture.insideClicks) }
         runOnIdle { fixture.dismissible = true }
-        waitForIdle()
+        waitUntil(timeoutMillis = 5_000) {
+            onAllNodes(closeButton).fetchSemanticsNodes().size == 1
+        }
         onNode(closeButton).assertIsDisplayed()
         fixture.clickPoint(robot, region.center.x, region.center.y)
         waitForIdle()
@@ -578,7 +583,24 @@ internal class SheetFixture(
     private val undecorated: Boolean = false
 ) {
     lateinit var window: ComposeWindow
-    val bounds = ConcurrentHashMap<String, Rect>()
+    private val coordinates = ConcurrentHashMap<String, LayoutCoordinates>()
+    // A graphics-layer animation changes these bounds without another positioning callback.
+    // Read the live coordinates on AWT's UI thread after native input has settled.
+    val bounds: Map<String, Rect>
+        get() {
+            var rectangles: Map<String, Rect> = emptyMap()
+            val readBounds = {
+                rectangles = coordinates
+                    .filterValues { it.isAttached }
+                    .mapValues { it.value.boundsInWindow() }
+            }
+            if (javax.swing.SwingUtilities.isEventDispatchThread()) {
+                readBounds()
+            } else {
+                javax.swing.SwingUtilities.invokeAndWait(readBounds)
+            }
+            return rectangles
+        }
     var dismissible by mutableStateOf(dismissible)
     var visible by mutableStateOf(false)
     private var nextVisible by mutableStateOf(false)
@@ -816,8 +838,8 @@ internal class SheetFixture(
 
     private fun probe(key: String) = Modifier
         .onGloballyPositioned {
+            coordinates[key] = it
             val rectangle = it.boundsInWindow()
-            bounds[key] = rectangle
             if (key == "panel") panelTrace += rectangle
         }
         .onFocusChanged { if (it.isFocused) focusTrace += key }

@@ -25,6 +25,7 @@ package com.moriafly.salt.ui.sheet
 
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.ComposeUiTest
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.v2.runDesktopComposeUiTest
 import androidx.compose.ui.unit.Dp
@@ -38,6 +39,7 @@ import com.moriafly.salt.ui.Button
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
+import kotlin.math.abs
 
 /**
  * Exercises automatic window scoping with real SaltWindow instances and native input.
@@ -291,18 +293,35 @@ class SheetAdaptiveWindowTest {
         )
     }
 
-    private fun assertBottom(fixture: SheetFixture) {
+    private fun ComposeUiTest.assertBottom(fixture: SheetFixture) {
+        waitForPanelGeometry(fixture = fixture, bottom = true)
         val owner = fixture.bounds.getValue("owner")
         val panel = fixture.bounds.getValue("panel")
         assertEquals(owner.bottom, panel.bottom, 2f)
         assertEquals(owner.center.x, panel.center.x, 2f)
     }
 
-    private fun assertCentered(fixture: SheetFixture) {
+    private fun ComposeUiTest.assertCentered(fixture: SheetFixture) {
+        waitForPanelGeometry(fixture = fixture, bottom = false)
         val owner = fixture.bounds.getValue("owner")
         val panel = fixture.bounds.getValue("panel")
         assertEquals(owner.center.x, panel.center.x, 2f)
         assertEquals(owner.center.y, panel.center.y, 2f)
         assertTrue(panel.bottom < owner.bottom)
+    }
+
+    private fun ComposeUiTest.waitForPanelGeometry(fixture: SheetFixture, bottom: Boolean) {
+        // The real window has its own frame clock, independent of the test harness's idle state.
+        waitUntil(timeoutMillis = 5_000) {
+            val bounds = fixture.bounds
+            val owner = bounds["owner"] ?: return@waitUntil false
+            val panel = bounds["panel"] ?: return@waitUntil false
+            val alignedVertically = if (bottom) {
+                abs(owner.bottom - panel.bottom) <= 2f
+            } else {
+                abs(owner.center.y - panel.center.y) <= 2f && panel.bottom < owner.bottom
+            }
+            panel.width > 0f && abs(owner.center.x - panel.center.x) <= 2f && alignedVertically
+        }
     }
 }
