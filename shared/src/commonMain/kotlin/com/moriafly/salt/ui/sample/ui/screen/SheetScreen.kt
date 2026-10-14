@@ -56,6 +56,7 @@ import com.moriafly.salt.ui.ItemOuterTip
 import com.moriafly.salt.ui.ItemPopup
 import com.moriafly.salt.ui.ItemSlider
 import com.moriafly.salt.ui.ItemSwitcher
+import com.moriafly.salt.ui.ItemValue
 import com.moriafly.salt.ui.RoundedColumn
 import com.moriafly.salt.ui.SaltTheme
 import com.moriafly.salt.ui.Text
@@ -130,6 +131,22 @@ fun SheetScreen() {
         }
         Unit
     }
+    val properties = SheetProperties(
+        displayMode = displayModes[displayMode],
+        contentLayout = if (edgeToEdge) {
+            SheetContentLayout.EdgeToEdge
+        } else {
+            SheetContentLayout.Inset
+        },
+        dismissible = dismissible,
+        dragEnabled = dragEnabled,
+        detents = sheetExampleDetents(heights),
+        scrollBehavior = if (expandFirst) {
+            SheetScrollBehavior.ExpandFirst
+        } else {
+            SheetScrollBehavior.ScrollFirst
+        }
+    )
     BasicScreenColumn(
         title = "Sheet"
     ) {
@@ -151,6 +168,11 @@ fun SheetScreen() {
                 text = "Open ${exampleNames[example]}"
             )
         }
+        SheetReplacementExample(
+            properties = properties,
+            showTitle = showTitle,
+            showActions = showActions
+        )
         ScreenCard(
             header = "Layout and height"
         ) {
@@ -235,22 +257,7 @@ fun SheetScreen() {
         } else {
             exampleNames[example]
         },
-        properties = SheetProperties(
-            displayMode = displayModes[displayMode],
-            contentLayout = if (edgeToEdge) {
-                SheetContentLayout.EdgeToEdge
-            } else {
-                SheetContentLayout.Inset
-            },
-            dismissible = dismissible,
-            dragEnabled = dragEnabled,
-            detents = sheetExampleDetents(index = heights),
-            scrollBehavior = if (expandFirst) {
-                SheetScrollBehavior.ExpandFirst
-            } else {
-                SheetScrollBehavior.ScrollFirst
-            }
-        ),
+        properties = properties,
         actions = {
             if (showActions) {
                 SheetExampleActions(
@@ -313,6 +320,136 @@ fun SheetScreen() {
                 cancelText = "Keep editing",
                 confirmText = "Discard changes"
             )
+        }
+    }
+}
+
+private enum class ReplacementSheet { Menu, Information }
+
+@Composable
+private fun SheetReplacementExample(
+    properties: SheetProperties,
+    showTitle: Boolean,
+    showActions: Boolean
+) {
+    var currentSheet by rememberSaveable { mutableStateOf<ReplacementSheet?>(null) }
+    val close = { currentSheet = null }
+    val showMenu = { currentSheet = ReplacementSheet.Menu }
+    val showInformation = { currentSheet = ReplacementSheet.Information }
+    ScreenCard(
+        header = "Sheet replacement",
+        footer = "Open Song information, then return to the menu. " +
+            "The next sheet opens while the current sheet is closing."
+    ) {
+        ItemButton(
+            onClick = showMenu,
+            text = "Open song menu"
+        )
+    }
+
+    // These are siblings in the same window; one state update replaces the visible sheet.
+    Sheet(
+        visible = currentSheet == ReplacementSheet.Menu,
+        onDismissRequest = close,
+        title = if (showTitle) "Song menu" else null,
+        properties = properties,
+        actions = {
+            if (showActions) {
+                Button(
+                    onClick = close,
+                    text = "Done",
+                    modifier = Modifier
+                        .fillMaxWidth()
+                )
+            }
+        }
+    ) {
+        SheetScrollableContent(contentPadding = contentPadding) {
+            ItemOuterTip(
+                text = "Open the song information to replace this sheet immediately."
+            )
+            RoundedColumn {
+                ItemValue(
+                    text = "Track",
+                    sub = "Midnight Drive"
+                )
+                ItemButton(
+                    onClick = showInformation,
+                    text = "Song information"
+                )
+                if (!showActions) {
+                    ItemButton(
+                        onClick = close,
+                        text = "Close directly",
+                        primary = false
+                    )
+                }
+            }
+        }
+    }
+    Sheet(
+        visible = currentSheet == ReplacementSheet.Information,
+        onDismissRequest = close,
+        title = if (showTitle) "Song information" else null,
+        properties = properties,
+        actions = {
+            if (showActions) {
+                Button(
+                    onClick = showMenu,
+                    text = "Back to menu",
+                    appearance = ButtonAppearance.Subtle,
+                    modifier = Modifier
+                        .weight(1f)
+                )
+                Button(
+                    onClick = close,
+                    text = "Done",
+                    modifier = Modifier
+                        .weight(1f)
+                )
+            }
+        }
+    ) {
+        SheetScrollableContent(contentPadding = contentPadding) {
+            ItemOuterTip(
+                text = "Return to the menu to repeat the transition in either direction. " +
+                    "Try different display modes and heights."
+            )
+            RoundedColumn {
+                ItemValue(
+                    text = "Title",
+                    sub = "Midnight Drive"
+                )
+                ItemValue(
+                    text = "Artist",
+                    sub = "The Night Owls"
+                )
+                ItemValue(
+                    text = "Album",
+                    sub = "City Lights"
+                )
+                ItemValue(
+                    text = "Format",
+                    sub = "FLAC, 24-bit, 96 kHz"
+                )
+                ItemValue(
+                    text = "Duration",
+                    sub = "4:32"
+                )
+            }
+            if (!showActions) {
+                RoundedColumn {
+                    ItemButton(
+                        onClick = showMenu,
+                        text = "Back to menu"
+                    )
+                    ItemButton(
+                        onClick = close,
+                        text = "Close directly",
+                        primary = false
+                    )
+                }
+            }
         }
     }
 }
