@@ -20,7 +20,6 @@
 package com.moriafly.salt.ui.sheet.internal
 
 import androidx.compose.animation.core.animate
-import androidx.compose.animation.core.spring
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -33,8 +32,10 @@ import com.moriafly.salt.ui.DraggableAnchors
 import com.moriafly.salt.ui.sheet.SheetDetent
 import com.moriafly.salt.ui.sheet.SheetProperties
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.job
+import kotlinx.coroutines.launch
 import kotlin.math.abs
 
 internal sealed interface SheetAnchor {
@@ -54,13 +55,14 @@ internal class SheetTransitionState(
         initialValue = SheetAnchor.Hidden,
         positionalThreshold = { it * 0.5f },
         velocityThreshold = { with(density) { 600.dp.toPx() } },
-        animationSpec = spring(dampingRatio = 1f, stiffness = 500f)
+        animationSpec = SheetDefaults.MotionSpec
     )
     var viewportHeight by mutableFloatStateOf(0f)
         private set
     var points by mutableStateOf<List<Pair<SheetDetent, Float>>>(emptyList())
         private set
     private var contentHeight = 0f
+    private var scrimReferenceHeight by mutableFloatStateOf(0f)
     var selected by mutableStateOf<SheetDetent>(preferredDetent())
         private set
     private var animationJob: Job? = null
@@ -85,6 +87,15 @@ internal class SheetTransitionState(
         viewportHeight - position.offset.takeUnless { it.isNaN() }.orZero()
     ) / selectedHeight.coerceAtLeast(1f)
 
+    // Detent resizing keeps full dimming; dragging below the smallest detent fades it out.
+    val scrimProgress: Float
+        get() {
+            val reference = scrimReferenceHeight.takeIf { it > 0f }
+                ?: points.firstOrNull()?.second
+                ?: return 0f
+            return (visibleHeight / reference.coerceAtLeast(1f)).coerceIn(0f, 1f)
+        }
+
     fun updateGeometry(
         density: Density,
         height: Int,
@@ -99,7 +110,9 @@ internal class SheetTransitionState(
             it.first == selected
         }?.second?.times(densityScale)
         val oldProgress = presentationProgress
-        val preservePosition = ready && (position.isAnimationRunning || gestureOrigin != null)
+        val oldScrimProgress = scrimProgress
+        // Keep the live position while a replacement waits for the incoming surface's measurement.
+        val preservePosition = ready && presentationStarted
         this.density = density
         viewportHeight = height.toFloat()
         val inset = bottomInset.coerceIn(0, height).toFloat()
@@ -140,6 +153,9 @@ internal class SheetTransitionState(
             val mappedOffset = (viewportHeight - selectedHeight * oldProgress)
                 .coerceIn(anchors.minPosition(), anchors.maxPosition())
             position.dispatchRawDelta(mappedOffset - position.requireOffset())
+            if (scrimReferenceHeight > 0f && oldScrimProgress > 0f) {
+                scrimReferenceHeight = visibleHeight / oldScrimProgress
+            }
         }
     }
 
@@ -151,7 +167,13 @@ internal class SheetTransitionState(
     suspend fun animateVisible(visible: Boolean) {
         updateVisibility(visible = visible)
         if (visible) presentationStarted = true
+        if (!visible) {
+            // Capture the current opacity so release after a drag does not make the scrim jump.
+            val progress = scrimProgress
+            if (progress > 0f) scrimReferenceHeight = visibleHeight / progress
+        }
         animate(if (visible) SheetAnchor.Detent(selected) else SheetAnchor.Hidden)
+        scrimReferenceHeight = 0f
         if (!visible) presentationStarted = false
     }
 
@@ -168,25 +190,42 @@ internal class SheetTransitionState(
                 if (!targetOffset.isNaN()) {
                     val initialVelocity = if (firstRun) velocity else position.lastVelocity
                     firstRun = false
-                    animate(
-                        initialValue = position.requireOffset(),
-                        targetValue = targetOffset,
-                        initialVelocity = initialVelocity,
-                        animationSpec = position.animationSpec
-                    ) { value, currentVelocity ->
-                        dragTo(
-                            newOffset = value.coerceIn(
-                                anchors.minPosition(),
-                                anchors.maxPosition()
-                            ),
-                            lastKnownVelocity = currentVelocity
-                        )
+                    coroutineScope {
+                        if (latestTarget is SheetAnchor.Detent && scrimReferenceHeight > 0f) {
+                            launch { restoreScrimReference() }
+                        }
+                        animate(
+                            initialValue = position.requireOffset(),
+                            targetValue = targetOffset,
+                            initialVelocity = initialVelocity,
+                            animationSpec = position.animationSpec
+                        ) { value, currentVelocity ->
+                            dragTo(
+                                newOffset = value.coerceIn(
+                                    anchors.minPosition(),
+                                    anchors.maxPosition()
+                                ),
+                                lastKnownVelocity = currentVelocity
+                            )
+                        }
                     }
                 }
             }
         } finally {
             if (animationJob === job) animationJob = null
         }
+    }
+
+    private suspend fun restoreScrimReference() {
+        val minimumHeight = points.firstOrNull()?.second ?: return
+        animate(
+            initialValue = scrimReferenceHeight,
+            targetValue = minimumHeight,
+            animationSpec = position.animationSpec
+        ) { value, _ ->
+            scrimReferenceHeight = value
+        }
+        scrimReferenceHeight = 0f
     }
 
     fun beginGesture() {

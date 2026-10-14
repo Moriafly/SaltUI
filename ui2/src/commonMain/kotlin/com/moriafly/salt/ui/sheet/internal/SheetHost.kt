@@ -45,7 +45,8 @@ internal class SheetHostEnvironment(
     val windowSize: DpSize,
     val safeInsets: WindowInsets,
     val imeInsets: WindowInsets,
-    val adaptiveWindow: SaltAdaptiveWindow
+    val adaptiveWindow: SaltAdaptiveWindow,
+    val drawsScrim: Boolean = true
 ) {
     val contentInsets = safeInsets.union(imeInsets)
 }
@@ -53,14 +54,16 @@ internal class SheetHostEnvironment(
 @Composable
 internal fun sheetHostEnvironment(
     windowSize: DpSize,
-    adaptiveWindow: SaltAdaptiveWindow
+    adaptiveWindow: SaltAdaptiveWindow,
+    drawsScrim: Boolean = true
 ): SheetHostEnvironment = SheetHostEnvironment(
     windowSize = windowSize,
     safeInsets = WindowInsets.systemBars
         .union(WindowInsets.displayCutout)
         .union(WindowInsets.waterfall),
     imeInsets = WindowInsets.ime,
-    adaptiveWindow = adaptiveWindow
+    adaptiveWindow = adaptiveWindow,
+    drawsScrim = drawsScrim
 )
 
 /**
@@ -70,6 +73,7 @@ internal fun sheetHostEnvironment(
 @Composable
 @OptIn(com.moriafly.salt.ui.UnstableSaltUiApi::class)
 internal expect fun SheetHost(
+    lease: SheetLease,
     inputEnabled: Boolean,
     displayMode: SheetDisplayMode,
     adaptiveWindow: SaltAdaptiveWindow,

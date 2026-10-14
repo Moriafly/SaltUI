@@ -17,6 +17,7 @@
 
 package com.moriafly.salt.ui.sheet.internal
 
+import androidx.compose.animation.core.spring
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.isSpecified
@@ -26,6 +27,14 @@ import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.moriafly.salt.ui.sheet.SheetDisplayMode
 
 internal object SheetDefaults {
+    /**
+     * A no-bounce spring for responsive Sheet presentation and dismissal.
+     */
+    val MotionSpec = spring<Float>(
+        dampingRatio = 1f,
+        stiffness = 250f,
+        visibilityThreshold = 0.5f
+    )
     val BottomMaxWidth = 540.dp
     val FloatingMinWindowWidth = 600.dp
     val FloatingMinWindowHeight = 480.dp

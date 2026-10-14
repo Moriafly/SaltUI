@@ -57,7 +57,8 @@ import com.moriafly.salt.ui.thenIf
 @Composable
 internal fun SheetSurface(
     state: SheetTransitionState,
-    progress: () -> Float,
+    scrimAlpha: () -> Float,
+    dimAlpha: () -> Float,
     visible: Boolean,
     onDismissRequest: () -> Unit,
     modifier: Modifier,
@@ -92,11 +93,12 @@ internal fun SheetSurface(
             )
     ) {
         SheetScrim(
-            progress = progress,
+            alpha = scrimAlpha,
             onDismissRequest = onDismissRequest
         )
         SheetViewport(
             state = state,
+            dimAlpha = dimAlpha,
             visible = visible,
             onDismissRequest = onDismissRequest,
             modifier = modifier,
@@ -142,6 +144,7 @@ private fun rememberSheetNestedScroll(
 @Composable
 private fun SheetViewport(
     state: SheetTransitionState,
+    dimAlpha: () -> Float,
     visible: Boolean,
     onDismissRequest: () -> Unit,
     modifier: Modifier,
@@ -172,6 +175,7 @@ private fun SheetViewport(
         )
         SheetPanel(
             state = state,
+            dimAlpha = dimAlpha,
             visible = visible,
             onDismissRequest = onDismissRequest,
             title = title,
@@ -240,15 +244,15 @@ private fun sheetPanelHeight(
 }
 
 @Composable
-private fun SheetScrim(
-    progress: () -> Float,
+internal fun SheetScrim(
+    alpha: () -> Float,
     onDismissRequest: () -> Unit
 ) {
     Box(
         modifier = Modifier
             .fillMaxSize()
             .drawBehind {
-                drawRect(color = Color.Black.copy(alpha = SheetDefaults.SCRIM_OPACITY * progress()))
+                drawRect(color = Color.Black.copy(alpha = alpha()))
             }
             .focusProperties { canFocus = false }
             .clickable(

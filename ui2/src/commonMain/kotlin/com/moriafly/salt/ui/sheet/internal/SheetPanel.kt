@@ -35,6 +35,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.layout
@@ -59,6 +61,7 @@ import com.moriafly.salt.ui.thenIf
 @Composable
 internal fun SheetPanel(
     state: SheetTransitionState,
+    dimAlpha: () -> Float,
     visible: Boolean,
     onDismissRequest: () -> Unit,
     title: String?,
@@ -107,6 +110,11 @@ internal fun SheetPanel(
                     }
                 }
                 .clip(shape = shape)
+                .drawWithContent {
+                    drawContent()
+                    val alpha = dimAlpha()
+                    if (alpha > 0f) drawRect(color = Color.Black.copy(alpha = alpha))
+                }
                 .background(color = SaltTheme.colors.background)
                 .border(
                     width = 0.5.dp,

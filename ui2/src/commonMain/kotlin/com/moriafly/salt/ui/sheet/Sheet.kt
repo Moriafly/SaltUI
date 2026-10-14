@@ -22,10 +22,12 @@
 
 package com.moriafly.salt.ui.sheet
 
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
@@ -35,22 +37,20 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 import com.moriafly.salt.adaptive.window.LocalSaltAdaptiveWindow
 import com.moriafly.salt.ui.SaltTheme
 import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.moriafly.salt.ui.material.DisableMaterial
+import com.moriafly.salt.ui.sheet.internal.SheetDefaults
 import com.moriafly.salt.ui.sheet.internal.SheetDetentSaver
 import com.moriafly.salt.ui.sheet.internal.SheetHost
 import com.moriafly.salt.ui.sheet.internal.SheetPendingInput
+import com.moriafly.salt.ui.sheet.internal.SheetScrim
 import com.moriafly.salt.ui.sheet.internal.SheetSurface
 import com.moriafly.salt.ui.sheet.internal.SheetTransitionState
 import com.moriafly.salt.ui.sheet.internal.rememberSheetLease
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.launch
 
 /**
  * A modal, adaptive Sheet with its own height, animation, input and host lifecycle.
@@ -90,7 +90,8 @@ fun Sheet(
                 onDetentChanged = { preferred.value = it }
             )
         }
-    val lease = rememberSheetLease(visible)
+    val lease = rememberSheetLease(visible = visible, state = state)
+    val coordinator = lease.coordinator
     val contentState = rememberSaveableStateHolder()
     var retained by remember { mutableStateOf(false) }
     val currentVisible by rememberUpdatedState(visible)
@@ -104,32 +105,34 @@ fun Sheet(
 
     SideEffect {
         state.updateVisibility(visible = visible)
+        if (visible) lease.dimReleased = false
     }
     LaunchedEffect(visible, lease) {
         if (visible) {
-            lease.coordinator.acquire(lease)
             retained = true
         } else if (!retained) {
             return@LaunchedEffect
         }
-        snapshotFlow { state.ready }.first { it }
-        coroutineScope {
-            launch {
-                val durationMillis = if (visible) 200 else 180
-                lease.scrimAnimation.animateTo(
-                    targetValue = if (visible) 1f else 0f,
-                    animationSpec = tween(durationMillis)
-                )
-            }
-            launch { state.animateVisible(visible) }
-        }
+        coordinator.awaitPresentationReady()
+        if (visible) coordinator.acquire(lease)
+        state.animateVisible(visible)
         if (!visible) {
+            coordinator.releaseDim(lease)
             retained = false
+            coordinator.release(lease)
         }
     }
 
     if (visible || retained) {
+        // Dispose the dim animation with the host so hidden Sheets cannot retain a gray overlay.
+        val replacing = !visible && coordinator.hasVisibleSheet
+        val dimAlpha = animateFloatAsState(
+            targetValue = if (replacing) SheetDefaults.SCRIM_OPACITY else 0f,
+            animationSpec = tween(200),
+            label = "Sheet replacement dim"
+        )
         SheetHost(
+            lease = lease,
             inputEnabled = visible,
             displayMode = properties.displayMode,
             adaptiveWindow = LocalSaltAdaptiveWindow.current,
@@ -141,7 +144,8 @@ fun Sheet(
                     contentState.SaveableStateProvider("sheet-content") {
                         SheetSurface(
                             state = state,
-                            progress = { lease.scrimProgress },
+                            scrimAlpha = { if (environment.drawsScrim) lease.scrimAlpha else 0f },
+                            dimAlpha = { dimAlpha.value },
                             visible = visible,
                             onDismissRequest = requestDismiss,
                             modifier = modifier,
@@ -154,13 +158,14 @@ fun Sheet(
                     }
                 }
             } else {
-                SheetPendingInput()
-            }
-        }
-        // Release ownership when the host leaves composition, including cancelled transitions.
-        DisposableEffect(lease) {
-            onDispose {
-                lease.coordinator.release(lease)
+                Box(modifier = Modifier.fillMaxSize()) {
+                    // Keep the scrim present before the incoming surface is composed.
+                    SheetScrim(
+                        alpha = { if (environment.drawsScrim) lease.scrimAlpha else 0f },
+                        onDismissRequest = requestDismiss
+                    )
+                    SheetPendingInput()
+                }
             }
         }
     }

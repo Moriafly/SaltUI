@@ -49,6 +49,7 @@ import com.moriafly.salt.ui.window.internal.LocalSaltWindowContentDecoration
 @OptIn(ExperimentalComposeUiApi::class, com.moriafly.salt.ui.UnstableSaltUiApi::class)
 @Composable
 internal actual fun SheetHost(
+    lease: SheetLease,
     inputEnabled: Boolean,
     displayMode: SheetDisplayMode,
     adaptiveWindow: SaltAdaptiveWindow,

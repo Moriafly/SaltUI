@@ -32,6 +32,7 @@ import com.moriafly.salt.ui.sheet.SheetDisplayMode
 @OptIn(ExperimentalComposeUiApi::class, com.moriafly.salt.ui.UnstableSaltUiApi::class)
 @Composable
 internal actual fun SheetHost(
+    lease: SheetLease,
     inputEnabled: Boolean,
     displayMode: SheetDisplayMode,
     adaptiveWindow: SaltAdaptiveWindow,

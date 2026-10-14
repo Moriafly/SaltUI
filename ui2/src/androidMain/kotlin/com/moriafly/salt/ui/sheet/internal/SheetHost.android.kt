@@ -33,8 +33,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.platform.LocalDensity
@@ -54,6 +57,7 @@ import androidx.compose.ui.graphics.Color as ComposeColor
 @Composable
 @OptIn(UnstableSaltUiApi::class)
 internal actual fun SheetHost(
+    lease: SheetLease,
     inputEnabled: Boolean,
     displayMode: SheetDisplayMode,
     adaptiveWindow: SaltAdaptiveWindow,
@@ -86,7 +90,34 @@ internal actual fun SheetHost(
             navigationInsets.getLeft(density, layoutDirection) == 0 &&
             navigationInsets.getRight(density, layoutDirection) == 0
         val dialogView = LocalView.current
+        val coordinator = lease.coordinator
         val accessibilityImportance = remember(dialogView) { dialogView.importantForAccessibility }
+        DisposableEffect(dialogView, lease) {
+            val listener = object : View.OnAttachStateChangeListener {
+                override fun onViewAttachedToWindow(view: View) {
+                    coordinator.updateWindowAttachment(lease = lease, attached = true)
+                }
+
+                override fun onViewDetachedFromWindow(view: View) {
+                    coordinator.updateWindowAttachment(lease = lease, attached = false)
+                }
+            }
+            coordinator.updateWindowAttachment(
+                lease = lease,
+                attached = dialogView.isAttachedToWindow
+            )
+            dialogView.addOnAttachStateChangeListener(listener)
+            onDispose {
+                dialogView.removeOnAttachStateChangeListener(listener)
+                coordinator.updateWindowAttachment(lease = lease, attached = false)
+            }
+        }
+        val hasVisibleSheet = inputEnabled || coordinator.hasVisibleSheet
+        val ownsDim = coordinator.dimHolder === lease
+        val keepDimUntilHandoff = coordinator.appliedDimHolder === lease
+        val dimEnabled = ownsDim || keepDimUntilHandoff
+        val replacementPending = hasVisibleSheet &&
+            coordinator.activeLease?.windowAttached != true
         SideEffect {
             dialogView.importantForAccessibility = if (inputEnabled) {
                 accessibilityImportance
@@ -95,10 +126,21 @@ internal actual fun SheetHost(
             }
             window?.configureSheetWindow(
                 inputEnabled = inputEnabled,
+                focusEnabled = inputEnabled || replacementPending,
+                hasVisibleSheet = hasVisibleSheet,
+                dimEnabled = dimEnabled,
+                dimAmount = coordinator.scrimAlpha,
                 ownerView = ownerView,
                 bottom = bottom,
                 darkNavigationBarIcons = darkNavigationBarIcons
             )
+            if (window != null && ownsDim) coordinator.confirmDimApplied(lease)
+        }
+        LaunchedEffect(window, coordinator) {
+            if (window == null) return@LaunchedEffect
+            snapshotFlow { coordinator.scrimAlpha }.collect { alpha ->
+                window.setDimAmount(alpha)
+            }
         }
         // Collection completes only on commit. Cancellation leaves the sheet unchanged.
         PredictiveBackHandler(enabled = inputEnabled) {
@@ -116,7 +158,8 @@ internal actual fun SheetHost(
             content(
                 sheetHostEnvironment(
                     windowSize = ownerSize,
-                    adaptiveWindow = adaptiveWindow
+                    adaptiveWindow = adaptiveWindow,
+                    drawsScrim = false
                 )
             )
         }
@@ -153,6 +196,10 @@ private fun View.readSheetSystemBarAppearance(): SheetSystemBarAppearance {
 @OptIn(UnstableSaltUiApi::class)
 private fun Window.configureSheetWindow(
     inputEnabled: Boolean,
+    focusEnabled: Boolean,
+    hasVisibleSheet: Boolean,
+    dimEnabled: Boolean,
+    dimAmount: Float,
     ownerView: View,
     bottom: Boolean,
     darkNavigationBarIcons: Boolean
@@ -164,16 +211,22 @@ private fun Window.configureSheetWindow(
         WindowManager.LayoutParams.MATCH_PARENT
     )
     clearFlags(
-        WindowManager.LayoutParams.FLAG_DIM_BEHIND or
-            WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS or
+        WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS or
             WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION
     )
+    // WindowManager keeps one dim layer as independent dialogs replace each other.
     addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
+    setFlags(
+        if (dimEnabled) WindowManager.LayoutParams.FLAG_DIM_BEHIND else 0,
+        WindowManager.LayoutParams.FLAG_DIM_BEHIND
+    )
+    setDimAmount(dimAmount)
     val inputFlags = WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE or
         WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
-    setFlags(if (inputEnabled) 0 else inputFlags, inputFlags)
+    val disabledFlags = (if (inputEnabled) 0 else WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE) or
+        (if (focusEnabled) 0 else WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE)
     val ownerAppearance = ownerView.readSheetSystemBarAppearance()
-    val useDarkStatusBarIcons = !inputEnabled && ownerAppearance.darkStatusBarIcons
+    val useDarkStatusBarIcons = !hasVisibleSheet && ownerAppearance.darkStatusBarIcons
     val useDarkNavigationBarIcons = if (inputEnabled && bottom) {
         darkNavigationBarIcons
     } else {
@@ -195,6 +248,8 @@ private fun Window.configureSheetWindow(
             WindowUtil.BarColor.White
         }
     )
+    // Set bar appearance before yielding native focus to the next window.
+    setFlags(disabledFlags, inputFlags)
     statusBarColor = Color.TRANSPARENT
     navigationBarColor = Color.TRANSPARENT
     if (Build.VERSION.SDK_INT >= 28) {
