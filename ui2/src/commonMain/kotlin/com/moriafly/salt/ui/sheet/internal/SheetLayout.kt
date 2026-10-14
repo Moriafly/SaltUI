@@ -27,6 +27,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.Placeable
 import androidx.compose.ui.layout.SubcomposeLayout
@@ -101,14 +102,18 @@ internal fun SheetLayout(
             )
         )
         val measuredHeight = bodyChrome + body.height
-        state.updateGeometry(
-            density = this,
-            height = metrics.viewportHeight,
-            chromeHeight = chrome,
-            measuredContent = if (measureContent) measuredHeight else null,
-            properties = properties,
-            bottomInset = metrics.bottomInset
-        )
+        // Geometry bookkeeping reads the live animation position; it must not make that
+        // position a measurement dependency when the panel only needs a layer translation.
+        Snapshot.withoutReadObservation {
+            state.updateGeometry(
+                density = this,
+                height = metrics.viewportHeight,
+                chromeHeight = chrome,
+                measuredContent = if (measureContent) measuredHeight else null,
+                properties = properties,
+                bottomInset = metrics.bottomInset
+            )
+        }
         val height = state.renderedHeight(
             bottom = bottom,
             measuredHeight = measuredHeight,

@@ -20,11 +20,13 @@
 package com.moriafly.salt.ui.sheet.internal
 
 import androidx.compose.animation.core.animate
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.structuralEqualityPolicy
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import com.moriafly.salt.ui.AnchoredDraggableState
@@ -63,6 +65,8 @@ internal class SheetTransitionState(
         private set
     private var contentHeight = 0f
     private var scrimReferenceHeight by mutableFloatStateOf(0f)
+    private var presentationHeight by mutableFloatStateOf(0f)
+    private var presentationJob: Job? = null
     var selected by mutableStateOf<SheetDetent>(preferredDetent())
         private set
     private var animationJob: Job? = null
@@ -79,8 +83,15 @@ internal class SheetTransitionState(
     )
         .coerceIn(0f, viewportHeight)
 
-    // Below the smallest detent, move the whole surface instead of shrinking its contents.
-    val surfaceHeight: Float get() = visibleHeight.coerceAtLeast(points.firstOrNull()?.second ?: 0f)
+    // Freeze the presentation size so animated offsets only invalidate the layer.
+    val surfaceHeight: Float by derivedStateOf(structuralEqualityPolicy()) {
+        val minimumHeight = points.firstOrNull()?.second ?: 0f
+        if (presentationHeight > 0f) {
+            presentationHeight.coerceIn(minimumHeight, viewportHeight)
+        } else {
+            visibleHeight.coerceAtLeast(minimumHeight)
+        }
+    }
 
     // Use the live offset so an interrupted floating transition keeps its current motion.
     val presentationProgress: Float get() = (
@@ -111,6 +122,7 @@ internal class SheetTransitionState(
         }?.second?.times(densityScale)
         val oldProgress = presentationProgress
         val oldScrimProgress = scrimProgress
+        val oldSelectedHeight = selectedHeight
         // Keep the live position while a replacement waits for the incoming surface's measurement.
         val preservePosition = ready && presentationStarted
         this.density = density
@@ -141,6 +153,10 @@ internal class SheetTransitionState(
             }
         }
         val anchorsChanged = anchors != position.anchors
+        if (presentationHeight > 0f && anchorsChanged) {
+            val heightScale = selectedHeight / oldSelectedHeight.coerceAtLeast(1f)
+            presentationHeight = (presentationHeight * heightScale).coerceAtMost(viewportHeight)
+        }
         position.updateAnchors(
             newAnchors = anchors,
             newTarget = if (!visibleRequested || !presentationStarted) {
@@ -165,16 +181,27 @@ internal class SheetTransitionState(
     }
 
     suspend fun animateVisible(visible: Boolean) {
+        val job = currentCoroutineContext().job
+        presentationJob = job
+        // Measure the complete panel once, then reveal or hide it with a layer translation.
+        presentationHeight = if (visible) selectedHeight else surfaceHeight
         updateVisibility(visible = visible)
         if (visible) presentationStarted = true
-        if (!visible) {
-            // Capture the current opacity so release after a drag does not make the scrim jump.
-            val progress = scrimProgress
-            if (progress > 0f) scrimReferenceHeight = visibleHeight / progress
+        try {
+            if (!visible) {
+                // Capture the current opacity so release after a drag does not make the scrim jump.
+                val progress = scrimProgress
+                if (progress > 0f) scrimReferenceHeight = visibleHeight / progress
+            }
+            animate(if (visible) SheetAnchor.Detent(selected) else SheetAnchor.Hidden)
+            scrimReferenceHeight = 0f
+            if (!visible) presentationStarted = false
+        } finally {
+            if (presentationJob === job) {
+                presentationJob = null
+                presentationHeight = 0f
+            }
         }
-        animate(if (visible) SheetAnchor.Detent(selected) else SheetAnchor.Hidden)
-        scrimReferenceHeight = 0f
-        if (!visible) presentationStarted = false
     }
 
     private suspend fun animate(
