@@ -23,4 +23,4 @@ fi
     -Dorg.gradle.jvmargs="${GRADLE_JVM_ARGS}" \
     -Pkotlin.compiler.execution.strategy=in-process \
     :ui2:desktopTest \
-    --tests '*SheetMotionWindowTest.slowAndFastHandleDragsToTheSamePositionChooseDifferentHeights'
+    --tests '*SheetMotionWindowTest'

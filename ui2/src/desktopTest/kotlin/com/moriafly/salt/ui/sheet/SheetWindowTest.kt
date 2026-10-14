@@ -44,8 +44,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.awt.ComposeWindow
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.geometry.Rect
-import androidx.compose.ui.input.pointer.PointerEventPass
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -582,8 +580,7 @@ internal class SheetFixture(
     private val extraSheetContent: @Composable () -> Unit = {},
     private val formFactor: DeviceFormFactor? = null,
     private val adaptiveSizes: List<DpSize> = emptyList(),
-    private val undecorated: Boolean = false,
-    private val tracePointerEvents: Boolean = false
+    private val undecorated: Boolean = false
 ) {
     lateinit var window: ComposeWindow
     private val coordinates = ConcurrentHashMap<String, LayoutCoordinates>()
@@ -615,7 +612,6 @@ internal class SheetFixture(
     var backgroundClicks by mutableIntStateOf(0)
     val focusTrace = CopyOnWriteArrayList<String>()
     val panelTrace = CopyOnWriteArrayList<Rect>()
-    val pointerTrace = CopyOnWriteArrayList<String>()
     private val previousPointer: Point = run {
         assumeTrue(
             "Sheet interaction tests require a desktop display",
@@ -847,24 +843,6 @@ internal class SheetFixture(
             if (key == "panel") panelTrace += rectangle
         }
         .onFocusChanged { if (it.isFocused) focusTrace += key }
-        .then(
-            if (tracePointerEvents && key == "panel") {
-                Modifier.pointerInput(Unit) {
-                    awaitPointerEventScope {
-                        while (true) {
-                            val event = awaitPointerEvent(PointerEventPass.Initial)
-                            event.changes.forEach { change ->
-                                pointerTrace += "${event.type} t=${change.uptimeMillis} " +
-                                    "p=${change.position} previous=${change.previousPosition} " +
-                                    "pressed=${change.pressed}"
-                            }
-                        }
-                    }
-                }
-            } else {
-                Modifier
-            }
-        )
 
     fun activate(): Robot = Robot().apply {
         autoDelay = 60
@@ -926,12 +904,13 @@ internal class SheetFixture(
         y: Float,
         delta: Float,
         stepDelay: Int = 20,
-        releaseDelay: Int = 0
+        releaseDelay: Int = 0,
+        steps: Int = 16
     ) {
         movePoint(robot, x, y)
         robot.mousePress(InputEvent.BUTTON1_DOWN_MASK)
-        repeat(16) {
-            movePoint(robot, x, y + delta * (it + 1) / 16)
+        repeat(steps) {
+            movePoint(robot, x, y + delta * (it + 1) / steps)
             robot.delay(stepDelay)
         }
         if (releaseDelay > 0) robot.delay(releaseDelay)

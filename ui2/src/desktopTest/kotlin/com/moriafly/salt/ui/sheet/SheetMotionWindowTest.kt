@@ -41,7 +41,7 @@ class SheetMotionWindowTest {
     @Test
     fun slowAndFastHandleDragsToTheSamePositionChooseDifferentHeights() =
         runDesktopComposeUiTest {
-            val fixture = SheetFixture(bottom = true, tracePointerEvents = true)
+            val fixture = SheetFixture(bottom = true)
             setContent { fixture.Content() }
             val robot = fixture.activate()
             try {
@@ -57,22 +57,21 @@ class SheetMotionWindowTest {
                 )
                 waitForIdle()
                 assertEquals(medium.height, fixture.bounds.getValue("panel").height, 2f)
-                fixture.pointerTrace.clear()
                 fixture.drag(
                     robot = robot,
                     x = medium.center.x,
                     y = medium.top + 24f,
-                    // Keep enough distinct native samples for velocity tracking on X11.
+                    // Robot movement has native overhead on X11; fewer steps keep this fast.
                     // The endpoint remains below the midpoint between Medium and Large.
                     delta = -medium.height * 0.4f,
-                    stepDelay = 6
+                    stepDelay = 6,
+                    steps = 6
                 )
                 waitForIdle()
                 val expanded = fixture.bounds.getValue("panel")
                 assertTrue(
                     expanded.height > medium.height * 1.5f,
-                    "Fast drag settled at ${expanded.height}; medium was ${medium.height}. " +
-                        fixture.pointerTrace.joinToString("\n")
+                    "Fast drag settled at ${expanded.height}; medium was ${medium.height}"
                 )
                 fixture.click(robot, "Inside")
                 runOnIdle {
@@ -102,7 +101,8 @@ class SheetMotionWindowTest {
                 y = medium.top + 24f,
                 delta = -medium.height * 0.4f,
                 stepDelay = 6,
-                releaseDelay = 200
+                releaseDelay = 200,
+                steps = 6
             )
             waitForIdle()
             assertEquals(medium.height, fixture.bounds.getValue("panel").height, 2f)
