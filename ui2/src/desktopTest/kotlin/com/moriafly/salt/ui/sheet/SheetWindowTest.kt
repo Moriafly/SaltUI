@@ -51,6 +51,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.v2.runDesktopComposeUiTest
@@ -71,10 +72,14 @@ import com.moriafly.salt.ui.ControlSize
 import com.moriafly.salt.ui.LocalControlSize
 import com.moriafly.salt.ui.SaltTheme
 import com.moriafly.salt.ui.Text
+import com.moriafly.salt.ui.generated.resources.Res
+import com.moriafly.salt.ui.generated.resources.sheet_close
 import com.moriafly.salt.ui.util.findSkiaLayer
 import com.moriafly.salt.ui.window.SaltWindow
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import org.jetbrains.compose.resources.getString
 import org.junit.Assume.assumeTrue
 import java.awt.MouseInfo
 import java.awt.Point
@@ -100,7 +105,7 @@ class SheetWindowTest {
         setContent { fixture.Content() }
         val robot = fixture.activate()
         fixture.click(robot, "Open")
-        val closeButton = SemanticsMatcher.keyIsDefined(SemanticsProperties.ContentDescription)
+        val closeButton = sheetCloseButton()
         val region = onNode(closeButton).fetchSemanticsNode().boundsInWindow
         runOnIdle { fixture.dismissible = false }
         waitForIdle()
@@ -289,9 +294,7 @@ class SheetWindowTest {
         val robot = fixture.activate()
         fixture.click(robot, "Open")
         waitForIdle()
-        onNode(
-            SemanticsMatcher.keyIsDefined(SemanticsProperties.ContentDescription)
-        ).assertDoesNotExist()
+        onNode(sheetCloseButton()).assertDoesNotExist()
         fixture.click(robot, "Background")
         robot.pressKey(KeyEvent.VK_ESCAPE)
         val panel = fixture.bounds.getValue("panel")
@@ -889,3 +892,7 @@ private fun Robot.pressKey(key: Int) {
     keyPress(key)
     keyRelease(key)
 }
+
+private fun sheetCloseButton() = hasContentDescription(
+    runBlocking { getString(Res.string.sheet_close) }
+)
