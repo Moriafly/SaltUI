@@ -34,10 +34,8 @@ import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.platform.LocalDensity
@@ -67,6 +65,7 @@ internal actual fun SheetHost(
 ) {
     val ownerSize = LocalWindowInfo.current.containerDpSize
     val ownerView = LocalView.current
+    SheetOwnerScrim(ownerView = ownerView, coordinator = lease.coordinator)
     val bottom = displayMode.isBottom(
         adaptiveWindow = adaptiveWindow,
         windowSize = ownerSize
@@ -113,12 +112,14 @@ internal actual fun SheetHost(
             }
         }
         val hasVisibleSheet = inputEnabled || coordinator.hasVisibleSheet
-        val ownsDim = coordinator.dimHolder === lease
-        val keepDimUntilHandoff = coordinator.appliedDimHolder === lease
-        val dimEnabled = ownsDim || keepDimUntilHandoff
         val replacementPending = hasVisibleSheet &&
             coordinator.activeLease?.windowAttached != true
         SideEffect {
+            // The visual transition must not keep the closing dialog in the input path.
+            window?.configureSheetInput(
+                inputEnabled = inputEnabled,
+                focusEnabled = inputEnabled || replacementPending
+            )
             dialogView.importantForAccessibility = if (inputEnabled) {
                 accessibilityImportance
             } else {
@@ -126,21 +127,11 @@ internal actual fun SheetHost(
             }
             window?.configureSheetWindow(
                 inputEnabled = inputEnabled,
-                focusEnabled = inputEnabled || replacementPending,
                 hasVisibleSheet = hasVisibleSheet,
-                dimEnabled = dimEnabled,
-                dimAmount = coordinator.scrimAlpha,
                 ownerView = ownerView,
                 bottom = bottom,
                 darkNavigationBarIcons = darkNavigationBarIcons
             )
-            if (window != null && ownsDim) coordinator.confirmDimApplied(lease)
-        }
-        LaunchedEffect(window, coordinator) {
-            if (window == null) return@LaunchedEffect
-            snapshotFlow { coordinator.scrimAlpha }.collect { alpha ->
-                window.setDimAmount(alpha)
-            }
         }
         // Collection completes only on commit. Cancellation leaves the sheet unchanged.
         PredictiveBackHandler(enabled = inputEnabled) {
@@ -164,6 +155,24 @@ internal actual fun SheetHost(
             )
         }
     }
+}
+
+private fun Window.configureSheetInput(
+    inputEnabled: Boolean,
+    focusEnabled: Boolean
+) {
+    val touchFlags = if (inputEnabled) {
+        0
+    } else {
+        WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE or
+            WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL
+    }
+    val focusFlags = if (focusEnabled) 0 else WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+    val disabledFlags = touchFlags or focusFlags
+    val inputMask = WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE or
+        WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL or
+        WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
+    if (attributes.flags and inputMask != disabledFlags) setFlags(disabledFlags, inputMask)
 }
 
 private data class SheetSystemBarAppearance(
@@ -196,10 +205,7 @@ private fun View.readSheetSystemBarAppearance(): SheetSystemBarAppearance {
 @OptIn(UnstableSaltUiApi::class)
 private fun Window.configureSheetWindow(
     inputEnabled: Boolean,
-    focusEnabled: Boolean,
     hasVisibleSheet: Boolean,
-    dimEnabled: Boolean,
-    dimAmount: Float,
     ownerView: View,
     bottom: Boolean,
     darkNavigationBarIcons: Boolean
@@ -212,19 +218,10 @@ private fun Window.configureSheetWindow(
     )
     clearFlags(
         WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS or
-            WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION
+            WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION or
+            WindowManager.LayoutParams.FLAG_DIM_BEHIND
     )
-    // WindowManager keeps one dim layer as independent dialogs replace each other.
     addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS)
-    setFlags(
-        if (dimEnabled) WindowManager.LayoutParams.FLAG_DIM_BEHIND else 0,
-        WindowManager.LayoutParams.FLAG_DIM_BEHIND
-    )
-    setDimAmount(dimAmount)
-    val inputFlags = WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE or
-        WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
-    val disabledFlags = (if (inputEnabled) 0 else WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE) or
-        (if (focusEnabled) 0 else WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE)
     val ownerAppearance = ownerView.readSheetSystemBarAppearance()
     val useDarkStatusBarIcons = !hasVisibleSheet && ownerAppearance.darkStatusBarIcons
     val useDarkNavigationBarIcons = if (inputEnabled && bottom) {
@@ -248,8 +245,6 @@ private fun Window.configureSheetWindow(
             WindowUtil.BarColor.White
         }
     )
-    // Set bar appearance before yielding native focus to the next window.
-    setFlags(disabledFlags, inputFlags)
     statusBarColor = Color.TRANSPARENT
     navigationBarColor = Color.TRANSPARENT
     if (Build.VERSION.SDK_INT >= 28) {

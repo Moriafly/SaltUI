@@ -105,7 +105,6 @@ fun Sheet(
 
     SideEffect {
         state.updateVisibility(visible = visible)
-        if (visible) lease.dimReleased = false
     }
     LaunchedEffect(visible, lease) {
         if (visible) {
@@ -117,7 +116,6 @@ fun Sheet(
         if (visible) coordinator.acquire(lease)
         state.animateVisible(visible)
         if (!visible) {
-            coordinator.releaseDim(lease)
             retained = false
             coordinator.release(lease)
         }

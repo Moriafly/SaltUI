@@ -22,7 +22,6 @@
 
 package com.moriafly.salt.ui.sheet.internal
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.RowScope
@@ -40,9 +39,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.focus.focusProperties
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.clearAndSetSemantics
@@ -241,25 +237,4 @@ private fun sheetPanelHeight(
         .coerceAtLeast(0.dp)
         .coerceAtMost(SheetDefaults.FloatingMaxHeight)
         .coerceAtMost(panelWidth * SheetDefaults.FLOATING_HEIGHT_TO_WIDTH_RATIO)
-}
-
-@Composable
-internal fun SheetScrim(
-    alpha: () -> Float,
-    onDismissRequest: () -> Unit
-) {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .drawBehind {
-                drawRect(color = Color.Black.copy(alpha = alpha()))
-            }
-            .focusProperties { canFocus = false }
-            .clickable(
-                interactionSource = null,
-                indication = null,
-                onClick = onDismissRequest
-            )
-            .clearAndSetSemantics { }
-    )
 }
