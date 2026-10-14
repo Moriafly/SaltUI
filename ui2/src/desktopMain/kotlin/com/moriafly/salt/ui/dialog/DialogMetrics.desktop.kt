@@ -36,10 +36,7 @@ private val DesktopDialogCornerRadius =
     ButtonDefaults.containerHeight(ControlSize.Regular) / 2 + DesktopActionEdgeInset - 2.dp
 
 private val DesktopDialogMetrics = DialogMetrics(
-    shape = SmoothRoundedRectangleShape(
-        radius = DesktopDialogCornerRadius,
-        smoothing = SaltContinuousCornerSmoothing
-    ),
+    shape = SmoothRoundedRectangleShape(DesktopDialogCornerRadius),
     actionShape = CircleShape,
     controlSize = ControlSize.Regular,
     contentPadding = PaddingValues(24.dp),

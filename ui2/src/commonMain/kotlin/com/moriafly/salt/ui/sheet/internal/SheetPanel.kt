@@ -31,6 +31,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -46,8 +47,11 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.constrainHeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.offset
+import com.moriafly.salt.ui.LocalControlSize
 import com.moriafly.salt.ui.ProvideContentColorTextStyle
 import com.moriafly.salt.ui.SaltTheme
+import com.moriafly.salt.ui.button.PillButtonDefaults
+import com.moriafly.salt.ui.internal.SmoothRoundedRectangleShape
 import com.moriafly.salt.ui.sheet.SheetProperties
 import com.moriafly.salt.ui.sheet.SheetScope
 import com.moriafly.salt.ui.thenIf
@@ -74,7 +78,11 @@ internal fun SheetPanel(
         properties.detents.distinct().size > 1
     }
     val canDrag = bottom && properties.dragEnabled && (canResize || properties.dismissible)
-    val shape = if (bottom) SheetDefaults.BottomShape else SheetDefaults.FloatingShape
+    val closeButtonSize = PillButtonDefaults.containerHeight(LocalControlSize.current)
+    val cornerRadius = closeButtonSize / 2 + SaltTheme.dimens.padding
+    val shape = remember(bottom, cornerRadius) {
+        SmoothRoundedRectangleShape(radius = cornerRadius, topOnly = bottom)
+    }
     ProvideContentColorTextStyle(
         contentColor = SaltTheme.colors.text,
         textStyle = SaltTheme.textStyles.main

@@ -77,6 +77,7 @@ internal fun SheetHeader(
     onDismissRequest: () -> Unit
 ) {
     val closeButtonSize = PillButtonDefaults.containerHeight(LocalControlSize.current)
+    val closeButtonInset = SaltTheme.dimens.padding
     val scope = rememberCoroutineScope()
     val scrollState = rememberScrollState()
     val currentVisible by rememberUpdatedState(visible)
@@ -103,14 +104,14 @@ internal fun SheetHeader(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .heightIn(min = closeButtonSize + SheetDefaults.CloseButtonInset * 2)
+                    .heightIn(min = closeButtonSize + closeButtonInset * 2)
                     .padding(
-                        start = 16.dp,
+                        start = closeButtonInset,
                         top = 8.dp,
                         end = if (properties.dismissible) {
-                            SheetDefaults.CloseButtonInset + closeButtonSize + 12.dp
+                            closeButtonInset + closeButtonSize + 12.dp
                         } else {
-                            16.dp
+                            closeButtonInset
                         },
                         bottom = 8.dp
                     )
@@ -159,8 +160,8 @@ internal fun SheetHeader(
                 modifier = Modifier
                     .align(alignment = Alignment.TopEnd)
                     .padding(
-                        top = SheetDefaults.CloseButtonInset,
-                        end = SheetDefaults.CloseButtonInset
+                        top = closeButtonInset,
+                        end = closeButtonInset
                     )
             )
         }

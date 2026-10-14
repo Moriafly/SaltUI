@@ -17,7 +17,6 @@
 
 package com.moriafly.salt.ui.sheet.internal
 
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.isSpecified
@@ -33,21 +32,14 @@ internal object SheetDefaults {
     val FloatingMaxWidth = 540.dp
     val FloatingMaxHeight = 640.dp
     val WindowMargin = 16.dp
-    val CornerRadius = 34.dp
     val ActionsHorizontalPadding = 16.dp
     val ActionsTopPadding = 16.dp
     val ActionsBottomPadding = 16.dp
     val NoActionsBottomPadding = 8.dp
-    val FloatingShape = RoundedCornerShape(size = CornerRadius)
-    val BottomShape = RoundedCornerShape(
-        topStart = CornerRadius,
-        topEnd = CornerRadius
-    )
     val DragHandleTopInset = 8.dp
     val DragHandleWidth = 44.dp
     val DragHandleHeight = 3.dp
     val DragHandleTouchHeight = 48.dp
-    val CloseButtonInset = 16.dp
     const val DRAG_HANDLE_OPACITY = 0.3f
     const val SCRIM_OPACITY = 0.32f
     const val FLOATING_HEIGHT_TO_WIDTH_RATIO = 1.2f

@@ -35,10 +35,7 @@ private val AndroidDialogCornerRadius =
     ButtonDefaults.containerHeight(ControlSize.Regular) / 2 + AndroidActionEdgeInset - 2.dp
 
 private val AndroidDialogMetrics = DialogMetrics(
-    shape = SmoothRoundedRectangleShape(
-        radius = AndroidDialogCornerRadius,
-        smoothing = SaltContinuousCornerSmoothing
-    ),
+    shape = SmoothRoundedRectangleShape(AndroidDialogCornerRadius),
     actionShape = CircleShape,
     controlSize = ControlSize.Regular,
     contentPadding = PaddingValues(24.dp),

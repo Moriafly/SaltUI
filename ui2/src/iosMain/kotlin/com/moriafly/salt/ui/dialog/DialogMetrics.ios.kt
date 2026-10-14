@@ -35,10 +35,7 @@ private val IosDialogCornerRadius =
     ButtonDefaults.containerHeight(ControlSize.Large) / 2 + IosActionEdgeInset - 2.dp
 
 private val IosDialogMetrics = DialogMetrics(
-    shape = SmoothRoundedRectangleShape(
-        radius = IosDialogCornerRadius,
-        smoothing = SaltContinuousCornerSmoothing
-    ),
+    shape = SmoothRoundedRectangleShape(IosDialogCornerRadius),
     actionShape = CircleShape,
     controlSize = ControlSize.Large,
     contentPadding = PaddingValues(24.dp),
