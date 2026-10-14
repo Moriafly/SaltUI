@@ -57,29 +57,35 @@ internal fun resolveSheetGeometry(
         is SheetDetent.Fraction -> usableHeight * fraction
     }
 
-    fun SheetDetent.constrainHeight(value: Float): Float = value.coerceIn(
-        minimumValue = if (this == SheetDetent.Content) chromeMinimum else minimum,
-        maximumValue = usableHeight
-    ) + inset
-    val points = properties.detents.mapNotNull { detent ->
-        val target = detent.resolveHeight()
-        if (detent == SheetDetent.Medium && target < minimum) {
-            null
-        } else {
-            detent to detent.constrainHeight(value = target)
+    fun SheetDetent.constrainHeight(value: Float): Float = value
+        .coerceIn(
+            minimumValue = if (this == SheetDetent.Content) chromeMinimum else minimum,
+            maximumValue = usableHeight
+        ) + inset
+
+    val points = properties.detents
+        .mapNotNull { detent ->
+            val target = detent.resolveHeight()
+            if (detent == SheetDetent.Medium && target < minimum) {
+                null
+            } else {
+                detent to detent.constrainHeight(value = target)
+            }
         }
-    }.distinctBy { it.second.roundToInt() }
+        .distinctBy { it.second.roundToInt() }
         .sortedBy { it.second }
         .ifEmpty { listOf(SheetDetent.Large to height.toFloat()) }
+
     val preferredHeight = preferred.constrainHeight(value = preferred.resolveHeight())
-    val selected = points.firstOrNull { it.first == preferred }?.first
+    val preferredPoint = points.firstOrNull { it.first == preferred }
         ?: points.firstOrNull {
             preferred in properties.detents && abs(it.second - preferredHeight) < 1f
-        }?.first
-        ?: points.minWith(
-            compareBy<Pair<SheetDetent, Float>> {
-                abs(it.second - (previousHeight ?: preferredHeight))
-            }.thenByDescending { it.second }
-        ).first
-    return SheetGeometry(points = points, selected = selected)
+        }
+
+    val targetHeight = previousHeight ?: preferredHeight
+    val heightOrder = compareBy<Pair<SheetDetent, Float>> { abs(it.second - targetHeight) }
+        .thenByDescending { it.second }
+    val selectedPoint = preferredPoint ?: points.minWith(heightOrder)
+
+    return SheetGeometry(points = points, selected = selectedPoint.first)
 }
