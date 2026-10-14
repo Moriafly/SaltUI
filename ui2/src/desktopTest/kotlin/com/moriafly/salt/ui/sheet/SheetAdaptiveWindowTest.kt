@@ -44,55 +44,65 @@ import kotlin.test.assertTrue
  */
 class SheetAdaptiveWindowTest {
     @Test
-    fun desktopWindowsRemainFloatingWithoutAProvider() = verifyDisplayModeAcrossNativeSizes(
-        formFactor = null,
-        bottom = false
+    fun desktopWindowsAdaptToTheirDimensionsWithoutAProvider() = verifyDisplayModeAcrossNativeSizes(
+        formFactor = null
     )
 
     @Test
-    fun phonesRemainBottomInPortraitAndLandscape() = verifyDisplayModeAcrossNativeSizes(
+    fun phoneWindowsAdaptAcrossBothDimensionBreakpoints() = verifyDisplayModeAcrossNativeSizes(
+        formFactor = DeviceFormFactor.Phone
+    )
+
+    @Test
+    fun tabletWindowsAdaptAcrossBothDimensionBreakpoints() = verifyDisplayModeAcrossNativeSizes(
+        formFactor = DeviceFormFactor.Tablet
+    )
+
+    @Test
+    fun explicitFloatingOverridesSmallWindowDimensions() = verifyDisplayModeAcrossNativeSizes(
         formFactor = DeviceFormFactor.Phone,
-        bottom = true
-    )
-
-    @Test
-    fun tabletsRemainFloatingInNarrowAndWideWindows() = verifyDisplayModeAcrossNativeSizes(
-        formFactor = DeviceFormFactor.Tablet,
-        bottom = false
-    )
-
-    @Test
-    fun explicitFloatingOverridesThePhoneDefault() = verifyDisplayModeAcrossNativeSizes(
-        formFactor = DeviceFormFactor.Phone,
-        bottom = false,
         displayMode = SheetDisplayMode.Floating
+    )
+
+    @Test
+    fun explicitBottomOverridesLargeWindowDimensions() = verifyDisplayModeAcrossNativeSizes(
+        formFactor = DeviceFormFactor.Tablet,
+        displayMode = SheetDisplayMode.Bottom
     )
 
     private fun verifyDisplayModeAcrossNativeSizes(
         formFactor: DeviceFormFactor?,
-        bottom: Boolean,
         displayMode: SheetDisplayMode = SheetDisplayMode.Auto
     ) = runDesktopComposeUiTest {
+        val sizes = listOf(
+            DpSize(500.dp, 700.dp) to true,
+            DpSize(599.dp, 480.dp) to true,
+            DpSize(600.dp, 479.dp) to true,
+            DpSize(600.dp, 480.dp) to false,
+            DpSize(601.dp, 481.dp) to false,
+            DpSize(900.dp, 400.dp) to true,
+            DpSize(500.dp, 700.dp) to true
+        )
         val fixture = SheetFixture(
             displayMode = displayMode,
-            initialWindowSize = DpSize(500.dp, 700.dp),
+            initialWindowSize = sizes.first().first,
             adaptiveControls = true,
-            formFactor = formFactor
+            formFactor = formFactor,
+            adaptiveSizes = sizes.drop(1).map { it.first },
+            undecorated = true
         )
         setContent { fixture.Content() }
         val robot = fixture.activate()
         try {
             fixture.click(robot, "Open")
-            val sizes = listOf(
-                null to WindowSizeClass.Compact,
-                "Landscape window" to WindowSizeClass.Compact,
-                "Wide landscape window" to WindowSizeClass.Expanded,
-                "Portrait window" to WindowSizeClass.Compact
-            )
-            for ((control, sizeClass) in sizes) {
-                if (control != null) fixture.click(robot, control)
+            for ((index, size) in sizes.withIndex()) {
+                if (index > 0) fixture.click(robot, "Next window size")
                 waitForIdle()
-                onNodeWithText("Window class: $sizeClass").assertIsDisplayed()
+                val bottom = when (displayMode) {
+                    SheetDisplayMode.Auto -> size.second
+                    SheetDisplayMode.Bottom -> true
+                    SheetDisplayMode.Floating -> false
+                }
                 if (bottom) assertBottom(fixture) else assertCentered(fixture)
                 fixture.click(robot, "Inside")
             }
@@ -129,13 +139,13 @@ class SheetAdaptiveWindowTest {
         waitForIdle()
         onNodeWithText("Window class: Compact").assertIsDisplayed()
         onNodeWithText("Window class: Medium").assertIsDisplayed()
-        assertCentered(owner)
+        assertBottom(owner)
         assertCentered(other)
         val otherPanel = other.bounds.getValue("panel")
         owner.activate()
         owner.click(robot, "Landscape window")
         waitForIdle()
-        assertCentered(owner)
+        assertBottom(owner)
         assertEquals(otherPanel, other.bounds.getValue("panel"))
         owner.click(robot, "Inside")
         other.activate()
@@ -173,17 +183,17 @@ class SheetAdaptiveWindowTest {
             waitForIdle()
             onNodeWithText("Window class: Compact").assertIsDisplayed()
             onNodeWithText("Window class: Medium").assertIsDisplayed()
-            assertCentered(owner)
+            assertBottom(owner)
             assertCentered(nested)
             val ownerPanel = owner.bounds.getValue("panel")
             nested.click(robot, "Landscape window")
             waitForIdle()
-            assertCentered(nested)
+            assertBottom(nested)
             assertEquals(ownerPanel, owner.bounds.getValue("panel"))
             nested.click(robot, "Portrait window")
             waitForIdle()
-            assertCentered(nested)
-            assertCentered(owner)
+            assertBottom(nested)
+            assertBottom(owner)
             nested.click(robot, "Inside")
             nested.click(robot, "Program close")
             nested.click(robot, "Background")
@@ -205,7 +215,7 @@ class SheetAdaptiveWindowTest {
     }
 
     @Test
-    fun anExplicitOverrideIsRetainedInsideTheModalHost() = runDesktopComposeUiTest {
+    fun anExplicitWindowSizeOverrideIsRetainedInsideTheModalHost() = runDesktopComposeUiTest {
         val fixture = adaptiveFixture()
         val adaptiveWindow = SaltAdaptiveWindow(
             formFactor = DeviceFormFactor.Phone,
@@ -219,7 +229,7 @@ class SheetAdaptiveWindowTest {
         fixture.click(robot, "Open")
         waitForIdle()
         onNodeWithText("Window class: Expanded").assertIsDisplayed()
-        assertBottom(fixture)
+        assertCentered(fixture)
         fixture.click(robot, "Inside")
         runOnIdle {
             assertEquals(1, fixture.insideClicks)
@@ -229,6 +239,35 @@ class SheetAdaptiveWindowTest {
         fixture.click(robot, "Background")
         runOnIdle { assertEquals(1, fixture.backgroundClicks) }
         fixture.restorePointer(robot)
+    }
+
+    @Test
+    fun adaptiveInformationWithoutDimensionsUsesTheOwnerWindowSize() = runDesktopComposeUiTest {
+        val fixture = adaptiveFixture()
+        val adaptiveWindow = SaltAdaptiveWindow(
+            formFactor = DeviceFormFactor.Tablet,
+            sizeClass = WindowSizeClass.Expanded
+        )
+        setContent {
+            ProvideSaltAdaptiveWindow(adaptiveWindow) { fixture.Content() }
+        }
+        val robot = fixture.activate()
+        try {
+            fixture.click(robot, "Open")
+            waitForIdle()
+            onNodeWithText("Window class: Expanded").assertIsDisplayed()
+            assertBottom(fixture)
+            fixture.click(robot, "Inside")
+            runOnIdle {
+                assertEquals(1, fixture.insideClicks)
+                assertEquals(0, fixture.requests)
+            }
+            fixture.click(robot, "Program close")
+            fixture.click(robot, "Background")
+            runOnIdle { assertEquals(1, fixture.backgroundClicks) }
+        } finally {
+            fixture.restorePointer(robot)
+        }
     }
 
     private fun adaptiveFixture(windowX: Dp = 100.dp) = SheetFixture(

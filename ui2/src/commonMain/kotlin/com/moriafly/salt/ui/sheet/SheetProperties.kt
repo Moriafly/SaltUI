@@ -61,15 +61,15 @@ sealed interface SheetDetent {
 /**
  * Determines whether a [Sheet] attaches to the bottom or floats within its owning window.
  *
- * [Auto] selects a mode from the device form factor and window size. [Bottom] and [Floating]
+ * [Auto] selects a mode from the owning window's width and height. [Bottom] and [Floating]
  * override that selection without changing the window's adaptive information.
  */
 @UnstableSaltUiApi
 enum class SheetDisplayMode {
     /**
-     * Uses [Bottom] on phones in either orientation and [Floating] on tablets and desktops.
-     * Other form factors use [Bottom] in compact windows that are at least as tall as they are wide,
-     * and [Floating] otherwise. Uses the owning window, independently of the Sheet host or keyboard.
+     * Uses [Floating] when the owning window is at least 600 dp wide and 480 dp tall,
+     * and [Bottom] otherwise. Adapts as the window is resized or rotated, using its dimensions
+     * before safe-area and keyboard insets are applied.
      */
     Auto,
 
@@ -135,8 +135,8 @@ enum class SheetContentLayout {
  * [dragEnabled] controls pointer resizing and drag dismissal in [SheetDisplayMode.Bottom].
  * The drag handle is shown automatically when resizing or drag dismissal is available.
  * Accessibility height actions remain available when pointer dragging is disabled.
- * [displayMode] defaults to [SheetDisplayMode.Auto], using Bottom on phones and Floating on tablets
- * and desktops. Floating heights are capped by the safe viewport, panel width and internal maximum.
+ * [displayMode] defaults to [SheetDisplayMode.Auto] and follows the owning window's dimensions.
+ * Floating heights are capped by the safe viewport, panel width and internal maximum.
  * [scrollBehavior] defaults to expanding the Sheet before scrolling its body upward.
  * [contentLayout] only affects an empty action slot; actions always retain their safe area.
  */

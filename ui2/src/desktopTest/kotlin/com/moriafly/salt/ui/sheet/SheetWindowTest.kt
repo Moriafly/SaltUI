@@ -58,6 +58,7 @@ import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.WindowDecoration
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.WindowState
 import androidx.compose.ui.window.rememberWindowState
@@ -569,7 +570,9 @@ internal class SheetFixture(
     private val initialWindowSize: DpSize = DpSize(720.dp, 640.dp),
     private val adaptiveControls: Boolean = false,
     private val extraSheetContent: @Composable () -> Unit = {},
-    private val formFactor: DeviceFormFactor? = null
+    private val formFactor: DeviceFormFactor? = null,
+    private val adaptiveSizes: List<DpSize> = emptyList(),
+    private val undecorated: Boolean = false
 ) {
     lateinit var window: ComposeWindow
     val bounds = ConcurrentHashMap<String, Rect>()
@@ -578,6 +581,7 @@ internal class SheetFixture(
     private var nextVisible by mutableStateOf(false)
     private var readPadding by mutableStateOf(false)
     private var fontScale by mutableFloatStateOf(1f)
+    private var nextWindowSize = 0
     var requests by mutableIntStateOf(0)
     var insideClicks by mutableIntStateOf(0)
     var backgroundClicks by mutableIntStateOf(0)
@@ -601,6 +605,11 @@ internal class SheetFixture(
             SaltWindow(
                 onCloseRequest = {},
                 state = windowState,
+                decoration = if (undecorated) {
+                    WindowDecoration.Undecorated()
+                } else {
+                    WindowDecoration.SystemDefault
+                },
                 alwaysOnTop = true,
                 title = "SaltUI Sheet real input test",
                 init = { window = it }
@@ -764,9 +773,16 @@ internal class SheetFixture(
     @Composable
     private fun AdaptiveWindowControls(windowState: WindowState) {
         Text("Window class: ${LocalSaltAdaptiveWindow.current.sizeClass}")
-        FixtureButton("Portrait window") { windowState.size = DpSize(500.dp, 700.dp) }
-        FixtureButton("Landscape window") { windowState.size = DpSize(580.dp, 400.dp) }
-        FixtureButton("Wide landscape window") { windowState.size = DpSize(900.dp, 400.dp) }
+        if (adaptiveSizes.isEmpty()) {
+            FixtureButton("Portrait window") { windowState.size = DpSize(500.dp, 700.dp) }
+            FixtureButton("Landscape window") { windowState.size = DpSize(580.dp, 400.dp) }
+            FixtureButton("Wide landscape window") { windowState.size = DpSize(900.dp, 400.dp) }
+        } else {
+            FixtureButton("Next window size") {
+                windowState.size = adaptiveSizes[nextWindowSize]
+                nextWindowSize = (nextWindowSize + 1) % adaptiveSizes.size
+            }
+        }
     }
 
     @Composable

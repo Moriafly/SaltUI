@@ -56,6 +56,7 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogWindowProvider
 import androidx.core.graphics.Insets
@@ -69,7 +70,6 @@ import androidx.test.uiautomator.By
 import androidx.test.uiautomator.BySelector
 import androidx.test.uiautomator.UiDevice
 import androidx.test.uiautomator.Until
-import com.moriafly.salt.adaptive.window.DeviceFormFactor
 import com.moriafly.salt.adaptive.window.currentSaltAdaptiveWindow
 import com.moriafly.salt.ui.Button
 import com.moriafly.salt.ui.ItemButton
@@ -232,12 +232,13 @@ class SheetInteractionTest {
     }
 
     @Test
-    fun tabletKeepsFloatingSheetWithCompactResourceConfiguration() {
+    fun largeWindowUsesFloatingSheetWithCompactResourceConfiguration() {
         val fixture = AndroidSheetFixture(displayMode = SheetDisplayMode.Auto)
         ActivityScenario.launch(MainActivity::class.java).use { scenario ->
             scenario.onActivity { it.setContent { fixture.Content() } }
             shown(By.text("Open sheet"))
-            assumeTrue(fixture.formFactor.get() == DeviceFormFactor.Tablet)
+            val windowSize = fixture.windowSize.get()
+            assumeTrue(windowSize.width >= 600.dp && windowSize.height >= 480.dp)
             scenario.onActivity {
                 it.setContent {
                     val configuration = LocalConfiguration.current
@@ -266,16 +267,16 @@ class SheetInteractionTest {
     }
 
     @Test
-    fun phoneLandscapeKeepsAdaptiveSheetBottomCenteredAndUsable() {
+    fun shortLandscapeWindowKeepsAdaptiveSheetBottomCenteredAndUsable() {
         val fixture = AndroidSheetFixture(retain = true, displayMode = SheetDisplayMode.Auto)
         try {
             ActivityScenario.launch(MainActivity::class.java).use { scenario ->
                 scenario.onActivity { it.setContent { fixture.Content() } }
                 shown(By.text("Open sheet"))
-                assumeTrue(fixture.formFactor.get() == DeviceFormFactor.Phone)
                 device.setOrientationLeft()
                 device.waitForIdle()
                 assertTrue(device.displayWidth > device.displayHeight)
+                assumeTrue(fixture.windowSize.get().height < 480.dp)
                 click(By.text("Open sheet"))
                 shown(By.text("Fixture sheet"))
                 SystemClock.sleep(600)
@@ -783,13 +784,13 @@ private class AndroidSheetFixture(
     var statusDarkIcons: (() -> Boolean)? = null
     var navigationDarkIcons: (() -> Boolean)? = null
     var navigationBarInsets: (() -> Insets)? = null
-    val formFactor = AtomicReference(DeviceFormFactor.Unknown)
+    val windowSize = AtomicReference(DpSize.Unspecified)
     var contentMargin = 0f
 
     @Composable
     fun Content() {
         SaltTheme {
-            formFactor.set(currentSaltAdaptiveWindow().formFactor)
+            windowSize.set(currentSaltAdaptiveWindow().windowSize)
             sheetBackground = SaltTheme.colors.background.toArgb()
             lightBackground = SaltTheme.colors.background.luminance() > 0.179f
             contentMargin = with(LocalDensity.current) { SaltTheme.dimens.padding.toPx() }

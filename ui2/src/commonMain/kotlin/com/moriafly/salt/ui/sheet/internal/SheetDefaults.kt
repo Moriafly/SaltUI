@@ -21,15 +21,15 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.isSpecified
-import com.moriafly.salt.adaptive.window.DeviceFormFactor
 import com.moriafly.salt.adaptive.window.SaltAdaptiveWindow
 import com.moriafly.salt.adaptive.window.UnstableSaltAdaptiveWindowApi
-import com.moriafly.salt.adaptive.window.WindowSizeClass
 import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.moriafly.salt.ui.sheet.SheetDisplayMode
 
 internal object SheetDefaults {
     val BottomMaxWidth = 540.dp
+    val FloatingMinWindowWidth = 600.dp
+    val FloatingMinWindowHeight = 480.dp
     val FloatingMaxWidth = 540.dp
     val FloatingMaxHeight = 640.dp
     val WindowMargin = 16.dp
@@ -59,14 +59,9 @@ internal fun SheetDisplayMode.isBottom(
     windowSize: DpSize
 ): Boolean = when (this) {
     SheetDisplayMode.Auto -> {
-        when (adaptiveWindow.formFactor) {
-            DeviceFormFactor.Phone -> true
-            DeviceFormFactor.Tablet, DeviceFormFactor.Desktop -> false
-            else -> {
-                val size = adaptiveWindow.windowSize.takeIf { it.isSpecified } ?: windowSize
-                adaptiveWindow.sizeClass == WindowSizeClass.Compact && size.height >= size.width
-            }
-        }
+        val size = adaptiveWindow.windowSize.takeIf { it.isSpecified } ?: windowSize
+        size.width < SheetDefaults.FloatingMinWindowWidth ||
+            size.height < SheetDefaults.FloatingMinWindowHeight
     }
     SheetDisplayMode.Bottom -> true
     SheetDisplayMode.Floating -> false
