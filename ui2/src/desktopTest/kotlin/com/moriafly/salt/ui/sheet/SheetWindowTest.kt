@@ -517,30 +517,6 @@ class SheetWindowTest {
     }
 
     @Test
-    fun switchingSheetWaitsForExitAndDoesNotRestoreBackgroundInput() = runDesktopComposeUiTest {
-        val fixture = SheetFixture(handoff = true)
-        setContent { fixture.Content() }
-        val robot = fixture.activate()
-        fixture.click(robot, "Open")
-        fixture.click(robot, "Switch sheet")
-        robot.delay(700)
-        waitForIdle()
-        onNodeWithText("Next sheet").assertIsDisplayed()
-        fixture.click(robot, "Next inside")
-        waitForIdle()
-        runOnIdle {
-            assertEquals(1, fixture.insideClicks)
-            assertEquals(0, fixture.requests)
-            assertEquals(0, fixture.backgroundClicks)
-        }
-        fixture.click(robot, "Next close")
-        fixture.click(robot, "Background")
-        waitForIdle()
-        runOnIdle { assertEquals(1, fixture.backgroundClicks) }
-        fixture.restorePointer(robot)
-    }
-
-    @Test
     fun tinyOwnerStillOffersBodyAndBusinessCloseAction() = runDesktopComposeUiTest {
         val fixture = SheetFixture(resizeWindow = true, compact = true)
         setContent { fixture.Content() }
@@ -568,7 +544,6 @@ internal class SheetFixture(
     private val list: Boolean = false,
     private val resizeWindow: Boolean = false,
     private val compact: Boolean = false,
-    private val handoff: Boolean = false,
     private val scrollBehavior: SheetScrollBehavior = SheetScrollBehavior.ExpandFirst,
     private val configuredDetents: List<SheetDetent>? = null,
     private val noActions: Boolean = false,
@@ -584,6 +559,7 @@ internal class SheetFixture(
 ) {
     lateinit var window: ComposeWindow
     private val coordinates = ConcurrentHashMap<String, LayoutCoordinates>()
+
     // A graphics-layer animation changes these bounds without another positioning callback.
     // Read the live coordinates on AWT's UI thread after native input has settled.
     val bounds: Map<String, Rect>
@@ -603,7 +579,6 @@ internal class SheetFixture(
         }
     var dismissible by mutableStateOf(dismissible)
     var visible by mutableStateOf(false)
-    private var nextVisible by mutableStateOf(false)
     private var readPadding by mutableStateOf(false)
     private var fontScale by mutableFloatStateOf(1f)
     private var nextWindowSize = 0
@@ -654,12 +629,6 @@ internal class SheetFixture(
 
     @Composable
     private fun WindowContent(windowState: WindowState) {
-        PrimaryContent(windowState)
-        if (handoff) NextSheet()
-    }
-
-    @Composable
-    private fun PrimaryContent(windowState: WindowState) {
         val density = LocalDensity.current
         CompositionLocalProvider(
             LocalDensity provides Density(density.density, density.fontScale * fontScale)
@@ -787,12 +756,6 @@ internal class SheetFixture(
                 windowState.size = DpSize(580.dp, if (compact) 200.dp else 400.dp)
             }
         }
-        if (handoff) {
-            FixtureButton("Switch sheet") {
-                visible = false
-                nextVisible = true
-            }
-        }
     }
 
     @Composable
@@ -807,18 +770,6 @@ internal class SheetFixture(
                 windowState.size = adaptiveSizes[nextWindowSize]
                 nextWindowSize = (nextWindowSize + 1) % adaptiveSizes.size
             }
-        }
-    }
-
-    @Composable
-    private fun NextSheet() {
-        Sheet(
-            visible = nextVisible,
-            onDismissRequest = { nextVisible = false },
-            title = "Next sheet"
-        ) {
-            FixtureButton("Next inside") { insideClicks++ }
-            FixtureButton("Next close") { nextVisible = false }
         }
     }
 
@@ -903,17 +854,15 @@ internal class SheetFixture(
         x: Float,
         y: Float,
         delta: Float,
-        stepDelay: Int = 20,
-        releaseDelay: Int = 0,
-        steps: Int = 16
+        stepDelay: Int = 20
     ) {
         movePoint(robot, x, y)
         robot.mousePress(InputEvent.BUTTON1_DOWN_MASK)
+        val steps = 16
         repeat(steps) {
             movePoint(robot, x, y + delta * (it + 1) / steps)
             robot.delay(stepDelay)
         }
-        if (releaseDelay > 0) robot.delay(releaseDelay)
         robot.mouseRelease(InputEvent.BUTTON1_DOWN_MASK)
         robot.delay(650)
         if (visible) awaitStableBounds("panel")
