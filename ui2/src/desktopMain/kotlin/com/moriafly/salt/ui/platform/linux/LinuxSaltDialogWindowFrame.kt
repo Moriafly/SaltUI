@@ -65,6 +65,11 @@ internal fun DialogWindowScope.LinuxSaltDialogWindowFrame(
     properties: SaltWindowProperties<ComposeDialog>,
     content: @Composable DialogWindowScope.() -> Unit
 ) {
+    DisposableEffect(window) {
+        val focus = LinuxWindowFocus.install(window)
+        onDispose { focus?.close() }
+    }
+
     val currentProperties by rememberUpdatedState(properties)
     val isHitTestInCaptionBar = remember { mutableStateOf(false) }
     val captionBarHitTest = remember { LinuxCaptionBarHitTest() }

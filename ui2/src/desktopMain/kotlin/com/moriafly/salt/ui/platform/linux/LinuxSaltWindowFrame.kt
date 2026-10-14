@@ -67,6 +67,11 @@ internal fun FrameWindowScope.LinuxSaltWindowFrame(
     properties: SaltWindowProperties<ComposeWindow>,
     content: @Composable FrameWindowScope.() -> Unit
 ) {
+    DisposableEffect(window) {
+        val focus = LinuxWindowFocus.install(window)
+        onDispose { focus?.close() }
+    }
+
     val currentProperties by rememberUpdatedState(properties)
     val isHitTestInCaptionBar = remember { mutableStateOf(false) }
     val captionBarHitTest = remember { LinuxCaptionBarHitTest() }
