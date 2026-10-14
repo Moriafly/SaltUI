@@ -24,6 +24,7 @@ import android.graphics.Color
 import android.os.Build
 import android.view.View
 import android.view.Window
+import android.view.WindowInsetsController
 import android.view.WindowManager
 import androidx.activity.compose.PredictiveBackHandler
 import androidx.compose.foundation.layout.Box
@@ -44,7 +45,6 @@ import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.compose.ui.window.DialogWindowProvider
-import androidx.core.view.ViewCompat
 import com.moriafly.salt.adaptive.window.SaltAdaptiveWindow
 import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.moriafly.salt.ui.sheet.SheetDisplayMode
@@ -123,6 +123,32 @@ internal actual fun SheetHost(
     }
 }
 
+private data class SheetSystemBarAppearance(
+    val darkStatusBarIcons: Boolean,
+    val darkNavigationBarIcons: Boolean
+)
+
+@Suppress("DEPRECATION")
+private fun View.readSheetSystemBarAppearance(): SheetSystemBarAppearance {
+    if (Build.VERSION.SDK_INT >= 35) {
+        val appearance = windowInsetsController?.systemBarsAppearance ?: 0
+        return SheetSystemBarAppearance(
+            darkStatusBarIcons =
+                appearance and WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS != 0,
+            darkNavigationBarIcons =
+                appearance and WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS != 0
+        )
+    }
+
+    // Compat appearance getters can mutate the owner on API 30–34, even with a Window.
+    // Read the actual window's decor flags directly, matching WindowUtil's setters.
+    val visibility = rootView.systemUiVisibility
+    return SheetSystemBarAppearance(
+        darkStatusBarIcons = visibility and View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR != 0,
+        darkNavigationBarIcons = visibility and View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR != 0
+    )
+}
+
 @Suppress("DEPRECATION")
 @OptIn(UnstableSaltUiApi::class)
 private fun Window.configureSheetWindow(
@@ -146,13 +172,12 @@ private fun Window.configureSheetWindow(
     val inputFlags = WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE or
         WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE
     setFlags(if (inputEnabled) 0 else inputFlags, inputFlags)
-    val ownerController = ViewCompat.getWindowInsetsController(ownerView)
-    val useDarkStatusBarIcons = !inputEnabled &&
-        ownerController?.isAppearanceLightStatusBars == true
+    val ownerAppearance = ownerView.readSheetSystemBarAppearance()
+    val useDarkStatusBarIcons = !inputEnabled && ownerAppearance.darkStatusBarIcons
     val useDarkNavigationBarIcons = if (inputEnabled && bottom) {
         darkNavigationBarIcons
     } else {
-        ownerController?.isAppearanceLightNavigationBars == true
+        ownerAppearance.darkNavigationBarIcons
     }
     WindowUtil.setStatusBarForegroundColor(
         window = this,
