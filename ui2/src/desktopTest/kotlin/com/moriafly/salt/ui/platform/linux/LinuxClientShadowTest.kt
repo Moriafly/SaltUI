@@ -216,15 +216,35 @@ class LinuxClientShadowTest {
                 "Click in the shadow area must not reach the window"
             )
 
-            // Boundary: just inside the content rect
-            robot.click(windowX + margin + 2, centerY)
-            waitUntil(timeoutMillis = 5_000) { presses.get() == baseline + 1 }
+            // The content edge belongs to the native resize handler, which consumes the press.
+            // Verify its final window geometry both just inside and exactly on the boundary.
+            for (offset in listOf(2, 0)) {
+                val before = x11Geometry(composeWindow)!!
+                val right = before[0] + before[2]
+                robot.drag(
+                    x = before[0] + margin + offset,
+                    y = before[1] + before[3] / 2,
+                    deltaX = -40
+                )
+                waitUntil(timeoutMillis = 5_000) {
+                    val resized = x11Geometry(composeWindow)!!
+                    resized[2] >= before[2] + 30
+                }
+                val resized = x11Geometry(composeWindow)!!
+                assertEquals(right, resized[0] + resized[2])
+            }
 
-            // Boundary: just outside the content rect
-            robot.click(windowX + margin - 2, centerY)
+            // Just outside the content boundary, input must neither reach content nor resize.
+            val before = x11Geometry(composeWindow)!!
+            robot.drag(
+                x = before[0] + margin - 2,
+                y = before[1] + before[3] / 2,
+                deltaX = -40
+            )
             robot.delay(500)
+            assertTrue(before.contentEquals(x11Geometry(composeWindow)!!))
             assertEquals(
-                baseline + 1,
+                baseline,
                 presses.get(),
                 "Click just outside the content boundary must not reach the window"
             )
@@ -519,6 +539,17 @@ class LinuxClientShadowTest {
         mouseMove(x, y)
         delay(100)
         mousePress(InputEvent.BUTTON1_DOWN_MASK)
+        mouseRelease(InputEvent.BUTTON1_DOWN_MASK)
+    }
+
+    private fun Robot.drag(x: Int, y: Int, deltaX: Int) {
+        mouseMove(x, y)
+        delay(100)
+        mousePress(InputEvent.BUTTON1_DOWN_MASK)
+        repeat(8) { step ->
+            mouseMove(x + deltaX * (step + 1) / 8, y)
+            delay(40)
+        }
         mouseRelease(InputEvent.BUTTON1_DOWN_MASK)
     }
 

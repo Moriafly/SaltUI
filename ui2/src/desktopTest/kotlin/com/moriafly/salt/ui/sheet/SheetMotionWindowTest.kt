@@ -52,7 +52,7 @@ class SheetMotionWindowTest {
                     robot = robot,
                     x = medium.center.x,
                     y = medium.top + 24f,
-                    delta = -medium.height * 0.3f,
+                    delta = -medium.height * 0.4f,
                     stepDelay = 30
                 )
                 waitForIdle()
@@ -61,11 +61,18 @@ class SheetMotionWindowTest {
                     robot = robot,
                     x = medium.center.x,
                     y = medium.top + 24f,
-                    delta = -medium.height * 0.3f,
-                    stepDelay = 1
+                    // Robot movement has native overhead on X11; fewer steps keep this fast.
+                    // The endpoint remains below the midpoint between Medium and Large.
+                    delta = -medium.height * 0.4f,
+                    stepDelay = 6,
+                    steps = 6
                 )
                 waitForIdle()
-                assertTrue(fixture.bounds.getValue("panel").height > medium.height * 1.5f)
+                val expanded = fixture.bounds.getValue("panel")
+                assertTrue(
+                    expanded.height > medium.height * 1.5f,
+                    "Fast drag settled at ${expanded.height}; medium was ${medium.height}"
+                )
                 fixture.click(robot, "Inside")
                 runOnIdle {
                     assertEquals(1, fixture.insideClicks)
@@ -92,9 +99,10 @@ class SheetMotionWindowTest {
                 robot = robot,
                 x = medium.center.x,
                 y = medium.top + 24f,
-                delta = -medium.height * 0.3f,
-                stepDelay = 1,
-                releaseDelay = 200
+                delta = -medium.height * 0.4f,
+                stepDelay = 6,
+                releaseDelay = 200,
+                steps = 6
             )
             waitForIdle()
             assertEquals(medium.height, fixture.bounds.getValue("panel").height, 2f)

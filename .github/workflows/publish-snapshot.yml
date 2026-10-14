@@ -3,6 +3,8 @@ name: Publish SaltUI snapshot
 on:
   push:
     branches: [main]
+  pull_request:
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -35,6 +37,9 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v5
 
+      - name: Install X11 window manager
+        run: sudo apt-get update && sudo apt-get install --no-install-recommends -y openbox x11-utils
+
       - name: Run SaltUI coverage verification
         env:
           LIBGL_ALWAYS_SOFTWARE: '1'
@@ -42,14 +47,22 @@ jobs:
           xvfb-run --auto-servernum
           --error-file=/dev/stderr
           --server-args="-screen 0 1920x1080x24 -nolisten tcp"
-          ./gradlew --no-daemon --max-workers=2
-          -Dorg.gradle.jvmargs="${GRADLE_JVM_ARGS}"
-          -Pkotlin.compiler.execution.strategy=in-process
-          :ui2:koverVerify
+          bash .github/scripts/verify-linux-desktop.sh
+
+      - name: Upload verification reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-verification-reports
+          path: |
+            ui2/build/reports/
+            ui2/build/test-results/desktopTest/
+          if-no-files-found: ignore
 
   publish:
     name: Publish all KMP snapshots
     needs: verify
+    if: github.event_name != 'pull_request'
     runs-on: macos-15
     timeout-minutes: 60
     permissions:

@@ -34,6 +34,12 @@ dependencies {
 
 val configureAppleTargets = rootProject.extra["configureAppleTargets"] as Boolean
 
+tasks.withType<Test>().configureEach {
+    testLogging {
+        exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
+    }
+}
+
 kover {
     reports {
         filters {

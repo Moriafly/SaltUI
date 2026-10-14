@@ -44,6 +44,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.awt.ComposeWindow
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
@@ -51,6 +52,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.hasContentDescription
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.v2.runDesktopComposeUiTest
@@ -71,10 +73,14 @@ import com.moriafly.salt.ui.ControlSize
 import com.moriafly.salt.ui.LocalControlSize
 import com.moriafly.salt.ui.SaltTheme
 import com.moriafly.salt.ui.Text
+import com.moriafly.salt.ui.generated.resources.Res
+import com.moriafly.salt.ui.generated.resources.sheet_close
 import com.moriafly.salt.ui.util.findSkiaLayer
 import com.moriafly.salt.ui.window.SaltWindow
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
+import org.jetbrains.compose.resources.getString
 import org.junit.Assume.assumeTrue
 import java.awt.MouseInfo
 import java.awt.Point
@@ -100,10 +106,12 @@ class SheetWindowTest {
         setContent { fixture.Content() }
         val robot = fixture.activate()
         fixture.click(robot, "Open")
-        val closeButton = SemanticsMatcher.keyIsDefined(SemanticsProperties.ContentDescription)
+        val closeButton = sheetCloseButton()
         val region = onNode(closeButton).fetchSemanticsNode().boundsInWindow
         runOnIdle { fixture.dismissible = false }
-        waitForIdle()
+        waitUntil(timeoutMillis = 5_000) {
+            onAllNodes(closeButton).fetchSemanticsNodes().isEmpty()
+        }
         onNode(closeButton).assertDoesNotExist()
         val pixelStep = fixture.window.graphicsConfiguration.defaultTransform.scaleX.toFloat()
         val left = ceil(region.left / pixelStep) * pixelStep
@@ -120,7 +128,9 @@ class SheetWindowTest {
         fixture.click(robot, "Inside")
         runOnIdle { assertEquals(1, fixture.insideClicks) }
         runOnIdle { fixture.dismissible = true }
-        waitForIdle()
+        waitUntil(timeoutMillis = 5_000) {
+            onAllNodes(closeButton).fetchSemanticsNodes().size == 1
+        }
         onNode(closeButton).assertIsDisplayed()
         fixture.clickPoint(robot, region.center.x, region.center.y)
         waitForIdle()
@@ -289,9 +299,7 @@ class SheetWindowTest {
         val robot = fixture.activate()
         fixture.click(robot, "Open")
         waitForIdle()
-        onNode(
-            SemanticsMatcher.keyIsDefined(SemanticsProperties.ContentDescription)
-        ).assertDoesNotExist()
+        onNode(sheetCloseButton()).assertDoesNotExist()
         fixture.click(robot, "Background")
         robot.pressKey(KeyEvent.VK_ESCAPE)
         val panel = fixture.bounds.getValue("panel")
@@ -575,7 +583,24 @@ internal class SheetFixture(
     private val undecorated: Boolean = false
 ) {
     lateinit var window: ComposeWindow
-    val bounds = ConcurrentHashMap<String, Rect>()
+    private val coordinates = ConcurrentHashMap<String, LayoutCoordinates>()
+    // A graphics-layer animation changes these bounds without another positioning callback.
+    // Read the live coordinates on AWT's UI thread after native input has settled.
+    val bounds: Map<String, Rect>
+        get() {
+            var rectangles: Map<String, Rect> = emptyMap()
+            val readBounds = {
+                rectangles = coordinates
+                    .filterValues { it.isAttached }
+                    .mapValues { it.value.boundsInWindow() }
+            }
+            if (javax.swing.SwingUtilities.isEventDispatchThread()) {
+                readBounds()
+            } else {
+                javax.swing.SwingUtilities.invokeAndWait(readBounds)
+            }
+            return rectangles
+        }
     var dismissible by mutableStateOf(dismissible)
     var visible by mutableStateOf(false)
     private var nextVisible by mutableStateOf(false)
@@ -813,8 +838,8 @@ internal class SheetFixture(
 
     private fun probe(key: String) = Modifier
         .onGloballyPositioned {
+            coordinates[key] = it
             val rectangle = it.boundsInWindow()
-            bounds[key] = rectangle
             if (key == "panel") panelTrace += rectangle
         }
         .onFocusChanged { if (it.isFocused) focusTrace += key }
@@ -830,8 +855,29 @@ internal class SheetFixture(
     }
 
     fun click(robot: Robot, key: String) {
-        val rect = bounds.getValue(key)
+        val rect = awaitStableBounds(key)
         clickPoint(robot, rect.center.x, rect.center.y)
+        if (visible) awaitStableBounds("panel")
+    }
+
+    private fun awaitStableBounds(key: String): Rect {
+        val deadline = System.nanoTime() + 5_000_000_000L
+        var previous: Rect? = null
+        var stableSince = System.nanoTime()
+        while (System.nanoTime() < deadline) {
+            val current = bounds[key]
+            val now = System.nanoTime()
+            if (current == null || current.width <= 0f || current.height <= 0f) {
+                stableSince = now
+            } else if (current != previous) {
+                stableSince = now
+            } else if (now - stableSince >= 100_000_000L) {
+                return current
+            }
+            previous = current
+            Thread.sleep(20)
+        }
+        error("The native input target '$key' did not settle: ${bounds[key]}")
     }
 
     fun movePoint(robot: Robot, x: Float, y: Float) {
@@ -858,17 +904,19 @@ internal class SheetFixture(
         y: Float,
         delta: Float,
         stepDelay: Int = 20,
-        releaseDelay: Int = 0
+        releaseDelay: Int = 0,
+        steps: Int = 16
     ) {
         movePoint(robot, x, y)
         robot.mousePress(InputEvent.BUTTON1_DOWN_MASK)
-        repeat(16) {
-            movePoint(robot, x, y + delta * (it + 1) / 16)
+        repeat(steps) {
+            movePoint(robot, x, y + delta * (it + 1) / steps)
             robot.delay(stepDelay)
         }
         if (releaseDelay > 0) robot.delay(releaseDelay)
         robot.mouseRelease(InputEvent.BUTTON1_DOWN_MASK)
         robot.delay(650)
+        if (visible) awaitStableBounds("panel")
     }
 
     fun restorePointer(robot: Robot) {
@@ -889,3 +937,7 @@ private fun Robot.pressKey(key: Int) {
     keyPress(key)
     keyRelease(key)
 }
+
+private fun sheetCloseButton() = hasContentDescription(
+    runBlocking { getString(Res.string.sheet_close) }
+)
