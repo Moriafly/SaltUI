@@ -89,6 +89,24 @@ internal fun SheetLayout(
         val chrome = header.height + spacing.reservedHeight
         val bodyChrome = spacing.bodyChromeHeight(header.height)
         val measureContent = state.needsContentMeasurement(properties)
+        val contentDefinesHeight = SheetDetent.Content in properties.detents
+
+        fun updateGeometry(measuredContent: Int? = null) {
+            // Live animation positions must not become measurement dependencies.
+            Snapshot.withoutReadObservation {
+                state.updateGeometry(
+                    density = this,
+                    height = metrics.viewportHeight,
+                    chromeHeight = chrome,
+                    measuredContent = measuredContent,
+                    properties = properties,
+                    bottomInset = metrics.bottomInset
+                )
+            }
+        }
+
+        // Resolve fixed detents before measuring a body that fills or centers in its viewport.
+        if (!contentDefinesHeight) updateGeometry()
         val limit = state.bodyHeightLimit(
             viewportHeight = metrics.viewportHeight,
             bottom = bottom,
@@ -102,17 +120,8 @@ internal fun SheetLayout(
             )
         )
         val measuredHeight = bodyChrome + body.height
-        // Geometry bookkeeping reads the live animation position; it must not make that
-        // position a measurement dependency when the panel only needs a layer translation.
-        Snapshot.withoutReadObservation {
-            state.updateGeometry(
-                density = this,
-                height = metrics.viewportHeight,
-                chromeHeight = chrome,
-                measuredContent = if (measureContent) measuredHeight else null,
-                properties = properties,
-                bottomInset = metrics.bottomInset
-            )
+        if (contentDefinesHeight) {
+            updateGeometry(measuredContent = if (measureContent) measuredHeight else null)
         }
         val height = state.renderedHeight(
             bottom = bottom,
