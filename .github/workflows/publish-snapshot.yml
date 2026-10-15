@@ -98,6 +98,10 @@ jobs:
           :core:publishDesktopPublicationToGitHubPackagesRepository
           :core:publishIosArm64PublicationToGitHubPackagesRepository
           :core:publishIosSimulatorArm64PublicationToGitHubPackagesRepository
+          :salt-adaptive-window:publishAndroidPublicationToGitHubPackagesRepository
+          :salt-adaptive-window:publishDesktopPublicationToGitHubPackagesRepository
+          :salt-adaptive-window:publishIosArm64PublicationToGitHubPackagesRepository
+          :salt-adaptive-window:publishIosSimulatorArm64PublicationToGitHubPackagesRepository
           :ui2:publishAndroidPublicationToGitHubPackagesRepository
           :ui2:publishDesktopPublicationToGitHubPackagesRepository
           :ui2:publishIosArm64PublicationToGitHubPackagesRepository
@@ -116,5 +120,6 @@ jobs:
           -Pkotlin.compiler.execution.strategy=in-process
           -PsnapshotPublication=true
           :core:publishKotlinMultiplatformPublicationToGitHubPackagesRepository
+          :salt-adaptive-window:publishKotlinMultiplatformPublicationToGitHubPackagesRepository
           :ui2:publishKotlinMultiplatformPublicationToGitHubPackagesRepository
           :ui-navigation:publishKotlinMultiplatformPublicationToGitHubPackagesRepository
