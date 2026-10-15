@@ -377,7 +377,7 @@ class SheetWindowTest {
     }
 
     @Test
-    fun listWheelPreservesDetentAndReopeningPreservesScroll() = runDesktopComposeUiTest {
+    fun listWheelPreservesDetentAndReopeningResetsScroll() = runDesktopComposeUiTest {
         val fixture = SheetFixture(bottom = true, list = true)
         setContent { fixture.Content() }
         val robot = fixture.activate()
@@ -397,7 +397,7 @@ class SheetWindowTest {
         waitForIdle()
         fixture.click(robot, "Open")
         waitForIdle()
-        onNodeWithText("Row 0").assertDoesNotExist()
+        onNodeWithText("Row 0").assertIsDisplayed()
         runOnIdle { assertEquals(0, fixture.requests) }
         fixture.click(robot, "Program close")
         waitForIdle()
