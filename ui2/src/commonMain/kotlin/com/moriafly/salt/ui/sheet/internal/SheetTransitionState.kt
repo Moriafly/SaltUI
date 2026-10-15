@@ -107,6 +107,11 @@ internal class SheetTransitionState(
             return (visibleHeight / reference.coerceAtLeast(1f)).coerceIn(0f, 1f)
         }
 
+    fun resetGeometry() {
+        points = emptyList()
+        contentHeight = 0f
+    }
+
     fun updateGeometry(
         density: Density,
         height: Int,

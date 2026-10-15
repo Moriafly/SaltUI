@@ -23,13 +23,13 @@ fun Example() {
 
 `windowSize` 是所属窗口的 dp 尺寸；`sizeClass` 按窗口宽度分为 Compact（小于 600 dp）、Medium（600 dp 至小于 840 dp）和 Expanded（至少 840 dp）。窗口旋转、调整大小或进入分屏后，读取这些信息的组件会更新。Desktop 的多个窗口分别使用各自的 `LocalWindowInfo`，iOS 同样使用窗口尺寸而非屏幕尺寸。
 
-`formFactor` 描述设备形态，不替代窗口尺寸。Android 按当前显示器的最大窗口范围估算手机与平板，不使用随分屏缩小的资源限定尺寸；Android 11 之前使用显示器尺寸兼容处理。汽车与折叠设备另按平台特征识别，这些判断仍属于设备形态估算。平板上的窄分屏也可以是 Compact；一个横向的 Compact 窗口也未必适合底部面板。系统栏、切口和键盘 inset 仍由布局组件处理，不从窗口尺寸中统一扣除。
+`formFactor` 描述设备形态，不替代窗口尺寸。Android 按当前显示器的最大窗口范围估算手机与平板，不使用随分屏缩小的资源限定尺寸；Android 11 之前使用显示器尺寸兼容处理。汽车与折叠设备另按平台特征识别，这些判断仍属于设备形态估算。平板上的窄分屏也可以是 Compact；组件应依据各自需要的窗口空间选择布局。系统栏、切口和键盘 inset 仍由布局组件处理，不从窗口尺寸中统一扣除。
 
 ## 主题与 Sheet
 
-`SaltTheme` 和 Sample 的 `AppTheme` 只管理主题。自适应信息直接来自当前窗口，忘记添加包装不会影响默认行为。Sample 的宽布局和 Sheet 的默认呈现方式共用 `WindowSizeClass`，没有各自重复定义的宽度阈值。
+`SaltTheme` 和 Sample 的 `AppTheme` 只管理主题。自适应信息直接来自当前窗口，忘记添加包装不会影响默认行为。Sample 的宽布局使用 `WindowSizeClass`，Sheet 则使用同一窗口信息中的宽度与高度选择呈现方式。
 
-Sheet 在手机横竖屏均默认从底部呈现，平板与桌面默认浮动居中。折叠设备及其他设备按窗口空间适配：Compact 竖向窗口使用 Bottom，其余使用 Floating。面板的实际宽度、高度与安全区仍受所属窗口空间约束。它通过内部宿主参数保存所属窗口的自适应信息，避免 Dialog 或 Popup 的尺寸影响自身呈现判断，不覆盖正文中的窗口 Local。在 Sheet 正文中创建新的原生窗口时，新窗口仍自动读取自己的尺寸。系统安全区、键盘和实际绘制范围仍由 Sheet 的平台宿主处理。显式指定 `SheetDisplayMode.Bottom` 或 `SheetDisplayMode.Floating` 可以覆盖自动策略。
+`SheetDisplayMode.Auto` 在所属窗口宽度至少为 600 dp 且高度至少为 480 dp 时采用 Floating，其余使用 Bottom，不依赖设备形态。判断使用系统安全区和键盘 inset 扣除前的窗口尺寸，面板实际宽、高与安全区再由布局处理。因此平板的窄分屏可以使用 Bottom，足够宽高的窗口则使用 Floating。它通过内部宿主参数保存所属窗口的自适应信息，避免 Dialog 或 Popup 的尺寸影响自身呈现判断，不覆盖正文中的窗口 Local。在 Sheet 正文中创建新的原生窗口时，新窗口仍自动读取自己的尺寸。显式指定 `SheetDisplayMode.Bottom` 或 `SheetDisplayMode.Floating` 可以覆盖自动策略。
 
 ## 可选覆盖
 
@@ -49,8 +49,8 @@ ProvideSaltAdaptiveWindow(
 
 `LocalSaltAdaptiveWindow.current` 读取自动值或最近的显式覆盖值；既有的 `currentSaltAdaptiveWindow()` 保持直接读取当前平台窗口的含义，不读取覆盖值。不要为了正常接入而给每个窗口添加覆盖。
 
-旧版双参数 `SaltAdaptiveWindow` 构造、copy 和 Local 入口保留二进制兼容。双参数创建的值使用 `DpSize.Unspecified`；Sheet 遇到这种值时使用宿主尺寸判断方向。
+旧版双参数 `SaltAdaptiveWindow` 构造、copy 和 Local 入口保留二进制兼容。双参数创建的值使用 `DpSize.Unspecified`；Sheet 遇到这种值时使用宿主的宽、高选择呈现方式。
 
 ## 验证范围
 
-真实窗口回归测试源码覆盖手机与平板的横竖屏呈现策略、Desktop 无 Provider 时的尺寸变化、独立多窗口、从 Sheet 内创建新窗口，以及模态中的显式覆盖。Android 测试源码检查真机手机横屏时的底部呈现、540 dp 宽度上限、水平居中和导航栏图标样式，并覆盖平板使用窄窗口资源配置时的浮动呈现；使用原生输入检查内容操作与关闭后的背景操作。本轮按用户要求只编译测试源码，不运行 UI 测试；平台运行验收由用户执行。
+本次文档依据当前实现修正为窗口宽、高策略，Android Sample APK 构建和 Desktop 示例源码编译已通过，不以旧版按设备形态编写的测试或运行记录作为运行验证结论。窗口旋转、分屏、Desktop 多窗口，以及独立原生窗口的实际呈现和输入验收由用户执行，不新增或运行 UI 测试。

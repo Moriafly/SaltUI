@@ -31,6 +31,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
@@ -56,6 +57,10 @@ import com.moriafly.salt.ui.sheet.internal.rememberSheetLease
  * A modal, adaptive Sheet with its own height, animation, input and host lifecycle.
  *
  * Keep this call in composition when [visible] is false so that the exit animation can finish.
+ * After the exit animation, content state saved with `rememberSaveable` and the selected detent
+ * are discarded unless [SheetProperties.retainStateWhenHidden] is enabled. Retaining state does
+ * not keep the content composed; ordinary `remember` values and content effects are disposed.
+ * Reopening before the exit finishes keeps the current content state and interrupts the motion.
  * [onDismissRequest] is called once per user dismissal attempt. It never changes [visible];
  * keep it true to confirm a draft first. Programmatic hiding never sends a dismissal request.
  * [modifier] applies to the surface, not to the full-window scrim.
@@ -93,6 +98,7 @@ fun Sheet(
     val lease = rememberSheetLease(visible = visible, state = state)
     val coordinator = lease.coordinator
     val contentState = rememberSaveableStateHolder()
+    var contentKey by rememberSaveable { mutableIntStateOf(0) }
     var retained by remember { mutableStateOf(false) }
     val currentVisible by rememberUpdatedState(visible)
     val currentProperties by rememberUpdatedState(properties)
@@ -120,6 +126,14 @@ fun Sheet(
             coordinator.release(lease)
         }
     }
+    LaunchedEffect(visible, retained, properties.retainStateWhenHidden, properties.initialDetent) {
+        if (!visible && !retained && !properties.retainStateWhenHidden) {
+            contentState.removeState(contentKey)
+            contentKey++
+            preferred.value = currentProperties.initialDetent
+            state.resetGeometry()
+        }
+    }
 
     if (visible || retained) {
         // Dispose the dim animation with the host so hidden Sheets cannot retain a gray overlay.
@@ -139,7 +153,7 @@ fun Sheet(
         ) { environment ->
             if (retained) {
                 DisableMaterial {
-                    contentState.SaveableStateProvider("sheet-content") {
+                    contentState.SaveableStateProvider(contentKey) {
                         SheetSurface(
                             state = state,
                             scrimAlpha = { if (environment.drawsScrim) lease.scrimAlpha else 0f },

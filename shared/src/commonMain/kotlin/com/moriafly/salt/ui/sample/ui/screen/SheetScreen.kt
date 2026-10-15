@@ -168,7 +168,7 @@ fun SheetScreen() {
                 text = "Open ${exampleNames[example]}"
             )
         }
-        SheetReplacementExample(
+        SheetReturnExample(
             properties = properties,
             showTitle = showTitle,
             showActions = showActions
@@ -324,22 +324,23 @@ fun SheetScreen() {
     }
 }
 
-private enum class ReplacementSheet { Menu, Information }
+private enum class SheetPage { Menu, Information }
 
 @Composable
-private fun SheetReplacementExample(
+private fun SheetReturnExample(
     properties: SheetProperties,
     showTitle: Boolean,
     showActions: Boolean
 ) {
-    var currentSheet by rememberSaveable { mutableStateOf<ReplacementSheet?>(null) }
+    var currentSheet by rememberSaveable { mutableStateOf<SheetPage?>(null) }
+    val flowVisible = currentSheet != null
     val close = { currentSheet = null }
-    val showMenu = { currentSheet = ReplacementSheet.Menu }
-    val showInformation = { currentSheet = ReplacementSheet.Information }
+    val showMenu = { currentSheet = SheetPage.Menu }
+    val showInformation = { currentSheet = SheetPage.Information }
     ScreenCard(
-        header = "Sheet replacement",
-        footer = "Open Song information, then return to the menu. " +
-            "The next sheet opens while the current sheet is closing."
+        header = "Return to a parent sheet",
+        footer = "Back restores the menu's saved content and height. " +
+            "Done ends the flow; reopening after it closes starts fresh. Transitions overlap."
     ) {
         ItemButton(
             onClick = showMenu,
@@ -347,12 +348,12 @@ private fun SheetReplacementExample(
         )
     }
 
-    // These are siblings in the same window; one state update replaces the visible sheet.
+    // The caller owns the return relationship; Sheet only retains the hidden parent's state.
     Sheet(
-        visible = currentSheet == ReplacementSheet.Menu,
+        visible = currentSheet == SheetPage.Menu,
         onDismissRequest = close,
         title = if (showTitle) "Song menu" else null,
-        properties = properties,
+        properties = properties.copy(retainStateWhenHidden = flowVisible),
         actions = {
             if (showActions) {
                 Button(
@@ -364,14 +365,27 @@ private fun SheetReplacementExample(
             }
         }
     ) {
+        var favorite by rememberSaveable { mutableStateOf(false) }
+        var note by rememberSaveable { mutableStateOf("") }
         SheetScrollableContent(contentPadding = contentPadding) {
             ItemOuterTip(
-                text = "Open the song information to replace this sheet immediately."
+                text = "Change Favorite, enter a note, or scroll at a smaller detent. " +
+                    "Open Song information, then go back to restore this menu."
             )
             RoundedColumn {
                 ItemValue(
                     text = "Track",
                     sub = "Midnight Drive"
+                )
+                ItemSwitcher(
+                    state = favorite,
+                    onChange = { favorite = it },
+                    text = "Favorite"
+                )
+                ItemEdit(
+                    text = note,
+                    onChange = { note = it },
+                    hint = "Add a note"
                 )
                 ItemButton(
                     onClick = showInformation,
@@ -388,8 +402,8 @@ private fun SheetReplacementExample(
         }
     }
     Sheet(
-        visible = currentSheet == ReplacementSheet.Information,
-        onDismissRequest = close,
+        visible = currentSheet == SheetPage.Information,
+        onDismissRequest = showMenu,
         title = if (showTitle) "Song information" else null,
         properties = properties,
         actions = {
@@ -412,8 +426,8 @@ private fun SheetReplacementExample(
     ) {
         SheetScrollableContent(contentPadding = contentPadding) {
             ItemOuterTip(
-                text = "Return to the menu to repeat the transition in either direction. " +
-                    "Try different display modes and heights."
+                text = "Back to menu restores the menu; dismissal also returns when allowed. " +
+                    "Done ends the entire flow and discards its retained state."
             )
             RoundedColumn {
                 ItemValue(
@@ -594,7 +608,7 @@ private fun QueueSheetContent(
     ) {
         item {
             ItemOuterTip(
-                text = "100 tracks. Scroll at any detent; reopening preserves your position."
+                text = "100 tracks. Scroll at any detent; closing fully resets your position."
             )
             RoundedColumn {
                 ItemButton(

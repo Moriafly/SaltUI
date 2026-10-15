@@ -129,7 +129,9 @@ enum class SheetContentLayout {
 
 /**
  * Declarative Sheet configuration. Use a new list to change [detents].
- * [initialDetent] seeds the height once; reopening the same Sheet preserves the user's height.
+ * [initialDetent] sets the height of a new presentation after unretained state is discarded.
+ * [retainStateWhenHidden] preserves the selected detent and saveable content for a later return.
+ * Reopening during the exit animation preserves the current height and content state.
  * [dismissible] gates user requests, and never prevents programmatic `visible = false`.
  * The header close button is hidden when dismissal is disabled.
  * [dragEnabled] controls pointer resizing and drag dismissal in [SheetDisplayMode.Bottom].
@@ -148,10 +150,68 @@ data class SheetProperties(
     val detents: List<SheetDetent> = listOf(SheetDetent.Content),
     val initialDetent: SheetDetent = detents.first(),
     val scrollBehavior: SheetScrollBehavior = SheetScrollBehavior.ExpandFirst,
-    val contentLayout: SheetContentLayout = SheetContentLayout.Inset
+    val contentLayout: SheetContentLayout = SheetContentLayout.Inset,
+    /**
+     * Retains content state saved with `rememberSaveable` and the selected detent while hidden.
+     * Defaults to false, discarding that state after the exit animation finishes.
+     *
+     * Set this to a parent flow's visibility when hiding the Sheet to show a child page.
+     * Changing it to false while already hidden discards the retained state immediately.
+     * Visible content and an unfinished exit animation are never cleared by this setting.
+     *
+     * Retention does not keep the content composed or its host alive. Ordinary `remember` values
+     * and content effects are disposed; state hoisted to the caller remains the caller's concern.
+     */
+    val retainStateWhenHidden: Boolean = false
 ) {
     init {
         require(detents.isNotEmpty()) { "Sheet requires at least one detent" }
         require(initialDetent in detents) { "initialDetent must belong to detents" }
     }
+
+    /**
+     * Preserves the original constructor and default-argument entry point for compiled callers.
+     */
+    @Deprecated("Retained for binary compatibility", level = DeprecationLevel.HIDDEN)
+    constructor(
+        displayMode: SheetDisplayMode = SheetDisplayMode.Auto,
+        dismissible: Boolean = true,
+        dragEnabled: Boolean = true,
+        detents: List<SheetDetent> = listOf(SheetDetent.Content),
+        initialDetent: SheetDetent = detents.first(),
+        scrollBehavior: SheetScrollBehavior = SheetScrollBehavior.ExpandFirst,
+        contentLayout: SheetContentLayout = SheetContentLayout.Inset
+    ) : this(
+        displayMode = displayMode,
+        dismissible = dismissible,
+        dragEnabled = dragEnabled,
+        detents = detents,
+        initialDetent = initialDetent,
+        scrollBehavior = scrollBehavior,
+        contentLayout = contentLayout,
+        retainStateWhenHidden = false
+    )
+
+    /**
+     * Preserves the original copy and default-argument entry points for compiled callers.
+     */
+    @Deprecated("Retained for binary compatibility", level = DeprecationLevel.HIDDEN)
+    fun copy(
+        displayMode: SheetDisplayMode = this.displayMode,
+        dismissible: Boolean = this.dismissible,
+        dragEnabled: Boolean = this.dragEnabled,
+        detents: List<SheetDetent> = this.detents,
+        initialDetent: SheetDetent = this.initialDetent,
+        scrollBehavior: SheetScrollBehavior = this.scrollBehavior,
+        contentLayout: SheetContentLayout = this.contentLayout
+    ): SheetProperties = copy(
+        displayMode = displayMode,
+        dismissible = dismissible,
+        dragEnabled = dragEnabled,
+        detents = detents,
+        initialDetent = initialDetent,
+        scrollBehavior = scrollBehavior,
+        contentLayout = contentLayout,
+        retainStateWhenHidden = retainStateWhenHidden
+    )
 }
