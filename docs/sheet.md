@@ -1,6 +1,6 @@
 # Sheet 使用说明
 
-`Sheet` 是 SaltUI 的模态面板，公共显隐接口只有 `visible: Boolean` 和 `onDismissRequest`。高度、动画、平台承载、遮罩、返回处理与退出释放由组件管理。接口位于 `com.moriafly.salt.ui.sheet`，目前标记为 `@UnstableSaltUiApi`。
+`Sheet` 是 SaltUI 的模态面板，通过 `visible: Boolean` 和 `onDismissRequest` 管理显隐。高度、动画、平台承载、遮罩、返回处理与退出释放由组件管理。需要等待退场完成时，可额外传入 `SheetState`。接口位于 `com.moriafly.salt.ui.sheet`，目前标记为 `@UnstableSaltUiApi`。
 
 ## 最简调用
 
@@ -27,6 +27,40 @@ fun Example() {
 同一窗口内切换两个 Sheet 时，在同一次状态更新中隐藏旧面板并显示新面板；新面板测量完成后，两者完整运行各自的退场与展开动画，不等待旧面板完全关闭。遮罩和输入由所属窗口统一协调，避免切换中误触背景；没有后续 Sheet 时，普通关闭仍立即释放背景输入。
 
 用户点击遮罩、关闭按钮，按 Back / Escape，或向下拖动越过最小高度时，产生关闭请求。回调保持 `visible = true` 就继续显示；拖动请求会回到合法高度。业务主动设置 false 不触发关闭请求。
+
+## 等待退场完成
+
+普通页面继续使用上面的调用即可。导航场景需要等待 Sheet 完全退出，再释放页面或导航 Entry 时，可以外提 `SheetState`：
+
+```kotlin
+val sheetState = rememberSheetState()
+val scope = rememberCoroutineScope()
+
+Sheet(
+    visible = visible,
+    onDismissRequest = {
+        scope.launch {
+            visible = false
+            sheetState.awaitHidden()
+            onRemove()
+        }
+    },
+    state = sheetState,
+    title = "选择内容"
+) {
+    Text("业务内容")
+}
+```
+
+`SheetState` 只观察呈现生命周期，`visible` 仍是唯一显隐输入。`isHidden` 初始为 true；Sheet 进入、显示和退场期间均为 false，动画结束且承载移出组合后才恢复为 true。值在组合变更应用后更新，不会同步反映尚未应用的 `visible` 修改。
+
+`awaitHidden()` 等待当前呈现完整退出，不会发起关闭；已经隐藏或尚未呈现时立即返回，不等待未来的打开。等待期间重新打开会中断退场，等待继续到后续完整退出。多个协程可同时等待，取消其中一个不会影响动画或其他等待者。如果 Sheet 调用提前离开组合，或者换用了另一个 state，未完成的等待会抛出 `CancellationException`，不会把强制移除当作正常退场完成。
+
+等待完成表示动画结束且承载已移出组合，不表示独立的正文状态清理 Effect 或业务任务全部完成。等待者何时继续执行取决于其协程调度器，不保证额外延迟一帧或一次事件循环。
+
+在 Navigation3 中，Scene 可以直接持有 `val sheetState = SheetState()`，页面将它传给 `Sheet`。`OverlayScene.onRemove()` 更新用于计算 `visible` 的移除状态，再调用 `sheetState.awaitHidden()`，使 Entry 在退场期间保留。若 Navigation3 取消移除，应恢复该移除状态并继续抛出取消异常；不需要从 Sheet 正文的 `DisposableEffect` 推断动画是否完成。
+
+一个 state 同时只能绑定一个 Sheet 调用，完全解绑后可以复用。它属于 UI 生命周期，应在 UI 线程访问，不放入 `rememberSaveable` 或持久化数据。Sheet 自己管理正文状态的保留与清理，`SheetState` 不保存正文、停靠高度或导航栈。
 
 ## 隐藏与状态保留
 

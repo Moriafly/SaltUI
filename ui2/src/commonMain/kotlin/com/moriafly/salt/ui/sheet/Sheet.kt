@@ -28,6 +28,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
@@ -72,6 +73,7 @@ import com.moriafly.salt.ui.sheet.internal.rememberSheetLease
  * Their surface animations overlap while the next Sheet takes over the scrim and input.
  *
  * Use [SheetContentLayout.EdgeToEdge] with [SheetScope.contentPadding] for edge-to-edge scrolling.
+ * To await the end of an exit animation, use the overload accepting a [SheetState].
  */
 @UnstableSaltUiApi
 @Composable
@@ -84,10 +86,42 @@ fun Sheet(
     actions: @Composable RowScope.() -> Unit = {},
     content: @Composable SheetScope.() -> Unit
 ) {
+    Sheet(
+        visible = visible,
+        onDismissRequest = onDismissRequest,
+        state = rememberSheetState(),
+        modifier = modifier,
+        title = title,
+        properties = properties,
+        actions = actions,
+        content = content
+    )
+}
+
+/**
+ * A [Sheet] whose presentation lifecycle can be observed through [state].
+ *
+ * [visible] remains the sole visibility input. The state does not show or hide the Sheet; use
+ * [SheetState.awaitHidden] to keep a navigation scene composed until its exit finishes.
+ * Keep this call in composition while waiting and use a separate state for each Sheet call.
+ * See the overload without a state parameter for layout, dismissal and content retention behavior.
+ */
+@UnstableSaltUiApi
+@Composable
+fun Sheet(
+    visible: Boolean,
+    onDismissRequest: () -> Unit,
+    state: SheetState,
+    modifier: Modifier = Modifier,
+    title: String? = null,
+    properties: SheetProperties = SheetProperties(),
+    actions: @Composable RowScope.() -> Unit = {},
+    content: @Composable SheetScope.() -> Unit
+) {
     val density = LocalDensity.current
     val preferred =
         rememberSaveable(stateSaver = SheetDetentSaver) { mutableStateOf(properties.initialDetent) }
-    val state =
+    val transitionState =
         remember {
             SheetTransitionState(
                 density = density,
@@ -95,11 +129,13 @@ fun Sheet(
                 onDetentChanged = { preferred.value = it }
             )
         }
-    val lease = rememberSheetLease(visible = visible, state = state)
+    val lease = rememberSheetLease(visible = visible, state = transitionState)
     val coordinator = lease.coordinator
     val contentState = rememberSaveableStateHolder()
     var contentKey by rememberSaveable { mutableIntStateOf(0) }
     var retained by remember { mutableStateOf(false) }
+    val present = visible || retained
+    val owner = remember { Any() }
     val currentVisible by rememberUpdatedState(visible)
     val currentProperties by rememberUpdatedState(properties)
     val currentDismissRequest by rememberUpdatedState(onDismissRequest)
@@ -109,8 +145,13 @@ fun Sheet(
         }
     }
 
+    DisposableEffect(state) {
+        state.attach(owner)
+        onDispose { state.detach(owner) }
+    }
     SideEffect {
-        state.updateVisibility(visible = visible)
+        transitionState.updateVisibility(visible = visible)
+        state.updatePresentation(owner = owner, present = present)
     }
     LaunchedEffect(visible, lease) {
         if (visible) {
@@ -120,7 +161,7 @@ fun Sheet(
         }
         coordinator.awaitPresentationReady()
         if (visible) coordinator.acquire(lease)
-        state.animateVisible(visible)
+        transitionState.animateVisible(visible)
         if (!visible) {
             retained = false
             coordinator.release(lease)
@@ -131,11 +172,11 @@ fun Sheet(
             contentState.removeState(contentKey)
             contentKey++
             preferred.value = currentProperties.initialDetent
-            state.resetGeometry()
+            transitionState.resetGeometry()
         }
     }
 
-    if (visible || retained) {
+    if (present) {
         // Dispose the dim animation with the host so hidden Sheets cannot retain a gray overlay.
         val replacing = !visible && coordinator.hasVisibleSheet
         val dimAlpha = animateFloatAsState(
@@ -155,7 +196,7 @@ fun Sheet(
                 DisableMaterial {
                     contentState.SaveableStateProvider(contentKey) {
                         SheetSurface(
-                            state = state,
+                            state = transitionState,
                             scrimAlpha = { if (environment.drawsScrim) lease.scrimAlpha else 0f },
                             dimAlpha = { dimAlpha.value },
                             visible = visible,
