@@ -89,7 +89,7 @@ internal fun SheetHeader(
                 state = state,
                 scope = scope,
                 visible = { currentVisible },
-                dismissible = { currentProperties.dismissible },
+                dismissible = { currentProperties.dismissOnDrag },
                 onDismissRequest = { currentDismissRequest() }
             )
         }
@@ -100,7 +100,7 @@ internal fun SheetHeader(
                 verticalScroll(state = scrollState)
             }
     ) {
-        if (title != null || properties.dismissible) {
+        if (title != null || properties.dismissOnCloseButtonClick) {
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -108,7 +108,7 @@ internal fun SheetHeader(
                     .padding(
                         start = closeButtonInset,
                         top = 8.dp,
-                        end = if (properties.dismissible) {
+                        end = if (properties.dismissOnCloseButtonClick) {
                             closeButtonInset + closeButtonSize + 12.dp
                         } else {
                             closeButtonInset
@@ -153,7 +153,7 @@ internal fun SheetHeader(
                 }
             )
         }
-        if (properties.dismissible) {
+        if (properties.dismissOnCloseButtonClick) {
             SheetCloseButton(
                 onClick = onDismissRequest,
                 enabled = visible,

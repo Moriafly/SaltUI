@@ -141,7 +141,7 @@ fun Sheet(
     val currentDismissRequest by rememberUpdatedState(onDismissRequest)
     val requestDismiss = remember {
         {
-            if (currentVisible && currentProperties.dismissible) currentDismissRequest()
+            if (currentVisible) currentDismissRequest()
         }
     }
 
@@ -190,7 +190,9 @@ fun Sheet(
             displayMode = properties.displayMode,
             adaptiveWindow = LocalSaltAdaptiveWindow.current,
             backgroundColor = SaltTheme.colors.background,
-            onDismissRequest = requestDismiss
+            onDismissRequest = {
+                if (currentProperties.dismissOnBackPress) requestDismiss()
+            }
         ) { environment ->
             if (retained) {
                 DisableMaterial {
@@ -215,7 +217,9 @@ fun Sheet(
                     // Keep the scrim present before the incoming surface is composed.
                     SheetScrim(
                         alpha = { if (environment.drawsScrim) lease.scrimAlpha else 0f },
-                        onDismissRequest = requestDismiss
+                        onDismissRequest = {
+                            if (currentProperties.dismissOnClickOutside) requestDismiss()
+                        }
                     )
                     SheetPendingInput()
                 }

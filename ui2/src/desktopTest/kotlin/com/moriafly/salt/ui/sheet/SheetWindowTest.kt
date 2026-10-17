@@ -108,7 +108,7 @@ class SheetWindowTest {
         fixture.click(robot, "Open")
         val closeButton = sheetCloseButton()
         val region = onNode(closeButton).fetchSemanticsNode().boundsInWindow
-        runOnIdle { fixture.dismissible = false }
+        runOnIdle { fixture.properties = fixture.properties.copy(dismissOnCloseButtonClick = false) }
         waitUntil(timeoutMillis = 5_000) {
             onAllNodes(closeButton).fetchSemanticsNodes().isEmpty()
         }
@@ -127,7 +127,7 @@ class SheetWindowTest {
         }
         fixture.click(robot, "Inside")
         runOnIdle { assertEquals(1, fixture.insideClicks) }
-        runOnIdle { fixture.dismissible = true }
+        runOnIdle { fixture.properties = fixture.properties.copy(dismissOnCloseButtonClick = true) }
         waitUntil(timeoutMillis = 5_000) {
             onAllNodes(closeButton).fetchSemanticsNodes().size == 1
         }
@@ -293,8 +293,198 @@ class SheetWindowTest {
     }
 
     @Test
+    fun disabledOutsideDismissalConsumesBoundaryClicksAndKeepsOtherEntrypoints() =
+        runDesktopComposeUiTest {
+            val fixture = SheetFixture(retainRequest = true)
+            fixture.properties = SheetProperties(dismissOnClickOutside = false)
+            setContent { fixture.Content() }
+            val robot = fixture.activate()
+            fixture.click(robot, "Open")
+            waitForIdle()
+            val panel = fixture.bounds.getValue("panel")
+            val pixel = fixture.window.graphicsConfiguration.defaultTransform.scaleX.toFloat()
+            for (x in listOf(panel.left + pixel, panel.left, panel.left - pixel, panel.right)) {
+                fixture.clickPoint(robot, x, panel.center.y)
+            }
+            fixture.click(robot, "Background")
+            waitForIdle()
+            runOnIdle {
+                assertEquals(0, fixture.requests)
+                assertEquals(0, fixture.backgroundClicks)
+                assertTrue(fixture.visible)
+            }
+            robot.pressKey(KeyEvent.VK_ESCAPE)
+            waitForIdle()
+            runOnIdle { assertEquals(1, fixture.requests) }
+            val close = onNode(sheetCloseButton()).fetchSemanticsNode().boundsInWindow
+            fixture.clickPoint(robot, close.center.x, close.center.y)
+            waitForIdle()
+            runOnIdle { assertEquals(2, fixture.requests) }
+            runOnIdle {
+                fixture.properties = fixture.properties.copy(dismissOnClickOutside = true)
+            }
+            fixture.click(robot, "Background")
+            waitForIdle()
+            runOnIdle {
+                assertEquals(3, fixture.requests)
+                assertEquals(0, fixture.backgroundClicks)
+            }
+            fixture.click(robot, "Program close")
+            waitForIdle()
+            fixture.click(robot, "Background")
+            runOnIdle { assertEquals(1, fixture.backgroundClicks) }
+            fixture.restorePointer(robot)
+        }
+
+    @Test
+    fun disabledBackDismissalKeepsOutsideAndCloseButtonRequests() = runDesktopComposeUiTest {
+        val fixture = SheetFixture(retainRequest = true)
+        fixture.properties = SheetProperties(dismissOnBackPress = false)
+        setContent { fixture.Content() }
+        val robot = fixture.activate()
+        fixture.click(robot, "Open")
+        waitForIdle()
+        robot.pressKey(KeyEvent.VK_ESCAPE)
+        waitForIdle()
+        runOnIdle {
+            assertEquals(0, fixture.requests)
+            assertTrue(fixture.visible)
+        }
+        fixture.click(robot, "Background")
+        val close = onNode(sheetCloseButton()).fetchSemanticsNode().boundsInWindow
+        fixture.clickPoint(robot, close.center.x, close.center.y)
+        waitForIdle()
+        runOnIdle {
+            assertEquals(2, fixture.requests)
+            assertEquals(0, fixture.backgroundClicks)
+            fixture.properties = fixture.properties.copy(dismissOnBackPress = true)
+        }
+        robot.pressKey(KeyEvent.VK_ESCAPE)
+        waitForIdle()
+        runOnIdle { assertEquals(3, fixture.requests) }
+        fixture.click(robot, "Program close")
+        waitForIdle()
+        fixture.restorePointer(robot)
+    }
+
+    @Test
+    fun disabledDragDismissalKeepsHeightAdjustmentAndShortcutCopyControlsAllEntrypoints() =
+        runDesktopComposeUiTest {
+            val fixture = SheetFixture(bottom = true, retainRequest = true)
+            fixture.properties = SheetProperties(dismissOnDrag = false)
+            setContent { fixture.Content() }
+            val robot = fixture.activate()
+            fixture.click(robot, "Open")
+            waitForIdle()
+            val medium = fixture.bounds.getValue("panel")
+            fixture.drag(robot, medium.center.x, medium.top + 36f, -medium.height * 0.75f)
+            waitForIdle()
+            val large = fixture.bounds.getValue("panel")
+            assertTrue(large.height > medium.height + 100f)
+            fixture.drag(robot, large.center.x, large.top + 36f, medium.height * 0.75f)
+            waitForIdle()
+            val restored = fixture.bounds.getValue("panel")
+            fixture.drag(robot, restored.center.x, restored.top + 36f, restored.height * 0.35f)
+            waitForIdle()
+            assertEquals(medium.height, fixture.bounds.getValue("panel").height, 2f)
+            runOnIdle {
+                assertEquals(0, fixture.requests)
+                fixture.properties = fixture.properties.copy(dismissible = false)
+            }
+            onNode(sheetCloseButton()).assertDoesNotExist()
+            fixture.click(robot, "Background")
+            robot.pressKey(KeyEvent.VK_ESCAPE)
+            waitForIdle()
+            runOnIdle {
+                assertEquals(0, fixture.requests)
+                assertEquals(0, fixture.backgroundClicks)
+                fixture.properties = fixture.properties.copy(dismissible = true)
+            }
+            onNode(sheetCloseButton()).assertIsDisplayed()
+            val enabled = fixture.bounds.getValue("panel")
+            fixture.drag(robot, enabled.center.x, enabled.top + 36f, enabled.height * 0.35f)
+            waitForIdle()
+            runOnIdle {
+                assertEquals(1, fixture.requests)
+                assertTrue(fixture.visible)
+            }
+            fixture.click(robot, "Program close")
+            waitForIdle()
+            fixture.restorePointer(robot)
+        }
+
+    @Test
+    fun positionalCopyDisablesEveryDismissalEntrypoint() = runDesktopComposeUiTest {
+        val fixture = SheetFixture(bottom = true, retainRequest = true)
+        fixture.properties = SheetProperties().copy(SheetDisplayMode.Bottom, false)
+        setContent { fixture.Content() }
+        val robot = fixture.activate()
+        fixture.click(robot, "Open")
+        waitForIdle()
+        onNode(sheetCloseButton()).assertDoesNotExist()
+        fixture.click(robot, "Background")
+        robot.pressKey(KeyEvent.VK_ESCAPE)
+        val panel = fixture.bounds.getValue("panel")
+        fixture.drag(robot, panel.center.x, panel.top + 36f, panel.height * 0.35f)
+        waitForIdle()
+        runOnIdle {
+            assertEquals(0, fixture.requests)
+            assertEquals(0, fixture.backgroundClicks)
+            assertTrue(fixture.visible)
+        }
+        assertEquals(panel.height, fixture.bounds.getValue("panel").height, 2f)
+        fixture.click(robot, "Program close")
+        waitForIdle()
+        fixture.click(robot, "Background")
+        runOnIdle { assertEquals(1, fixture.backgroundClicks) }
+        fixture.restorePointer(robot)
+    }
+
+    @Test
+    fun fullPositionalCopyEnablesEveryDismissalEntrypoint() = runDesktopComposeUiTest {
+        val fixture = SheetFixture(bottom = true, retainRequest = true)
+        val detents = listOf(SheetDetent.Medium, SheetDetent.Large)
+        fixture.properties = SheetProperties(dismissible = false).copy(
+            SheetDisplayMode.Bottom,
+            true,
+            true,
+            detents,
+            detents.first(),
+            SheetScrollBehavior.ExpandFirst,
+            SheetContentLayout.Inset,
+            false
+        )
+        setContent { fixture.Content() }
+        val robot = fixture.activate()
+        fixture.click(robot, "Open")
+        waitForIdle()
+        val close = onNode(sheetCloseButton()).fetchSemanticsNode().boundsInWindow
+        fixture.clickPoint(robot, close.center.x, close.center.y)
+        waitForIdle()
+        runOnIdle { assertEquals(1, fixture.requests) }
+        robot.pressKey(KeyEvent.VK_ESCAPE)
+        waitForIdle()
+        runOnIdle { assertEquals(2, fixture.requests) }
+        fixture.click(robot, "Background")
+        waitForIdle()
+        runOnIdle { assertEquals(3, fixture.requests) }
+        val panel = fixture.bounds.getValue("panel")
+        fixture.drag(robot, panel.center.x, panel.top + 36f, panel.height * 0.35f)
+        waitForIdle()
+        runOnIdle {
+            assertEquals(4, fixture.requests)
+            assertEquals(0, fixture.backgroundClicks)
+            assertTrue(fixture.visible)
+        }
+        fixture.click(robot, "Program close")
+        waitForIdle()
+        fixture.restorePointer(robot)
+    }
+
+    @Test
     fun disabledDismissalAllowsBusinessExit() = runDesktopComposeUiTest {
         val fixture = SheetFixture(dismissible = false)
+        fixture.properties = SheetProperties(SheetDisplayMode.Floating, false)
         setContent { fixture.Content() }
         val robot = fixture.activate()
         fixture.click(robot, "Open")
@@ -577,7 +767,7 @@ internal class SheetFixture(
             }
             return rectangles
         }
-    var dismissible by mutableStateOf(dismissible)
+    var properties by mutableStateOf(SheetProperties(dismissible = dismissible))
     var visible by mutableStateOf(false)
     private var readPadding by mutableStateOf(false)
     private var fontScale by mutableFloatStateOf(1f)
@@ -685,20 +875,23 @@ internal class SheetFixture(
         }
     }
 
-    private fun sheetProperties() = SheetProperties(
-        displayMode = displayMode ?: if (bottom) {
-            SheetDisplayMode.Bottom
-        } else {
-            SheetDisplayMode.Floating
-        },
-        dismissible = dismissible,
-        scrollBehavior = scrollBehavior,
-        detents = configuredDetents ?: if (bottom) {
+    private fun sheetProperties(): SheetProperties {
+        val detents = configuredDetents ?: if (bottom) {
             listOf(SheetDetent.Medium, SheetDetent.Large)
         } else {
             listOf(SheetDetent.Content)
         }
-    )
+        return properties.copy(
+            displayMode = displayMode ?: if (bottom) {
+                SheetDisplayMode.Bottom
+            } else {
+                SheetDisplayMode.Floating
+            },
+            scrollBehavior = scrollBehavior,
+            detents = detents,
+            initialDetent = detents.first()
+        )
+    }
 
     @Composable
     private fun SheetScope.PrimarySheetContent(

@@ -132,8 +132,11 @@ enum class SheetContentLayout {
  * [initialDetent] sets the height of a new presentation after unretained state is discarded.
  * [retainStateWhenHidden] preserves the selected detent and saveable content for a later return.
  * Reopening during the exit animation preserves the current height and content state.
- * [dismissible] gates user requests, and never prevents programmatic `visible = false`.
- * The header close button is hidden when dismissal is disabled.
+ * Dismissal entry points are independent and never prevent programmatic `visible = false`.
+ * [dismissOnClickOutside] controls scrim clicks; disabled scrim clicks remain consumed.
+ * [dismissOnBackPress] controls back and Escape requests without changing modal input ownership.
+ * [dismissOnDrag] controls bottom-sheet drag dismissal independently of height adjustment.
+ * [dismissOnCloseButtonClick] controls the header close button, which is hidden when disabled.
  * [dragEnabled] controls pointer resizing and drag dismissal in [SheetDisplayMode.Bottom].
  * The drag handle is shown automatically when resizing or drag dismissal is available.
  * Accessibility height actions remain available when pointer dragging is disabled.
@@ -145,7 +148,7 @@ enum class SheetContentLayout {
 @UnstableSaltUiApi
 data class SheetProperties(
     val displayMode: SheetDisplayMode = SheetDisplayMode.Auto,
-    val dismissible: Boolean = true,
+    val dismissOnClickOutside: Boolean = true,
     val dragEnabled: Boolean = true,
     val detents: List<SheetDetent> = listOf(SheetDetent.Content),
     val initialDetent: SheetDetent = detents.first(),
@@ -162,12 +165,80 @@ data class SheetProperties(
      * Retention does not keep the content composed or its host alive. Ordinary `remember` values
      * and content effects are disposed; state hoisted to the caller remains the caller's concern.
      */
-    val retainStateWhenHidden: Boolean = false
+    val retainStateWhenHidden: Boolean = false,
+    val dismissOnBackPress: Boolean = true,
+    val dismissOnDrag: Boolean = true,
+    val dismissOnCloseButtonClick: Boolean = true
 ) {
     init {
         require(detents.isNotEmpty()) { "Sheet requires at least one detent" }
         require(initialDetent in detents) { "initialDetent must belong to detents" }
     }
+
+    /**
+     * Sets all dismissal entry points together. Use the primary constructor for independent flags.
+     */
+    constructor(
+        displayMode: SheetDisplayMode = SheetDisplayMode.Auto,
+        dismissible: Boolean = true,
+        dragEnabled: Boolean = true,
+        detents: List<SheetDetent> = listOf(SheetDetent.Content),
+        initialDetent: SheetDetent = detents.first(),
+        scrollBehavior: SheetScrollBehavior = SheetScrollBehavior.ExpandFirst,
+        contentLayout: SheetContentLayout = SheetContentLayout.Inset,
+        retainStateWhenHidden: Boolean = false
+    ) : this(
+        displayMode = displayMode,
+        dismissOnClickOutside = dismissible,
+        dragEnabled = dragEnabled,
+        detents = detents,
+        initialDetent = initialDetent,
+        scrollBehavior = scrollBehavior,
+        contentLayout = contentLayout,
+        retainStateWhenHidden = retainStateWhenHidden,
+        dismissOnBackPress = dismissible,
+        dismissOnDrag = dismissible,
+        dismissOnCloseButtonClick = dismissible
+    )
+
+    /**
+     * Replaces all dismissal flags while preserving unspecified layout properties.
+     * The trailing [compatibility] marker distinguishes this overload from the legacy JVM bridges.
+     */
+    fun copy(
+        displayMode: SheetDisplayMode = this.displayMode,
+        dismissible: Boolean,
+        dragEnabled: Boolean = this.dragEnabled,
+        detents: List<SheetDetent> = this.detents,
+        initialDetent: SheetDetent = this.initialDetent,
+        scrollBehavior: SheetScrollBehavior = this.scrollBehavior,
+        contentLayout: SheetContentLayout = this.contentLayout,
+        retainStateWhenHidden: Boolean = this.retainStateWhenHidden,
+        @Suppress("UNUSED_PARAMETER") compatibility: Unit = Unit
+    ): SheetProperties = copy(
+        displayMode = displayMode,
+        dismissOnClickOutside = dismissible,
+        dragEnabled = dragEnabled,
+        detents = detents,
+        initialDetent = initialDetent,
+        scrollBehavior = scrollBehavior,
+        contentLayout = contentLayout,
+        retainStateWhenHidden = retainStateWhenHidden,
+        dismissOnBackPress = dismissible,
+        dismissOnDrag = dismissible,
+        dismissOnCloseButtonClick = dismissible
+    )
+
+    private val allDismissalsEnabled: Boolean
+        get() = dismissOnClickOutside && dismissOnBackPress && dismissOnDrag &&
+            dismissOnCloseButtonClick
+
+    /**
+     * Legacy readers can only represent uniform dismissal; new callers use the individual flags.
+     */
+    @Deprecated("Use the individual dismissal flags", level = DeprecationLevel.HIDDEN)
+    val dismissible: Boolean
+        get() = allDismissalsEnabled
 
     /**
      * Preserves the original constructor and default-argument entry point for compiled callers.
@@ -182,36 +253,58 @@ data class SheetProperties(
         scrollBehavior: SheetScrollBehavior = SheetScrollBehavior.ExpandFirst,
         contentLayout: SheetContentLayout = SheetContentLayout.Inset
     ) : this(
-        displayMode = displayMode,
         dismissible = dismissible,
+        displayMode = displayMode,
         dragEnabled = dragEnabled,
         detents = detents,
         initialDetent = initialDetent,
         scrollBehavior = scrollBehavior,
-        contentLayout = contentLayout,
-        retainStateWhenHidden = false
+        contentLayout = contentLayout
     )
 
     /**
-     * Preserves the original copy and default-argument entry points for compiled callers.
+     * Preserves the previous uniform-dismissal copy and its default-argument entry point.
      */
     @Deprecated("Retained for binary compatibility", level = DeprecationLevel.HIDDEN)
     fun copy(
         displayMode: SheetDisplayMode = this.displayMode,
-        dismissible: Boolean = this.dismissible,
+        dismissible: Boolean = allDismissalsEnabled,
         dragEnabled: Boolean = this.dragEnabled,
         detents: List<SheetDetent> = this.detents,
         initialDetent: SheetDetent = this.initialDetent,
         scrollBehavior: SheetScrollBehavior = this.scrollBehavior,
-        contentLayout: SheetContentLayout = this.contentLayout
+        contentLayout: SheetContentLayout = this.contentLayout,
+        retainStateWhenHidden: Boolean = this.retainStateWhenHidden
     ): SheetProperties = copy(
-        displayMode = displayMode,
         dismissible = dismissible,
+        displayMode = displayMode,
         dragEnabled = dragEnabled,
         detents = detents,
         initialDetent = initialDetent,
         scrollBehavior = scrollBehavior,
         contentLayout = contentLayout,
         retainStateWhenHidden = retainStateWhenHidden
+    )
+
+    /**
+     * Preserves the original uniform-dismissal copy and its default-argument entry point.
+     */
+    @Deprecated("Retained for binary compatibility", level = DeprecationLevel.HIDDEN)
+    fun copy(
+        displayMode: SheetDisplayMode = this.displayMode,
+        dismissible: Boolean = allDismissalsEnabled,
+        dragEnabled: Boolean = this.dragEnabled,
+        detents: List<SheetDetent> = this.detents,
+        initialDetent: SheetDetent = this.initialDetent,
+        scrollBehavior: SheetScrollBehavior = this.scrollBehavior,
+        contentLayout: SheetContentLayout = this.contentLayout
+    ): SheetProperties = copy(
+        dismissible = dismissible,
+        displayMode = displayMode,
+        dragEnabled = dragEnabled,
+        detents = detents,
+        initialDetent = initialDetent,
+        scrollBehavior = scrollBehavior,
+        contentLayout = contentLayout
     )
 }

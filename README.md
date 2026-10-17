@@ -29,6 +29,8 @@ fun App() {
 
 See demo: [shared](https://github.com/Moriafly/SaltUI/tree/main/shared).
 
+Sheet usage: [lifecycle, dismissal controls, and state retention](docs/sheet.md).
+
 ## Text Description and Translation Standards
 
 See: [SaltUI Text Description and Translation Standards](https://moriafly.com/standards/tdts).

@@ -90,7 +90,9 @@ internal fun SheetSurface(
     ) {
         SheetScrim(
             alpha = scrimAlpha,
-            onDismissRequest = onDismissRequest
+            onDismissRequest = {
+                if (properties.dismissOnClickOutside) onDismissRequest()
+            }
         )
         SheetViewport(
             state = state,
@@ -127,11 +129,11 @@ private fun rememberSheetNestedScroll(
             state = state,
             enabled = {
                 currentBottom && currentVisible && state.ready && currentProperties.dragEnabled &&
-                    (currentProperties.dismissible || state.points.size > 1) &&
+                    (currentProperties.dismissOnDrag || state.points.size > 1) &&
                     directInput.active
             },
             scrollBehavior = { currentProperties.scrollBehavior },
-            dismissible = { currentProperties.dismissible },
+            dismissible = { currentProperties.dismissOnDrag },
             onDismissRequest = { currentDismissRequest() }
         )
     }

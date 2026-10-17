@@ -79,7 +79,7 @@ internal fun SheetPanel(
     } else {
         properties.detents.distinct().size > 1
     }
-    val canDrag = bottom && properties.dragEnabled && (canResize || properties.dismissible)
+    val canDrag = bottom && properties.dragEnabled && (canResize || properties.dismissOnDrag)
     val closeButtonSize = PillButtonDefaults.containerHeight(LocalControlSize.current)
     val cornerRadius = closeButtonSize / 2 + SaltTheme.dimens.padding
     val shape = remember(bottom, cornerRadius) {

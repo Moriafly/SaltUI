@@ -541,6 +541,58 @@ class SheetInteractionTest {
     }
 
     @Test
+    fun disabledOutsideDismissalKeepsBackAndCloseButtonWorkingWithoutClickThrough() {
+        val fixture = AndroidSheetFixture(
+            retain = true,
+            dismissalProperties = SheetProperties(dismissOnClickOutside = false)
+        )
+        ActivityScenario.launch(MainActivity::class.java).use { scenario ->
+            scenario.onActivity { it.setContent { fixture.Content() } }
+            val background = device.wait(Until.findObject(By.text("Background")), 5_000).visibleBounds
+            click(By.text("Open sheet"))
+            device.click(background.centerX(), background.centerY())
+            SystemClock.sleep(300)
+            scenario.onActivity {
+                assertEquals(0, fixture.requests)
+                assertEquals(0, fixture.backgroundClicks)
+                assertTrue(fixture.visible)
+            }
+            device.pressBack()
+            shown(By.text("Requests: 1"))
+            click(By.desc(java.util.regex.Pattern.compile("Close sheet|关闭面板")))
+            shown(By.text("Requests: 2"))
+            click(By.text("Program close"))
+            assertTrue(device.wait(Until.gone(By.text("Fixture sheet")), 5_000))
+            click(By.text("Background"))
+            shown(By.text("Background: 1"))
+        }
+    }
+
+    @Test
+    fun disabledBackDismissalKeepsOutsideAndCloseButtonWorking() {
+        val fixture = AndroidSheetFixture(
+            retain = true,
+            dismissalProperties = SheetProperties(dismissOnBackPress = false)
+        )
+        ActivityScenario.launch(MainActivity::class.java).use { scenario ->
+            scenario.onActivity { it.setContent { fixture.Content() } }
+            val background = device.wait(Until.findObject(By.text("Background")), 5_000).visibleBounds
+            click(By.text("Open sheet"))
+            device.pressBack()
+            SystemClock.sleep(300)
+            scenario.onActivity {
+                assertEquals(0, fixture.requests)
+                assertTrue(fixture.visible)
+            }
+            device.click(background.centerX(), background.centerY())
+            shown(By.text("Requests: 1"))
+            click(By.desc(java.util.regex.Pattern.compile("Close sheet|关闭面板")))
+            shown(By.text("Requests: 2"))
+            click(By.text("Program close"))
+        }
+    }
+
+    @Test
     fun firstBackHidesImeAndSecondBackRequestsSheetDismissal() {
         val fixture = AndroidSheetFixture(retain = true, form = true)
         ActivityScenario.launch(MainActivity::class.java).use { scenario ->
@@ -767,7 +819,8 @@ private class AndroidSheetFixture(
     private val noActions: Boolean = false,
     private val edgeToEdge: Boolean = false,
     private val displayMode: SheetDisplayMode = SheetDisplayMode.Bottom,
-    private val handoff: Boolean = false
+    private val handoff: Boolean = false,
+    private val dismissalProperties: SheetProperties = SheetProperties(dismissible = dismissible)
 ) {
     var visible by mutableStateOf(false)
     private var nextVisible by mutableStateOf(false)
@@ -834,20 +887,23 @@ private class AndroidSheetFixture(
         }
     }
 
-    private fun sheetProperties() = SheetProperties(
-        displayMode = displayMode,
-        contentLayout = if (edgeToEdge) {
-            SheetContentLayout.EdgeToEdge
-        } else {
-            SheetContentLayout.Inset
-        },
-        dismissible = dismissible,
-        detents = if (list) {
+    private fun sheetProperties(): SheetProperties {
+        val detents = if (list) {
             listOf(SheetDetent.Medium, SheetDetent.Large)
         } else {
             listOf(SheetDetent.Content)
         }
-    )
+        return dismissalProperties.copy(
+            displayMode = displayMode,
+            contentLayout = if (edgeToEdge) {
+                SheetContentLayout.EdgeToEdge
+            } else {
+                SheetContentLayout.Inset
+            },
+            detents = detents,
+            initialDetent = detents.first()
+        )
+    }
 
     @Composable
     private fun SheetScope.PrimarySheetContent() {

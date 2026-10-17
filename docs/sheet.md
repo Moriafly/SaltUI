@@ -26,7 +26,49 @@ fun Example() {
 
 同一窗口内切换两个 Sheet 时，在同一次状态更新中隐藏旧面板并显示新面板；新面板测量完成后，两者完整运行各自的退场与展开动画，不等待旧面板完全关闭。遮罩和输入由所属窗口统一协调，避免切换中误触背景；没有后续 Sheet 时，普通关闭仍立即释放背景输入。
 
-用户点击遮罩、关闭按钮，按 Back / Escape，或向下拖动越过最小高度时，产生关闭请求。回调保持 `visible = true` 就继续显示；拖动请求会回到合法高度。业务主动设置 false 不触发关闭请求。
+默认允许用户点击遮罩、关闭按钮，按 Back / Escape，或在 Bottom 模式向下拖动越过最小高度来产生关闭请求。回调保持 `visible = true` 就继续显示；拖动请求会回到合法高度。业务主动设置 `visible = false` 不触发关闭请求。
+
+## 关闭方式
+
+`SheetProperties` 提供四个独立开关，默认均为 true：
+
+| 配置 | 设为 false 时的行为 |
+| --- | --- |
+| `dismissOnClickOutside` | 点击面板外的遮罩不产生关闭请求，点击仍被消费，不会穿透到背景内容 |
+| `dismissOnBackPress` | Back / Escape 不产生 Sheet 关闭请求，面板仍保持模态输入；Android 返回键收起输入法的行为不变 |
+| `dismissOnDrag` | Bottom 模式不能通过下拖关闭；`dragEnabled = true` 且存在多个有效停靠点时，仍可拖动调整高度 |
+| `dismissOnCloseButtonClick` | 隐藏标题栏关闭按钮，并移除对应的点击区域与无障碍入口 |
+
+表单只需要防止误触遮罩时，单独设置 `dismissOnClickOutside`，其余关闭方式保留默认行为：
+
+```kotlin
+Sheet(
+    visible = visible,
+    onDismissRequest = { visible = false },
+    title = "填写内容",
+    properties = SheetProperties(dismissOnClickOutside = false)
+) {
+    Text("表单内容")
+}
+```
+
+`dismissible` 作为构造函数和 `copy` 的快捷重载，一次设置上述四个开关，不改变 `dragEnabled` 或其他布局配置：
+
+```kotlin
+val properties = SheetProperties(dismissible = false)
+val enabledProperties = properties.copy(dismissible = true)
+```
+
+需要批量设置后再覆盖某个入口时，继续使用独立开关的 `copy`。例如，上传期间禁用所有用户关闭入口，平时只禁用遮罩点击关闭，`uploading` 由业务状态提供：
+
+```kotlin
+val properties = SheetProperties(dismissible = !uploading)
+    .copy(dismissOnClickOutside = false)
+```
+
+同一次构造或 `copy` 调用选择批量重载或独立开关，不能混用两者的参数。普通 `copy()` 或只修改某个独立开关时，其余配置保持原值；显式 `copy(dismissible = ...)` 会重新统一四个开关。
+
+这些配置只控制 Sheet 自身的用户关闭入口。业务主动设置 `visible = false`、移除导航页面，或自行处理取消、完成按钮时，不受这些开关限制。上传期间业务按钮是否可用由调用方决定。迁移时，将对 `properties.dismissible` 的读取改为所关心的独立开关；`dismissible` 仅用于批量配置。
 
 ## 等待退场完成
 
@@ -171,6 +213,10 @@ Sheet(
 ```kotlin
 SheetProperties(
     displayMode = SheetDisplayMode.Auto,
+    dismissOnClickOutside = true,
+    dismissOnBackPress = true,
+    dismissOnDrag = true,
+    dismissOnCloseButtonClick = true,
     scrollBehavior = SheetScrollBehavior.ExpandFirst
 )
 ```
@@ -184,7 +230,7 @@ SheetProperties(
 | `displayMode` | SheetDisplayMode.Auto 在所属窗口宽度至少为 600 dp 且高度至少为 480 dp 时采用 Floating，否则采用 Bottom；也可显式指定 |
 | `scrollBehavior` | SheetScrollBehavior.ExpandFirst 向上拖动时先扩展后滚动；ScrollFirst 优先滚动正文，仅在滚动到边界后调整面板高度。两种策略均先将正文滚回顶部再向下收起或请求关闭 |
 | `contentLayout` | 默认 Inset 自动避让底部；EdgeToEdge 允许无 action 的正文延伸到底边，并由调用方应用 contentPadding |
-| `dismissible = false` | 禁止用户关闭并隐藏关闭按钮，业务主动设置 false 仍有效 |
+| 关闭方式 | 四个 `dismissOn…` 开关独立控制用户关闭入口，也可用 `dismissible` 重载统一设置，见[关闭方式](#关闭方式) |
 | `dragEnabled = false` | 禁止指针调整高度与拖拽关闭，并隐藏手柄；保留有效的无障碍高度动作 |
 | `retainStateWhenHidden` | 默认 false；为 true 时，完整隐藏后保留正文的可保存状态与所选停靠高度，供返回父页面使用 |
 
@@ -192,7 +238,7 @@ SheetProperties(
 
 浮动高度上限动态取扣除安全边距后的绘制区域高度、面板宽度的 1.2 倍与 640 dp 三者的最小值。16 dp 是安全边距的最小值，不在系统边距之外再叠加。矮窗口中，长内容或填满视口的列表可利用全部可用高度；高窗口不让面板无限长，窄窗口同时按宽度缩小上限。短内容仍按自然高度显示。浮动的 Height、Fraction、Medium 与 Large 均在这个上限内解析。
 
-手柄不提供单独的显示开关。Bottom 允许拖拽且有多个有效高度，或允许拖拽关闭时自动显示。因此默认的单一 Content 高度也会显示手柄；单一高度且禁止关闭、禁止拖拽或浮动呈现时隐藏。点击手柄切换高度仅在有多个有效高度时可用。
+手柄不提供单独的显示开关。在 Bottom 模式且 `dragEnabled = true` 时，有多个有效高度或 `dismissOnDrag = true` 就会自动显示手柄。因此默认的单一 Content 高度也会显示手柄；单一高度且 `dismissOnDrag = false`、禁止拖拽或浮动呈现时隐藏。点击手柄切换高度仅在有多个有效高度时可用。
 
 默认外观参考 [Apple Sheet 指南与示意图](https://developer.apple.com/design/human-interface-guidelines/sheets)。圆角使用与对话框相同的平滑曲线，半径为当前关闭按钮直径的一半加上 `SaltTheme.dimens.padding`，与关闭按钮的圆心对齐；Bottom 仅顶部两角使用曲线，底部两角为直角，Floating 四角均使用曲线。拖动柄为 44 × 3 dp，颜色透明度为 0.3，交互区域为 48 × 48 dp，保留高度描述与展开、收起动作。关闭按钮使用 `PillButton` 的默认圆形模式与 `SaltIcons.Close`，复用默认背景、细描边和点击反馈。按钮尺寸继承 LocalControlSize，并与同尺寸的 Button 共用高度、图标和间距。Regular 默认直径与图标大小在 Android 为 48 dp 与 20 dp、iOS 为 44 dp 与 20 dp、Desktop 为 32 dp 与 16 dp，Sheet 不额外覆盖尺寸。按钮距顶部和右边各 16 dp，标题栏同步适配按钮尺寸；显示拖动柄不会移动关闭按钮。这些尺寸是 SaltUI 的适配值。
 
@@ -204,7 +250,7 @@ action 保留标准 SaltUI Button 的胶囊形状，不覆盖按钮圆角。四�
 
 浮动打开动画从窗口底部上移至居中位置，关闭时沿相同路径下移，参考 [Apple 默认 coverVertical 转场](https://developer.apple.com/documentation/uikit/uimodaltransitionstyle/coververtical)。面板使用内部高度引擎的可中断弹簧，保留当前位置与速度，正文尺寸在动画中保持稳定；遮罩仅进行独立透明度过渡。弹簧参数为 SaltUI 的适配值，未将其标注为 iOS 27 的私有系统曲线。
 
-向下拖动可以越过最小停靠点直至面板完全移出屏幕。低于最小高度后保持内容尺寸并移动整个面板，避免正文继续缩小。释放时发起关闭请求；调用方保留 `visible = true` 时恢复原停靠点。
+在 Bottom 模式且 `dragEnabled` 与 `dismissOnDrag` 均为 true 时，向下拖动可以越过最小停靠点直至面板完全移出屏幕。低于最小高度后保持内容尺寸并移动整个面板，避免正文继续缩小。释放时发起关闭请求；调用方保留 `visible = true` 时恢复原停靠点。
 
 同一个所属窗口最多一个 Sheet 的 `visible` 为 true。可以在同一次业务更新中将旧 Sheet 设为 false、新 Sheet 设为 true，两个面板的退场和展开动画交叠运行。所属窗口的协调器只管理呈现、遮罩和输入，不表示导航栈；是否返回父页面以及何时结束流程由调用方决定。
 
@@ -226,11 +272,11 @@ action 保留标准 SaltUI Button 的胶囊形状，不覆盖按钮圆角。四�
 
 ## 兼容与验证范围
 
-旧 `BottomSheetScaffold`、`BottomSheetDialog` 保持原接口，不需要迁移。新增 Sheet 不引入公开 State，也不依赖 SwiftUI 运行时或 commonMain 的 Material 3 组件。
+旧 `BottomSheetScaffold`、`BottomSheetDialog` 保持原接口，不需要迁移。Sheet 不依赖 SwiftUI 运行时或 commonMain 的 Material 3 组件，`SheetState` 仅用于观察呈现生命周期。
 
-`SheetProperties` 保留原有 JVM 构造函数、默认参数桥、`copy` 与 `copy` 默认参数入口。已使用旧版编译的客户端直接加载新版 Desktop JAR 验证链接，并确认旧客户端复制实例时保留新增的状态保留配置。
+`SheetProperties(dismissible = ...)` 和 `copy(dismissible = ...)` 继续统一设置关闭权限，原有位置参数构造与 `copy(displayMode, dismissible, ...)` 均保持该行为。原有 JVM 构造函数、默认参数桥、属性 getter、`copy` 与 `copy` 默认参数入口保留，已使用旧版编译的客户端直接加载新版 Desktop JAR 验证链接与统一关闭配置的行为。旧二进制的统一关闭入口不能表达混合配置：即使只执行 `copy(displayMode = ...)`，只要传入配置有任一关闭入口被禁用，返回配置的四个关闭入口都会禁用。需要读取或保留各入口不同权限的客户端应使用新的独立开关并重新编译。
 
-本次已通过 Android Sample APK 构建和 Desktop 示例源码编译。按用户要求，不新增或运行 UI 测试；完整关闭后重开、父子页返回、停靠高度恢复、隐藏后结束流程、退场途中重开和配置变化均由用户进行 UI 验收。此前 Windows / Android 的运行记录属于旧实现，不能视为当前修改的验收；本次未验证 iOS 编译、Xcode 链接或原生 UI。
+关闭配置已通过 Windows 原生窗口中的鼠标、键盘与触摸交互回归，覆盖独立入口禁用、动态配置、遮罩输入拦截，以及自适应与拖拽回归。Android Sample APK 和测试 APK 构建通过，Android 真机完整交互尚未完成；未验证 iOS 编译、Xcode 链接或原生 UI。构建与兼容检查不代替对应平台的运行验收。
 
 ## 审查修复
 
