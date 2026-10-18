@@ -89,7 +89,7 @@ internal interface LinuxXInput2 : Library {
             clear()
             events.forEach { event ->
                 val offset = (event / 8).toLong()
-                setByte(offset, (getByte(offset).toInt() or (1 shl (event % 8))).toByte())
+                setByte(offset, (getByte(offset).toInt() or (1 shl event % 8)).toByte())
             }
         }
     }
