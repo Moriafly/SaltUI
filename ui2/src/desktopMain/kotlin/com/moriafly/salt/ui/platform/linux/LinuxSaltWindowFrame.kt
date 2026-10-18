@@ -77,7 +77,6 @@ internal fun FrameWindowScope.LinuxSaltWindowFrame(
     val captionBarHitTest = remember { LinuxCaptionBarHitTest() }
     val undecoratedWindowResizer = remember {
         UndecoratedWindowResizer(
-            window = window,
             onResizeEdgeChange = { edge ->
                 currentProperties.onResizeEdgeChange(window, edge)
             }
@@ -94,6 +93,15 @@ internal fun FrameWindowScope.LinuxSaltWindowFrame(
         0.dp
     }
 
+    val windowGestures = remember(window) {
+        LinuxWindowGestures(
+            window = window,
+            caption = captionBarHitTest,
+            resizer = undecoratedWindowResizer,
+            captionHovered = isHitTestInCaptionBar
+        )
+    }
+
     CompositionLocalProvider(
         LocalSaltWindowInfo provides SaltWindowInfo(
             captionBarHeight = properties.captionBarHeight,
@@ -105,18 +113,16 @@ internal fun FrameWindowScope.LinuxSaltWindowFrame(
             cornerRadius = if (shadowMargin > 0.dp) LinuxClientShadow.cornerRadius else 0.dp
         ),
         LocalLinuxCaptionBarHitTest provides captionBarHitTest,
+        LocalLinuxWindowGestures provides windowGestures,
         LocalIsHitTestInCaptionBarState provides isHitTestInCaptionBar,
     ) {
-        if (currentProperties.moveable) {
-            LinuxCaptionBarDragHandler(
-                window = window,
-                hitTest = captionBarHitTest,
-                isMoveable = properties.moveable,
-                isHitTestInCaptionBar = isHitTestInCaptionBar.value,
-                canDrag = windowState.placement != WindowPlacement.Fullscreen,
-                canMaximize = resizable && properties.maximizeOrRestoreButtonEnabled,
-            )
-        }
+        LinuxWindowInputEffect(
+            gestures = windowGestures,
+            moveable = properties.moveable,
+            resizable = resizable && !isMaximizedOrFullScreen,
+            canDrag = windowState.placement != WindowPlacement.Fullscreen,
+            canMaximize = resizable && properties.maximizeOrRestoreButtonEnabled
+        )
 
         if (clientShadow) {
             LinuxClientShadowEffect(
@@ -135,10 +141,6 @@ internal fun FrameWindowScope.LinuxSaltWindowFrame(
                     window.undecoratedResizerThickness
                 }
             window.undecoratedResizerThickness = 0.dp
-        }
-
-        LaunchedEffect(resizable, windowState.placement) {
-            undecoratedWindowResizer.enabled = resizable && !isMaximizedOrFullScreen
         }
 
         Box(

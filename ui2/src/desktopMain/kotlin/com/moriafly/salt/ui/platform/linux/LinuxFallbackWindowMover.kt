@@ -21,10 +21,9 @@ import com.moriafly.salt.ui.UnstableSaltUiApi
 import java.awt.Cursor
 import java.awt.Point
 import java.awt.Window
-import java.awt.event.MouseEvent
 
 /**
- * Fallback window mover using AWT mouse events.
+ * Fallback window movement in AWT screen coordinates, shared by mouse and touch.
  *
  * From `androidx.compose.foundation.window.StandardMoveHandler`
  */
@@ -36,20 +35,20 @@ internal class LinuxFallbackWindowMover(
     private var dragStartWindowPos: Point? = null
     private var isDragging = false
 
-    fun startDrag(e: MouseEvent) {
-        dragStartScreenPos = Point(e.xOnScreen, e.yOnScreen)
+    fun startDrag(screenPosition: Point) {
+        dragStartScreenPos = Point(screenPosition)
         dragStartWindowPos = window.location
         isDragging = true
     }
 
-    fun updateDrag(e: MouseEvent) {
+    fun updateDrag(screenPosition: Point) {
         if (!isDragging) return
 
         val startScreen = dragStartScreenPos ?: return
         val startWindow = dragStartWindowPos ?: return
 
-        val newX = startWindow.x + (e.xOnScreen - startScreen.x)
-        val newY = startWindow.y + (e.yOnScreen - startScreen.y)
+        val newX = startWindow.x + (screenPosition.x - startScreen.x)
+        val newY = startWindow.y + (screenPosition.y - startScreen.y)
 
         window.location = Point(newX, newY)
     }
@@ -62,7 +61,4 @@ internal class LinuxFallbackWindowMover(
         dragStartScreenPos = null
         dragStartWindowPos = null
     }
-
-    val dragging: Boolean
-        get() = isDragging
 }

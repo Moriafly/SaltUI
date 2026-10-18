@@ -75,7 +75,6 @@ internal fun DialogWindowScope.LinuxSaltDialogWindowFrame(
     val captionBarHitTest = remember { LinuxCaptionBarHitTest() }
     val undecoratedWindowResizer = remember {
         UndecoratedWindowResizer(
-            window = window,
             onResizeEdgeChange = { edge ->
                 currentProperties.onResizeEdgeChange(window, edge)
             }
@@ -84,6 +83,15 @@ internal fun DialogWindowScope.LinuxSaltDialogWindowFrame(
     val clientShadow = LinuxClientShadow.shouldUseClientShadow(decoration)
     // Dialogs are never maximized, so the shadow margin is constant
     val shadowMargin = if (clientShadow) LinuxClientShadow.margin else 0.dp
+
+    val windowGestures = remember(window) {
+        LinuxWindowGestures(
+            window = window,
+            caption = captionBarHitTest,
+            resizer = undecoratedWindowResizer,
+            captionHovered = isHitTestInCaptionBar
+        )
+    }
 
     CompositionLocalProvider(
         LocalSaltWindowInfo provides SaltWindowInfo(
@@ -96,16 +104,14 @@ internal fun DialogWindowScope.LinuxSaltDialogWindowFrame(
             cornerRadius = if (clientShadow) LinuxClientShadow.cornerRadius else 0.dp
         ),
         LocalLinuxCaptionBarHitTest provides captionBarHitTest,
+        LocalLinuxWindowGestures provides windowGestures,
         LocalIsHitTestInCaptionBarState provides isHitTestInCaptionBar
     ) {
-        if (currentProperties.moveable) {
-            LinuxCaptionBarDragHandler(
-                window = window,
-                hitTest = captionBarHitTest,
-                isMoveable = properties.moveable,
-                isHitTestInCaptionBar = isHitTestInCaptionBar.value
-            )
-        }
+        LinuxWindowInputEffect(
+            gestures = windowGestures,
+            moveable = properties.moveable,
+            resizable = resizable
+        )
 
         LaunchedEffect(decoration) {
             undecoratedWindowResizer.resizerThickness =
@@ -122,10 +128,6 @@ internal fun DialogWindowScope.LinuxSaltDialogWindowFrame(
                 window = window,
                 margin = shadowMargin
             )
-        }
-
-        LaunchedEffect(resizable) {
-            undecoratedWindowResizer.enabled = resizable
         }
 
         Box(

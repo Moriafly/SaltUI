@@ -17,18 +17,13 @@
 
 package com.moriafly.salt.ui.platform.linux
 
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.runtime.tooling.ComposeToolingApi
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.awt.ComposeDialog
 import androidx.compose.ui.awt.ComposeWindow
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.layout.boundsInWindow
-import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.semantics.SemanticsNode
 import androidx.compose.ui.semantics.SemanticsProperties
 import java.awt.Window
@@ -81,15 +76,4 @@ internal class LinuxCaptionBarHitTest {
         if (node.config.contains(SemanticsProperties.IsDialog)) return node
         return node.children.firstNotNullOfOrNull(::findDialog)
     }
-}
-
-@Composable
-internal fun Modifier.linuxCaptionBarHitTest(): Modifier {
-    val hitTest = LocalLinuxCaptionBarHitTest.current ?: return this
-    val region = remember(hitTest) { LinuxCaptionBarHitTest.Region() }
-    DisposableEffect(hitTest, region) {
-        hitTest.regions.add(region)
-        onDispose { hitTest.regions.remove(region) }
-    }
-    return onGloballyPositioned { region.bounds = it.boundsInWindow() }
 }
