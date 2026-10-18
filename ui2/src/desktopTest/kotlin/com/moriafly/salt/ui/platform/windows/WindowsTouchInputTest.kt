@@ -39,6 +39,7 @@ import androidx.compose.ui.window.rememberWindowState
 import com.moriafly.salt.core.os.OS
 import com.moriafly.salt.ui.SaltTheme
 import com.moriafly.salt.ui.UnstableSaltUiApi
+import com.moriafly.salt.ui.platform.input.DesktopTouchScene
 import com.moriafly.salt.ui.platform.windows.structure.POINTER_INFO
 import com.moriafly.salt.ui.util.findSkiaLayer
 import com.moriafly.salt.ui.window.SaltWindow
@@ -73,7 +74,7 @@ class WindowsTouchInputTest {
         assumeTrue(OS.isWindows())
         SwingUtilities.invokeAndWait {
             val dialog = ComposeDialog()
-            val target = assertNotNull(WindowsTouchScene.create(dialog))
+            val target = assertNotNull(DesktopTouchScene.create(dialog))
             try {
                 assertTrue(!target.isDisposed)
             } finally {
@@ -125,13 +126,13 @@ class WindowsTouchInputTest {
             }
             onNodeWithTag("touch").assertIsDisplayed()
             lateinit var origin: POINT
-            lateinit var target: WindowsTouchScene
+            lateinit var target: DesktopTouchScene
             runOnUiThread {
                 window.isAlwaysOnTop = true
                 window.toFront()
                 window.requestFocus()
                 val canvas = window.findSkiaLayer()!!.canvas
-                target = assertNotNull(WindowsTouchScene.create(window))
+                target = assertNotNull(DesktopTouchScene.create(window))
                 probe = object : BasicWindowProc(HWND(Native.getComponentPointer(canvas))) {
                     override fun callback(
                         hwnd: HWND,
