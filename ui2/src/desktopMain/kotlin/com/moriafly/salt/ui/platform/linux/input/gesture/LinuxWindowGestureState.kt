@@ -312,10 +312,20 @@ internal class LinuxWindowGestureState {
         commands: MutableList<Command>
     ): Boolean {
         if (input.phase == Phase.Press) taps.cancel()
-        if (contacts.isNotEmpty()) {
+
+        // Touch contacts block new mouse gestures, but cannot take ownership of an existing one.
+        val continuesMouseGesture = gesture?.pointer == Pointer.Mouse &&
+            (input.phase == Phase.Move || input.phase == Phase.Release)
+
+        if (contacts.isNotEmpty() && !continuesMouseGesture) {
+            if (input.phase == Phase.Click && input.primary) {
+                suppressedClick = null
+            }
+
             return input.phase == Phase.Press || input.phase == Phase.Move ||
                 input.phase == Phase.Release || input.phase == Phase.Click
         }
+
         val edge = if (configuration!!.resizable) hit.edge else WindowResizeEdge.None
         when (input.phase) {
             Phase.Enter -> commands += Command.ShowEdge(edge)
