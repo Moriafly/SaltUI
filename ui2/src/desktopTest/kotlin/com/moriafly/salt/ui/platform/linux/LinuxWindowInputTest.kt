@@ -62,6 +62,7 @@ class LinuxWindowInputTest {
         try {
             runOnUiThread {
                 input = assertNotNull(LinuxWindowInput.create(fixture.window, fixture.gestures, null))
+                fixture.received.clear()
                 fixture.hover(assertNotNull(input))
                 assertTrue(MouseEvent.MOUSE_ENTERED in fixture.received)
                 assertTrue(MouseEvent.MOUSE_MOVED in fixture.received)
@@ -88,10 +89,15 @@ class LinuxWindowInputTest {
     @Test
     fun unavailableXi2RestoresAwtHoverClickWheelAndDragDelivery() = withWindow { fixture ->
         runOnUiThread {
+            // Window setup can deliver crossings before the native source is attached.
+            fixture.canvas.dispatchEvent(fixture.mouse(MouseEvent.MOUSE_ENTERED))
+            assertTrue(MouseEvent.MOUSE_ENTERED in fixture.received)
             LinuxMouseInput(fixture.window, fixture.canvas).use { source ->
+                // Start measuring in this EDT turn so setup events cannot pollute the result.
+                fixture.received.clear()
                 val hover = fixture.mouse(MouseEvent.MOUSE_MOVED)
                 source.dispatchAwt(hover, fixture.canvas::dispatchEvent)
-                assertTrue(fixture.received.isEmpty(), "AWT hover waits for native negotiation")
+                assertTrue(fixture.received.isEmpty(), "AWT hover waits for native negotiation: ${fixture.received}")
 
                 // This is the capability result published by LinuxWindowInput.onClosed after
                 // native initialization fails. Do not fake or replace a system libXi library.
