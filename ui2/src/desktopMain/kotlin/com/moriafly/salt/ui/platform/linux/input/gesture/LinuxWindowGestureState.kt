@@ -238,60 +238,85 @@ internal class LinuxWindowGestureState {
             if (!contacts.add(pointer.id)) return true
             captionQuery = null
             if (!firstContact) taps.cancel()
-        } else if (pointer.id !in contacts) {
+        }
+
+        if (pointer.id !in contacts) {
             return true
         }
+
         try {
             if (capturedTouches || gesture?.pointer == Pointer.Mouse) {
                 capturedTouches = true
-                if (gesture?.pointer == pointer) {
-                    when (input.phase) {
-                        Phase.Move -> update(input, commands)
-                        Phase.Release -> {
-                            val doubleTap = gesture is Gesture.Move && taps.finish(input)
-                            finish(commands, applyPendingResize = true)
-                            if (doubleTap) toggleMaximize(commands)
-                        }
-
-                        else -> Unit
-                    }
-                }
+                onCapturedTouch(input, commands)
                 return true
             }
+
             if (firstContact && input.phase == Phase.Press) {
-                when {
-                    configuration!!.resizable && hit.edge != WindowResizeEdge.None -> {
-                        capturedTouches = true
-                        commands += Command.CancelCompose
-                        beginResize(
-                            pointer = pointer,
-                            edge = hit.edge,
-                            position = input.position,
-                            commands = commands
-                        )
-                    }
-
-                    canMove && hit.caption == CaptionHit.Caption -> captureCaption(input, commands)
-                    canMove && hit.caption == CaptionHit.ResolveInCompose -> {
-                        val query = CaptionQuery(++nextRequest, input)
-                        captionQuery = query
-                        commands += Command.ResolveCaption(query.request)
-                    }
-
-                    else -> {
-                        taps.cancel()
-                        commands += Command.DeliverTouch
-                    }
-                }
+                beginTouchGesture(input, hit, commands)
             } else {
                 commands += Command.DeliverTouch
             }
+
             return true
         } finally {
             if (input.phase == Phase.Release) {
-                if (captionQuery?.input?.pointer == pointer) captionQuery = null
+                if (captionQuery?.input?.pointer == pointer) {
+                    captionQuery = null
+                }
+
                 contacts.remove(pointer.id)
-                if (contacts.isEmpty()) capturedTouches = false
+
+                if (contacts.isEmpty()) {
+                    capturedTouches = false
+                }
+            }
+        }
+    }
+
+    private fun onCapturedTouch(
+        input: Input,
+        commands: MutableList<Command>
+    ) {
+        if (gesture?.pointer != input.pointer) return
+        when (input.phase) {
+            Phase.Move -> update(input, commands)
+            Phase.Release -> {
+                val doubleTap = gesture is Gesture.Move && taps.finish(input)
+                finish(commands, applyPendingResize = true)
+                if (doubleTap) toggleMaximize(commands)
+            }
+
+            else -> Unit
+        }
+    }
+
+    private fun beginTouchGesture(
+        input: Input,
+        hit: Hit,
+        commands: MutableList<Command>
+    ) {
+        when {
+            configuration!!.resizable && hit.edge != WindowResizeEdge.None -> {
+                capturedTouches = true
+                commands += Command.CancelCompose
+                beginResize(
+                    pointer = input.pointer,
+                    edge = hit.edge,
+                    position = input.position,
+                    commands = commands
+                )
+            }
+
+            canMove && hit.caption == CaptionHit.Caption -> captureCaption(input, commands)
+            canMove && hit.caption == CaptionHit.ResolveInCompose -> {
+                val query = CaptionQuery(++nextRequest, input)
+                captionQuery = query
+                commands += Command.ResolveCaption(query.request)
+            }
+
+            else -> {
+                taps.cancel()
+                commands += Command.DeliverTouch
             }
         }
     }
@@ -325,28 +350,24 @@ internal class LinuxWindowGestureState {
             return input.phase == Phase.Press || input.phase == Phase.Move ||
                 input.phase == Phase.Release || input.phase == Phase.Click
         }
+        return onMouseGesture(input, hit, commands)
+    }
 
+    private fun onMouseGesture(
+        input: Input,
+        hit: Hit,
+        commands: MutableList<Command>
+    ): Boolean {
         val edge = if (configuration!!.resizable) hit.edge else WindowResizeEdge.None
         when (input.phase) {
             Phase.Enter -> commands += Command.ShowEdge(edge)
             Phase.Exit -> if (gesture == null) commands += Command.ShowEdge(WindowResizeEdge.None)
-            Phase.Press -> {
-                if (!input.primary) return gesture != null
-                finish(commands)
-                suppressedClick = null
-                if (edge != WindowResizeEdge.None) {
-                    beginResize(
-                        pointer = Pointer.Mouse,
-                        edge = edge,
-                        position = input.position,
-                        commands = commands
-                    )
-                    return true
-                }
-                if (!canMove || hit.caption != CaptionHit.Caption) return false
-                gesture = Gesture.Move(Pointer.Mouse, input.position)
-                return true
-            }
+            Phase.Press -> return beginMouseGesture(
+                input = input,
+                edge = edge,
+                caption = hit.caption,
+                commands = commands
+            )
 
             Phase.Move -> {
                 if (gesture?.pointer != Pointer.Mouse) return false
@@ -364,15 +385,43 @@ internal class LinuxWindowGestureState {
                 return true
             }
 
-            Phase.Click -> {
-                val click = suppressedClick ?: return false
-                if (!input.primary) return false
-                suppressedClick = null
-                if (click == Click.Caption && input.clickCount == 2) toggleMaximize(commands)
-                return true
-            }
+            Phase.Click -> return onMouseClick(input, commands)
         }
         return false
+    }
+
+    private fun onMouseClick(
+        input: Input,
+        commands: MutableList<Command>
+    ): Boolean {
+        val click = suppressedClick ?: return false
+        if (!input.primary) return false
+        suppressedClick = null
+        if (click == Click.Caption && input.clickCount == 2) toggleMaximize(commands)
+        return true
+    }
+
+    private fun beginMouseGesture(
+        input: Input,
+        edge: WindowResizeEdge,
+        caption: CaptionHit,
+        commands: MutableList<Command>
+    ): Boolean {
+        if (!input.primary) return gesture != null
+        finish(commands)
+        suppressedClick = null
+        if (edge != WindowResizeEdge.None) {
+            beginResize(
+                pointer = Pointer.Mouse,
+                edge = edge,
+                position = input.position,
+                commands = commands
+            )
+            return true
+        }
+        if (!canMove || caption != CaptionHit.Caption) return false
+        gesture = Gesture.Move(Pointer.Mouse, input.position)
+        return true
     }
 
     private fun beginResize(
