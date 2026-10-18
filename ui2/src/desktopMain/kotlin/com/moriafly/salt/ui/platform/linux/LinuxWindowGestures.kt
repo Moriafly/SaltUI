@@ -19,6 +19,7 @@ package com.moriafly.salt.ui.platform.linux
 
 import androidx.compose.runtime.State
 import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.PointerEventType
 import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.moriafly.salt.ui.window.WindowResizeEdge
@@ -37,9 +38,10 @@ internal val LocalLinuxWindowGestures = staticCompositionLocalOf<LinuxWindowGest
  * The window's single move/resize owner, confined to the AWT event thread.
  *
  * Mouse and touch use the same geometry and movement policy. Borders take precedence over the
- * caption. Compose resolves caption/control overlap, but can only request a drag during the first
- * press dispatched here. This owner cancels Compose after dispatch returns, then captures that
- * contact until release. Other fingers never inherit a window gesture, even after its owner lifts.
+ * caption. Modal content is checked before dispatch so its scrim cannot swallow a caption press.
+ * Otherwise Compose resolves caption/control overlap during the first press dispatched here.
+ * This owner cancels Compose before capturing that contact until release. Other fingers never
+ * inherit a window gesture, even after its owner lifts.
  */
 @OptIn(UnstableSaltUiApi::class)
 internal class LinuxWindowGestures(
@@ -59,7 +61,7 @@ internal class LinuxWindowGestures(
     private val contacts = mutableSetOf<Long>()
     private var capturedTouches = false
     private var dispatchingPress: LinuxTouchEvent? = null
-    private var captionRequested = false
+    private var captionHitByCompose = false
 
     fun configure(
         moveable: Boolean,
@@ -93,12 +95,12 @@ internal class LinuxWindowGestures(
     }
 
     /**
-     * A request from a caption that passed Compose hit testing, not an executable event callback.
-     * Requests outside this owner's first-press dispatch cannot take over an existing gesture.
+     * Records a Compose caption hit only while resolving the first contact's target.
+     * Gesture eligibility, capture and movement belong to this owner.
      */
-    fun requestCaptionDrag(event: LinuxTouchEvent): Boolean {
-        if (dispatchingPress !== event || !moveable || !canDrag) return false
-        captionRequested = true
+    fun onCaptionPress(event: LinuxTouchEvent): Boolean {
+        if (dispatchingPress !== event) return false
+        captionHitByCompose = true
         return true
     }
 
@@ -132,18 +134,20 @@ internal class LinuxWindowGestures(
                     beginResize(Pointer.Touch(event.id), edge, event.screenPoint())
                     return
                 }
-                dispatchingPress = event
-                captionRequested = false
-                try {
-                    dispatchToCompose()
-                    if (captionRequested) {
-                        capturedTouches = true
-                        cancelCompose()
-                        beginMove(Pointer.Touch(event.id), event.screenPoint())
+                val isCaption = when (captionHitAt(event.contentPosition)) {
+                    LinuxCaptionBarHitTest.Result.Caption -> true
+                    LinuxCaptionBarHitTest.Result.Excluded -> {
+                        dispatchToCompose()
+                        false
                     }
-                } finally {
-                    dispatchingPress = null
-                    captionRequested = false
+
+                    LinuxCaptionBarHitTest.Result.RequiresComposeHitTest ->
+                        dispatchCaptionPress(event, dispatchToCompose)
+                }
+                if (isCaption) {
+                    capturedTouches = true
+                    cancelCompose()
+                    beginMove(Pointer.Touch(event.id), event.screenPoint())
                 }
             } else {
                 dispatchToCompose()
@@ -178,15 +182,14 @@ internal class LinuxWindowGestures(
                     beginResize(Pointer.Mouse, edge, event.locationOnScreen)
                     return true
                 }
-                if (!moveable || !canDrag || !caption.contains(
-                        position = LinuxWindowMouseInput.positionInContent(event, window),
-                        window = window,
-                        // Enter and press can arrive before recomposition.
-                        isHovered = captionHovered.value
-                    )
-                ) {
-                    return false
+                val position = LinuxWindowMouseInput.positionInContent(event, window)
+                val isCaption = when (captionHitAt(position)) {
+                    LinuxCaptionBarHitTest.Result.Caption -> true
+                    LinuxCaptionBarHitTest.Result.Excluded -> false
+                    // Enter and press can arrive before recomposition.
+                    LinuxCaptionBarHitTest.Result.RequiresComposeHitTest -> captionHovered.value
                 }
+                if (!isCaption) return false
                 beginMove(Pointer.Mouse, event.locationOnScreen)
                 return true
             }
@@ -234,7 +237,7 @@ internal class LinuxWindowGestures(
         finishGesture()
         suppressedClick = null
         dispatchingPress = null
-        captionRequested = false
+        captionHitByCompose = false
         // Keep known contacts quarantined until release or an explicit native input reset.
         capturedTouches = contacts.isNotEmpty()
     }
@@ -243,9 +246,31 @@ internal class LinuxWindowGestures(
         // XI2 device changes and touch-channel shutdown must not cancel an AWT mouse drag.
         if (gesture?.pointer is Pointer.Touch) finishGesture()
         dispatchingPress = null
-        captionRequested = false
+        captionHitByCompose = false
         contacts.clear()
         capturedTouches = false
+    }
+
+    private fun captionHitAt(position: Offset): LinuxCaptionBarHitTest.Result =
+        if (moveable && canDrag) {
+            caption.hitTest(position, window)
+        } else {
+            LinuxCaptionBarHitTest.Result.Excluded
+        }
+
+    private fun dispatchCaptionPress(
+        event: LinuxTouchEvent,
+        dispatchToCompose: () -> Unit
+    ): Boolean {
+        dispatchingPress = event
+        captionHitByCompose = false
+        try {
+            dispatchToCompose()
+            return captionHitByCompose
+        } finally {
+            dispatchingPress = null
+            captionHitByCompose = false
+        }
     }
 
     private fun beginMove(pointer: Pointer, position: Point) {

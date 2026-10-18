@@ -28,11 +28,11 @@ import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
 
 /**
- * Registers caption geometry and forwards touch drag requests to the window gesture owner.
+ * Registers caption geometry and reports Compose touch hits to the window gesture owner.
  */
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
-internal fun Modifier.linuxCaptionBarInput(moveable: Boolean): Modifier {
+internal fun Modifier.linuxCaptionBarInput(): Modifier {
     val hitTest = LocalLinuxCaptionBarHitTest.current
     val modifier = if (hitTest != null) {
         val region = remember(hitTest) { LinuxCaptionBarHitTest.Region() }
@@ -48,7 +48,7 @@ internal fun Modifier.linuxCaptionBarInput(moveable: Boolean): Modifier {
     // Compose hit testing decides whether the caption or a control above it receives the press.
     return modifier.onPointerEvent(PointerEventType.Press) { event ->
         val native = event.nativeEvent as? LinuxTouchEvent ?: return@onPointerEvent
-        if (moveable && gestures.requestCaptionDrag(native)) {
+        if (gestures.onCaptionPress(native)) {
             event.changes.forEach { it.consume() }
         }
     }

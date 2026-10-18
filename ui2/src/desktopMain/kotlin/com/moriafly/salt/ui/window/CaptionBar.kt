@@ -56,7 +56,7 @@ fun CaptionBarHitTest(
                 .run {
                     when (OS.current) {
                         is OS.Windows -> windowsCaptionBarTouchInput(saltWindowProperties.moveable)
-                        is OS.Linux -> linuxCaptionBarInput(saltWindowProperties.moveable)
+                        is OS.Linux -> linuxCaptionBarInput()
                         else -> this
                     }
                 }

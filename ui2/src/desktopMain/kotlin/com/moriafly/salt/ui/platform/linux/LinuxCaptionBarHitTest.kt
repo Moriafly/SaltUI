@@ -32,9 +32,16 @@ internal val LocalLinuxCaptionBarHitTest =
     staticCompositionLocalOf<LinuxCaptionBarHitTest?> { null }
 
 /**
- * Layout geometry stays available even when a Dialog stops hover events reaching the caption.
+ * Shared mouse/touch policy for caption geometry, window buttons and modal content.
+ * Layout geometry stays available even when a Dialog intercepts caption hover and press events.
  */
 internal class LinuxCaptionBarHitTest {
+    enum class Result {
+        Caption,
+        Excluded,
+        RequiresComposeHitTest
+    }
+
     class Region {
         var bounds = Rect.Zero
     }
@@ -43,33 +50,33 @@ internal class LinuxCaptionBarHitTest {
     var buttonsBounds = Rect.Zero
 
     @OptIn(ComposeToolingApi::class)
-    fun contains(
+    fun hitTest(
         position: Offset,
-        window: Window,
-        isHovered: Boolean
-    ): Boolean {
+        window: Window
+    ): Result {
         if (regions.none { it.bounds.contains(position) } || buttonsBounds.contains(position)) {
-            return false
+            return Result.Excluded
         }
         val owners = when (window) {
             is ComposeWindow -> window.semanticsOwners
             is ComposeDialog -> window.semanticsOwners
-            else -> return isHovered
+            else -> return Result.RequiresComposeHitTest
         }
         // Keep normal Compose hit testing for custom controls layered above CaptionBarHitTest.
         // For a modal scene, use its public dialog semantics rather than changing Dialog itself.
         val dialog = owners.toList().asReversed().firstNotNullOfOrNull {
             findDialog(it.rootSemanticsNode)
         }
-        if (dialog == null) return isHovered
+        if (dialog == null) return Result.RequiresComposeHitTest
         // Dialog's semantic root fills the window. Its direct layout children bound the content.
-        return dialog.children.none { child ->
+        val isDialogContent = dialog.children.any { child ->
             var content = child.layoutInfo
             while (content.parentInfo != null && content.parentInfo !== dialog.layoutInfo) {
                 content = content.parentInfo!!
             }
             content.isAttached && content.coordinates.boundsInWindow().contains(position)
         }
+        return if (isDialogContent) Result.Excluded else Result.Caption
     }
 
     private fun findDialog(node: SemanticsNode): SemanticsNode? {
