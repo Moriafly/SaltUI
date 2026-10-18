@@ -22,6 +22,8 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.PointerKeyboardModifiers
 import com.moriafly.salt.ui.UnstableSaltUiApi
+import com.moriafly.salt.ui.platform.input.DesktopTouchScene
+import com.moriafly.salt.ui.platform.input.TouchPointerState
 import com.moriafly.salt.ui.platform.windows.WinUserConst.WM_MOUSELEAVE
 import com.moriafly.salt.ui.platform.windows.WinUserConst.WM_MOUSEMOVE
 import com.moriafly.salt.ui.platform.windows.WinUserConst.WM_NCMOUSELEAVE
@@ -54,12 +56,12 @@ internal class WindowsTouchInput private constructor(
     private val window: Window,
     private val canvas: Component,
     private val hwnd: HWND,
-    private val target: WindowsTouchScene
+    private val target: DesktopTouchScene
 ) {
     // Accessed only by the native window thread. Keep consuming an accepted sequence even when
     // Compose cancels it, so a remaining finger cannot turn into a synthetic mouse mid-gesture.
     private val acceptedPointers = mutableMapOf<Int, WindowsTouchEvent>()
-    private val pointerState = WindowsTouchPointerState()
+    private val pointerState = TouchPointerState()
 
     private var captionPointerId: Int? = null
 
@@ -238,9 +240,9 @@ internal class WindowsTouchInput private constructor(
                 cancelOnEdt()
             } else {
                 val pointers = pointerState.update(
-                    id,
-                    target.positionInScene(canvas, position),
-                    eventType
+                    id = id.toLong(),
+                    position = target.positionInScene(canvas, position),
+                    eventType = eventType
                 )
                 if (pointers != null) {
                     if (eventType == PointerEventType.Press) canvas.requestFocusInWindow()
@@ -290,7 +292,7 @@ internal class WindowsTouchInput private constructor(
 
     companion object {
         fun create(window: Window, canvas: Component, hwnd: HWND): WindowsTouchInput? =
-            WindowsTouchScene.create(window)?.let { WindowsTouchInput(window, canvas, hwnd, it) }
+            DesktopTouchScene.create(window)?.let { WindowsTouchInput(window, canvas, hwnd, it) }
 
         private const val WM_NCPOINTERUPDATE = 0x0241
         private const val WM_NCPOINTERDOWN = 0x0242
