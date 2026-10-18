@@ -46,7 +46,9 @@ internal object LinuxResizeCursor {
         }
     }
 
-    fun get(type: Int): Cursor {
+    fun get(
+        type: Int
+    ): Cursor {
         val name = when (type) {
             Cursor.W_RESIZE_CURSOR -> "w-resize"
             Cursor.E_RESIZE_CURSOR -> "e-resize"
@@ -93,7 +95,9 @@ internal object LinuxResizeCursor {
         private val cursors = mutableMapOf<String, Cursor?>()
 
         @Synchronized
-        fun get(name: String): Cursor? {
+        fun get(
+            name: String
+        ): Cursor? {
             val currentTheme = readTheme() ?: return null
             if (currentTheme != theme) {
                 // AWT may still use old cursors; its disposer releases them when no longer referenced
@@ -125,7 +129,10 @@ internal object LinuxResizeCursor {
             }
         }
 
-        private fun load(name: String, theme: Theme): Cursor? {
+        private fun load(
+            name: String,
+            theme: Theme
+        ): Cursor? {
             val images =
                 xcursor.XcursorLibraryLoadImages(name, theme.name, theme.size) ?: return null
             try {
@@ -158,18 +165,29 @@ internal object LinuxResizeCursor {
 
     @Suppress("ktlint:standard:function-naming", "FunctionName")
     private interface Xlib : Library {
-        fun XOpenDisplay(name: String?): Pointer?
+        fun XOpenDisplay(
+            name: String?
+        ): Pointer?
 
-        fun XCloseDisplay(display: Pointer): Int
+        fun XCloseDisplay(
+            display: Pointer
+        ): Int
 
-        fun XFreeCursor(display: Pointer, cursor: NativeLong): Int
+        fun XFreeCursor(
+            display: Pointer,
+            cursor: NativeLong
+        ): Int
     }
 
     @Suppress("ktlint:standard:function-naming", "FunctionName")
     private interface Xcursor : Library {
-        fun XcursorGetTheme(display: Pointer): Pointer?
+        fun XcursorGetTheme(
+            display: Pointer
+        ): Pointer?
 
-        fun XcursorGetDefaultSize(display: Pointer): Int
+        fun XcursorGetDefaultSize(
+            display: Pointer
+        ): Int
 
         fun XcursorLibraryLoadImages(
             name: String,
@@ -177,8 +195,13 @@ internal object LinuxResizeCursor {
             size: Int
         ): Pointer?
 
-        fun XcursorImagesLoadCursor(display: Pointer, images: Pointer): NativeLong
+        fun XcursorImagesLoadCursor(
+            display: Pointer,
+            images: Pointer
+        ): NativeLong
 
-        fun XcursorImagesDestroy(images: Pointer)
+        fun XcursorImagesDestroy(
+            images: Pointer
+        )
     }
 }

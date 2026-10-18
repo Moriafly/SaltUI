@@ -79,7 +79,9 @@ internal class LinuxCaptionBarHitTest {
         return if (isDialogContent) Result.Excluded else Result.Caption
     }
 
-    private fun findDialog(node: SemanticsNode): SemanticsNode? {
+    private fun findDialog(
+        node: SemanticsNode
+    ): SemanticsNode? {
         if (node.config.contains(SemanticsProperties.IsDialog)) return node
         return node.children.firstNotNullOfOrNull(::findDialog)
     }

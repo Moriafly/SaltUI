@@ -52,7 +52,9 @@ internal class UndecoratedWindowResizer(
     private var previousCursor: Cursor? = null
 
     @Composable
-    fun Content(modifier: Modifier = Modifier) {
+    fun Content(
+        modifier: Modifier = Modifier
+    ) {
         if (!enabled) return
 
         Layout(
@@ -70,7 +72,10 @@ internal class UndecoratedWindowResizer(
             measurePolicy = { measurables, constraints ->
                 val b = resizerThickness.roundToPx()
 
-                fun Measurable.measureSide(width: Int, height: Int) = measure(
+                fun Measurable.measureSide(
+                    width: Int,
+                    height: Int
+                ) = measure(
                     Constraints.fixed(width.coerceAtLeast(0), height.coerceAtLeast(0))
                 )
 
@@ -96,13 +101,17 @@ internal class UndecoratedWindowResizer(
         )
     }
 
-    fun edgeAt(position: Offset): WindowResizeEdge = if (enabled) {
+    fun edgeAt(
+        position: Offset
+    ): WindowResizeEdge = if (enabled) {
         sideBounds.entries.firstOrNull { it.value.contains(position) }?.key ?: WindowResizeEdge.None
     } else {
         WindowResizeEdge.None
     }
 
-    fun showEdge(edge: WindowResizeEdge) {
+    fun showEdge(
+        edge: WindowResizeEdge
+    ) {
         if (edge == hoveredSide) return
         hoveredSide = edge
         onResizeEdgeChange(edge)
@@ -110,7 +119,9 @@ internal class UndecoratedWindowResizer(
         if (edge == WindowResizeEdge.None) restoreCursor()
     }
 
-    fun afterMouseEvent(event: MouseEvent) {
+    fun afterMouseEvent(
+        event: MouseEvent
+    ) {
         val cursor = resizeCursor ?: return
         val component = event.component
         if (cursorComponent !== component) {
@@ -129,7 +140,10 @@ internal class UndecoratedWindowResizer(
     }
 
     @Composable
-    private fun Side(cursorId: Int, sides: WindowResizeEdge) {
+    private fun Side(
+        cursorId: Int,
+        sides: WindowResizeEdge
+    ) {
         DisposableEffect(sides) {
             sideCursors[sides] = cursorId
             onDispose {

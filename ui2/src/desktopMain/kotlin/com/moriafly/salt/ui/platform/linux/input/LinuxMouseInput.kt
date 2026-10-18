@@ -43,7 +43,9 @@ internal class LinuxMouseInput(
         awaitingNativeCapabilities = true
     }
 
-    fun updateNativeCapabilities(capabilities: LinuxXInputSession.Capabilities) {
+    fun updateNativeCapabilities(
+        capabilities: LinuxXInputSession.Capabilities
+    ) {
         nativeCapabilities = capabilities
         awaitingNativeCapabilities = false
     }
@@ -53,7 +55,10 @@ internal class LinuxMouseInput(
     private val nativeHoverSelected: Boolean
         get() = awaitingNativeCapabilities || nativeCapabilities.hover
 
-    fun dispatchAwt(event: MouseEvent, deliver: (MouseEvent) -> Unit) {
+    fun dispatchAwt(
+        event: MouseEvent,
+        deliver: (MouseEvent) -> Unit
+    ) {
         if (event.component !== canvas) {
             deliver(event)
             return
@@ -95,7 +100,9 @@ internal class LinuxMouseInput(
         deliver(normalizeRelease(event))
     }
 
-    private fun normalizeRelease(event: MouseEvent): MouseEvent {
+    private fun normalizeRelease(
+        event: MouseEvent
+    ): MouseEvent {
         if (event.id != MouseEvent.MOUSE_RELEASED ||
             event.button == MouseEvent.NOBUTTON
         ) {
@@ -120,7 +127,9 @@ internal class LinuxMouseInput(
         )
     }
 
-    fun onHover(event: LinuxXInputSession.Hover) {
+    fun onHover(
+        event: LinuxXInputSession.Hover
+    ) {
         // All source selection lives here, including grab/ungrab crossings and emulated motion.
         // Without a touch grab, touch uses X11's compatibility mouse path and needs its hover too.
         val touchOwnsPointer = nativeCapabilities.touch && (event.directTouch || event.emulated)
@@ -162,7 +171,9 @@ internal class LinuxMouseInput(
             InputEvent.CTRL_DOWN_MASK or InputEvent.ALT_DOWN_MASK or
             InputEvent.META_DOWN_MASK or InputEvent.ALT_GRAPH_DOWN_MASK
 
-        private fun keyboardModifiers(state: Int): Int {
+        private fun keyboardModifiers(
+            state: Int
+        ): Int {
             var modifiers = 0
             if (state and 1 != 0) modifiers = modifiers or InputEvent.SHIFT_DOWN_MASK
             if (state and 4 != 0) modifiers = modifiers or InputEvent.CTRL_DOWN_MASK

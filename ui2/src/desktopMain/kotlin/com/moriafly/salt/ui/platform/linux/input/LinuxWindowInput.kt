@@ -90,9 +90,13 @@ internal class LinuxWindowInput private constructor(
     private var closed = false
 
     private val windowListener = object : WindowAdapter() {
-        override fun windowLostFocus(event: WindowEvent) = cancelInput()
+        override fun windowLostFocus(
+            event: WindowEvent
+        ) = cancelInput()
 
-        override fun windowIconified(event: WindowEvent) = cancelInput()
+        override fun windowIconified(
+            event: WindowEvent
+        ) = cancelInput()
     }
 
     private val hierarchyListener = HierarchyListener { event ->
@@ -173,13 +177,19 @@ internal class LinuxWindowInput private constructor(
         if (target != null && !target.isDisposed) target.scene.cancelPointerInput()
     }
 
-    override fun onReady(capabilities: LinuxXInputSession.Capabilities) {
+    override fun onReady(
+        capabilities: LinuxXInputSession.Capabilities
+    ) {
         mouse.updateNativeCapabilities(capabilities)
     }
 
-    override fun onTouch(event: LinuxXInputSession.Touch): Boolean = touch?.onTouch(event) == true
+    override fun onTouch(
+        event: LinuxXInputSession.Touch
+    ): Boolean = touch?.onTouch(event) == true
 
-    override fun onHover(event: LinuxXInputSession.Hover) = mouse.onHover(event)
+    override fun onHover(
+        event: LinuxXInputSession.Hover
+    ) = mouse.onHover(event)
 
     override fun onDevicesChanged() {
         cancelTouch()
@@ -216,7 +226,9 @@ internal class LinuxWindowInput private constructor(
     }
 
     companion object {
-        private fun logUnavailable(exception: Throwable) {
+        private fun logUnavailable(
+            exception: Throwable
+        ) {
             System.getLogger(LinuxWindowInput::class.java.name).log(
                 System.Logger.Level.WARNING,
                 "Cannot attach native XI2 input; keeping AWT input",
@@ -240,7 +252,10 @@ internal class LinuxWindowInput private constructor(
                     canvas = canvas,
                     target = target,
                     gestures = gestures,
-                    focus = focus
+                    focus = { timestamp ->
+                        canvas.requestFocusInWindow()
+                        focus?.onPointerPress(canvas, timestamp)
+                    }
                 )
             }
             // Hover remains usable even when Compose's private scene adapter is unavailable.

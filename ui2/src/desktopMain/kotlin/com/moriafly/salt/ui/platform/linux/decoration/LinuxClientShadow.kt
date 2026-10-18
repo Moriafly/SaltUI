@@ -130,7 +130,9 @@ internal object LinuxClientShadow {
      * fully undecorated.
      */
     @OptIn(ExperimentalComposeUiApi::class)
-    fun shouldUseClientShadow(decoration: WindowDecoration): Boolean =
+    fun shouldUseClientShadow(
+        decoration: WindowDecoration
+    ): Boolean =
         decoration == WindowDecoration.SystemDefault && isTranslucencySupported
 
     /**
@@ -140,7 +142,10 @@ internal object LinuxClientShadow {
      *
      * Must be called after the window is showing, see [awaitShowing].
      */
-    fun applyGtkFrameExtents(window: Window, marginPx: Int): Boolean {
+    fun applyGtkFrameExtents(
+        window: Window,
+        marginPx: Int
+    ): Boolean {
         if (!window.isDisplayable) return false
 
         val x11 = try {
@@ -197,7 +202,10 @@ internal object LinuxClientShadow {
      * each side) via the XFixes shape extension, making the transparent shadow area
      * click-through. A [marginPx] of 0 or fewer restores input for the whole window.
      */
-    fun updateInputShape(window: Window, marginPx: Int): Boolean {
+    fun updateInputShape(
+        window: Window,
+        marginPx: Int
+    ): Boolean {
         if (!window.isDisplayable) return false
 
         val xext = try {
@@ -339,7 +347,9 @@ internal fun LinuxClientShadowEffect(
 
     DisposableEffect(window, marginPx) {
         val listener = object : ComponentAdapter() {
-            override fun componentResized(e: ComponentEvent?) {
+            override fun componentResized(
+                e: ComponentEvent?
+            ) {
                 // Re-apply both: the input shape depends on the window size, and resizes also
                 // happen on maximize/restore transitions that may drop the frame extents
                 LinuxClientShadow.applyGtkFrameExtents(window, marginPx)

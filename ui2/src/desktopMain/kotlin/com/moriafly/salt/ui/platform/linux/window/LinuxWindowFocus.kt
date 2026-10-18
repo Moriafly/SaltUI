@@ -63,7 +63,10 @@ internal class LinuxWindowFocus private constructor(
      * @param timestamp The original X11 server time. When omitted, reads the time JBR recorded
      * on the source's native child window. JVM and Compose event clocks cannot be used here.
      */
-    fun onPointerPress(component: Component, timestamp: Long? = null) {
+    fun onPointerPress(
+        component: Component,
+        timestamp: Long? = null
+    ) {
         if (SwingUtilities.getWindowAncestor(component) !== window ||
             !window.isShowing || !window.isEnabled || !window.isFocusableWindow
         ) {
@@ -109,7 +112,9 @@ internal class LinuxWindowFocus private constructor(
         }
     }
 
-    private fun readUserTime(source: X11.Window): Long? {
+    private fun readUserTime(
+        source: X11.Window
+    ): Long? {
         val type = X11.AtomByReference()
         val format = IntByReference()
         val count = NativeLongByReference()
@@ -142,7 +147,10 @@ internal class LinuxWindowFocus private constructor(
         }
     }
 
-    private fun requestActivation(target: X11.Window, timestamp: Long) {
+    private fun requestActivation(
+        target: X11.Window,
+        timestamp: Long
+    ) {
         val event = X11.XEvent()
         event.setType(X11.XClientMessageEvent::class.java)
         event.xclient.apply {
@@ -175,7 +183,9 @@ internal class LinuxWindowFocus private constructor(
     companion object {
         private val log = System.getLogger(LinuxWindowFocus::class.java.name)
 
-        fun install(window: Window): LinuxWindowFocus? {
+        fun install(
+            window: Window
+        ): LinuxWindowFocus? {
             if (Toolkit.getDefaultToolkit().javaClass.name != "sun.awt.X11.XToolkit") return null
             return try {
                 val x11 = X11.INSTANCE

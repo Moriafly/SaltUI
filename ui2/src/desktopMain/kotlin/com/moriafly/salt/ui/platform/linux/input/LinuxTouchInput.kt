@@ -24,7 +24,7 @@ import androidx.compose.ui.input.pointer.PointerKeyboardModifiers
 import androidx.compose.ui.unit.IntOffset
 import com.moriafly.salt.ui.platform.input.DesktopTouchScene
 import com.moriafly.salt.ui.platform.input.TouchPointerState
-import com.moriafly.salt.ui.platform.linux.window.LinuxWindowFocus
+import com.moriafly.salt.ui.platform.linux.input.gesture.WindowGestureEffects
 import com.moriafly.salt.ui.platform.linux.x11.LinuxXInputSession
 import java.awt.Component
 import java.awt.Dialog
@@ -41,11 +41,13 @@ internal class LinuxTouchInput(
     private val canvas: Component,
     private val target: DesktopTouchScene,
     private val gestures: LinuxWindowGestures,
-    private val focus: LinuxWindowFocus?
+    private val focus: WindowGestureEffects.Focus
 ) {
     private val pointers = TouchPointerState()
 
-    fun onTouch(sample: LinuxXInputSession.Touch): Boolean {
+    fun onTouch(
+        sample: LinuxXInputSession.Touch
+    ): Boolean {
         if (!sample.directTouch) return false
         if (!canReceiveTouch()) {
             cancel()
@@ -69,8 +71,7 @@ internal class LinuxTouchInput(
             timeMillis = sample.timeMillis
         )
         if (type == PointerEventType.Press) {
-            canvas.requestFocusInWindow()
-            focus?.onPointerPress(canvas, sample.x11Timestamp)
+            focus.onPress(sample.x11Timestamp)
         }
         gestures.dispatchTouch(
             event = touchEvent,

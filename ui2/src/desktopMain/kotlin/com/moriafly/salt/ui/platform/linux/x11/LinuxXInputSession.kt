@@ -40,11 +40,17 @@ internal class LinuxXInputSession(
     private val listener: Listener
 ) {
     interface Listener {
-        fun onReady(capabilities: Capabilities)
+        fun onReady(
+            capabilities: Capabilities
+        )
 
-        fun onTouch(event: Touch): Boolean
+        fun onTouch(
+            event: Touch
+        ): Boolean
 
-        fun onHover(event: Hover)
+        fun onHover(
+            event: Hover
+        )
 
         fun onDevicesChanged()
 
@@ -199,7 +205,10 @@ internal class LinuxXInputSession(
         }
     }
 
-    private fun grabTouches(display: X11.Display, xid: X11.Window): Boolean = try {
+    private fun grabTouches(
+        display: X11.Display,
+        xid: X11.Window
+    ): Boolean = try {
         val modifiers = LinuxXInput2.GrabModifiers()
         val result = LinuxXInput2.instance.XIGrabTouchBegin(
             display,
@@ -226,7 +235,10 @@ internal class LinuxXInputSession(
         false
     }
 
-    private fun selectHover(display: X11.Display, xid: X11.Window): Boolean =
+    private fun selectHover(
+        display: X11.Display,
+        xid: X11.Window
+    ): Boolean =
         LinuxXInput2.instance.XISelectEvents(
             display,
             xid,
@@ -239,7 +251,9 @@ internal class LinuxXInputSession(
             1
         ) == 0
 
-    private fun queryDirectDevices(display: X11.Display): Set<Int> {
+    private fun queryDirectDevices(
+        display: X11.Display
+    ): Set<Int> {
         val xi = LinuxXInput2.instance
         val count = IntByReference()
         val data = xi.XIQueryDevice(display, LinuxXInput2.ALL_DEVICES, count)
@@ -401,7 +415,10 @@ internal class LinuxXInputSession(
         }
     }
 
-    private fun dispatchHover(sample: Hover, source: Int) {
+    private fun dispatchHover(
+        sample: Hover,
+        source: Int
+    ) {
         if (sample.phase != HoverPhase.Move) {
             dispatch { listener.onHover(sample) }
             return
@@ -434,17 +451,23 @@ internal class LinuxXInputSession(
         pendingHoverMove = null
     }
 
-    private fun dispatchAndWait(action: () -> Unit) {
+    private fun dispatchAndWait(
+        action: () -> Unit
+    ) {
         sealHoverMove()
         SwingUtilities.invokeAndWait { action() }
     }
 
-    private fun dispatch(action: () -> Unit) {
+    private fun dispatch(
+        action: () -> Unit
+    ) {
         sealHoverMove()
         post(action)
     }
 
-    private fun post(action: () -> Unit) {
+    private fun post(
+        action: () -> Unit
+    ) {
         SwingUtilities.invokeLater {
             if (!stopRequested) {
                 try {
@@ -456,7 +479,9 @@ internal class LinuxXInputSession(
         }
     }
 
-    private fun logUnavailable(exception: Throwable) {
+    private fun logUnavailable(
+        exception: Throwable
+    ) {
         System.getLogger(LinuxXInputSession::class.java.name).log(
             System.Logger.Level.WARNING,
             "Native XI2 input stopped; restoring AWT input",

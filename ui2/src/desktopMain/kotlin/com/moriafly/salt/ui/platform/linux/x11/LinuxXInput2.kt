@@ -44,7 +44,9 @@ internal interface LinuxXInput2 : Library {
         count: IntByReference
     ): Pointer?
 
-    fun XIFreeDeviceInfo(info: Pointer)
+    fun XIFreeDeviceInfo(
+        info: Pointer
+    )
 
     fun XISelectEvents(
         display: X11.Display,
@@ -395,11 +397,19 @@ internal interface LinuxXInput2 : Library {
 
 @Suppress("FunctionName")
 internal interface LinuxTouchX11 : X11 {
-    fun XConnectionNumber(display: X11.Display): Int
+    fun XConnectionNumber(
+        display: X11.Display
+    ): Int
 
-    fun XGetEventData(display: X11.Display, cookie: EventCookie): Int
+    fun XGetEventData(
+        display: X11.Display,
+        cookie: EventCookie
+    ): Int
 
-    fun XFreeEventData(display: X11.Display, cookie: EventCookie)
+    fun XFreeEventData(
+        display: X11.Display,
+        cookie: EventCookie
+    )
 
     @Structure.FieldOrder(
         "type",

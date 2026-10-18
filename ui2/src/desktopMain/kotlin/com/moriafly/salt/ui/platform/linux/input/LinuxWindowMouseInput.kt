@@ -35,9 +35,13 @@ import javax.swing.SwingUtilities
  */
 internal object LinuxWindowMouseInput {
     interface Handler {
-        fun onMouseEvent(event: MouseEvent): Boolean
+        fun onMouseEvent(
+            event: MouseEvent
+        ): Boolean
 
-        fun afterMouseEvent(event: MouseEvent) {}
+        fun afterMouseEvent(
+            event: MouseEvent
+        ) {}
 
         fun cancel() {}
     }
@@ -78,7 +82,10 @@ internal object LinuxWindowMouseInput {
         }
     }
 
-    fun registerSource(window: Window, source: LinuxMouseInput): () -> Unit {
+    fun registerSource(
+        window: Window,
+        source: LinuxMouseInput
+    ): () -> Unit {
         check(EventQueue.isDispatchThread())
         check(window in handlers && window !in sources)
         sources[window] = source
@@ -90,7 +97,10 @@ internal object LinuxWindowMouseInput {
         }
     }
 
-    fun dispatchToWindow(window: Window, event: MouseEvent) {
+    fun dispatchToWindow(
+        window: Window,
+        event: MouseEvent
+    ) {
         check(EventQueue.isDispatchThread())
         // Input has already passed source selection. Deliver directly to this window's handlers
         // and AWT component, without queue re-entry or a second source selection pass.
@@ -98,7 +108,10 @@ internal object LinuxWindowMouseInput {
     }
 
     @OptIn(UnstableSaltUiApi::class)
-    fun positionInContent(event: MouseEvent, window: Window): Offset {
+    fun positionInContent(
+        event: MouseEvent,
+        window: Window
+    ): Offset {
         // Compose coordinates start at its canvas, which can be inset by AWT decoration.
         val canvas = window.findSkiaLayer()?.canvas ?: window
         val point = SwingUtilities.convertPoint(event.component, event.point, canvas)
@@ -109,16 +122,10 @@ internal object LinuxWindowMouseInput {
         )
     }
 
-    fun positionInWindow(event: MouseEvent, window: Window): Offset {
-        val transform = window.graphicsConfiguration.defaultTransform
-        return Offset(
-            ((event.xOnScreen - window.x) * transform.scaleX).toFloat(),
-            ((event.yOnScreen - window.y) * transform.scaleY).toFloat()
-        )
-    }
-
     private class WindowEventQueue : EventQueue() {
-        public override fun dispatchEvent(event: AWTEvent) {
+        public override fun dispatchEvent(
+            event: AWTEvent
+        ) {
             if (event is WindowEvent &&
                 (
                     event.id == WindowEvent.WINDOW_DEACTIVATED ||
@@ -143,7 +150,10 @@ internal object LinuxWindowMouseInput {
             }
         }
 
-        fun deliverToWindow(window: Window, mouseEvent: MouseEvent) {
+        fun deliverToWindow(
+            window: Window,
+            mouseEvent: MouseEvent
+        ) {
             val registrations = handlers[window]?.toList().orEmpty()
             if (!window.isShowing || !window.isEnabled) {
                 registrations.forEach { it.handler.cancel() }

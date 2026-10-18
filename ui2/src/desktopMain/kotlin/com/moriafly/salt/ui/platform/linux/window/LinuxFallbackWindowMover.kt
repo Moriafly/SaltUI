@@ -35,13 +35,17 @@ internal class LinuxFallbackWindowMover(
     private var dragStartWindowPos: Point? = null
     private var isDragging = false
 
-    fun startDrag(screenPosition: Point) {
+    fun startDrag(
+        screenPosition: Point
+    ) {
         dragStartScreenPos = Point(screenPosition)
         dragStartWindowPos = window.location
         isDragging = true
     }
 
-    fun updateDrag(screenPosition: Point) {
+    fun updateDrag(
+        screenPosition: Point
+    ) {
         if (!isDragging) return
 
         val startScreen = dragStartScreenPos ?: return

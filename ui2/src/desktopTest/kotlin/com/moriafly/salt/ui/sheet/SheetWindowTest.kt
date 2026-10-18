@@ -391,6 +391,10 @@ class SheetWindowTest {
                 assertEquals(0, fixture.requests)
                 fixture.properties = fixture.properties.copy(dismissible = false)
             }
+            // The native window recomposes on its own frame clock, outside the test clock.
+            waitUntil(timeoutMillis = 5_000) {
+                onAllNodes(sheetCloseButton()).fetchSemanticsNodes().isEmpty()
+            }
             onNode(sheetCloseButton()).assertDoesNotExist()
             fixture.click(robot, "Background")
             robot.pressKey(KeyEvent.VK_ESCAPE)
@@ -399,6 +403,9 @@ class SheetWindowTest {
                 assertEquals(0, fixture.requests)
                 assertEquals(0, fixture.backgroundClicks)
                 fixture.properties = fixture.properties.copy(dismissible = true)
+            }
+            waitUntil(timeoutMillis = 5_000) {
+                onAllNodes(sheetCloseButton()).fetchSemanticsNodes().size == 1
             }
             onNode(sheetCloseButton()).assertIsDisplayed()
             val enabled = fixture.bounds.getValue("panel")

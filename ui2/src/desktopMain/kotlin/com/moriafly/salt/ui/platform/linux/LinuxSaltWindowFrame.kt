@@ -58,6 +58,7 @@ import com.moriafly.salt.ui.platform.linux.input.LinuxWindowGestures
 import com.moriafly.salt.ui.platform.linux.input.LinuxWindowInputEffect
 import com.moriafly.salt.ui.platform.linux.input.LocalLinuxWindowGestures
 import com.moriafly.salt.ui.platform.linux.window.LinuxCaptionBarHitTest
+import com.moriafly.salt.ui.platform.linux.window.LinuxWindowGestureEffects
 import com.moriafly.salt.ui.platform.linux.window.LocalLinuxCaptionBarHitTest
 import com.moriafly.salt.ui.platform.linux.window.UndecoratedWindowResizer
 import com.moriafly.salt.ui.thenIf
@@ -106,7 +107,8 @@ internal fun FrameWindowScope.LinuxSaltWindowFrame(
             window = window,
             caption = captionBarHitTest,
             resizer = undecoratedWindowResizer,
-            captionHovered = isHitTestInCaptionBar
+            captionHovered = isHitTestInCaptionBar,
+            effects = LinuxWindowGestureEffects(window, undecoratedWindowResizer)
         )
     }
 

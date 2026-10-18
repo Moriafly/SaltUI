@@ -23,50 +23,37 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.platform.ViewConfiguration
 import com.moriafly.salt.ui.UnstableSaltUiApi
+import com.moriafly.salt.ui.platform.linux.input.gesture.LinuxTouchTapRecognizer
+import com.moriafly.salt.ui.platform.linux.input.gesture.LinuxWindowGestureState
+import com.moriafly.salt.ui.platform.linux.input.gesture.LinuxWindowGestureState.CaptionHit
+import com.moriafly.salt.ui.platform.linux.input.gesture.LinuxWindowGestureState.Command
+import com.moriafly.salt.ui.platform.linux.input.gesture.LinuxWindowGestureState.Input
+import com.moriafly.salt.ui.platform.linux.input.gesture.LinuxWindowGestureState.Phase
+import com.moriafly.salt.ui.platform.linux.input.gesture.LinuxWindowGestureState.Pointer
+import com.moriafly.salt.ui.platform.linux.input.gesture.LinuxWindowGestureState.Position
+import com.moriafly.salt.ui.platform.linux.input.gesture.WindowGestureEffects
 import com.moriafly.salt.ui.platform.linux.window.LinuxCaptionBarHitTest
-import com.moriafly.salt.ui.platform.linux.window.LinuxFallbackWindowMover
-import com.moriafly.salt.ui.platform.linux.window.LinuxWindowResizeOperation
 import com.moriafly.salt.ui.platform.linux.window.UndecoratedWindowResizer
-import com.moriafly.salt.ui.platform.linux.x11.LinuxX11WindowMover
 import com.moriafly.salt.ui.window.WindowResizeEdge
-import java.awt.Frame
-import java.awt.Point
 import java.awt.Window
-import java.awt.event.ComponentAdapter
-import java.awt.event.ComponentEvent
 import java.awt.event.MouseEvent
 
 internal val LocalLinuxWindowGestures = staticCompositionLocalOf<LinuxWindowGestures?> { null }
 
 /**
- * The window's single move/resize owner, confined to the AWT event thread.
- *
- * Mouse and touch use the same geometry and movement policy. Borders take precedence over the
- * caption. Modal content is checked before dispatch so its scrim cannot swallow a caption press.
- * Otherwise Compose resolves caption/control overlap during the first press dispatched here.
- * This owner cancels Compose before capturing that contact until release. Other fingers never
- * inherit a window gesture, even after its owner lifts.
+ * Adapts AWT/Compose input to the window's single gesture state machine and executes its commands.
+ * The platform adapter owns only dispatch-scoped Compose hit queries, never gesture ownership.
  */
 @OptIn(UnstableSaltUiApi::class)
 internal class LinuxWindowGestures(
     private val window: Window,
     private val caption: LinuxCaptionBarHitTest,
     private val resizer: UndecoratedWindowResizer,
-    private val captionHovered: State<Boolean>
+    private val captionHovered: State<Boolean>,
+    private val effects: WindowGestureEffects
 ) : LinuxWindowMouseInput.Handler {
-    private var moveable = false
-    private var canDrag = true
-    private var canMaximize = false
-    private var gesture: Gesture? = null
-    private val fallbackMover = LinuxFallbackWindowMover(window)
-    private var useNativeDrag = true
-    private var restoreWidth = window.width
-    private var suppressedClick: Click? = null
-    private val contacts = mutableSetOf<Long>()
-    private var capturedTouches = false
-    private var dispatchingPress: LinuxTouchEvent? = null
-    private var captionHitByCompose = false
-    private val touchTapRecognizer = LinuxTouchTapRecognizer(window)
+    private val state = LinuxWindowGestureState()
+    private var captionQuery: CaptionQuery? = null
 
     fun configure(
         moveable: Boolean,
@@ -74,45 +61,42 @@ internal class LinuxWindowGestures(
         canDrag: Boolean,
         canMaximize: Boolean,
         viewConfiguration: ViewConfiguration
-    ) {
-        if (this.moveable != moveable || this.canDrag != canDrag ||
-            this.canMaximize != canMaximize
-        ) {
-            touchTapRecognizer.cancel()
-        }
-        touchTapRecognizer.configure(viewConfiguration)
-        resizer.enabled = resizable
-        this.moveable = moveable
-        this.canDrag = canDrag
-        this.canMaximize = canMaximize
-        if (
-            (gesture is Gesture.Move && (!moveable || !canDrag)) ||
-            (gesture is Gesture.Resize && !resizer.enabled)
-        ) {
-            finishGesture()
-        }
-        if (!resizer.enabled) resizer.showEdge(WindowResizeEdge.None)
-    }
+    ) = execute(
+        state.configure(
+            LinuxWindowGestureState.Configuration(
+                moveable = moveable,
+                resizable = resizable,
+                canDrag = canDrag,
+                canMaximize = canMaximize,
+                taps = LinuxTouchTapRecognizer.Configuration(
+                    touchSlop = viewConfiguration.touchSlop,
+                    longPressTimeoutMillis = viewConfiguration.longPressTimeoutMillis,
+                    doubleTapMinTimeMillis = viewConfiguration.doubleTapMinTimeMillis,
+                    doubleTapTimeoutMillis = viewConfiguration.doubleTapTimeoutMillis
+                )
+            )
+        )
+    )
 
     fun install(): () -> Unit {
-        val listener = object : ComponentAdapter() {
-            override fun componentResized(event: ComponentEvent) = onWindowResized()
-        }
-        window.addComponentListener(listener)
-        val unregister = LinuxWindowMouseInput.register(window, this, priority = 1)
+        val uninstallMover = effects.mover.install()
+        val unregister = LinuxWindowMouseInput.register(
+            window = window,
+            handler = this,
+            priority = 1
+        )
         return {
             unregister()
-            window.removeComponentListener(listener)
+            uninstallMover()
         }
     }
 
-    /**
-     * Records a Compose caption hit only while resolving the first contact's target.
-     * Gesture eligibility, capture and movement belong to this owner.
-     */
-    fun onCaptionPress(event: LinuxTouchEvent): Boolean {
-        if (dispatchingPress !== event) return false
-        captionHitByCompose = true
+    fun onCaptionPress(
+        event: LinuxTouchEvent
+    ): Boolean {
+        val query = captionQuery ?: return false
+        if (query.dispatch.event !== event) return false
+        query.hit = true
         return true
     }
 
@@ -121,305 +105,156 @@ internal class LinuxWindowGestures(
         dispatchToCompose: () -> Unit,
         cancelCompose: () -> Unit
     ) {
-        val firstContact = contacts.isEmpty()
-        if (event.type == PointerEventType.Press) {
-            if (!contacts.add(event.id)) return
-            if (!firstContact) touchTapRecognizer.cancel()
-        } else if (event.id !in contacts) {
-            return
+        val phase = when (event.type) {
+            PointerEventType.Press -> Phase.Press
+            PointerEventType.Move -> Phase.Move
+            PointerEventType.Release -> Phase.Release
+            else -> return
+        }
+        val scale = window.graphicsConfiguration.defaultTransform
+        val input = Input(
+            pointer = Pointer.Touch(event.id),
+            phase = phase,
+            position = Position(event.screenPosition.x, event.screenPosition.y),
+            timeMillis = event.timeMillis,
+            scaleX = scale.scaleX,
+            scaleY = scale.scaleY
+        )
+        val hit = if (phase == Phase.Press) {
+            hitAt(event.contentPosition)
+        } else {
+            LinuxWindowGestureState.Hit()
         }
         try {
-            if (capturedTouches || gesture?.pointer == Pointer.Mouse) {
-                capturedTouches = true
-                if (gesture?.pointer == Pointer.Touch(event.id)) {
-                    when (event.type) {
-                        PointerEventType.Move -> updateGesture(event.screenPoint())
-                        PointerEventType.Release -> {
-                            val active = gesture
-                            val doubleTap = active is Gesture.Move &&
-                                touchTapRecognizer.finish(event.screenPoint(), event.timeMillis)
-                            finishGesture(applyPendingResize = true)
-                            if (doubleTap) toggleMaximizeOrRestore()
-                        }
-                    }
-                }
-                return
-            }
-            if (firstContact && event.type == PointerEventType.Press) {
-                val edge = resizer.edgeAt(event.contentPosition)
-                if (edge != WindowResizeEdge.None) {
-                    capturedTouches = true
-                    cancelCompose()
-                    beginResize(Pointer.Touch(event.id), edge, event.screenPoint())
-                    return
-                }
-                val isCaption = when (captionHitAt(event.contentPosition)) {
-                    LinuxCaptionBarHitTest.Result.Caption -> true
-                    LinuxCaptionBarHitTest.Result.Excluded -> {
-                        dispatchToCompose()
-                        false
-                    }
-
-                    LinuxCaptionBarHitTest.Result.RequiresComposeHitTest ->
-                        dispatchCaptionPress(event, dispatchToCompose)
-                }
-                if (isCaption) {
-                    capturedTouches = true
-                    cancelCompose()
-                    touchTapRecognizer.begin(event.screenPoint(), event.timeMillis)
-                    beginMove(Pointer.Touch(event.id), event.screenPoint())
-                } else {
-                    touchTapRecognizer.cancel()
-                }
-            } else {
-                dispatchToCompose()
-            }
+            val dispatch = TouchDispatch(
+                event = event,
+                deliver = dispatchToCompose,
+                cancel = cancelCompose
+            )
+            execute(state.onInput(input, hit), dispatch)
         } catch (exception: Throwable) {
             cancel()
             cancelCompose()
             throw exception
-        } finally {
-            if (event.type == PointerEventType.Release) {
-                contacts.remove(event.id)
-                if (contacts.isEmpty()) capturedTouches = false
-            }
         }
     }
 
-    override fun onMouseEvent(event: MouseEvent): Boolean {
-        if (event.id == MouseEvent.MOUSE_PRESSED) touchTapRecognizer.cancel()
-        // A real mouse cannot steal a touch sequence, and vice versa.
-        if (contacts.isNotEmpty()) {
-            return event.id == MouseEvent.MOUSE_PRESSED || event.id == MouseEvent.MOUSE_DRAGGED ||
-                event.id == MouseEvent.MOUSE_RELEASED || event.id == MouseEvent.MOUSE_CLICKED
+    override fun onMouseEvent(
+        event: MouseEvent
+    ): Boolean {
+        val phase = when (event.id) {
+            MouseEvent.MOUSE_MOVED, MouseEvent.MOUSE_ENTERED -> Phase.Enter
+            MouseEvent.MOUSE_EXITED -> Phase.Exit
+            MouseEvent.MOUSE_PRESSED -> Phase.Press
+            MouseEvent.MOUSE_DRAGGED -> Phase.Move
+            MouseEvent.MOUSE_RELEASED -> Phase.Release
+            MouseEvent.MOUSE_CLICKED -> Phase.Click
+            else -> return false
         }
-        val edge = resizer.edgeAt(LinuxWindowMouseInput.positionInContent(event, window))
-        when (event.id) {
-            MouseEvent.MOUSE_MOVED, MouseEvent.MOUSE_ENTERED -> resizer.showEdge(edge)
-            MouseEvent.MOUSE_EXITED -> if (gesture == null) resizer.showEdge(WindowResizeEdge.None)
-            MouseEvent.MOUSE_PRESSED -> {
-                if (event.button != MouseEvent.BUTTON1) return gesture != null
-                finishGesture()
-                suppressedClick = null
-                if (edge != WindowResizeEdge.None) {
-                    beginResize(Pointer.Mouse, edge, event.locationOnScreen)
-                    return true
-                }
-                val position = LinuxWindowMouseInput.positionInContent(event, window)
-                val isCaption = when (captionHitAt(position)) {
-                    LinuxCaptionBarHitTest.Result.Caption -> true
-                    LinuxCaptionBarHitTest.Result.Excluded -> false
-                    // Enter and press can arrive before recomposition.
-                    LinuxCaptionBarHitTest.Result.RequiresComposeHitTest -> captionHovered.value
-                }
-                if (!isCaption) return false
-                beginMove(Pointer.Mouse, event.locationOnScreen)
-                return true
+        val position = LinuxWindowMouseInput.positionInContent(event, window)
+        val hit = if (phase == Phase.Press) {
+            val target = hitAt(position)
+            if (target.caption == CaptionHit.ResolveInCompose) {
+                // Enter and press can arrive before recomposition updates the hover state.
+                target.copy(
+                    caption = if (captionHovered.value) CaptionHit.Caption else CaptionHit.Content
+                )
+            } else {
+                target
             }
-
-            MouseEvent.MOUSE_DRAGGED -> {
-                if (gesture?.pointer != Pointer.Mouse) return false
-                updateGesture(event.locationOnScreen)
-                return true
-            }
-
-            MouseEvent.MOUSE_RELEASED -> {
-                val active = gesture ?: return false
-                if (event.button == MouseEvent.BUTTON1) {
-                    suppressedClick = if (active is Gesture.Move) Click.Caption else Click.Resize
-                    finishGesture(applyPendingResize = true)
-                    resizer.showEdge(edge)
-                }
-                return true
-            }
-
-            MouseEvent.MOUSE_CLICKED -> {
-                val click = suppressedClick ?: return false
-                if (event.button != MouseEvent.BUTTON1) return false
-                suppressedClick = null
-                if (click == Click.Caption && event.clickCount == 2) {
-                    toggleMaximizeOrRestore()
-                }
-                return true
-            }
+        } else {
+            LinuxWindowGestureState.Hit(edge = resizer.edgeAt(position))
         }
-        return false
+        val decision = state.onInput(
+            Input(
+                pointer = Pointer.Mouse,
+                phase = phase,
+                position = Position(event.xOnScreen, event.yOnScreen),
+                primary = event.button == MouseEvent.BUTTON1,
+                clickCount = event.clickCount
+            ),
+            hit
+        )
+        execute(decision)
+        return decision.consumed
     }
 
-    override fun afterMouseEvent(event: MouseEvent) = resizer.afterMouseEvent(event)
+    override fun afterMouseEvent(
+        event: MouseEvent
+    ) = resizer.afterMouseEvent(event)
 
     override fun cancel() {
-        touchTapRecognizer.cancel()
-        finishGesture()
-        suppressedClick = null
-        dispatchingPress = null
-        captionHitByCompose = false
-        // Keep known contacts quarantined until release or an explicit native input reset.
-        capturedTouches = contacts.isNotEmpty()
+        captionQuery = null
+        execute(state.cancel())
     }
 
     fun resetTouchInput() {
-        touchTapRecognizer.cancel()
-        // XI2 device changes and touch-channel shutdown must not cancel an AWT mouse drag.
-        if (gesture?.pointer is Pointer.Touch) finishGesture()
-        dispatchingPress = null
-        captionHitByCompose = false
-        contacts.clear()
-        capturedTouches = false
+        captionQuery = null
+        execute(state.resetTouchInput())
     }
 
-    private fun captionHitAt(position: Offset): LinuxCaptionBarHitTest.Result =
-        if (moveable && canDrag) {
-            caption.hitTest(position, window)
-        } else {
-            LinuxCaptionBarHitTest.Result.Excluded
+    private fun hitAt(
+        position: Offset
+    ): LinuxWindowGestureState.Hit {
+        val edge = resizer.edgeAt(position)
+        if (edge != WindowResizeEdge.None) return LinuxWindowGestureState.Hit(edge = edge)
+        val target = when (caption.hitTest(position, window)) {
+            LinuxCaptionBarHitTest.Result.Caption -> CaptionHit.Caption
+            LinuxCaptionBarHitTest.Result.Excluded -> CaptionHit.Content
+            LinuxCaptionBarHitTest.Result.RequiresComposeHitTest -> CaptionHit.ResolveInCompose
         }
-
-    private fun dispatchCaptionPress(
-        event: LinuxTouchEvent,
-        dispatchToCompose: () -> Unit
-    ): Boolean {
-        dispatchingPress = event
-        captionHitByCompose = false
-        try {
-            dispatchToCompose()
-            return captionHitByCompose
-        } finally {
-            dispatchingPress = null
-            captionHitByCompose = false
-        }
+        return LinuxWindowGestureState.Hit(caption = target)
     }
 
-    private fun toggleMaximizeOrRestore() {
-        if (!moveable || !canDrag || !canMaximize) return
-        val frame = window as? Frame ?: return
-        frame.extendedState = if (frame.extendedState == Frame.MAXIMIZED_BOTH) {
-            Frame.NORMAL
-        } else {
-            Frame.MAXIMIZED_BOTH
-        }
-    }
-
-    private fun beginMove(
-        pointer: Pointer,
-        position: Point
+    private fun execute(
+        decision: LinuxWindowGestureState.Decision,
+        touch: TouchDispatch? = null
     ) {
-        gesture = Gesture.Move(pointer, position)
-    }
+        for (command in decision.commands) {
+            when (command) {
+                Command.DeliverTouch -> checkNotNull(touch).deliver()
+                Command.CancelCompose -> checkNotNull(touch).cancel()
+                is Command.ResolveCaption -> resolveCaption(command.request, checkNotNull(touch))
+                is Command.StartMove -> effects.mover.start(
+                    pointer = command.pointer,
+                    start = command.start,
+                    current = command.current
+                )
 
-    private fun beginResize(
-        pointer: Pointer,
-        edge: WindowResizeEdge,
-        position: Point
-    ) {
-        touchTapRecognizer.cancel()
-        gesture = Gesture.Resize(
-            pointer,
-            LinuxWindowResizeOperation(
-                window = window,
-                edge = edge,
-                start = position
-            )
-        )
-        resizer.showEdge(edge)
-    }
-
-    private fun updateGesture(position: Point) {
-        when (val active = gesture) {
-            is Gesture.Move -> {
-                active.latestPosition = position
-                if (active.restoreOffset != null) return
-                if (active.pending) {
-                    // Small touch jitter remains a tap, including while maximized. Starting the
-                    // native mover earlier would restore the window before a double tap resolves.
-                    if (active.pointer is Pointer.Touch) {
-                        if (touchTapRecognizer.isWithinSlop(active.start, position)) return
-                        touchTapRecognizer.cancel()
-                    }
-                    active.pending = false
-                    val frame = window as? Frame
-                    if (frame?.extendedState == Frame.MAXIMIZED_BOTH) {
-                        val localX = active.start.x - window.x
-                        active.restoreOffset = Point(
-                            (restoreWidth * localX.toFloat() / window.width).toInt(),
-                            active.start.y - window.y
-                        )
-                        frame.extendedState = Frame.NORMAL
-                        return
-                    }
-                    startMover(active.start, active.pointer)
-                }
-                fallbackMover.updateDrag(position)
+                is Command.Move -> effects.mover.update(command.position)
+                Command.EndMove -> effects.mover.finish()
+                Command.ToggleMaximize -> effects.mover.toggleMaximize()
+                is Command.StartResize -> effects.resizer.start(command.edge, command.position)
+                is Command.Resize -> effects.resizer.update(command.position)
+                is Command.EndResize -> effects.resizer.finish(command.applyPending)
+                is Command.ShowEdge -> effects.resizer.showEdge(command.edge)
+                is Command.EnableResize -> effects.resizer.setEnabled(command.enabled)
             }
-
-            is Gesture.Resize -> active.operation.update(position)
-            null -> Unit
         }
     }
 
-    private fun startMover(position: Point, pointer: Pointer) {
-        if (useNativeDrag) {
-            val button = if (pointer == Pointer.Mouse) MouseEvent.BUTTON1 else MouseEvent.NOBUTTON
-            if (LinuxX11WindowMover.tryMove(window, position, button)) return
-            useNativeDrag = false
-        }
-        fallbackMover.startDrag(position)
-    }
-
-    private fun onWindowResized() {
-        if ((window as? Frame)?.extendedState == Frame.MAXIMIZED_BOTH) return
-        restoreWidth = window.width
-        val active = gesture as? Gesture.Move ?: return
-        val offset = active.restoreOffset ?: return
-        active.restoreOffset = null
-        // Position only after native restore; moving earlier overwrites the WM's saved geometry.
-        window.setLocation(active.latestPosition.x - offset.x, active.latestPosition.y - offset.y)
-        startMover(active.latestPosition, active.pointer)
-    }
-
-    /**
-     * Ends the current window gesture and clears the drag state and resize-edge indicator.
-     *
-     * @param applyPendingResize Pass `true` on mouse or touch release to apply the last pending
-     * resize before ending the gesture. Leave `false` on cancellation to discard the pending
-     * update and prevent further window size changes from that gesture.
-     */
-    private fun finishGesture(
-        applyPendingResize: Boolean = false
+    private fun resolveCaption(
+        request: Long,
+        dispatch: TouchDispatch
     ) {
-        (gesture as? Gesture.Resize)?.operation?.finish(applyPendingResize)
-        gesture = null
-        fallbackMover.endDrag()
-        resizer.showEdge(WindowResizeEdge.None)
-    }
-
-    private fun LinuxTouchEvent.screenPoint() = Point(screenPosition.x, screenPosition.y)
-
-    private sealed interface Pointer {
-        data object Mouse : Pointer
-
-        data class Touch(
-            val id: Long
-        ) : Pointer
-    }
-
-    private sealed class Gesture(
-        val pointer: Pointer
-    ) {
-        class Move(
-            pointer: Pointer,
-            val start: Point
-        ) : Gesture(pointer) {
-            var pending = true
-            var latestPosition = start
-            var restoreOffset: Point? = null
+        val query = CaptionQuery(dispatch)
+        captionQuery = query
+        try {
+            dispatch.deliver()
+        } finally {
+            if (captionQuery === query) captionQuery = null
         }
-
-        class Resize(
-            pointer: Pointer,
-            val operation: LinuxWindowResizeOperation
-        ) : Gesture(pointer)
+        execute(state.resolveCaption(request, query.hit), dispatch)
     }
 
-    private enum class Click { Caption, Resize }
+    private class CaptionQuery(
+        val dispatch: TouchDispatch,
+        var hit: Boolean = false
+    )
+
+    private class TouchDispatch(
+        val event: LinuxTouchEvent,
+        val deliver: () -> Unit,
+        val cancel: () -> Unit
+    )
 }

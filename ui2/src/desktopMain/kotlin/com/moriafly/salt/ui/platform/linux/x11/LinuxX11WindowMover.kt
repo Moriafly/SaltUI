@@ -183,7 +183,10 @@ internal object LinuxX11WindowMover {
 @UnstableSaltUiApi
 @Suppress("FunctionName")
 internal interface X11Ext : X11 {
-    fun XUngrabPointer(display: X11.Display?, time: NativeLong?): Int
+    fun XUngrabPointer(
+        display: X11.Display?,
+        time: NativeLong?
+    ): Int
 
     companion object {
         val INSTANCE: X11Ext = Native.load("X11", X11Ext::class.java)

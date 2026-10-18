@@ -39,7 +39,9 @@ internal class LinuxWindowResizeOperation(
     private var pendingPosition: Point? = null
     private var finished = false
 
-    fun update(position: Point) {
+    fun update(
+        position: Point
+    ) {
         if (finished) return
         val alreadyQueued = pendingPosition != null
         pendingPosition = position
@@ -57,7 +59,9 @@ internal class LinuxWindowResizeOperation(
      * @param applyPendingResize Pass `true` on mouse or touch release to apply the final pending
      * position. Leave `false` on cancellation to discard it without changing the window bounds.
      */
-    fun finish(applyPendingResize: Boolean = false) {
+    fun finish(
+        applyPendingResize: Boolean = false
+    ) {
         if (finished) return
         finished = true
         val latest = pendingPosition
@@ -65,7 +69,9 @@ internal class LinuxWindowResizeOperation(
         if (applyPendingResize && latest != null) resize(latest)
     }
 
-    private fun resize(position: Point) {
+    private fun resize(
+        position: Point
+    ) {
         val dx = position.x - start.x
         val dy = position.y - start.y
         var x = bounds.x
