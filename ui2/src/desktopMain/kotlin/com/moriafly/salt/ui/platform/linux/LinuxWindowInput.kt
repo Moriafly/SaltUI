@@ -17,6 +17,9 @@
 
 package com.moriafly.salt.ui.platform.linux
 
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.InternalComposeUiApi
 import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.moriafly.salt.ui.platform.input.DesktopTouchScene
@@ -29,6 +32,39 @@ import java.awt.event.HierarchyEvent
 import java.awt.event.HierarchyListener
 import java.awt.event.WindowAdapter
 import java.awt.event.WindowEvent
+
+@Composable
+internal fun LinuxWindowInputEffect(
+    window: Window,
+    gestures: LinuxWindowGestures,
+    moveable: Boolean,
+    resizable: Boolean,
+    canDrag: Boolean = true,
+    canMaximize: Boolean = false
+) {
+    SideEffect {
+        gestures.configure(
+            moveable = moveable,
+            resizable = resizable,
+            canDrag = canDrag,
+            canMaximize = canMaximize
+        )
+    }
+    DisposableEffect(window, gestures) {
+        val uninstallGestures = gestures.install()
+        val focus = LinuxWindowFocus.install(window)
+        val input = LinuxWindowInput.create(
+            window = window,
+            gestures = gestures,
+            focus = focus
+        )
+        onDispose {
+            input?.close()
+            focus?.close()
+            uninstallGestures()
+        }
+    }
+}
 
 /**
  * Attaches the native session to the canvas lifetime and connects its independent input channels.
@@ -182,7 +218,11 @@ internal class LinuxWindowInput private constructor(
         }
 
         @OptIn(UnstableSaltUiApi::class)
-        fun create(window: Window, gestures: LinuxWindowGestures): LinuxWindowInput? {
+        fun create(
+            window: Window,
+            gestures: LinuxWindowGestures,
+            focus: LinuxWindowFocus?
+        ): LinuxWindowInput? {
             // XIDs and libXi do not apply to JBR's native Wayland toolkit.
             if (Toolkit.getDefaultToolkit().javaClass.name != "sun.awt.X11.XToolkit") return null
             val canvas = window.findSkiaLayer()?.canvas ?: return null
@@ -192,7 +232,8 @@ internal class LinuxWindowInput private constructor(
                     window = window,
                     canvas = canvas,
                     target = target,
-                    gestures = gestures
+                    gestures = gestures,
+                    focus = focus
                 )
             }
             // Hover remains usable even when Compose's private scene adapter is unavailable.

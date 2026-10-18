@@ -38,7 +38,8 @@ internal class LinuxTouchInput(
     private val window: Window,
     private val canvas: Component,
     private val target: DesktopTouchScene,
-    private val gestures: LinuxWindowGestures
+    private val gestures: LinuxWindowGestures,
+    private val focus: LinuxWindowFocus?
 ) {
     private val pointers = TouchPointerState()
 
@@ -64,7 +65,10 @@ internal class LinuxTouchInput(
             ),
             contentPosition = position
         )
-        if (type == PointerEventType.Press) canvas.requestFocusInWindow()
+        if (type == PointerEventType.Press) {
+            canvas.requestFocusInWindow()
+            focus?.onPointerPress(canvas, sample.x11Timestamp)
+        }
         gestures.dispatchTouch(
             event = touchEvent,
             dispatchToCompose = {

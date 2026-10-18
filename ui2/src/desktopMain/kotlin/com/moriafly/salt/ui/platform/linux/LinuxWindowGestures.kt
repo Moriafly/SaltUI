@@ -17,9 +17,6 @@
 
 package com.moriafly.salt.ui.platform.linux
 
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.State
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.input.pointer.PointerEventType
@@ -35,28 +32,6 @@ import java.awt.event.ComponentEvent
 import java.awt.event.MouseEvent
 
 internal val LocalLinuxWindowGestures = staticCompositionLocalOf<LinuxWindowGestures?> { null }
-
-@Composable
-internal fun LinuxWindowInputEffect(
-    gestures: LinuxWindowGestures,
-    moveable: Boolean,
-    resizable: Boolean,
-    canDrag: Boolean = true,
-    canMaximize: Boolean = false
-) {
-    SideEffect {
-        gestures.configure(
-            moveable = moveable,
-            resizable = resizable,
-            canDrag = canDrag,
-            canMaximize = canMaximize
-        )
-    }
-    DisposableEffect(gestures) {
-        val uninstall = gestures.install()
-        onDispose { uninstall() }
-    }
-}
 
 /**
  * The window's single move/resize owner, confined to the AWT event thread.
@@ -111,9 +86,7 @@ internal class LinuxWindowGestures(
         }
         window.addComponentListener(listener)
         val unregister = LinuxWindowMouseInput.register(window, this, priority = 1)
-        val input = LinuxWindowInput.create(window, this)
         return {
-            input?.close()
             unregister()
             window.removeComponentListener(listener)
         }

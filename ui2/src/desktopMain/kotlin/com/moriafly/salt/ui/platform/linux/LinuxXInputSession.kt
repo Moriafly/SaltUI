@@ -71,6 +71,7 @@ internal class LinuxXInputSession(
         val rootY: Double,
         val modifiers: Int,
         val timeMillis: Long,
+        val x11Timestamp: Long,
         val directTouch: Boolean
     )
 
@@ -369,6 +370,7 @@ internal class LinuxXInputSession(
             rootY = native.rootY,
             modifiers = native.modifiers.effective,
             timeMillis = System.nanoTime() / 1_000_000,
+            x11Timestamp = native.time.toLong() and 0xffffffffL,
             directTouch = directTouch
         )
         if (sample.phase == TouchPhase.Down) {
