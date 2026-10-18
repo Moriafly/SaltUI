@@ -27,17 +27,14 @@ import com.moriafly.salt.ui.platform.input.TouchPointerState
 import com.moriafly.salt.ui.platform.linux.input.gesture.WindowGestureEffects
 import com.moriafly.salt.ui.platform.linux.x11.LinuxXInputSession
 import java.awt.Component
-import java.awt.Dialog
-import java.awt.Window
 import kotlin.math.roundToInt
 
 /**
  * EDT-confined adaptation from native contact samples to Compose and window gestures.
- * Native connections, registration and mouse routing belong to LinuxWindowInput.
+ * Window eligibility, native connections and mouse routing belong to LinuxWindowInput.
  */
 @OptIn(InternalComposeUiApi::class)
 internal class LinuxTouchInput(
-    private val window: Window,
     private val canvas: Component,
     private val target: DesktopTouchScene,
     private val gestures: LinuxWindowGestures,
@@ -49,7 +46,7 @@ internal class LinuxTouchInput(
         sample: LinuxXInputSession.Touch
     ): Boolean {
         if (!sample.directTouch) return false
-        if (!canReceiveTouch()) {
+        if (target.isDisposed) {
             cancel()
             return false
         }
@@ -109,23 +106,4 @@ internal class LinuxTouchInput(
     private fun cancelCompose() {
         if (pointers.clear() && !target.isDisposed) target.scene.cancelPointerInput()
     }
-
-    private fun canReceiveTouch(): Boolean = canvas.isShowing && window.isEnabled &&
-        !target.isDisposed && Window.getWindows().none { candidate ->
-            candidate is Dialog && candidate.isShowing && candidate.isModal &&
-                generateSequence(window) { it.owner }.none { it === candidate } &&
-                when (candidate.modalityType) {
-                    Dialog.ModalityType.DOCUMENT_MODAL ->
-                        generateSequence(window) { it.owner }.last() ===
-                            generateSequence(candidate as Window) { it.owner }.last()
-
-                    Dialog.ModalityType.APPLICATION_MODAL ->
-                        window.modalExclusionType == Dialog.ModalExclusionType.NO_EXCLUDE
-
-                    Dialog.ModalityType.TOOLKIT_MODAL ->
-                        window.modalExclusionType != Dialog.ModalExclusionType.TOOLKIT_EXCLUDE
-
-                    else -> false
-                }
-        }
 }

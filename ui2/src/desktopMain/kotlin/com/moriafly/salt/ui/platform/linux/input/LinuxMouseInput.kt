@@ -26,6 +26,7 @@ import kotlin.math.roundToInt
 
 /**
  * Chooses one mouse source before window handlers and Compose receive input.
+ * LinuxWindowInput validates window eligibility before passing native hover here.
  * XI2 supplies unpressed hover with device provenance.
  * AWT supplies buttons, wheel and grabbed drag.
  * If native hover is unavailable, the complete AWT path remains enabled independently of touch.
@@ -135,7 +136,7 @@ internal class LinuxMouseInput(
         val touchOwnsPointer = nativeCapabilities.touch && (event.directTouch || event.emulated)
         if (awaitingNativeCapabilities || !nativeCapabilities.hover || touchOwnsPointer ||
             event.crossingMode != 0 ||
-            !canvas.isShowing || pressedButtons.isNotEmpty()
+            pressedButtons.isNotEmpty()
         ) {
             return
         }
