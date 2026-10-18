@@ -21,6 +21,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.InternalComposeUiApi
+import androidx.compose.ui.platform.LocalViewConfiguration
 import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.moriafly.salt.ui.platform.input.DesktopTouchScene
 import com.moriafly.salt.ui.util.findSkiaLayer
@@ -42,12 +43,14 @@ internal fun LinuxWindowInputEffect(
     canDrag: Boolean = true,
     canMaximize: Boolean = false
 ) {
+    val viewConfiguration = LocalViewConfiguration.current
     SideEffect {
         gestures.configure(
             moveable = moveable,
             resizable = resizable,
             canDrag = canDrag,
-            canMaximize = canMaximize
+            canMaximize = canMaximize,
+            viewConfiguration = viewConfiguration
         )
     }
     DisposableEffect(window, gestures) {

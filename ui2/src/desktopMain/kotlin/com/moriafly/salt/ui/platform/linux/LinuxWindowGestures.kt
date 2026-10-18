@@ -21,6 +21,7 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.PointerEventType
+import androidx.compose.ui.platform.ViewConfiguration
 import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.moriafly.salt.ui.window.WindowResizeEdge
 import java.awt.EventQueue
@@ -62,13 +63,20 @@ internal class LinuxWindowGestures(
     private var capturedTouches = false
     private var dispatchingPress: LinuxTouchEvent? = null
     private var captionHitByCompose = false
+    private lateinit var viewConfiguration: ViewConfiguration
+    private var previousTouchTap: TouchTap? = null
 
     fun configure(
         moveable: Boolean,
         resizable: Boolean,
         canDrag: Boolean,
-        canMaximize: Boolean
+        canMaximize: Boolean,
+        viewConfiguration: ViewConfiguration
     ) {
+        if (this.moveable != moveable || this.canDrag != canDrag || this.canMaximize != canMaximize) {
+            cancelTouchTap()
+        }
+        this.viewConfiguration = viewConfiguration
         resizer.enabled = resizable
         this.moveable = moveable
         this.canDrag = canDrag
@@ -112,6 +120,7 @@ internal class LinuxWindowGestures(
         val firstContact = contacts.isEmpty()
         if (event.type == PointerEventType.Press) {
             if (!contacts.add(event.id)) return
+            if (!firstContact) cancelTouchTap()
         } else if (event.id !in contacts) {
             return
         }
@@ -121,7 +130,12 @@ internal class LinuxWindowGestures(
                 if (gesture?.pointer == Pointer.Touch(event.id)) {
                     when (event.type) {
                         PointerEventType.Move -> updateGesture(event.screenPoint())
-                        PointerEventType.Release -> finishGesture(applyPendingResize = true)
+                        PointerEventType.Release -> {
+                            val active = gesture
+                            val doubleTap = active is Gesture.Move && recognizeTouchTap(active, event)
+                            finishGesture(applyPendingResize = true)
+                            if (doubleTap) toggleMaximizeOrRestore()
+                        }
                     }
                 }
                 return
@@ -147,7 +161,13 @@ internal class LinuxWindowGestures(
                 if (isCaption) {
                     capturedTouches = true
                     cancelCompose()
-                    beginMove(Pointer.Touch(event.id), event.screenPoint())
+                    beginMove(
+                        pointer = Pointer.Touch(event.id),
+                        position = event.screenPoint(),
+                        touchDownTimeMillis = event.timeMillis
+                    )
+                } else {
+                    cancelTouchTap()
                 }
             } else {
                 dispatchToCompose()
@@ -165,6 +185,7 @@ internal class LinuxWindowGestures(
     }
 
     override fun onMouseEvent(event: MouseEvent): Boolean {
+        if (event.id == MouseEvent.MOUSE_PRESSED) cancelTouchTap()
         // A real mouse cannot steal a touch sequence, and vice versa.
         if (contacts.isNotEmpty()) {
             return event.id == MouseEvent.MOUSE_PRESSED || event.id == MouseEvent.MOUSE_DRAGGED ||
@@ -214,16 +235,8 @@ internal class LinuxWindowGestures(
                 val click = suppressedClick ?: return false
                 if (event.button != MouseEvent.BUTTON1) return false
                 suppressedClick = null
-                if (click == Click.Caption && event.clickCount == 2 &&
-                    moveable && canDrag && canMaximize
-                ) {
-                    (window as? Frame)?.let { frame ->
-                        frame.extendedState = if (frame.extendedState == Frame.MAXIMIZED_BOTH) {
-                            Frame.NORMAL
-                        } else {
-                            Frame.MAXIMIZED_BOTH
-                        }
-                    }
+                if (click == Click.Caption && event.clickCount == 2) {
+                    toggleMaximizeOrRestore()
                 }
                 return true
             }
@@ -234,6 +247,7 @@ internal class LinuxWindowGestures(
     override fun afterMouseEvent(event: MouseEvent) = resizer.afterMouseEvent(event)
 
     override fun cancel() {
+        cancelTouchTap()
         finishGesture()
         suppressedClick = null
         dispatchingPress = null
@@ -243,6 +257,7 @@ internal class LinuxWindowGestures(
     }
 
     fun resetTouchInput() {
+        cancelTouchTap()
         // XI2 device changes and touch-channel shutdown must not cancel an AWT mouse drag.
         if (gesture?.pointer is Pointer.Touch) finishGesture()
         dispatchingPress = null
@@ -273,11 +288,30 @@ internal class LinuxWindowGestures(
         }
     }
 
-    private fun beginMove(pointer: Pointer, position: Point) {
-        gesture = Gesture.Move(pointer, position)
+    private fun toggleMaximizeOrRestore() {
+        if (!moveable || !canDrag || !canMaximize) return
+        val frame = window as? Frame ?: return
+        frame.extendedState = if (frame.extendedState == Frame.MAXIMIZED_BOTH) {
+            Frame.NORMAL
+        } else {
+            Frame.MAXIMIZED_BOTH
+        }
+    }
+
+    private fun beginMove(
+        pointer: Pointer,
+        position: Point,
+        touchDownTimeMillis: Long? = null
+    ) {
+        gesture = Gesture.Move(
+            pointer = pointer,
+            start = position,
+            touchDownTimeMillis = touchDownTimeMillis
+        )
     }
 
     private fun beginResize(pointer: Pointer, edge: WindowResizeEdge, position: Point) {
+        cancelTouchTap()
         gesture = Gesture.Resize(pointer, position, edge, window.bounds)
         resizer.showEdge(edge)
     }
@@ -288,6 +322,12 @@ internal class LinuxWindowGestures(
                 active.latestPosition = position
                 if (active.restoreOffset != null) return
                 if (active.pending) {
+                    // Small touch jitter remains a tap, including while maximized. Starting the
+                    // native mover earlier would restore the window before a double tap resolves.
+                    if (active.pointer is Pointer.Touch) {
+                        if (withinTouchSlop(active.start, position)) return
+                        cancelTouchTap()
+                    }
                     active.pending = false
                     val frame = window as? Frame
                     if (frame?.extendedState == Frame.MAXIMIZED_BOTH) {
@@ -398,6 +438,41 @@ internal class LinuxWindowGestures(
 
     private fun LinuxTouchEvent.screenPoint() = Point(screenPosition.x, screenPosition.y)
 
+    private fun recognizeTouchTap(active: Gesture.Move, event: LinuxTouchEvent): Boolean {
+        val downTime = active.touchDownTimeMillis
+        if (downTime == null || !active.pending || contacts.size != 1 ||
+            event.timeMillis - downTime !in 0 until viewConfiguration.longPressTimeoutMillis ||
+            !withinTouchSlop(active.start, event.screenPoint())
+        ) {
+            cancelTouchTap()
+            return false
+        }
+        val doubleTap = previousTouchTap?.let { previous ->
+            val interval = downTime - previous.upTimeMillis
+            val withinTimeout = interval in
+                viewConfiguration.doubleTapMinTimeMillis..viewConfiguration.doubleTapTimeoutMillis
+            withinTimeout && withinTouchSlop(previous.position, active.start)
+        } ?: false
+        previousTouchTap = if (doubleTap) null else TouchTap(active.start, event.timeMillis)
+        return doubleTap
+    }
+
+    private fun withinTouchSlop(first: Point, second: Point): Boolean {
+        // AWT screen coordinates are logical units; Compose's touch slop is in physical pixels.
+        val transform = window.graphicsConfiguration.defaultTransform
+        val dx = (second.x - first.x) * transform.scaleX
+        val dy = (second.y - first.y) * transform.scaleY
+        val slop = viewConfiguration.touchSlop
+        return dx * dx + dy * dy <= slop * slop
+    }
+
+    private fun cancelTouchTap() {
+        previousTouchTap = null
+        (gesture as? Gesture.Move)?.touchDownTimeMillis = null
+    }
+
+    private class TouchTap(val position: Point, val upTimeMillis: Long)
+
     private sealed interface Pointer {
         data object Mouse : Pointer
 
@@ -412,7 +487,9 @@ internal class LinuxWindowGestures(
     ) {
         class Move(
             pointer: Pointer,
-            start: Point
+            start: Point,
+            // Retained only while this contact can still become a tap.
+            var touchDownTimeMillis: Long?
         ) : Gesture(pointer, start) {
             var pending = true
             var latestPosition = start

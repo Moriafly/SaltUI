@@ -63,7 +63,8 @@ internal class LinuxTouchInput(
                 (sample.rootX / transform.scaleX).roundToInt(),
                 (sample.rootY / transform.scaleY).roundToInt()
             ),
-            contentPosition = position
+            contentPosition = position,
+            timeMillis = sample.timeMillis
         )
         if (type == PointerEventType.Press) {
             canvas.requestFocusInWindow()
