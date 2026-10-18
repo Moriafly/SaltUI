@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.moriafly.salt.ui.platform.linux
+package com.moriafly.salt.ui.platform.linux.decoration
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -37,6 +37,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.WindowDecoration
 import com.moriafly.salt.ui.UnstableSaltUiApi
+import com.moriafly.salt.ui.platform.linux.x11.X11Ext
 import com.sun.jna.Library
 import com.sun.jna.Memory
 import com.sun.jna.Native

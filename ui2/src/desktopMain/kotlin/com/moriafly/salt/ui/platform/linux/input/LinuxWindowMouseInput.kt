@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.moriafly.salt.ui.platform.linux
+package com.moriafly.salt.ui.platform.linux.input
 
 import androidx.compose.ui.geometry.Offset
 import com.moriafly.salt.ui.UnstableSaltUiApi

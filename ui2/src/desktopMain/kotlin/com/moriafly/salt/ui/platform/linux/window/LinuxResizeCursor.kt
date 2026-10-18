@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.moriafly.salt.ui.platform.linux
+package com.moriafly.salt.ui.platform.linux.window
 
 import com.sun.jna.Library
 import com.sun.jna.Native

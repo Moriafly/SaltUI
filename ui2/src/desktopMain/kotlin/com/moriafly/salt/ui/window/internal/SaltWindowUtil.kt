@@ -32,7 +32,7 @@ import com.moriafly.salt.ui.UnstableSaltUiApi
  * with the unified custom window appearance across all platforms. When
  * [WindowDecoration.SystemDefault] is requested on Linux, a client-drawn shadow
  * decoration is used instead; see
- * [com.moriafly.salt.ui.platform.linux.LinuxClientShadow].
+ * [com.moriafly.salt.ui.platform.linux.decoration.LinuxClientShadow].
  *
  * On other platforms, the original decoration is returned as-is.
  */

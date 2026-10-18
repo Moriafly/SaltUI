@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.moriafly.salt.ui.platform.linux
+package com.moriafly.salt.ui.platform.linux.input
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -26,6 +26,8 @@ import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.onPointerEvent
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
+import com.moriafly.salt.ui.platform.linux.window.LinuxCaptionBarHitTest
+import com.moriafly.salt.ui.platform.linux.window.LocalLinuxCaptionBarHitTest
 
 /**
  * Registers caption geometry and reports Compose touch hits to the window gesture owner.

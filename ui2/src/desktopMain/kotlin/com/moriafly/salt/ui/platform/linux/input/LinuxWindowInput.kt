@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.moriafly.salt.ui.platform.linux
+package com.moriafly.salt.ui.platform.linux.input
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -24,6 +24,8 @@ import androidx.compose.ui.InternalComposeUiApi
 import androidx.compose.ui.platform.LocalViewConfiguration
 import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.moriafly.salt.ui.platform.input.DesktopTouchScene
+import com.moriafly.salt.ui.platform.linux.window.LinuxWindowFocus
+import com.moriafly.salt.ui.platform.linux.x11.LinuxXInputSession
 import com.moriafly.salt.ui.util.findSkiaLayer
 import com.sun.jna.Native
 import java.awt.Component

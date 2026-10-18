@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.moriafly.salt.ui.platform.linux
+package com.moriafly.salt.ui.platform.linux.window
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect

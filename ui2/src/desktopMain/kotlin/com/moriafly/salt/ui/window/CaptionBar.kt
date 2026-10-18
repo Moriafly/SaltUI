@@ -29,7 +29,7 @@ import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.onPointerEvent
 import com.moriafly.salt.core.os.OS
 import com.moriafly.salt.ui.UnstableSaltUiApi
-import com.moriafly.salt.ui.platform.linux.linuxCaptionBarInput
+import com.moriafly.salt.ui.platform.linux.input.linuxCaptionBarInput
 import com.moriafly.salt.ui.platform.windows.windowsCaptionBarTouchInput
 
 /**

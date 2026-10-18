@@ -39,7 +39,7 @@ import com.moriafly.salt.core.os.OS
 import com.moriafly.salt.ui.SaltTheme
 import com.moriafly.salt.ui.Text
 import com.moriafly.salt.ui.UnstableSaltUiApi
-import com.moriafly.salt.ui.platform.linux.LinuxClientShadow
+import com.moriafly.salt.ui.platform.linux.decoration.LinuxClientShadow
 import com.moriafly.salt.ui.platform.windows.BasicWindowProc
 import com.moriafly.salt.ui.platform.windows.ComposeWindowProc
 import com.moriafly.salt.ui.platform.windows.HitTestResult

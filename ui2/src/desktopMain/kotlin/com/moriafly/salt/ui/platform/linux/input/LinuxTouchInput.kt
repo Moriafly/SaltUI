@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.moriafly.salt.ui.platform.linux
+package com.moriafly.salt.ui.platform.linux.input
 
 import androidx.compose.ui.InternalComposeUiApi
 import androidx.compose.ui.geometry.Offset
@@ -24,6 +24,8 @@ import androidx.compose.ui.input.pointer.PointerKeyboardModifiers
 import androidx.compose.ui.unit.IntOffset
 import com.moriafly.salt.ui.platform.input.DesktopTouchScene
 import com.moriafly.salt.ui.platform.input.TouchPointerState
+import com.moriafly.salt.ui.platform.linux.window.LinuxWindowFocus
+import com.moriafly.salt.ui.platform.linux.x11.LinuxXInputSession
 import java.awt.Component
 import java.awt.Dialog
 import java.awt.Window

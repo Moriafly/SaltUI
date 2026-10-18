@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package com.moriafly.salt.ui.platform.linux
+package com.moriafly.salt.ui.platform.linux.window
 
 import com.moriafly.salt.ui.UnstableSaltUiApi
 import java.awt.Cursor
