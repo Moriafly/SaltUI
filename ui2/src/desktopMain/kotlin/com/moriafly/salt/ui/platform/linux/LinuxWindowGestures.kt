@@ -25,6 +25,7 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.input.pointer.PointerEventType
 import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.moriafly.salt.ui.window.WindowResizeEdge
+import java.awt.EventQueue
 import java.awt.Frame
 import java.awt.Point
 import java.awt.Rectangle
@@ -145,7 +146,7 @@ internal class LinuxWindowGestures(
                 if (gesture?.pointer == Pointer.Touch(event.id)) {
                     when (event.type) {
                         PointerEventType.Move -> updateGesture(event.screenPoint())
-                        PointerEventType.Release -> finishGesture()
+                        PointerEventType.Release -> finishGesture(applyPendingResize = true)
                     }
                 }
                 return
@@ -227,7 +228,7 @@ internal class LinuxWindowGestures(
                 val active = gesture ?: return false
                 if (event.button == MouseEvent.BUTTON1) {
                     suppressedClick = if (active is Gesture.Move) Click.Caption else Click.Resize
-                    finishGesture()
+                    finishGesture(applyPendingResize = true)
                     resizer.showEdge(edge)
                 }
                 return true
@@ -305,7 +306,7 @@ internal class LinuxWindowGestures(
                 fallbackMover.updateDrag(position)
             }
 
-            is Gesture.Resize -> resize(active, position)
+            is Gesture.Resize -> scheduleResize(active, position)
             null -> Unit
         }
     }
@@ -328,6 +329,18 @@ internal class LinuxWindowGestures(
         // Position only after native restore; moving earlier overwrites the WM's saved geometry.
         window.setLocation(active.latestPosition.x - offset.x, active.latestPosition.y - offset.y)
         startMover(active.latestPosition, active.pointer)
+    }
+
+    private fun scheduleResize(active: Gesture.Resize, position: Point) {
+        val alreadyQueued = active.pendingPosition != null
+        active.pendingPosition = position
+        if (alreadyQueued) return
+        EventQueue.invokeLater {
+            val latest = active.pendingPosition ?: return@invokeLater
+            active.pendingPosition = null
+            // A queued update must not outlive its gesture or affect the next pointer's drag.
+            if (gesture === active) resize(active, latest)
+        }
     }
 
     private fun resize(active: Gesture.Resize, position: Point) {
@@ -364,7 +377,22 @@ internal class LinuxWindowGestures(
         window.setSize(width, height)
     }
 
-    private fun finishGesture() {
+    /**
+     * Ends the current window gesture and clears the drag state and resize-edge indicator.
+     *
+     * @param applyPendingResize Pass `true` on mouse or touch release to apply the last pending
+     * resize before ending the gesture. Leave `false` on cancellation to discard the pending
+     * update and prevent further window size changes from that gesture.
+     */
+    private fun finishGesture(
+        applyPendingResize: Boolean = false
+    ) {
+        val active = gesture
+        if (active is Gesture.Resize) {
+            val latest = active.pendingPosition
+            active.pendingPosition = null
+            if (applyPendingResize && latest != null) resize(active, latest)
+        }
         gesture = null
         fallbackMover.endDrag()
         resizer.showEdge(WindowResizeEdge.None)
@@ -398,7 +426,9 @@ internal class LinuxWindowGestures(
             start: Point,
             val edge: WindowResizeEdge,
             val bounds: Rectangle
-        ) : Gesture(pointer, start)
+        ) : Gesture(pointer, start) {
+            var pendingPosition: Point? = null
+        }
     }
 
     private enum class Click { Caption, Resize }

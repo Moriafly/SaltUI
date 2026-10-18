@@ -156,6 +156,7 @@ internal object LinuxResizeCursor {
         check(trySetAccessible()) { "AWT cursor access requires java.desktop module opens" }
     }
 
+    @Suppress("ktlint:standard:function-naming", "FunctionName")
     private interface Xlib : Library {
         fun XOpenDisplay(name: String?): Pointer?
 
@@ -164,6 +165,7 @@ internal object LinuxResizeCursor {
         fun XFreeCursor(display: Pointer, cursor: NativeLong): Int
     }
 
+    @Suppress("ktlint:standard:function-naming", "FunctionName")
     private interface Xcursor : Library {
         fun XcursorGetTheme(display: Pointer): Pointer?
 
