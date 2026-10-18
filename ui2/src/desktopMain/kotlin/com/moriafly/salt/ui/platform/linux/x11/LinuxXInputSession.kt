@@ -285,15 +285,7 @@ internal class LinuxXInputSession(
             fd.setShort(4, 1) // POLLIN
             while (!stopRequested) {
                 if (x11.XPending(display) == 0) {
-                    // Bounded stop latency, with no EDT join that could deadlock touch acceptance.
-                    val result = LinuxTouchPoll.instance.poll(fd, NativeLong(1), 100)
-                    if (result < 0) {
-                        if (Native.getLastError() == 4) continue // EINTR
-                        error("XI2 connection polling failed")
-                    }
-                    if (result > 0 && fd.getShort(6).toInt() and 0x38 != 0) {
-                        error("XI2 connection closed while polling")
-                    }
+                    pollEvents(fd)
                     continue
                 }
                 x11.XNextEvent(display, event)
@@ -361,6 +353,20 @@ internal class LinuxXInputSession(
                     x11.XFreeEventData(display, cookie)
                 }
             }
+        }
+    }
+
+    private fun pollEvents(
+        fd: Memory
+    ) {
+        // Bounded stop latency, with no EDT join that could deadlock touch acceptance.
+        val result = LinuxTouchPoll.instance.poll(fd, NativeLong(1), 100)
+        if (result < 0) {
+            if (Native.getLastError() == 4) return // EINTR
+            error("XI2 connection polling failed")
+        }
+        if (result > 0 && fd.getShort(6).toInt() and 0x38 != 0) {
+            error("XI2 connection closed while polling")
         }
     }
 
