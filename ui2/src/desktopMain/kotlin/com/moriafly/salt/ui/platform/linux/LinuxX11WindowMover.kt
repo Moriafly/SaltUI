@@ -23,8 +23,8 @@ import com.sun.jna.NativeLong
 import com.sun.jna.platform.unix.X11
 import com.sun.jna.ptr.IntByReference
 import com.sun.jna.ptr.PointerByReference
+import java.awt.Point
 import java.awt.Window
-import java.awt.event.MouseEvent
 
 /**
  * Native X11 window mover using `_NET_WM_MOVERESIZE` protocol.
@@ -37,12 +37,17 @@ internal object LinuxX11WindowMover {
     private const val NET_WM_MOVERESIZE_MOVE = 8L
 
     /**
-     * Try to initiate a native X11 window move.
+     * Try to initiate a native X11 window move from mouse or touch input.
+     * [screenPosition] uses AWT screen coordinates; [button] is zero for touch.
      *
      * @return `true` if the native move was successfully initiated, `false` otherwise
      * (e.g., on Wayland or if X11 calls fail).
      */
-    fun tryMove(window: Window, startEvent: MouseEvent): Boolean {
+    fun tryMove(
+        window: Window,
+        screenPosition: Point,
+        button: Int
+    ): Boolean {
         if (!window.isDisplayable) return false
 
         val x11: X11Ext
@@ -85,13 +90,16 @@ internal object LinuxX11WindowMover {
 
             // Anchor the operation at the initiating event. The pointer may already have moved
             // while AWT queued the event or JNA loaded X11, especially on the first drag.
-            val position = LinuxWindowMouseInput.positionInWindow(startEvent, window)
+            val transform = window.graphicsConfiguration.defaultTransform
+            val windowXPosition = ((screenPosition.x - window.x) * transform.scaleX).toInt()
+            val windowYPosition = ((screenPosition.y - window.y) * transform.scaleY).toInt()
             val event = buildMoveResizeEvent(
                 display = display,
                 xWindow = xWindow,
                 atom = netWmMoveresize,
-                mouseX = rootX.value - windowX.value + position.x.toInt(),
-                mouseY = rootY.value - windowY.value + position.y.toInt()
+                mouseX = rootX.value - windowX.value + windowXPosition,
+                mouseY = rootY.value - windowY.value + windowYPosition,
+                button = button
             )
 
             // Release AWT exclusive mouse lock to allow window manager takeover
@@ -135,7 +143,8 @@ internal object LinuxX11WindowMover {
         xWindow: X11.Window,
         atom: X11.Atom,
         mouseX: Int,
-        mouseY: Int
+        mouseY: Int,
+        button: Int
     ): X11.XEvent {
         val event = X11.XEvent()
         event.type = X11.ClientMessage
@@ -157,8 +166,8 @@ internal object LinuxX11WindowMover {
         clientMsg.data.l[1] = NativeLong(mouseY.toLong())
         // Direction
         clientMsg.data.l[2] = NativeLong(NET_WM_MOVERESIZE_MOVE)
-        // Button (Left click)
-        clientMsg.data.l[3] = NativeLong(1)
+        // Touch has no pressed mouse button; let the window manager track its native sequence.
+        clientMsg.data.l[3] = NativeLong(button.toLong())
         // Source indication (Normal application)
         clientMsg.data.l[4] = NativeLong(1)
 

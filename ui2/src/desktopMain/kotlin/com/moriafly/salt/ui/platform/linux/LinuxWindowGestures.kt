@@ -213,13 +213,13 @@ internal class LinuxWindowGestures(
                 ) {
                     return false
                 }
-                beginMove(Pointer.Mouse, event.locationOnScreen, event)
+                beginMove(Pointer.Mouse, event.locationOnScreen)
                 return true
             }
 
             MouseEvent.MOUSE_DRAGGED -> {
                 if (gesture?.pointer != Pointer.Mouse) return false
-                updateGesture(event.locationOnScreen, event)
+                updateGesture(event.locationOnScreen)
                 return true
             }
 
@@ -274,8 +274,8 @@ internal class LinuxWindowGestures(
         capturedTouches = false
     }
 
-    private fun beginMove(pointer: Pointer, position: Point, event: MouseEvent? = null) {
-        gesture = Gesture.Move(pointer, position, event)
+    private fun beginMove(pointer: Pointer, position: Point) {
+        gesture = Gesture.Move(pointer, position)
     }
 
     private fun beginResize(pointer: Pointer, edge: WindowResizeEdge, position: Point) {
@@ -283,11 +283,10 @@ internal class LinuxWindowGestures(
         resizer.showEdge(edge)
     }
 
-    private fun updateGesture(position: Point, event: MouseEvent? = null) {
+    private fun updateGesture(position: Point) {
         when (val active = gesture) {
             is Gesture.Move -> {
                 active.latestPosition = position
-                active.latestMouseEvent = event
                 if (active.restoreOffset != null) return
                 if (active.pending) {
                     active.pending = false
@@ -301,7 +300,7 @@ internal class LinuxWindowGestures(
                         frame.extendedState = Frame.NORMAL
                         return
                     }
-                    startMover(active.start, active.startMouseEvent)
+                    startMover(active.start, active.pointer)
                 }
                 fallbackMover.updateDrag(position)
             }
@@ -311,9 +310,10 @@ internal class LinuxWindowGestures(
         }
     }
 
-    private fun startMover(position: Point, event: MouseEvent?) {
-        if (event != null && useNativeDrag) {
-            if (LinuxX11WindowMover.tryMove(window, event)) return
+    private fun startMover(position: Point, pointer: Pointer) {
+        if (useNativeDrag) {
+            val button = if (pointer == Pointer.Mouse) MouseEvent.BUTTON1 else MouseEvent.NOBUTTON
+            if (LinuxX11WindowMover.tryMove(window, position, button)) return
             useNativeDrag = false
         }
         fallbackMover.startDrag(position)
@@ -327,7 +327,7 @@ internal class LinuxWindowGestures(
         active.restoreOffset = null
         // Position only after native restore; moving earlier overwrites the WM's saved geometry.
         window.setLocation(active.latestPosition.x - offset.x, active.latestPosition.y - offset.y)
-        startMover(active.latestPosition, active.latestMouseEvent)
+        startMover(active.latestPosition, active.pointer)
     }
 
     private fun resize(active: Gesture.Resize, position: Point) {
@@ -386,12 +386,10 @@ internal class LinuxWindowGestures(
     ) {
         class Move(
             pointer: Pointer,
-            start: Point,
-            val startMouseEvent: MouseEvent?
+            start: Point
         ) : Gesture(pointer, start) {
             var pending = true
             var latestPosition = start
-            var latestMouseEvent = startMouseEvent
             var restoreOffset: Point? = null
         }
 
