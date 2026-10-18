@@ -77,6 +77,7 @@ internal fun LinuxWindowInputEffect(
 internal class LinuxWindowInput private constructor(
     private val window: Window,
     private val canvas: Component,
+    private val gestures: LinuxWindowGestures,
     private val target: DesktopTouchScene?,
     private val touch: LinuxTouchInput?,
     private val mouse: LinuxMouseInput
@@ -163,6 +164,7 @@ internal class LinuxWindowInput private constructor(
     }
 
     private fun cancelInput() {
+        gestures.cancel()
         cancelTouch()
         mouse.cancel()
         // Window lifetime cancels every Compose pointer source, including AWT compatibility input.
@@ -243,6 +245,7 @@ internal class LinuxWindowInput private constructor(
             return LinuxWindowInput(
                 window = window,
                 canvas = canvas,
+                gestures = gestures,
                 target = target,
                 touch = touch,
                 mouse = LinuxMouseInput(window, canvas)
