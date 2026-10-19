@@ -59,7 +59,7 @@ internal class LinuxCaptionBarHitTest {
         }
         val owners = when (window) {
             is ComposeWindow -> window.semanticsOwners
-            is ComposeDialog -> window.semanticsOwners
+            is ComposeDialog -> window.semanticsOwners.drop(1)
             else -> return Result.RequiresComposeHitTest
         }
         // Keep normal Compose hit testing for custom controls layered above CaptionBarHitTest.
