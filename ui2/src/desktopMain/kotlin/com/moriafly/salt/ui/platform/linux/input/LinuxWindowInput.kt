@@ -30,7 +30,6 @@ import com.moriafly.salt.ui.platform.linux.x11.LinuxXInputSession
 import com.moriafly.salt.ui.util.findSkiaLayer
 import com.sun.jna.Native
 import java.awt.Component
-import java.awt.Toolkit
 import java.awt.Window
 import java.awt.event.HierarchyEvent
 import java.awt.event.HierarchyListener
@@ -279,8 +278,6 @@ internal class LinuxWindowInput private constructor(
             gestures: LinuxWindowGestures,
             focus: LinuxWindowFocus?
         ): LinuxWindowInput? {
-            // XIDs and libXi do not apply to JBR's native Wayland toolkit.
-            if (Toolkit.getDefaultToolkit().javaClass.name != "sun.awt.X11.XToolkit") return null
             val canvas = window.findSkiaLayer()?.canvas ?: return null
             val target = DesktopTouchScene.create(window)
             val touch = target?.let {
