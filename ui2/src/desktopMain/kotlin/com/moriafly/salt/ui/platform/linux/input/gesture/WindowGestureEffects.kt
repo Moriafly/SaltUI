@@ -37,7 +37,8 @@ internal interface WindowGestureEffects {
 
         fun prepareTouchMove(
             id: Long,
-            position: Position
+            start: Position,
+            current: Position
         ): Boolean
 
         fun commitTouchMove(

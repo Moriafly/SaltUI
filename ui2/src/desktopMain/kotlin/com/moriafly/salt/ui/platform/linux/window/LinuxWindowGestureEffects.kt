@@ -26,12 +26,10 @@ import com.moriafly.salt.ui.window.WindowResizeEdge
 import java.awt.Frame
 import java.awt.Point
 import java.awt.Window
-import java.awt.event.ComponentAdapter
-import java.awt.event.ComponentEvent
 
 /**
- * Executes gesture commands through the WM and AWT. Native restore notifications and queued resize
- * work stay here; neither can change contact ownership or interpret another pointer's input.
+ * Executes gesture commands through native or fallback window operations. Each operation owns its
+ * geometry and queued work; neither can change contact ownership or interpret another pointer's input.
  */
 @OptIn(UnstableSaltUiApi::class)
 internal class LinuxWindowGestureEffects(
@@ -84,52 +82,38 @@ internal class LinuxWindowGestureEffects(
     ) : WindowGestureEffects.Mover {
         private val fallback = LinuxFallbackWindowMover(window)
         private var useNativeMouseDrag = true
-        private var restoreWidth = window.width
-        private var drag: Drag? = null
+        private var nativeDrag: NativeDrag? = null
 
         override val isNativeMouseMove: Boolean
             get() {
-                val active = drag ?: return false
-                return active.pointer == Pointer.Mouse && active.nativeMove?.started == true
+                val active = nativeDrag ?: return false
+                return active.pointer == Pointer.Mouse && active.move.started
             }
 
         override fun prepareTouchMove(
             id: Long,
-            position: Position
+            start: Position,
+            current: Position
         ): Boolean {
             finish()
-            val move = LinuxX11WindowMover.prepare(
-                window = window,
-                screenPosition = Point(position.x, position.y),
-                fromTouch = true
-            ) ?: return false
-            drag = Drag(
-                Pointer.Touch(id),
-                position,
-                nativeMove = move
-            )
+            nativeDrag = prepareNativeMove(Pointer.Touch(id), start, current) ?: return false
             return true
         }
 
         override fun commitTouchMove(
             id: Long
         ): Boolean {
-            val active = drag ?: return false
+            val active = nativeDrag ?: return false
             if (active.pointer != Pointer.Touch(id)) return false
-            if (active.nativeMove?.start() == true) return true
+            if (active.move.start()) return true
             finish()
             return false
         }
 
         override fun install(): () -> Unit {
-            val listener = object : ComponentAdapter() {
-                override fun componentResized(
-                    event: ComponentEvent
-                ) = onWindowResized()
-            }
-            window.addComponentListener(listener)
+            val uninstallFallback = fallback.install()
             return {
-                window.removeComponentListener(listener)
+                uninstallFallback()
                 finish()
             }
         }
@@ -140,35 +124,24 @@ internal class LinuxWindowGestureEffects(
             current: Position
         ) {
             finish()
-            val active = Drag(pointer, current)
-            drag = active
-            val frame = window as? Frame
-            if (frame?.extendedState == Frame.MAXIMIZED_BOTH) {
-                val localX = start.x - window.x
-                active.restoreOffset = Position(
-                    (restoreWidth * localX.toFloat() / window.width).toInt(),
-                    start.y - window.y
-                )
-                frame.extendedState = Frame.NORMAL
-            } else {
-                startMover(start, pointer)
-                fallback.updateDrag(Point(current.x, current.y))
+            if (pointer == Pointer.Mouse && useNativeMouseDrag) {
+                nativeDrag = prepareNativeMove(pointer, start, current)
+                if (nativeDrag?.move?.start() == true) return
+                finish()
+                useNativeMouseDrag = false
             }
+            fallback.startDrag(Point(start.x, start.y), Point(current.x, current.y))
         }
 
         override fun update(
             position: Position
-        ) {
-            val active = drag ?: return
-            active.latestPosition = position
-            if (active.restoreOffset == null) fallback.updateDrag(Point(position.x, position.y))
-        }
+        ) = fallback.updateDrag(Point(position.x, position.y))
 
         override fun finish() {
-            val active = drag
-            drag = null
+            val active = nativeDrag
+            nativeDrag = null
             try {
-                active?.nativeMove?.close()
+                active?.move?.close()
             } finally {
                 fallback.endDrag()
             }
@@ -183,43 +156,23 @@ internal class LinuxWindowGestureEffects(
             }
         }
 
-        private fun startMover(
-            position: Position,
-            pointer: Pointer
-        ) {
-            val point = Point(position.x, position.y)
-            // Native touch movement is handed off by the XI2 session before ownership is accepted.
-            if (pointer == Pointer.Mouse && useNativeMouseDrag) {
-                val move = LinuxX11WindowMover.prepare(window, point)
-                if (move?.start() == true) {
-                    checkNotNull(drag).nativeMove = move
-                    return
-                }
-                move?.close()
-                useNativeMouseDrag = false
-            }
-            fallback.startDrag(point)
+        private fun prepareNativeMove(
+            pointer: Pointer,
+            start: Position,
+            current: Position
+        ): NativeDrag? {
+            val move = LinuxX11WindowMover.prepare(
+                window = window,
+                start = Point(start.x, start.y),
+                current = Point(current.x, current.y),
+                fromTouch = pointer is Pointer.Touch
+            ) ?: return null
+            return NativeDrag(pointer, move)
         }
 
-        private fun onWindowResized() {
-            if ((window as? Frame)?.extendedState == Frame.MAXIMIZED_BOTH) return
-            restoreWidth = window.width
-            val active = drag ?: return
-            val offset = active.restoreOffset ?: return
-            active.restoreOffset = null
-            // Moving before native restore would overwrite the WM's saved geometry.
-            window.setLocation(
-                active.latestPosition.x - offset.x,
-                active.latestPosition.y - offset.y
-            )
-            startMover(active.latestPosition, active.pointer)
-        }
-
-        private class Drag(
+        private class NativeDrag(
             val pointer: Pointer,
-            var latestPosition: Position,
-            var restoreOffset: Position? = null,
-            var nativeMove: LinuxX11WindowMover.Move? = null
+            val move: LinuxX11WindowMover.Move
         )
     }
 }

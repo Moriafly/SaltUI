@@ -264,7 +264,11 @@ internal class LinuxWindowGestures(
         touch: TouchDispatch?
     ): TouchResult {
         if (touch?.canMoveNatively == true &&
-            effects.mover.prepareTouchMove(touch.event.id, command.current)
+            effects.mover.prepareTouchMove(
+                id = touch.event.id,
+                start = command.start,
+                current = command.current
+            )
         ) {
             return TouchResult.PreparedNativeMove
         }

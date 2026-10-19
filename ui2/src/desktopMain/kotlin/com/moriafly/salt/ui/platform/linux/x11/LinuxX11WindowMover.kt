@@ -25,6 +25,7 @@ import com.sun.jna.platform.unix.X11
 import com.sun.jna.ptr.IntByReference
 import com.sun.jna.ptr.NativeLongByReference
 import com.sun.jna.ptr.PointerByReference
+import java.awt.Frame
 import java.awt.Point
 import java.awt.Window
 import java.awt.event.MouseEvent
@@ -133,7 +134,8 @@ internal object LinuxX11WindowMover {
      */
     fun prepare(
         window: Window,
-        screenPosition: Point,
+        start: Point,
+        current: Point,
         fromTouch: Boolean = false
     ): Move? {
         if (!window.isDisplayable || !LinuxAwtInput.isAvailable) return null
@@ -150,11 +152,15 @@ internal object LinuxX11WindowMover {
             if (handle == 0L) return null
             val target = X11.Window(handle)
             val root = queryRootWindow(x11, display, target) ?: return null
+            // The WM restores from the original caption press. For an ordinary touch move,
+            // rebase at handoff so motion consumed by touch slop does not jump the window.
+            val maximized = (window as? Frame)?.extendedState == Frame.MAXIMIZED_BOTH
+            val anchor = if (fromTouch && !maximized) current else start
             val position = rootPosition(
                 display = display,
                 target = target,
                 window = window,
-                screenPosition = screenPosition,
+                screenPosition = anchor,
                 fromTouch = fromTouch
             ) ?: return null
             val atom = x11.XInternAtom(display, "_NET_WM_MOVERESIZE", false)
