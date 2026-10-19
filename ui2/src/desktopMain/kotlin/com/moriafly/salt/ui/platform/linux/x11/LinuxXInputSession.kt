@@ -36,6 +36,7 @@ import kotlin.concurrent.thread
 @OptIn(UnstableSaltUiApi::class)
 internal class LinuxXInputSession(
     private val handle: Long,
+    private val windowHandle: Long,
     private val requestTouch: Boolean,
     private val listener: Listener
 ) {
@@ -45,8 +46,15 @@ internal class LinuxXInputSession(
         )
 
         fun onTouch(
-            event: Touch
-        ): Boolean
+            event: Touch,
+            canMoveNatively: Boolean
+        ): TouchAction
+
+        fun onTouchMove(
+            id: Long
+        )
+
+        fun onMouseMoveEnd()
 
         fun onHover(
             event: Hover
@@ -63,6 +71,13 @@ internal class LinuxXInputSession(
     )
 
     enum class TouchPhase { Down, Move, Up }
+
+    enum class TouchAction { Accept, Reject, Pending, Move }
+
+    // Only regular XI2 caption contacts remain undecided. Passive-grab contacts are
+    // accepted immediately, so closing the session cannot replay them as AWT clicks.
+    private val pendingTouches = mutableMapOf<Long, Long>()
+    private var handedOffTouch: Touch? = null
 
     enum class HoverPhase { Move, Enter, Exit }
 
@@ -149,6 +164,7 @@ internal class LinuxXInputSession(
         val x11 = LinuxTouchX11.instance
         val xi = LinuxXInput2.instance
         val display = x11.XOpenDisplay(null) ?: return
+        var awtTouch: AutoCloseable? = null
         try {
             val opcode = IntByReference()
             if (!x11.XQueryExtension(
@@ -165,24 +181,21 @@ internal class LinuxXInputSession(
             val minor = IntByReference(2)
             if (xi.XIQueryVersion(display, major, minor) != 0 || major.value < 2) return
             val xid = X11.Window(handle)
-            // Both channels need an up-to-date device inventory. Neither depends on the other
-            // channel's registration succeeding; XI 2.0 can still supply hover without touch.
-            if (xi.XISelectEvents(
+            val supportsTouchVersion = major.value > 2 || minor.value >= 2
+            if (!selectRootEvents(display, supportsTouchVersion)) return
+            val supportsTouch = requestTouch && supportsTouchVersion
+            if (supportsTouch && LinuxX11WindowMover.supportsTouchMove(
                     display,
-                    x11.XDefaultRootWindow(display),
-                    LinuxXInput2.EventMask(
-                        LinuxXInput2.ALL_DEVICES,
-                        LinuxXInput2.DEVICE_CHANGED,
-                        LinuxXInput2.HIERARCHY_CHANGED
-                    ),
-                    1
-                ) != 0
+                    X11.Window(windowHandle)
+                )
             ) {
-                return
+                awtTouch = LinuxAwtInput.suspendTouch(handle)
             }
-            val supportsTouch = major.value > 2 || minor.value >= 2
-            val touch = requestTouch && supportsTouch && grabTouches(display, xid)
-            val hover = selectHover(display, xid)
+            // Qt rejects a regular touch selection. A passive grab would replay into an
+            // AWT core grab instead, preventing the WM from receiving subsequent motion.
+            val regularTouch = awtTouch != null
+            val hover = selectWindowEvents(display, xid, regularTouch)
+            val touch = if (regularTouch) hover else supportsTouch && grabTouches(display, xid)
             if (!touch && !hover) return
             x11.XFlush(display)
             val directDevices = queryDirectDevices(display)
@@ -197,11 +210,13 @@ internal class LinuxXInputSession(
                 xid = xid,
                 opcode = opcode.value,
                 capabilities = Capabilities(touch, hover),
-                initialDirectDevices = directDevices
+                initialDirectDevices = directDevices,
+                canMoveTouch = regularTouch
             )
         } finally {
             // This removes every registration and grab, including partial initialization.
             x11.XCloseDisplay(display)
+            awtTouch?.close()
         }
     }
 
@@ -235,21 +250,48 @@ internal class LinuxXInputSession(
         false
     }
 
-    private fun selectHover(
+    private fun selectRootEvents(
         display: X11.Display,
-        xid: X11.Window
-    ): Boolean =
-        LinuxXInput2.instance.XISelectEvents(
+        touch: Boolean
+    ): Boolean {
+        val events = mutableListOf(
+            LinuxXInput2.DEVICE_CHANGED,
+            LinuxXInput2.HIERARCHY_CHANGED,
+            LinuxXInput2.RAW_BUTTON_RELEASE
+        )
+        if (touch) events += LinuxXInput2.RAW_TOUCH_END
+        return LinuxXInput2.instance.XISelectEvents(
+            display = display,
+            window = LinuxTouchX11.instance.XDefaultRootWindow(display),
+            masks = LinuxXInput2.EventMask(LinuxXInput2.ALL_DEVICES, *events.toIntArray()),
+            count = 1
+        ) == 0
+    }
+
+    private fun selectWindowEvents(
+        display: X11.Display,
+        xid: X11.Window,
+        touch: Boolean
+    ): Boolean {
+        val events = mutableListOf(
+            LinuxXInput2.MOTION,
+            LinuxXInput2.ENTER,
+            LinuxXInput2.LEAVE
+        )
+        if (touch) {
+            events += listOf(
+                LinuxXInput2.TOUCH_BEGIN,
+                LinuxXInput2.TOUCH_UPDATE,
+                LinuxXInput2.TOUCH_END
+            )
+        }
+        return LinuxXInput2.instance.XISelectEvents(
             display,
             xid,
-            LinuxXInput2.EventMask(
-                LinuxXInput2.ALL_MASTER_DEVICES,
-                LinuxXInput2.MOTION,
-                LinuxXInput2.ENTER,
-                LinuxXInput2.LEAVE
-            ),
+            LinuxXInput2.EventMask(LinuxXInput2.ALL_MASTER_DEVICES, *events.toIntArray()),
             1
         ) == 0
+    }
 
     private fun queryDirectDevices(
         display: X11.Display
@@ -274,7 +316,8 @@ internal class LinuxXInputSession(
         xid: X11.Window,
         opcode: Int,
         capabilities: Capabilities,
-        initialDirectDevices: Set<Int>
+        initialDirectDevices: Set<Int>,
+        canMoveTouch: Boolean
     ) {
         val x11 = LinuxTouchX11.instance
         val event = X11.XEvent()
@@ -284,6 +327,7 @@ internal class LinuxXInputSession(
             fd.setInt(0, x11.XConnectionNumber(display))
             fd.setShort(4, 1) // POLLIN
             while (!stopRequested) {
+                pendingTouches.entries.removeAll { it.value != touchEpoch }
                 if (x11.XPending(display) == 0) {
                     pollEvents(fd)
                     continue
@@ -302,6 +346,15 @@ internal class LinuxXInputSession(
                             }
                         }
 
+                        LinuxXInput2.RAW_BUTTON_RELEASE -> {
+                            val raw = LinuxXInput2.RawEvent(requireNotNull(cookie.data))
+                            if (raw.detail == 1) dispatch { listener.onMouseMoveEnd() }
+                        }
+
+                        LinuxXInput2.RAW_TOUCH_END -> onRawTouchEnd(
+                            LinuxXInput2.RawEvent(requireNotNull(cookie.data))
+                        )
+
                         LinuxXInput2.TOUCH_BEGIN,
                         LinuxXInput2.TOUCH_UPDATE,
                         LinuxXInput2.TOUCH_END -> if (capabilities.touch) {
@@ -310,7 +363,8 @@ internal class LinuxXInputSession(
                                 display = display,
                                 xid = xid,
                                 native = native,
-                                directTouch = native.source in directDevices
+                                directTouch = native.source in directDevices,
+                                canMoveTouch = canMoveTouch
                             )
                         }
 
@@ -370,56 +424,135 @@ internal class LinuxXInputSession(
         }
     }
 
+    private fun onRawTouchEnd(
+        raw: LinuxXInput2.RawEvent
+    ) {
+        val id = (raw.source.toLong() shl 32) or (raw.detail.toLong() and 0xffffffffL)
+        val active = handedOffTouch ?: return
+        if (active.id != id) return
+        handedOffTouch = null
+        dispatch { listener.onTouch(active.copy(phase = TouchPhase.Up), canMoveNatively = false) }
+    }
+
     private fun onTouch(
         display: X11.Display,
         xid: X11.Window,
         native: LinuxXInput2.DeviceEvent,
-        directTouch: Boolean
+        directTouch: Boolean,
+        canMoveTouch: Boolean
     ) {
         val epoch = touchEpoch
-        val sample = Touch(
-            id = (native.source.toLong() shl 32) or (native.detail.toLong() and 0xffffffffL),
-            phase = when (native.eventType) {
-                LinuxXInput2.TOUCH_BEGIN -> TouchPhase.Down
-                LinuxXInput2.TOUCH_END -> TouchPhase.Up
-                else -> TouchPhase.Move
-            },
-            x = native.eventX,
-            y = native.eventY,
-            rootX = native.rootX,
-            rootY = native.rootY,
-            modifiers = native.modifiers.effective,
-            timeMillis = System.nanoTime() / 1_000_000,
-            x11Timestamp = native.time.toLong() and 0xffffffffL,
-            directTouch = directTouch
+        val sample = touchSample(native, directTouch)
+        // RejectTouch produces a synthetic end; retain capture until the physical raw end.
+        if (sample.phase == TouchPhase.Up && handedOffTouch?.id == sample.id) return
+        val pending = sample.id in pendingTouches
+        if (sample.phase != TouchPhase.Down && !pending) {
+            dispatch { if (epoch == touchEpoch) listener.onTouch(sample, canMoveNatively = false) }
+            return
+        }
+        val canHandoff = canMoveTouch && directTouch && sample.phase != TouchPhase.Up &&
+            native.flags and LinuxXInput2.TOUCH_EMULATING_POINTER != 0 &&
+            native.flags and LinuxXInput2.TOUCH_PENDING_END == 0
+        val action = decideTouch(
+            sample,
+            canHandoff,
+            epoch,
+            pending
         )
-        if (sample.phase == TouchPhase.Down) {
-            var accept = false
-            dispatchAndWait {
-                if (!stopRequested) {
-                    // A stale direct-touch press is still claimed, so cancellation cannot
-                    // promote it into an AWT click. It must not reach Compose or request focus.
-                    accept = if (epoch == touchEpoch) {
-                        listener.onTouch(sample)
-                    } else {
-                        sample.directTouch
-                    }
-                }
-            }
-            LinuxXInput2.instance.XIAllowTouchEvents(
+        if (action == TouchAction.Pending && canHandoff) {
+            pendingTouches[sample.id] = epoch
+            return
+        }
+        pendingTouches.remove(sample.id)
+        if (!canMoveTouch || action == TouchAction.Move || action == TouchAction.Reject) {
+            allowTouch(
                 display,
-                native.device,
-                native.detail,
                 xid,
-                if (accept) LinuxXInput2.ACCEPT_TOUCH else LinuxXInput2.REJECT_TOUCH
+                native,
+                action
             )
-            LinuxTouchX11.instance.XFlush(display)
+        }
+        if (action == TouchAction.Move) {
+            handoffTouch(
+                display,
+                sample,
+                epoch
+            )
         } else {
-            dispatch {
-                if (epoch == touchEpoch) listener.onTouch(sample)
-            }
+            LinuxTouchX11.instance.XFlush(display)
         }
     }
+
+    private fun decideTouch(
+        sample: Touch,
+        canHandoff: Boolean,
+        epoch: Long,
+        pending: Boolean
+    ): TouchAction {
+        var action = TouchAction.Accept
+        dispatchAndWait {
+            if (!stopRequested && epoch == touchEpoch) action = listener.onTouch(sample, canHandoff)
+        }
+        // A cancelled pending contact must not replay as an AWT click. Rejecting a new press
+        // is different: it lets AWT modality handle the contact.
+        return if (stopRequested || epoch != touchEpoch ||
+            (pending && action == TouchAction.Reject)
+        ) {
+            TouchAction.Accept
+        } else {
+            action
+        }
+    }
+
+    private fun allowTouch(
+        display: X11.Display,
+        xid: X11.Window,
+        native: LinuxXInput2.DeviceEvent,
+        action: TouchAction
+    ) {
+        val reject = action == TouchAction.Reject || action == TouchAction.Move
+        LinuxXInput2.instance.XIAllowTouchEvents(
+            display,
+            native.device,
+            native.detail,
+            xid,
+            if (reject) LinuxXInput2.REJECT_TOUCH else LinuxXInput2.ACCEPT_TOUCH
+        )
+    }
+
+    private fun handoffTouch(
+        display: X11.Display,
+        sample: Touch,
+        epoch: Long
+    ) {
+        handedOffTouch = sample
+        X11Ext.INSTANCE.XUngrabPointer(display, NativeLong(0))
+        // Complete rejection before the prepared WM request starts on its own connection.
+        LinuxTouchX11.instance.XSync(display, false)
+        dispatchAndWait {
+            if (!stopRequested && epoch == touchEpoch) listener.onTouchMove(sample.id)
+        }
+    }
+
+    private fun touchSample(
+        native: LinuxXInput2.DeviceEvent,
+        directTouch: Boolean
+    ) = Touch(
+        id = (native.source.toLong() shl 32) or (native.detail.toLong() and 0xffffffffL),
+        phase = when (native.eventType) {
+            LinuxXInput2.TOUCH_BEGIN -> TouchPhase.Down
+            LinuxXInput2.TOUCH_END -> TouchPhase.Up
+            else -> TouchPhase.Move
+        },
+        x = native.eventX,
+        y = native.eventY,
+        rootX = native.rootX,
+        rootY = native.rootY,
+        modifiers = native.modifiers.effective,
+        timeMillis = System.nanoTime() / 1_000_000,
+        x11Timestamp = native.time.toLong() and 0xffffffffL,
+        directTouch = directTouch
+    )
 
     private fun dispatchHover(
         sample: Hover,

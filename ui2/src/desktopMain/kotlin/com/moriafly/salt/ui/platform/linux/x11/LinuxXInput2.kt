@@ -15,6 +15,8 @@
  * limitations under the License.
  */
 
+@file:Suppress("unused")
+
 package com.moriafly.salt.ui.platform.linux.x11
 
 import com.sun.jna.Library
@@ -55,6 +57,12 @@ internal interface LinuxXInput2 : Library {
         count: Int
     ): Int
 
+    fun XIGetSelectedEvents(
+        display: X11.Display,
+        window: X11.Window,
+        count: IntByReference
+    ): Pointer?
+
     fun XIGrabTouchBegin(
         display: X11.Display,
         device: Int,
@@ -74,12 +82,26 @@ internal interface LinuxXInput2 : Library {
     ): Int
 
     @Structure.FieldOrder("device", "length", "mask")
-    class EventMask(
-        device: Int,
-        vararg events: Int
-    ) : Structure() {
+    class EventMask : Structure {
+        constructor(
+            device: Int,
+            vararg events: Int
+        ) : super() {
+            this.device = device
+            events.forEach { event ->
+                val offset = (event / 8).toLong()
+                mask.setByte(offset, (mask.getByte(offset).toInt() or (1 shl event % 8)).toByte())
+            }
+        }
+
+        constructor(
+            pointer: Pointer
+        ) : super(pointer) {
+            read()
+        }
+
         @JvmField
-        var device: Int = device
+        var device: Int = 0
 
         @JvmField
         var length: Int = 4
@@ -87,10 +109,6 @@ internal interface LinuxXInput2 : Library {
         @JvmField
         var mask: Pointer = Memory(length.toLong()).apply {
             clear()
-            events.forEach { event ->
-                val offset = (event / 8).toLong()
-                setByte(offset, (getByte(offset).toInt() or (1 shl event % 8)).toByte())
-            }
         }
     }
 
@@ -175,6 +193,68 @@ internal interface LinuxXInput2 : Library {
 
         @JvmField
         var effective: Int = 0
+    }
+
+    @Structure.FieldOrder(
+        "type",
+        "serial",
+        "sendEvent",
+        "display",
+        "extension",
+        "eventType",
+        "time",
+        "device",
+        "source",
+        "detail",
+        "flags",
+        "valuators",
+        "rawValues"
+    )
+    class RawEvent(
+        pointer: Pointer
+    ) : Structure(pointer) {
+        @JvmField
+        var type: Int = 0
+
+        @JvmField
+        var serial: NativeLong = NativeLong()
+
+        @JvmField
+        var sendEvent: Int = 0
+
+        @JvmField
+        var display: Pointer? = null
+
+        @JvmField
+        var extension: Int = 0
+
+        @JvmField
+        var eventType: Int = 0
+
+        @JvmField
+        var time: NativeLong = NativeLong()
+
+        @JvmField
+        var device: Int = 0
+
+        @JvmField
+        var source: Int = 0
+
+        @JvmField
+        var detail: Int = 0
+
+        @JvmField
+        var flags: Int = 0
+
+        @JvmField
+        var valuators: ValuatorState = ValuatorState()
+
+        @JvmField
+        var rawValues: Pointer? = null
+
+        init {
+            read()
+        }
     }
 
     @Structure.FieldOrder(
@@ -386,12 +466,16 @@ internal interface LinuxXInput2 : Library {
         const val ENTER = 7
         const val LEAVE = 8
         const val HIERARCHY_CHANGED = 11
+        const val RAW_BUTTON_RELEASE = 16
         const val TOUCH_BEGIN = 18
         const val TOUCH_UPDATE = 19
         const val TOUCH_END = 20
+        const val RAW_TOUCH_END = 24
         const val ACCEPT_TOUCH = 6
         const val REJECT_TOUCH = 7
         const val POINTER_EMULATED = 1 shl 16
+        const val TOUCH_PENDING_END = 1 shl 16
+        const val TOUCH_EMULATING_POINTER = 1 shl 17
     }
 }
 

@@ -139,6 +139,7 @@ internal class LinuxWindowInput private constructor(
             mouse.awaitNativeCapabilities()
             session = LinuxXInputSession(
                 handle = handle,
+                windowHandle = Native.getComponentID(window),
                 requestTouch = touch != null,
                 listener = this
             ).also { it.start() }
@@ -187,10 +188,28 @@ internal class LinuxWindowInput private constructor(
     }
 
     override fun onTouch(
-        event: LinuxXInputSession.Touch
-    ): Boolean {
-        if (!acceptNativeInput()) return false
-        return touch?.onTouch(event) == true
+        event: LinuxXInputSession.Touch,
+        canMoveNatively: Boolean
+    ): LinuxXInputSession.TouchAction {
+        if (!acceptNativeInput()) return LinuxXInputSession.TouchAction.Reject
+        return when (touch?.dispatch(event, canMoveNatively)) {
+            null -> LinuxXInputSession.TouchAction.Reject
+            LinuxWindowGestures.TouchResult.Handled -> LinuxXInputSession.TouchAction.Accept
+            LinuxWindowGestures.TouchResult.PendingNativeMove -> LinuxXInputSession.TouchAction.Pending
+            LinuxWindowGestures.TouchResult.PreparedNativeMove -> LinuxXInputSession.TouchAction.Move
+        }
+    }
+
+    override fun onTouchMove(
+        id: Long
+    ) {
+        // Ownership was rejected even if the WM request fails. Suppress its AWT replay.
+        mouse.suppressTouchEmulation()
+        if (acceptNativeInput()) gestures.commitNativeTouchMove(id)
+    }
+
+    override fun onMouseMoveEnd() {
+        if (gestures.endNativeMouseMove()) mouse.onNativeMouseRelease()
     }
 
     override fun onHover(

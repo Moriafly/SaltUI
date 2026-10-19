@@ -14,6 +14,7 @@ package com.moriafly.salt.ui.platform.linux
 import androidx.compose.ui.geometry.Offset
 import com.moriafly.salt.ui.platform.input.DesktopTouchScene
 import com.moriafly.salt.ui.platform.linux.input.LinuxTouchInput
+import com.moriafly.salt.ui.platform.linux.input.LinuxWindowGestures
 import com.moriafly.salt.ui.platform.linux.x11.LinuxXInputSession
 import com.moriafly.salt.ui.platform.linux.x11.LinuxXInputSession.TouchPhase
 import com.moriafly.salt.ui.util.findSkiaLayer
@@ -142,8 +143,9 @@ class LinuxWindowGesturesTest {
             if (phase == TouchPhase.Down) id++
             time += 80
             val screen = fixture.screen(position)
-            assertTrue(
-                input.onTouch(
+            assertEquals(
+                LinuxWindowGestures.TouchResult.Handled,
+                input.dispatch(
                     LinuxXInputSession.Touch(
                         id = id,
                         phase = phase,
@@ -155,7 +157,8 @@ class LinuxWindowGesturesTest {
                         timeMillis = time,
                         x11Timestamp = 0,
                         directTouch = true
-                    )
+                    ),
+                    canMoveNatively = false
                 )
             )
         }

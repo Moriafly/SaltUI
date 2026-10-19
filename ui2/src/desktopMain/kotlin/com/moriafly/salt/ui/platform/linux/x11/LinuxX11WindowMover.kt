@@ -20,11 +20,14 @@ package com.moriafly.salt.ui.platform.linux.x11
 import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.sun.jna.Native
 import com.sun.jna.NativeLong
+import com.sun.jna.Pointer
 import com.sun.jna.platform.unix.X11
 import com.sun.jna.ptr.IntByReference
+import com.sun.jna.ptr.NativeLongByReference
 import com.sun.jna.ptr.PointerByReference
 import java.awt.Point
 import java.awt.Window
+import java.awt.event.MouseEvent
 
 /**
  * Native X11 window mover using `_NET_WM_MOVERESIZE` protocol.
@@ -37,85 +40,237 @@ internal object LinuxX11WindowMover {
     private const val NET_WM_MOVERESIZE_MOVE = 8L
 
     /**
-     * Try to initiate a native X11 window move from mouse or touch input.
-     * [screenPosition] uses AWT screen coordinates; [button] is zero for touch.
-     *
-     * @return `true` if the native move was successfully initiated, `false` otherwise
-     * (e.g., on Wayland or if X11 calls fail).
+     * Qt's XCB touch handoff is supported by KWin and Openbox. Check the actual WM and
+     * protocol before leaving a touch undecided; session environment variables are not enough.
      */
-    fun tryMove(
-        window: Window,
-        screenPosition: Point,
-        button: Int
+    fun supportsTouchMove(
+        display: X11.Display,
+        window: X11.Window
     ): Boolean {
-        if (!window.isDisplayable) return false
+        if (!LinuxAwtInput.isAvailable) return false
+        val x11 = X11Ext.INSTANCE
+        val root = queryRootWindow(x11, display, window) ?: return false
+        val wm = readProperty(
+            display,
+            root,
+            "_NET_SUPPORTING_WM_CHECK",
+            X11.XA_WINDOW,
+            32
+        ) { data, count ->
+            if (count == 1) data.getNativeLong(0).toLong() else null
+        } ?: return false
 
-        val x11: X11Ext
-        try {
-            x11 = X11Ext.INSTANCE
-        } catch (_: UnsatisfiedLinkError) {
-            return false
+        val utf8 = x11.XInternAtom(display, "UTF8_STRING", false)
+        val name = readProperty(
+            display,
+            X11.Window(wm),
+            "_NET_WM_NAME",
+            utf8,
+            8
+        ) { data, count ->
+            String(data.getByteArray(0, count), Charsets.UTF_8).lowercase()
         }
 
-        val display = x11.XOpenDisplay(null) ?: return false
+        if (name != "kwin" && name != "openbox") return false
+        val moveresize = x11.XInternAtom(display, "_NET_WM_MOVERESIZE", false).toLong()
+        return readProperty(
+            display,
+            root,
+            "_NET_SUPPORTED",
+            X11.XA_ATOM,
+            32
+        ) { data, count ->
+            (0 until count).any {
+                data.getNativeLong(it.toLong() * NativeLong.SIZE).toLong() == moveresize
+            }
+        } == true
+    }
+
+    private fun <T> readProperty(
+        display: X11.Display,
+        window: X11.Window,
+        name: String,
+        expectedType: X11.Atom,
+        expectedFormat: Int,
+        read: (Pointer, Int) -> T
+    ): T? {
+        val x11 = X11Ext.INSTANCE
+        val type = X11.AtomByReference()
+        val format = IntByReference()
+        val count = NativeLongByReference()
+        val remaining = NativeLongByReference()
+        val data = PointerByReference()
+        val result = x11.XGetWindowProperty(
+            display,
+            window,
+            x11.XInternAtom(display, name, false),
+            NativeLong(0),
+            NativeLong(4096),
+            false,
+            expectedType,
+            type,
+            format,
+            count,
+            remaining,
+            data
+        )
 
         try {
-            val windowId = Native.getComponentID(window)
-            if (windowId == 0L) return false
-            val xWindow = X11.Window(windowId)
-
-            val rootWindow = queryRootWindow(x11, display, xWindow) ?: return false
-            val netWmMoveresize = x11.XInternAtom(display, "_NET_WM_MOVERESIZE", false)
-            if (netWmMoveresize == null || netWmMoveresize.toLong() == 0L) return false
-
-            // EWMH requires X11 root pixels, not AWT's logical screen coordinates on HiDPI.
-            val rootX = IntByReference()
-            val rootY = IntByReference()
-            val windowX = IntByReference()
-            val windowY = IntByReference()
-            if (!x11.XQueryPointer(
-                    display,
-                    xWindow,
-                    X11.WindowByReference(),
-                    X11.WindowByReference(),
-                    rootX,
-                    rootY,
-                    windowX,
-                    windowY,
-                    IntByReference()
-                )
+            if (result != X11.Success || type.value != expectedType ||
+                format.value != expectedFormat || remaining.value.toLong() != 0L
             ) {
-                return false
+                return null
             }
+            return data.value?.let { read(it, count.value.toInt()) }
+        } finally {
+            data.value?.let { x11.XFree(it) }
+        }
+    }
 
-            // Anchor the operation at the initiating event. The pointer may already have moved
-            // while AWT queued the event or JNA loaded X11, especially on the first drag.
-            val transform = window.graphicsConfiguration.defaultTransform
-            val windowXPosition = ((screenPosition.x - window.x) * transform.scaleX).toInt()
-            val windowYPosition = ((screenPosition.y - window.y) * transform.scaleY).toInt()
+    /**
+     * Acquires the connection and validates the request before touch ownership is handed off.
+     * The caller owns the returned move and must close it on release or cancellation.
+     */
+    fun prepare(
+        window: Window,
+        screenPosition: Point,
+        fromTouch: Boolean = false
+    ): Move? {
+        if (!window.isDisplayable || !LinuxAwtInput.isAvailable) return null
+        val x11 = try {
+            X11Ext.INSTANCE
+        } catch (_: UnsatisfiedLinkError) {
+            return null
+        }
+
+        val display = x11.XOpenDisplay(null) ?: return null
+        var prepared: Move? = null
+        try {
+            val handle = Native.getComponentID(window)
+            if (handle == 0L) return null
+            val target = X11.Window(handle)
+            val root = queryRootWindow(x11, display, target) ?: return null
+            val position = rootPosition(
+                display = display,
+                target = target,
+                window = window,
+                screenPosition = screenPosition,
+                fromTouch = fromTouch
+            ) ?: return null
+            val atom = x11.XInternAtom(display, "_NET_WM_MOVERESIZE", false)
+            prepared = Move(
+                window = window,
+                display = display,
+                target = target,
+                root = root,
+                atom = atom,
+                position = position,
+                fromTouch = fromTouch
+            )
+            return prepared
+        } catch (_: Exception) {
+            return null
+        } finally {
+            if (prepared == null) x11.XCloseDisplay(display)
+        }
+    }
+
+    private fun rootPosition(
+        display: X11.Display,
+        target: X11.Window,
+        window: Window,
+        screenPosition: Point,
+        fromTouch: Boolean
+    ): Point? {
+        val rootX = IntByReference()
+        val rootY = IntByReference()
+        val localX = IntByReference()
+        val localY = IntByReference()
+        val buttons = IntByReference()
+        val found = X11Ext.INSTANCE.XQueryPointer(
+            display,
+            target,
+            X11.WindowByReference(),
+            X11.WindowByReference(),
+            rootX,
+            rootY,
+            localX,
+            localY,
+            buttons
+        )
+
+        if (!found || (!fromTouch && buttons.value and X11.Button1Mask == 0)) return null
+
+        // Anchor at the event in root pixels, independently of queued pointer motion and HiDPI.
+        val scale = window.graphicsConfiguration.defaultTransform
+        return Point(
+            rootX.value - localX.value + ((screenPosition.x - window.x) * scale.scaleX).toInt(),
+            rootY.value - localY.value + ((screenPosition.y - window.y) * scale.scaleY).toInt()
+        )
+    }
+
+    /**
+     * A prepared WM request. Start and cancellation share one X connection to preserve ordering.
+     * A successful start means the request was sent, not an acknowledgement from the WM.
+     */
+    class Move(
+        private val window: Window,
+        private val display: X11.Display,
+        private val target: X11.Window,
+        private val root: X11.Window,
+        private val atom: X11.Atom,
+        private val position: Point,
+        private val fromTouch: Boolean
+    ) : AutoCloseable {
+        var started = false
+            private set
+        private var closed = false
+
+        fun start(): Boolean {
+            if (closed || started || !window.isDisplayable) return false
+            return try {
+                if (Native.getComponentID(window) != target.toLong()) return false
+                LinuxAwtInput.releasePointer()
+                started = send(NET_WM_MOVERESIZE_MOVE)
+                started
+            } catch (_: Exception) {
+                false
+            }
+        }
+
+        private fun send(
+            direction: Long
+        ): Boolean {
             val event = buildMoveResizeEvent(
                 display = display,
-                xWindow = xWindow,
-                atom = netWmMoveresize,
-                mouseX = rootX.value - windowX.value + windowXPosition,
-                mouseY = rootY.value - windowY.value + windowYPosition,
-                button = button
+                xWindow = target,
+                atom = atom,
+                mouseX = position.x,
+                mouseY = position.y,
+                // RejectTouch can clear Button1. RawTouchEnd ends this buttonless WM move.
+                button = if (fromTouch) 0 else MouseEvent.BUTTON1,
+                direction = direction
             )
-
-            // Release AWT exclusive mouse lock to allow window manager takeover
-            x11.XUngrabPointer(display, NativeLong(0))
-
-            val mask = NativeLong(
-                (X11.SubstructureRedirectMask or X11.SubstructureNotifyMask).toLong()
+            val sent = X11Ext.INSTANCE.XSendEvent(
+                display,
+                root,
+                0,
+                NativeLong((X11.SubstructureRedirectMask or X11.SubstructureNotifyMask).toLong()),
+                event
             )
-            x11.XSendEvent(display, rootWindow, 0, mask, event)
-            x11.XFlush(display)
+            X11Ext.INSTANCE.XFlush(display)
+            return sent != 0
+        }
 
-            return true
-        } catch (_: Exception) {
-            return false
-        } finally {
-            x11.XCloseDisplay(display)
+        override fun close() {
+            if (closed) return
+            closed = true
+            try {
+                if (started) send(11L)
+            } finally {
+                started = false
+                X11Ext.INSTANCE.XCloseDisplay(display)
+            }
         }
     }
 
@@ -144,7 +299,8 @@ internal object LinuxX11WindowMover {
         atom: X11.Atom,
         mouseX: Int,
         mouseY: Int,
-        button: Int
+        button: Int,
+        direction: Long = NET_WM_MOVERESIZE_MOVE
     ): X11.XEvent {
         val event = X11.XEvent()
         event.type = X11.ClientMessage
@@ -165,8 +321,7 @@ internal object LinuxX11WindowMover {
         // y_root
         clientMsg.data.l[1] = NativeLong(mouseY.toLong())
         // Direction
-        clientMsg.data.l[2] = NativeLong(NET_WM_MOVERESIZE_MOVE)
-        // Touch has no pressed mouse button; let the window manager track its native sequence.
+        clientMsg.data.l[2] = NativeLong(direction)
         clientMsg.data.l[3] = NativeLong(button.toLong())
         // Source indication (Normal application)
         clientMsg.data.l[4] = NativeLong(1)

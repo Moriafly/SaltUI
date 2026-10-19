@@ -32,6 +32,18 @@ internal interface WindowGestureEffects {
     val resizer: Resizer
 
     interface Mover {
+        val isNativeMouseMove: Boolean
+            get() = false
+
+        fun prepareTouchMove(
+            id: Long,
+            position: Position
+        ): Boolean
+
+        fun commitTouchMove(
+            id: Long
+        ): Boolean
+
         fun install(): () -> Unit
 
         fun start(

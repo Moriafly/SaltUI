@@ -42,13 +42,14 @@ internal class LinuxTouchInput(
 ) {
     private val pointers = TouchPointerState()
 
-    fun onTouch(
-        sample: LinuxXInputSession.Touch
-    ): Boolean {
-        if (!sample.directTouch) return false
+    fun dispatch(
+        sample: LinuxXInputSession.Touch,
+        canMoveNatively: Boolean
+    ): LinuxWindowGestures.TouchResult? {
+        if (!sample.directTouch) return null
         if (target.isDisposed) {
             cancel()
-            return false
+            return null
         }
         val type = when (sample.phase) {
             LinuxXInputSession.TouchPhase.Down -> PointerEventType.Press
@@ -70,7 +71,7 @@ internal class LinuxTouchInput(
         if (type == PointerEventType.Press) {
             focus.onPress(sample.x11Timestamp)
         }
-        gestures.dispatchTouch(
+        return gestures.dispatchTouch(
             event = touchEvent,
             dispatchToCompose = {
                 // XI coordinates include system scale; extraDisplayScale only affects density.
@@ -93,9 +94,9 @@ internal class LinuxTouchInput(
                     )
                 }
             },
-            cancelCompose = ::cancelCompose
+            cancelCompose = ::cancelCompose,
+            canMoveNatively = canMoveNatively
         )
-        return true
     }
 
     fun cancel() {

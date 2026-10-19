@@ -52,6 +52,8 @@ internal class LinuxWindowGestures(
     private val captionHovered: State<Boolean>,
     private val effects: WindowGestureEffects
 ) : LinuxWindowMouseInput.Handler {
+    enum class TouchResult { Handled, PendingNativeMove, PreparedNativeMove }
+
     private val state = LinuxWindowGestureState()
     private var captionQuery: CaptionQuery? = null
 
@@ -61,22 +63,24 @@ internal class LinuxWindowGestures(
         canDrag: Boolean,
         canMaximize: Boolean,
         viewConfiguration: ViewConfiguration
-    ) = execute(
-        state.configure(
-            LinuxWindowGestureState.Configuration(
-                moveable = moveable,
-                resizable = resizable,
-                canDrag = canDrag,
-                canMaximize = canMaximize,
-                taps = LinuxTouchTapRecognizer.Configuration(
-                    touchSlop = viewConfiguration.touchSlop,
-                    longPressTimeoutMillis = viewConfiguration.longPressTimeoutMillis,
-                    doubleTapMinTimeMillis = viewConfiguration.doubleTapMinTimeMillis,
-                    doubleTapTimeoutMillis = viewConfiguration.doubleTapTimeoutMillis
+    ) {
+        execute(
+            state.configure(
+                LinuxWindowGestureState.Configuration(
+                    moveable = moveable,
+                    resizable = resizable,
+                    canDrag = canDrag,
+                    canMaximize = canMaximize,
+                    taps = LinuxTouchTapRecognizer.Configuration(
+                        touchSlop = viewConfiguration.touchSlop,
+                        longPressTimeoutMillis = viewConfiguration.longPressTimeoutMillis,
+                        doubleTapMinTimeMillis = viewConfiguration.doubleTapMinTimeMillis,
+                        doubleTapTimeoutMillis = viewConfiguration.doubleTapTimeoutMillis
+                    )
                 )
             )
         )
-    )
+    }
 
     fun install(): () -> Unit {
         val uninstallMover = effects.mover.install()
@@ -103,13 +107,14 @@ internal class LinuxWindowGestures(
     fun dispatchTouch(
         event: LinuxTouchEvent,
         dispatchToCompose: () -> Unit,
-        cancelCompose: () -> Unit
-    ) {
+        cancelCompose: () -> Unit,
+        canMoveNatively: Boolean = false
+    ): TouchResult {
         val phase = when (event.type) {
             PointerEventType.Press -> Phase.Press
             PointerEventType.Move -> Phase.Move
             PointerEventType.Release -> Phase.Release
-            else -> return
+            else -> return TouchResult.Handled
         }
         val scale = window.graphicsConfiguration.defaultTransform
         val input = Input(
@@ -129,9 +134,15 @@ internal class LinuxWindowGestures(
             val dispatch = TouchDispatch(
                 event = event,
                 deliver = dispatchToCompose,
-                cancel = cancelCompose
+                cancel = cancelCompose,
+                canMoveNatively = canMoveNatively
             )
-            execute(state.onInput(input, hit), dispatch)
+            val result = execute(state.onInput(input, hit), dispatch)
+            return if (canMoveNatively && state.isPendingTouchMove(event.id)) {
+                TouchResult.PendingNativeMove
+            } else {
+                result
+            }
         } catch (exception: Throwable) {
             cancel()
             cancelCompose()
@@ -188,9 +199,22 @@ internal class LinuxWindowGestures(
         execute(state.cancel())
     }
 
+    fun endNativeMouseMove(): Boolean {
+        if (!effects.mover.isNativeMouseMove) return false
+        cancel()
+        return true
+    }
+
     fun resetTouchInput() {
         captionQuery = null
         execute(state.resetTouchInput())
+    }
+
+    fun commitNativeTouchMove(
+        id: Long
+    ) {
+        // XI2 has already rejected the contact; retain quarantine until its physical release.
+        if (!effects.mover.commitTouchMove(id)) cancel()
     }
 
     private fun hitAt(
@@ -209,18 +233,19 @@ internal class LinuxWindowGestures(
     private fun execute(
         decision: LinuxWindowGestureState.Decision,
         touch: TouchDispatch? = null
-    ) {
+    ): TouchResult {
+        var result = TouchResult.Handled
         for (command in decision.commands) {
             when (command) {
                 Command.DeliverTouch -> checkNotNull(touch).deliver()
                 Command.CancelCompose -> checkNotNull(touch).cancel()
-                is Command.ResolveCaption -> resolveCaption(command.request, checkNotNull(touch))
-                is Command.StartMove -> effects.mover.start(
-                    pointer = command.pointer,
-                    start = command.start,
-                    current = command.current
-                )
+                is Command.ResolveCaption -> {
+                    result = resolveCaption(command.request, checkNotNull(touch))
+                }
 
+                is Command.StartMove -> {
+                    result = startMove(command, touch)
+                }
                 is Command.Move -> effects.mover.update(command.position)
                 Command.EndMove -> effects.mover.finish()
                 Command.ToggleMaximize -> effects.mover.toggleMaximize()
@@ -231,12 +256,30 @@ internal class LinuxWindowGestures(
                 is Command.EnableResize -> effects.resizer.setEnabled(command.enabled)
             }
         }
+        return result
+    }
+
+    private fun startMove(
+        command: Command.StartMove,
+        touch: TouchDispatch?
+    ): TouchResult {
+        if (touch?.canMoveNatively == true &&
+            effects.mover.prepareTouchMove(touch.event.id, command.current)
+        ) {
+            return TouchResult.PreparedNativeMove
+        }
+        effects.mover.start(
+            pointer = command.pointer,
+            start = command.start,
+            current = command.current
+        )
+        return TouchResult.Handled
     }
 
     private fun resolveCaption(
         request: Long,
         dispatch: TouchDispatch
-    ) {
+    ): TouchResult {
         val query = CaptionQuery(dispatch)
         captionQuery = query
         try {
@@ -244,7 +287,7 @@ internal class LinuxWindowGestures(
         } finally {
             if (captionQuery === query) captionQuery = null
         }
-        execute(state.resolveCaption(request, query.hit), dispatch)
+        return execute(state.resolveCaption(request, query.hit), dispatch)
     }
 
     private class CaptionQuery(
@@ -255,6 +298,7 @@ internal class LinuxWindowGestures(
     private class TouchDispatch(
         val event: LinuxTouchEvent,
         val deliver: () -> Unit,
-        val cancel: () -> Unit
+        val cancel: () -> Unit,
+        val canMoveNatively: Boolean
     )
 }

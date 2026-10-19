@@ -180,8 +180,8 @@ internal class LinuxWindowGestureState {
         checkNotNull(configuration) { "Configure gestures before dispatching input" }
         val commands = mutableListOf<Command>()
         val consumed = when (input.pointer) {
-            Pointer.Mouse -> onMouse(input, hit, commands)
-            is Pointer.Touch -> onTouch(input, hit, commands)
+            Pointer.Mouse -> handleMouse(input, hit, commands)
+            is Pointer.Touch -> handleTouch(input, hit, commands)
         }
         return Decision(consumed, commands)
     }
@@ -227,7 +227,14 @@ internal class LinuxWindowGestureState {
     private val canMove: Boolean
         get() = configuration?.let { it.moveable && it.canDrag } == true
 
-    private fun onTouch(
+    fun isPendingTouchMove(
+        id: Long
+    ): Boolean {
+        val active = gesture as? Gesture.Move ?: return false
+        return active.pointer == Pointer.Touch(id) && active.pending
+    }
+
+    private fun handleTouch(
         input: Input,
         hit: Hit,
         commands: MutableList<Command>
@@ -331,7 +338,7 @@ internal class LinuxWindowGestureState {
         gesture = Gesture.Move(input.pointer, input.position)
     }
 
-    private fun onMouse(
+    private fun handleMouse(
         input: Input,
         hit: Hit,
         commands: MutableList<Command>

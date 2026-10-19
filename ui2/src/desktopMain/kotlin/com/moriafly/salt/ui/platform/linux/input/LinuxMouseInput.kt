@@ -38,7 +38,16 @@ internal class LinuxMouseInput(
     private var awaitingNativeCapabilities = true
     private var nativeCapabilities = LinuxXInputSession.Capabilities(touch = false, hover = false)
     private val pressedButtons = mutableSetOf<Int>()
+    private var suppressTouchMouse = false
     private val unregister = LinuxWindowMouseInput.registerSource(window, this)
+
+    fun suppressTouchEmulation() {
+        suppressTouchMouse = true
+    }
+
+    fun onNativeMouseRelease() {
+        pressedButtons.remove(MouseEvent.BUTTON1)
+    }
 
     fun awaitNativeCapabilities() {
         awaitingNativeCapabilities = true
@@ -62,6 +71,17 @@ internal class LinuxMouseInput(
     ) {
         if (event.component !== canvas) {
             deliver(event)
+            return
+        }
+        if (event.id == MouseEvent.MOUSE_PRESSED) {
+            suppressTouchMouse = false
+        } else if (suppressTouchMouse &&
+            (
+                event.id == MouseEvent.MOUSE_DRAGGED ||
+                    event.id == MouseEvent.MOUSE_RELEASED ||
+                    event.id == MouseEvent.MOUSE_CLICKED
+            )
+        ) {
             return
         }
         when (event.id) {
@@ -163,7 +183,9 @@ internal class LinuxMouseInput(
         )
     }
 
-    fun cancel() = pressedButtons.clear()
+    fun cancel() {
+        pressedButtons.clear()
+    }
 
     override fun close() = unregister()
 

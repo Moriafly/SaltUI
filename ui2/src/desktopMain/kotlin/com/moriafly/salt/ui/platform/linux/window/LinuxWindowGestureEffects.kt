@@ -28,7 +28,6 @@ import java.awt.Point
 import java.awt.Window
 import java.awt.event.ComponentAdapter
 import java.awt.event.ComponentEvent
-import java.awt.event.MouseEvent
 
 /**
  * Executes gesture commands through the WM and AWT. Native restore notifications and queued resize
@@ -84,9 +83,43 @@ internal class LinuxWindowGestureEffects(
         private val window: Window
     ) : WindowGestureEffects.Mover {
         private val fallback = LinuxFallbackWindowMover(window)
-        private var useNativeDrag = true
+        private var useNativeMouseDrag = true
         private var restoreWidth = window.width
         private var drag: Drag? = null
+
+        override val isNativeMouseMove: Boolean
+            get() {
+                val active = drag ?: return false
+                return active.pointer == Pointer.Mouse && active.nativeMove?.started == true
+            }
+
+        override fun prepareTouchMove(
+            id: Long,
+            position: Position
+        ): Boolean {
+            finish()
+            val move = LinuxX11WindowMover.prepare(
+                window = window,
+                screenPosition = Point(position.x, position.y),
+                fromTouch = true
+            ) ?: return false
+            drag = Drag(
+                Pointer.Touch(id),
+                position,
+                nativeMove = move
+            )
+            return true
+        }
+
+        override fun commitTouchMove(
+            id: Long
+        ): Boolean {
+            val active = drag ?: return false
+            if (active.pointer != Pointer.Touch(id)) return false
+            if (active.nativeMove?.start() == true) return true
+            finish()
+            return false
+        }
 
         override fun install(): () -> Unit {
             val listener = object : ComponentAdapter() {
@@ -106,6 +139,7 @@ internal class LinuxWindowGestureEffects(
             start: Position,
             current: Position
         ) {
+            finish()
             val active = Drag(pointer, current)
             drag = active
             val frame = window as? Frame
@@ -131,8 +165,13 @@ internal class LinuxWindowGestureEffects(
         }
 
         override fun finish() {
+            val active = drag
             drag = null
-            fallback.endDrag()
+            try {
+                active?.nativeMove?.close()
+            } finally {
+                fallback.endDrag()
+            }
         }
 
         override fun toggleMaximize() {
@@ -149,16 +188,15 @@ internal class LinuxWindowGestureEffects(
             pointer: Pointer
         ) {
             val point = Point(position.x, position.y)
-            if (useNativeDrag) {
-                val button =
-                    if (pointer == Pointer.Mouse) MouseEvent.BUTTON1 else MouseEvent.NOBUTTON
-                val started = LinuxX11WindowMover.tryMove(
-                    window = window,
-                    screenPosition = point,
-                    button = button
-                )
-                if (started) return
-                useNativeDrag = false
+            // Native touch movement is handed off by the XI2 session before ownership is accepted.
+            if (pointer == Pointer.Mouse && useNativeMouseDrag) {
+                val move = LinuxX11WindowMover.prepare(window, point)
+                if (move?.start() == true) {
+                    checkNotNull(drag).nativeMove = move
+                    return
+                }
+                move?.close()
+                useNativeMouseDrag = false
             }
             fallback.startDrag(point)
         }
@@ -180,7 +218,8 @@ internal class LinuxWindowGestureEffects(
         private class Drag(
             val pointer: Pointer,
             var latestPosition: Position,
-            var restoreOffset: Position? = null
+            var restoreOffset: Position? = null,
+            var nativeMove: LinuxX11WindowMover.Move? = null
         )
     }
 }
