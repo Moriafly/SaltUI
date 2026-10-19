@@ -25,6 +25,7 @@ import androidx.compose.ui.platform.LocalViewConfiguration
 import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.moriafly.salt.ui.platform.input.DesktopTouchScene
 import com.moriafly.salt.ui.platform.linux.window.LinuxWindowFocus
+import com.moriafly.salt.ui.platform.linux.window.LinuxWindowModality
 import com.moriafly.salt.ui.platform.linux.x11.LinuxXInputSession
 import com.moriafly.salt.ui.util.findSkiaLayer
 import com.sun.jna.Native
@@ -35,7 +36,6 @@ import java.awt.event.HierarchyEvent
 import java.awt.event.HierarchyListener
 import java.awt.event.WindowAdapter
 import java.awt.event.WindowEvent
-import java.lang.reflect.Method
 
 @Composable
 internal fun LinuxWindowInputEffect(
@@ -81,7 +81,6 @@ internal fun LinuxWindowInputEffect(
 internal class LinuxWindowInput private constructor(
     private val window: Window,
     private val canvas: Component,
-    private val isModalBlocked: Method,
     private val gestures: LinuxWindowGestures,
     private val target: DesktopTouchScene?,
     private val touch: LinuxTouchInput?,
@@ -219,10 +218,9 @@ internal class LinuxWindowInput private constructor(
     }
 
     private fun acceptNativeInput(): Boolean {
-        // XI2 callbacks run on the EDT but bypass AWT's modal event filter. Read AWT's actual
-        // blocking decision, including nested dialogs, inherited exclusions and AppContext.
+        // XI2 callbacks run on the EDT but bypass AWT's modal event filter.
         if (!closed && canvas.isShowing && window.isEnabled &&
-            !(isModalBlocked.invoke(window) as Boolean)
+            !LinuxWindowModality.isBlocked(window)
         ) {
             return true
         }
@@ -284,18 +282,6 @@ internal class LinuxWindowInput private constructor(
             // XIDs and libXi do not apply to JBR's native Wayland toolkit.
             if (Toolkit.getDefaultToolkit().javaClass.name != "sun.awt.X11.XToolkit") return null
             val canvas = window.findSkiaLayer()?.canvas ?: return null
-            // Resolve access before selecting XI2 or grabbing touch. Without the existing
-            // java.desktop/java.awt module open, retain AWT's complete, modality-aware path.
-            val isModalBlocked = try {
-                Window::class.java.getDeclaredMethod("isModalBlocked").apply {
-                    check(trySetAccessible()) {
-                        "Native XI2 input requires --add-opens=java.desktop/java.awt=ALL-UNNAMED"
-                    }
-                }
-            } catch (exception: Exception) {
-                logUnavailable(exception)
-                return null
-            }
             val target = DesktopTouchScene.create(window)
             val touch = target?.let {
                 LinuxTouchInput(
@@ -312,7 +298,6 @@ internal class LinuxWindowInput private constructor(
             return LinuxWindowInput(
                 window = window,
                 canvas = canvas,
-                isModalBlocked = isModalBlocked,
                 gestures = gestures,
                 target = target,
                 touch = touch,
