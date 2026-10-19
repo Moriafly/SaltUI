@@ -91,7 +91,7 @@ internal object LinuxAwtInput {
                     updated.mask.setByte(2, bits.toByte())
                     LinuxXInput2.instance.XISelectEvents(display, xid, updated, 1)
                 }
-                X11Ext.INSTANCE.XSync(display, false)
+                LinuxX11.INSTANCE.XSync(display, false)
             } catch (failure: Throwable) {
                 restoreTouch(display, canvas, saved)
                 throw failure
@@ -112,7 +112,7 @@ internal object LinuxAwtInput {
                     copyMask(LinuxXInput2.EventMask(data.share(index.toLong() * size)))
                 }
             } finally {
-                X11Ext.INSTANCE.XFree(data)
+                LinuxX11.INSTANCE.XFree(data)
             }
         }
 
@@ -146,7 +146,7 @@ internal object LinuxAwtInput {
                 restored.mask.setByte(2, bits.toByte())
                 LinuxXInput2.instance.XISelectEvents(display, xid, restored, 1)
             }
-            X11Ext.INSTANCE.XSync(display, false)
+            LinuxX11.INSTANCE.XSync(display, false)
         }
 
         private companion object {
@@ -156,8 +156,8 @@ internal object LinuxAwtInput {
         fun release() = locked { display ->
             ungrab.invoke(null)
             // Release the implicit server grab even if AWT already cleared its local record.
-            X11Ext.INSTANCE.XUngrabPointer(display, NativeLong(0))
-            X11Ext.INSTANCE.XSync(display, false)
+            LinuxX11.INSTANCE.XUngrabPointer(display, NativeLong(0))
+            LinuxX11.INSTANCE.XSync(display, false)
         }
     }
 }

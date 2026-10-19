@@ -37,12 +37,11 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.WindowDecoration
 import com.moriafly.salt.ui.UnstableSaltUiApi
-import com.moriafly.salt.ui.platform.linux.x11.X11Ext
-import com.sun.jna.Library
+import com.moriafly.salt.ui.platform.linux.x11.LinuxX11
+import com.moriafly.salt.ui.platform.linux.x11.LinuxXShape
 import com.sun.jna.Memory
 import com.sun.jna.Native
 import com.sun.jna.NativeLong
-import com.sun.jna.Pointer
 import com.sun.jna.platform.unix.X11
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
@@ -149,7 +148,7 @@ internal object LinuxClientShadow {
         if (!window.isDisplayable) return false
 
         val x11 = try {
-            X11Ext.INSTANCE
+            LinuxX11.INSTANCE
         } catch (_: UnsatisfiedLinkError) {
             return false
         }
@@ -199,7 +198,7 @@ internal object LinuxClientShadow {
 
     /**
      * Restricts the window input region to the content rect (window bounds minus [marginPx] on
-     * each side) via the XFixes shape extension, making the transparent shadow area
+     * each side) via the X11 Shape extension, making the transparent shadow area
      * click-through. A [marginPx] of 0 or fewer restores input for the whole window.
      */
     fun updateInputShape(
@@ -209,12 +208,12 @@ internal object LinuxClientShadow {
         if (!window.isDisplayable) return false
 
         val xext = try {
-            XextExt.INSTANCE
+            LinuxXShape.INSTANCE
         } catch (_: UnsatisfiedLinkError) {
             return false
         }
         val x11 = try {
-            X11Ext.INSTANCE
+            LinuxX11.INSTANCE
         } catch (_: UnsatisfiedLinkError) {
             return false
         }
@@ -246,13 +245,13 @@ internal object LinuxClientShadow {
             xext.XShapeCombineRectangles(
                 display,
                 X11.Window(windowId),
-                XextExt.SHAPE_INPUT,
+                LinuxXShape.SHAPE_INPUT,
                 0,
                 0,
                 rectangle,
                 1,
-                XextExt.SHAPE_SET,
-                XextExt.UNSORTED
+                LinuxXShape.SHAPE_SET,
+                LinuxXShape.UNSORTED
             )
             x11.XFlush(display)
 
@@ -362,31 +361,5 @@ internal fun LinuxClientShadowEffect(
             LinuxClientShadow.applyGtkFrameExtents(window, 0)
             LinuxClientShadow.updateInputShape(window, 0)
         }
-    }
-}
-
-/**
- * JNA bindings for the X11 shape (XFixes) extension in libXext.
- */
-@Suppress("FunctionName")
-internal interface XextExt : Library {
-    fun XShapeCombineRectangles(
-        display: X11.Display,
-        window: X11.Window,
-        destKind: Int,
-        xOffset: Int,
-        yOffset: Int,
-        rectangles: Pointer,
-        rectangleCount: Int,
-        operation: Int,
-        ordering: Int
-    )
-
-    companion object {
-        const val SHAPE_INPUT = 2
-        const val SHAPE_SET = 0
-        const val UNSORTED = 0
-
-        val INSTANCE: XextExt = Native.load("Xext", XextExt::class.java)
     }
 }

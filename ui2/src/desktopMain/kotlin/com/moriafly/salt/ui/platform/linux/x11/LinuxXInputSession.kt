@@ -161,7 +161,7 @@ internal class LinuxXInputSession(
     }
 
     private fun readConnection() {
-        val x11 = LinuxTouchX11.instance
+        val x11 = LinuxX11.INSTANCE
         val xi = LinuxXInput2.instance
         val display = x11.XOpenDisplay(null) ?: return
         var awtTouch: AutoCloseable? = null
@@ -262,7 +262,7 @@ internal class LinuxXInputSession(
         if (touch) events += LinuxXInput2.RAW_TOUCH_END
         return LinuxXInput2.instance.XISelectEvents(
             display = display,
-            window = LinuxTouchX11.instance.XDefaultRootWindow(display),
+            window = LinuxX11.INSTANCE.XDefaultRootWindow(display),
             masks = LinuxXInput2.EventMask(LinuxXInput2.ALL_DEVICES, *events.toIntArray()),
             count = 1
         ) == 0
@@ -319,7 +319,7 @@ internal class LinuxXInputSession(
         initialDirectDevices: Set<Int>,
         canMoveTouch: Boolean
     ) {
-        val x11 = LinuxTouchX11.instance
+        val x11 = LinuxX11.INSTANCE
         val event = X11.XEvent()
         var directDevices = initialDirectDevices
         Memory(8).use { fd ->
@@ -334,7 +334,7 @@ internal class LinuxXInputSession(
                 }
                 x11.XNextEvent(display, event)
                 if (event.type != 35) continue // GenericEvent
-                val cookie = LinuxTouchX11.EventCookie(event.pointer)
+                val cookie = LinuxX11.EventCookie(event.pointer)
                 if (cookie.extension != opcode || x11.XGetEventData(display, cookie) == 0) continue
                 try {
                     when (cookie.eventType) {
@@ -495,7 +495,7 @@ internal class LinuxXInputSession(
                 epoch
             )
         } else {
-            LinuxTouchX11.instance.XFlush(display)
+            LinuxX11.INSTANCE.XFlush(display)
         }
     }
 
@@ -542,9 +542,9 @@ internal class LinuxXInputSession(
         epoch: Long
     ) {
         handedOffTouch = sample
-        X11Ext.INSTANCE.XUngrabPointer(display, NativeLong(0))
+        LinuxX11.INSTANCE.XUngrabPointer(display, NativeLong(0))
         // Complete rejection before the prepared WM request starts on its own connection.
-        LinuxTouchX11.instance.XSync(display, false)
+        LinuxX11.INSTANCE.XSync(display, false)
         dispatchAndWait {
             if (!stopRequested && epoch == touchEpoch) listener.onTouchMove(sample.id)
         }

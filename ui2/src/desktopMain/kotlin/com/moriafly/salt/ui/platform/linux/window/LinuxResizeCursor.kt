@@ -17,10 +17,10 @@
 
 package com.moriafly.salt.ui.platform.linux.window
 
-import com.sun.jna.Library
-import com.sun.jna.Native
-import com.sun.jna.NativeLong
+import com.moriafly.salt.ui.platform.linux.x11.LinuxX11
+import com.moriafly.salt.ui.platform.linux.x11.LinuxXcursor
 import com.sun.jna.Pointer
+import com.sun.jna.platform.unix.X11
 import java.awt.Cursor
 import java.awt.Toolkit
 import java.lang.reflect.Method
@@ -89,8 +89,8 @@ internal object LinuxResizeCursor {
         private val setPData = Cursor::class.java
             .getDeclaredMethod("setPData", Long::class.javaPrimitiveType)
             .accessible()
-        private val x11 = Native.load("X11", Xlib::class.java)
-        private val xcursor = Native.load("Xcursor", Xcursor::class.java)
+        private val x11 = LinuxX11.INSTANCE
+        private val xcursor = LinuxXcursor.INSTANCE
         private var theme: Theme? = null
         private val cursors = mutableMapOf<String, Cursor?>()
 
@@ -138,7 +138,9 @@ internal object LinuxResizeCursor {
             try {
                 awtLock.invoke(null)
                 try {
-                    val display = Pointer(getDisplay.invoke(null) as Long)
+                    val display = X11.Display().apply {
+                        pointer = Pointer(getDisplay.invoke(null) as Long)
+                    }
                     val handle = xcursor.XcursorImagesLoadCursor(display, images)
                     if (handle.toLong() == 0L) return null
                     try {
@@ -161,47 +163,5 @@ internal object LinuxResizeCursor {
 
     private fun Method.accessible(): Method = apply {
         check(trySetAccessible()) { "AWT cursor access requires java.desktop module opens" }
-    }
-
-    @Suppress("ktlint:standard:function-naming", "FunctionName")
-    private interface Xlib : Library {
-        fun XOpenDisplay(
-            name: String?
-        ): Pointer?
-
-        fun XCloseDisplay(
-            display: Pointer
-        ): Int
-
-        fun XFreeCursor(
-            display: Pointer,
-            cursor: NativeLong
-        ): Int
-    }
-
-    @Suppress("ktlint:standard:function-naming", "FunctionName")
-    private interface Xcursor : Library {
-        fun XcursorGetTheme(
-            display: Pointer
-        ): Pointer?
-
-        fun XcursorGetDefaultSize(
-            display: Pointer
-        ): Int
-
-        fun XcursorLibraryLoadImages(
-            name: String,
-            theme: String?,
-            size: Int
-        ): Pointer?
-
-        fun XcursorImagesLoadCursor(
-            display: Pointer,
-            images: Pointer
-        ): NativeLong
-
-        fun XcursorImagesDestroy(
-            images: Pointer
-        )
     }
 }

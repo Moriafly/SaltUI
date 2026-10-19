@@ -48,7 +48,7 @@ internal object LinuxX11WindowMover {
         window: X11.Window
     ): Boolean {
         if (!LinuxAwtInput.isAvailable) return false
-        val x11 = X11Ext.INSTANCE
+        val x11 = LinuxX11.INSTANCE
         val root = queryRootWindow(x11, display, window) ?: return false
         val wm = readProperty(
             display,
@@ -94,7 +94,7 @@ internal object LinuxX11WindowMover {
         expectedFormat: Int,
         read: (Pointer, Int) -> T
     ): T? {
-        val x11 = X11Ext.INSTANCE
+        val x11 = LinuxX11.INSTANCE
         val type = X11.AtomByReference()
         val format = IntByReference()
         val count = NativeLongByReference()
@@ -138,7 +138,7 @@ internal object LinuxX11WindowMover {
     ): Move? {
         if (!window.isDisplayable || !LinuxAwtInput.isAvailable) return null
         val x11 = try {
-            X11Ext.INSTANCE
+            LinuxX11.INSTANCE
         } catch (_: UnsatisfiedLinkError) {
             return null
         }
@@ -187,7 +187,7 @@ internal object LinuxX11WindowMover {
         val localX = IntByReference()
         val localY = IntByReference()
         val buttons = IntByReference()
-        val found = X11Ext.INSTANCE.XQueryPointer(
+        val found = LinuxX11.INSTANCE.XQueryPointer(
             display,
             target,
             X11.WindowByReference(),
@@ -251,14 +251,14 @@ internal object LinuxX11WindowMover {
                 button = if (fromTouch) 0 else MouseEvent.BUTTON1,
                 direction = direction
             )
-            val sent = X11Ext.INSTANCE.XSendEvent(
+            val sent = LinuxX11.INSTANCE.XSendEvent(
                 display,
                 root,
                 0,
                 NativeLong((X11.SubstructureRedirectMask or X11.SubstructureNotifyMask).toLong()),
                 event
             )
-            X11Ext.INSTANCE.XFlush(display)
+            LinuxX11.INSTANCE.XFlush(display)
             return sent != 0
         }
 
@@ -269,13 +269,13 @@ internal object LinuxX11WindowMover {
                 if (started) send(11L)
             } finally {
                 started = false
-                X11Ext.INSTANCE.XCloseDisplay(display)
+                LinuxX11.INSTANCE.XCloseDisplay(display)
             }
         }
     }
 
     private fun queryRootWindow(
-        x11: X11Ext,
+        x11: LinuxX11,
         display: X11.Display,
         xWindow: X11.Window
     ): X11.Window? {
@@ -327,23 +327,5 @@ internal object LinuxX11WindowMover {
         clientMsg.data.l[4] = NativeLong(1)
 
         return event
-    }
-}
-
-/**
- * JNA's default X11 interface is missing some methods.
- *
- * This interface extends it to bind the missing XUngrabPointer function.
- */
-@UnstableSaltUiApi
-@Suppress("FunctionName")
-internal interface X11Ext : X11 {
-    fun XUngrabPointer(
-        display: X11.Display?,
-        time: NativeLong?
-    ): Int
-
-    companion object {
-        val INSTANCE: X11Ext = Native.load("X11", X11Ext::class.java)
     }
 }

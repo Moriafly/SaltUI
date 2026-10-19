@@ -540,69 +540,6 @@ internal interface LinuxXInput2 : Library {
     }
 }
 
-@Suppress("FunctionName")
-internal interface LinuxTouchX11 : X11 {
-    fun XConnectionNumber(
-        display: X11.Display
-    ): Int
-
-    fun XGetEventData(
-        display: X11.Display,
-        cookie: EventCookie
-    ): Int
-
-    fun XFreeEventData(
-        display: X11.Display,
-        cookie: EventCookie
-    )
-
-    @Structure.FieldOrder(
-        "type",
-        "serial",
-        "sendEvent",
-        "display",
-        "extension",
-        "eventType",
-        "cookie",
-        "data"
-    )
-    class EventCookie(
-        pointer: Pointer
-    ) : Structure(pointer) {
-        @JvmField
-        var type: Int = 0
-
-        @JvmField
-        var serial: NativeLong = NativeLong()
-
-        @JvmField
-        var sendEvent: Int = 0
-
-        @JvmField
-        var display: Pointer? = null
-
-        @JvmField
-        var extension: Int = 0
-
-        @JvmField
-        var eventType: Int = 0
-
-        @JvmField
-        var cookie: Int = 0
-
-        @JvmField
-        var data: Pointer? = null
-
-        init {
-            read()
-        }
-    }
-
-    companion object {
-        val instance: LinuxTouchX11 = Native.load("X11", LinuxTouchX11::class.java)
-    }
-}
-
 internal interface LinuxTouchPoll : Library {
     fun poll(
         fds: Pointer,

@@ -17,6 +17,7 @@
 
 package com.moriafly.salt.ui.platform.linux.window
 
+import com.moriafly.salt.ui.platform.linux.x11.LinuxX11
 import com.sun.jna.Memory
 import com.sun.jna.Native
 import com.sun.jna.NativeLong
@@ -37,7 +38,7 @@ import javax.swing.SwingUtilities
  */
 internal class LinuxWindowFocus private constructor(
     private val window: Window,
-    private val x11: X11,
+    private val x11: LinuxX11,
     private val display: X11.Display
 ) : AutoCloseable {
     private val userTime = x11.XInternAtom(
@@ -188,7 +189,7 @@ internal class LinuxWindowFocus private constructor(
         ): LinuxWindowFocus? {
             if (Toolkit.getDefaultToolkit().javaClass.name != "sun.awt.X11.XToolkit") return null
             return try {
-                val x11 = X11.INSTANCE
+                val x11 = LinuxX11.INSTANCE
                 val display = x11.XOpenDisplay(null) ?: return null
                 try {
                     LinuxWindowFocus(
