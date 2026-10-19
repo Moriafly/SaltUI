@@ -89,6 +89,7 @@ internal class LinuxWindowInput private constructor(
     private var session: LinuxXInputSession? = null
     private var restartAfterClose = false
     private var closed = false
+    private var nativeInputEligible = true
 
     private val windowListener = object : WindowAdapter() {
         override fun windowLostFocus(
@@ -218,13 +219,13 @@ internal class LinuxWindowInput private constructor(
 
     private fun acceptNativeInput(): Boolean {
         // XI2 callbacks run on the EDT but bypass AWT's modal event filter.
-        if (!closed && canvas.isShowing && window.isEnabled &&
+        val eligible = !closed && canvas.isShowing && window.isEnabled &&
             !LinuxWindowModality.isBlocked(window)
-        ) {
-            return true
-        }
-        cancelInput()
-        return false
+        // Cancel on the eligible -> blocked edge only, not for every hover sample while blocked.
+        // Native state can only begin from an eligible sample; AWT filters its own input.
+        if (!eligible && nativeInputEligible) cancelInput()
+        nativeInputEligible = eligible
+        return eligible
     }
 
     override fun onDevicesChanged() {

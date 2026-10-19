@@ -38,8 +38,28 @@ class LinuxWindowGestureStateTest {
         val released = state.onInput(mouse(Phase.Release, 180))
         assertTrue(released.consumed)
         assertTrue(Command.EndMove in released.commands, "Mouse release must finish its move")
-        assertTrue(Command.ShowEdge(WindowResizeEdge.None) in released.commands)
+        assertFalse(released.commands.any { it is Command.ShowEdge }, "No edge was ever indicated")
         assertTouchQuarantineEndsWithLastContact(state)
+    }
+
+    @Test
+    fun mouseEdgeResizeReportsEachIndicatorTransitionOnce() {
+        val state = configuredState()
+        val right = Hit(edge = WindowResizeEdge.Right)
+        val decisions = listOf(
+            state.onInput(mouse(Phase.Enter), right),
+            state.onInput(mouse(Phase.Press), right),
+            state.onInput(mouse(Phase.Move, 160)),
+            // The pointer is still over the edge after release.
+            state.onInput(mouse(Phase.Release, 160), right),
+            state.onInput(mouse(Phase.Exit))
+        )
+        assertEquals(
+            listOf(Command.ShowEdge(WindowResizeEdge.Right), Command.ShowEdge(WindowResizeEdge.None)),
+            decisions.flatMap { it.commands }.filterIsInstance<Command.ShowEdge>(),
+            "Starting and finishing a resize must not report edge -> None -> edge"
+        )
+        assertTrue(Command.EndResize(applyPending = true) in decisions[3].commands)
     }
 
     @Test

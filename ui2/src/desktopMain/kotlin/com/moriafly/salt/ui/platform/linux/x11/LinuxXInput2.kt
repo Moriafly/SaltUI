@@ -267,6 +267,64 @@ internal interface LinuxXInput2 : Library {
         "time",
         "device",
         "source",
+        "reason",
+        "classCount",
+        "classes"
+    )
+    class DeviceChangedEvent(
+        pointer: Pointer
+    ) : Structure(pointer) {
+        @JvmField
+        var type: Int = 0
+
+        @JvmField
+        var serial: NativeLong = NativeLong()
+
+        @JvmField
+        var sendEvent: Int = 0
+
+        @JvmField
+        var display: Pointer? = null
+
+        @JvmField
+        var extension: Int = 0
+
+        @JvmField
+        var eventType: Int = 0
+
+        @JvmField
+        var time: NativeLong = NativeLong()
+
+        @JvmField
+        var device: Int = 0
+
+        @JvmField
+        var source: Int = 0
+
+        @JvmField
+        var reason: Int = 0
+
+        @JvmField
+        var classCount: Int = 0
+
+        @JvmField
+        var classes: Pointer? = null
+
+        init {
+            read()
+        }
+    }
+
+    @Structure.FieldOrder(
+        "type",
+        "serial",
+        "sendEvent",
+        "display",
+        "extension",
+        "eventType",
+        "time",
+        "device",
+        "source",
         "detail",
         "root",
         "event",
@@ -466,6 +524,9 @@ internal interface LinuxXInput2 : Library {
         const val ENTER = 7
         const val LEAVE = 8
         const val HIERARCHY_CHANGED = 11
+
+        // XIDeviceChangedEvent.reason
+        const val SLAVE_SWITCH = 1
         const val RAW_BUTTON_RELEASE = 16
         const val TOUCH_BEGIN = 18
         const val TOUCH_UPDATE = 19

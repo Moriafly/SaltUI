@@ -338,13 +338,18 @@ internal class LinuxXInputSession(
                 if (cookie.extension != opcode || x11.XGetEventData(display, cookie) == 0) continue
                 try {
                     when (cookie.eventType) {
-                        LinuxXInput2.DEVICE_CHANGED, LinuxXInput2.HIERARCHY_CHANGED -> {
-                            directDevices = queryDirectDevices(display)
-                            // Finish cancellation before a new press can be accepted.
-                            dispatchAndWait {
-                                if (!stopRequested) listener.onDevicesChanged()
+                        LinuxXInput2.DEVICE_CHANGED -> {
+                            val changed = LinuxXInput2.DeviceChangedEvent(
+                                requireNotNull(cookie.data)
+                            )
+                            // A slave switch only changes which slave drives a master, e.g. on
+                            // every mouse/touch handoff. Sources are slaves and keep their classes.
+                            if (changed.reason != LinuxXInput2.SLAVE_SWITCH) {
+                                directDevices = refreshDevices(display)
                             }
                         }
+
+                        LinuxXInput2.HIERARCHY_CHANGED -> directDevices = refreshDevices(display)
 
                         LinuxXInput2.RAW_BUTTON_RELEASE -> {
                             val raw = LinuxXInput2.RawEvent(requireNotNull(cookie.data))
@@ -408,6 +413,17 @@ internal class LinuxXInputSession(
                 }
             }
         }
+    }
+
+    private fun refreshDevices(
+        display: X11.Display
+    ): Set<Int> {
+        val devices = queryDirectDevices(display)
+        // Finish cancellation before a new press can be accepted.
+        dispatchAndWait {
+            if (!stopRequested) listener.onDevicesChanged()
+        }
+        return devices
     }
 
     private fun pollEvents(

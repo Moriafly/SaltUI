@@ -26,6 +26,9 @@ import com.moriafly.salt.ui.window.WindowResizeEdge
  *
  * A captured touch sequence remains quarantined until every contact leaves. Caption queries carry
  * an identity so a reply arriving after cancellation cannot capture a new sequence.
+ *
+ * The resize-edge indicator is state, not a command stream: each decision reports at most one
+ * [Command.ShowEdge], and only when the indicated edge differs from the last one reported.
  */
 @OptIn(UnstableSaltUiApi::class)
 internal class LinuxWindowGestureState {
@@ -149,6 +152,8 @@ internal class LinuxWindowGestureState {
     private var captionQuery: CaptionQuery? = null
     private var nextRequest = 0L
     private val taps = LinuxTouchTapRecognizer()
+    private var indicatedEdge = WindowResizeEdge.None
+    private var reportedEdge = WindowResizeEdge.None
 
     fun configure(
         value: Configuration
@@ -169,8 +174,8 @@ internal class LinuxWindowGestureState {
         ) {
             finish(commands)
         }
-        if (!value.resizable) commands += Command.ShowEdge(WindowResizeEdge.None)
-        return Decision(false, commands)
+        if (!value.resizable) indicatedEdge = WindowResizeEdge.None
+        return decide(false, commands)
     }
 
     fun onInput(
@@ -183,7 +188,7 @@ internal class LinuxWindowGestureState {
             Pointer.Mouse -> handleMouse(input, hit, commands)
             is Pointer.Touch -> handleTouch(input, hit, commands)
         }
-        return Decision(consumed, commands)
+        return decide(consumed, commands)
     }
 
     fun resolveCaption(
@@ -200,7 +205,7 @@ internal class LinuxWindowGestureState {
         } else {
             taps.cancel()
         }
-        return Decision(true, commands)
+        return decide(true, commands)
     }
 
     fun cancel(): Decision {
@@ -210,7 +215,7 @@ internal class LinuxWindowGestureState {
         capturedTouches = contacts.isNotEmpty()
         val commands = mutableListOf<Command>()
         finish(commands)
-        return Decision(false, commands)
+        return decide(false, commands)
     }
 
     fun resetTouchInput(): Decision {
@@ -221,7 +226,7 @@ internal class LinuxWindowGestureState {
         val commands = mutableListOf<Command>()
         // Device/session resets must leave an AWT mouse drag alone.
         if (gesture?.pointer is Pointer.Touch) finish(commands)
-        return Decision(false, commands)
+        return decide(false, commands)
     }
 
     private val canMove: Boolean
@@ -367,8 +372,8 @@ internal class LinuxWindowGestureState {
     ): Boolean {
         val edge = if (configuration!!.resizable) hit.edge else WindowResizeEdge.None
         when (input.phase) {
-            Phase.Enter -> commands += Command.ShowEdge(edge)
-            Phase.Exit -> if (gesture == null) commands += Command.ShowEdge(WindowResizeEdge.None)
+            Phase.Enter -> indicatedEdge = edge
+            Phase.Exit -> if (gesture == null) indicatedEdge = WindowResizeEdge.None
             Phase.Press -> return beginMouseGesture(
                 input = input,
                 edge = edge,
@@ -387,7 +392,7 @@ internal class LinuxWindowGestureState {
                 if (input.primary) {
                     suppressedClick = if (active is Gesture.Move) Click.Caption else Click.Resize
                     finish(commands, applyPendingResize = true)
-                    commands += Command.ShowEdge(edge)
+                    indicatedEdge = edge
                 }
                 return true
             }
@@ -440,7 +445,7 @@ internal class LinuxWindowGestureState {
         taps.cancel()
         gesture = Gesture.Resize(pointer)
         commands += Command.StartResize(edge, position)
-        commands += Command.ShowEdge(edge)
+        indicatedEdge = edge
     }
 
     private fun update(
@@ -495,6 +500,21 @@ internal class LinuxWindowGestureState {
         if (gesture is Gesture.Resize) commands += Command.EndResize(applyPendingResize)
         gesture = null
         commands += Command.EndMove
-        commands += Command.ShowEdge(WindowResizeEdge.None)
+        indicatedEdge = WindowResizeEdge.None
+    }
+
+    /**
+     * Completes a decision. Indicator changes made while handling one input are intermediate:
+     * restarting or finishing a gesture must not report `edge -> None -> edge` to the window.
+     */
+    private fun decide(
+        consumed: Boolean,
+        commands: MutableList<Command>
+    ): Decision {
+        if (indicatedEdge != reportedEdge) {
+            reportedEdge = indicatedEdge
+            commands += Command.ShowEdge(indicatedEdge)
+        }
+        return Decision(consumed, commands)
     }
 }
