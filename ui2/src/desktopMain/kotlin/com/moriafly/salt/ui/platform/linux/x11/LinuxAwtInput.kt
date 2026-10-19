@@ -150,7 +150,7 @@ internal object LinuxAwtInput {
         }
 
         private companion object {
-            const val TOUCH_BITS = (1 shl (18 - 16)) or (1 shl (19 - 16)) or (1 shl (20 - 16))
+            const val TOUCH_BITS = (1 shl 18 - 16) or (1 shl 19 - 16) or (1 shl 20 - 16)
         }
 
         fun release() = locked { display ->
