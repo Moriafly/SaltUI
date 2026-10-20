@@ -35,6 +35,9 @@ internal interface WindowGestureEffects {
         val isNativeMouseMove: Boolean
             get() = false
 
+        /** Drops ownership of a native mouse move without cancelling it in the WM. */
+        fun releaseNativeMouseMove(): Boolean
+
         fun prepareTouchMove(
             id: Long,
             start: Position,

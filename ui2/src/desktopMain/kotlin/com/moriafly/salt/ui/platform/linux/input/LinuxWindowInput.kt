@@ -242,6 +242,9 @@ internal class LinuxWindowInput private constructor(
             )
         )
         touch?.cancel()
+        // A failed reader can no longer report raw button release. Requested stops already
+        // cancelled input; leave unrelated AWT and Compose input running.
+        if (gestures.releaseNativeMouseMove()) mouse.onNativeMouseRelease()
         if (closed) {
             mouse.close()
         } else if (restartAfterClose) {

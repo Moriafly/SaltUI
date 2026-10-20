@@ -90,6 +90,13 @@ internal class LinuxWindowGestureEffects(
                 return active.pointer == Pointer.Mouse && active.move.started
             }
 
+        override fun releaseNativeMouseMove(): Boolean {
+            if (!isNativeMouseMove) return false
+            nativeDrag?.move?.detach()
+            nativeDrag = null
+            return true
+        }
+
         override fun prepareTouchMove(
             id: Long,
             start: Position,

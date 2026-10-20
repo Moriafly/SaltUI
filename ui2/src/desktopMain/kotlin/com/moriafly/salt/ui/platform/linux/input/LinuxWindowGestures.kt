@@ -205,6 +205,13 @@ internal class LinuxWindowGestures(
         return true
     }
 
+    fun releaseNativeMouseMove(): Boolean {
+        // The WM still ends the drag on release; only its end notification is lost.
+        if (!effects.mover.releaseNativeMouseMove()) return false
+        cancel()
+        return true
+    }
+
     fun resetTouchInput() {
         captionQuery = null
         execute(state.resetTouchInput())

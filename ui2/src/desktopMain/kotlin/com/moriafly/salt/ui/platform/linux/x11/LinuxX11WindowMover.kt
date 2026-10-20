@@ -268,6 +268,15 @@ internal object LinuxX11WindowMover {
             return sent != 0
         }
 
+        /**
+         * Releases this connection but lets the WM finish the drag. Cancelling an active move
+         * makes the WM restore the window's start position.
+         */
+        fun detach() {
+            started = false
+            close()
+        }
+
         override fun close() {
             if (closed) return
             closed = true
