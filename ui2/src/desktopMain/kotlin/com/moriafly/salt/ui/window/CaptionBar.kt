@@ -23,6 +23,8 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.PointerEventType
@@ -33,10 +35,34 @@ import com.moriafly.salt.ui.platform.linux.linuxCaptionBarHitTest
 import com.moriafly.salt.ui.platform.windows.windowsCaptionBarTouchInput
 
 /**
- * The CaptionBarHitTest is a crucial component. It should be placed between the content and the
- * clickable components in the title bar. This is particularly useful in certain scenarios, as it
- * allows for both correctly responding to the clickable components in the title bar and handling
- * the drag events of the title bar.
+ * **Hit-test configuration for SaltUI windows only, not a standalone window-dragging component.**
+ *
+ * This invisible region identifies caption-bar input for the platform window handling installed
+ * by [SaltWindow] or [SaltDialogWindow]. It does not provide window movement on its own. Movement
+ * is handled by the SaltUI window implementation and controlled by [SaltWindowProperties.moveable].
+ * Use it only inside one of these windows; it cannot add dragging support to an arbitrary window.
+ *
+ * Place it above the window content and below interactive caption-bar controls in drawing order,
+ * so those controls keep receiving their own input. Its default size fills the window width and
+ * uses [SaltWindowInfo.captionBarHeight].
+ *
+ * Each window may have **zero or one** active [CaptionBarHitTest]. A second instance in the same
+ * window throws [IllegalStateException], even when the instances are in different layout branches.
+ * Child [SaltWindow] and [SaltDialogWindow] instances have independent registrations and may each
+ * have their own region. Leaving the composition releases the registration for that window.
+ *
+ * Keep this configuration outside `AnimatedContent`, `Crossfade`, or overlapping
+ * `AnimatedVisibility` branches. Outgoing content still occupies its registration until it
+ * leaves the composition, so incoming and outgoing regions count as two active instances.
+ * Keep one configuration at window level and animate only the page content or caption controls.
+ *
+ * Only [SaltWindow] and [SaltDialogWindow] establish independent registration scopes. Do not
+ * declare [CaptionBarHitTest] in Compose `Popup`, `Dialog`, `DialogWindow`, or plain `Window`
+ * content: these child window and overlay compositions inherit the parent's registration rather
+ * than establishing a SaltUI window scope, even when backed by a separate native window.
+ *
+ * @throws IllegalStateException If used outside a SaltUI window or more than once in the same
+ * window.
  */
 @UnstableSaltUiApi
 @OptIn(ExperimentalComposeUiApi::class)
@@ -45,9 +71,25 @@ fun CaptionBarHitTest(
     modifier: Modifier = Modifier
 ) {
     if (OS.isDesktop()) {
+        val registration = LocalCaptionBarHitTestRegistration.current
         val saltWindowInfo = LocalSaltWindowInfo.current
         val isHitTestInCaptionBarState = LocalIsHitTestInCaptionBarState.current
         val saltWindowProperties = LocalSaltWindowProperties.current
+
+        // Register during apply: abandoned recompositions must not claim the slot. The keys
+        // release the old window resources if this content changes window scope.
+        DisposableEffect(registration, isHitTestInCaptionBarState) {
+            check(!registration.isRegistered) {
+                "Only one CaptionBarHitTest may be active in a SaltUI window scope. " +
+                    "Popup, Dialog, and non-SaltUI child windows inherit the host's " +
+                    "registration instead of creating their own."
+            }
+            registration.isRegistered = true
+            onDispose {
+                registration.isRegistered = false
+                isHitTestInCaptionBarState.value = false
+            }
+        }
 
         Spacer(
             modifier = modifier
@@ -69,3 +111,14 @@ fun CaptionBarHitTest(
         )
     }
 }
+
+// Each SaltUI window provides a fresh registration inside its native window content, so child
+// windows do not inherit their parent's registration. This is not observable composition state.
+internal class CaptionBarHitTestRegistration {
+    var isRegistered = false
+}
+
+internal val LocalCaptionBarHitTestRegistration =
+    staticCompositionLocalOf<CaptionBarHitTestRegistration> {
+        error("CaptionBarHitTest requires content hosted by a SaltWindow or SaltDialogWindow.")
+    }
