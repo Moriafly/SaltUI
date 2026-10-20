@@ -17,15 +17,12 @@
 
 package com.moriafly.salt.ui.window
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.awt.ComposeDialog
@@ -38,6 +35,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.SemanticsNodeInteraction
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.v2.runDesktopComposeUiTest
 import androidx.compose.ui.unit.DpSize
@@ -48,19 +46,21 @@ import androidx.compose.ui.window.rememberDialogState
 import androidx.compose.ui.window.rememberWindowState
 import com.moriafly.salt.core.os.OS
 import com.moriafly.salt.ui.SaltTheme
+import com.moriafly.salt.ui.SaltUiFlags
 import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.moriafly.salt.ui.util.findSkiaLayer
+import com.moriafly.salt.ui.window.internal.SaltWindowExceptionHandler
 import org.junit.Assume.assumeTrue
 import java.awt.Point
 import java.awt.Robot
 import java.awt.Window
 import java.awt.event.InputEvent
 import java.awt.event.KeyEvent
-import javax.swing.SwingUtilities
+import java.util.concurrent.atomic.AtomicReference
 import kotlin.math.roundToInt
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertFailsWith
+import kotlin.test.assertIs
 import kotlin.test.assertTrue
 
 @OptIn(
@@ -70,54 +70,61 @@ import kotlin.test.assertTrue
 )
 class CaptionBarHitTestTest {
     @Test
-    fun secondRegionInWindowIsRejectedAfterRealClick() {
+    fun secondRegionInWindowIsRejected() {
         assertDuplicateIsRejected(inDialog = false)
     }
 
     @Test
-    fun secondRegionInChildDialogIsRejectedAfterRealClick() {
+    fun secondRegionInChildDialogIsRejected() {
         assertDuplicateIsRejected(inDialog = true)
     }
 
     private fun assertDuplicateIsRejected(inDialog: Boolean) {
-        val error = assertFailsWith<IllegalStateException> {
+        val windowFailure = AtomicReference<Throwable>()
+        val previousHandler = SaltWindowExceptionHandler.onException
+        val previousDefaultHandlerFlag = SaltUiFlags.isDisableDefaultWindowExceptionHandler
+        try {
+            SaltUiFlags.isDisableDefaultWindowExceptionHandler = true
+            SaltWindowExceptionHandler.onException = { windowFailure.compareAndSet(null, it) }
             runDesktopComposeUiTest {
-                lateinit var target: Window
                 var duplicate by mutableStateOf(false)
                 setContent {
                     SaltTheme {
                         SaltWindow(
                             onCloseRequest = {},
-                            title = "Caption registration parent",
-                            alwaysOnTop = true,
-                            init = { if (!inDialog) target = it }
+                            title = "Caption registration parent"
                         ) {
                             if (inDialog) {
                                 CaptionBarHitTest()
                                 SaltDialogWindow(
                                     onCloseRequest = {},
-                                    title = "Caption registration dialog",
-                                    alwaysOnTop = true,
-                                    init = { target = it }
+                                    title = "Caption registration dialog"
                                 ) {
-                                    DuplicateCaptionContent(duplicate) { duplicate = true }
+                                    DuplicateCaptionContent(duplicate)
                                 }
                             } else {
-                                DuplicateCaptionContent(duplicate) { duplicate = true }
+                                DuplicateCaptionContent(duplicate)
                             }
                         }
                     }
                 }
 
-                onNodeWithTag("add-region").assertIsDisplayed()
-                val robot = Robot().apply { autoDelay = 30 }
-                robot.bringToFront(target)
-                robot.click(onNodeWithTag("add-region").screenPoint(target))
-                waitUntil(timeoutMillis = 5_000) { duplicate }
-                waitForIdle()
+                onNodeWithTag("caption").assertIsDisplayed()
+                // Registration is a configuration constraint; native dragging is tested below.
+                runOnIdle { duplicate = true }
+                // Window compositions report failures asynchronously. Observe the host callback
+                // before teardown so the failure cannot escape into the next test.
+                waitUntil(timeoutMillis = 5_000) { windowFailure.get() != null }
             }
+        } finally {
+            SaltWindowExceptionHandler.onException = previousHandler
+            SaltUiFlags.isDisableDefaultWindowExceptionHandler = previousDefaultHandlerFlag
         }
-        assertTrue(error.message.orEmpty().contains("Only one CaptionBarHitTest"))
+        val error = assertIs<IllegalStateException>(windowFailure.get())
+        assertTrue(
+            error.message.orEmpty().contains("Only one CaptionBarHitTest"),
+            error.stackTraceToString()
+        )
     }
 
     @Test
@@ -179,11 +186,19 @@ class CaptionBarHitTestTest {
             for ((targetIndex, entry) in windows.withIndex()) {
                 val (target, tag) = entry
                 onNodeWithTag(tag).assertIsDisplayed()
-                robot.bringToFront(target)
-                waitForIdle()
+                runOnUiThread {
+                    target.toFront()
+                    target.requestFocus()
+                }
+                waitUntil(timeoutMillis = 5_000) { target.isActive }
+                val caption = onNodeWithTag(tag)
+                // An owned dialog can keep its owner active without giving it input focus.
+                // Focus client content below the caption before starting a native drag.
+                robot.click(caption.screenPoint(target, bottomOffset = 12))
+                waitUntil(timeoutMillis = 5_000) { target.isFocused }
                 val initialLocations = windows.map { it.first.location }
                 val targetLocation = initialLocations[targetIndex]
-                robot.drag(onNodeWithTag(tag).screenPoint(target))
+                robot.drag(caption.screenPoint(target))
                 waitUntil(timeoutMillis = 5_000) {
                     target.location.x >= targetLocation.x + 40
                 }
@@ -234,7 +249,7 @@ class CaptionBarHitTestTest {
                             if (enabled) {
                                 if (alternate) {
                                     Box {
-                                        CaptionBarHitTest(Modifier.testTag("caption"))
+                                        CaptionBarHitTest(Modifier.testTag("alternate-caption"))
                                     }
                                 } else {
                                     CaptionBarHitTest(Modifier.testTag("caption"))
@@ -247,7 +262,11 @@ class CaptionBarHitTestTest {
 
             onNodeWithTag("content").assertIsDisplayed()
             val robot = Robot().apply { autoDelay = 30 }
-            robot.bringToFront(window)
+            runOnUiThread {
+                window.toFront()
+                window.requestFocus()
+            }
+            waitUntil(timeoutMillis = 5_000) { window.isActive }
             robot.click(onNodeWithTag("content").screenPoint(window))
             waitUntil(timeoutMillis = 5_000) { window.isFocused }
             val noRegionLocation = window.location
@@ -260,6 +279,9 @@ class CaptionBarHitTestTest {
             assertEquals(noRegionLocation, window.location)
 
             robot.pressKey(KeyEvent.VK_SPACE)
+            waitUntil(timeoutMillis = 5_000) {
+                onAllNodesWithTag("caption").fetchSemanticsNodes().size == 1
+            }
             onNodeWithTag("caption").assertIsDisplayed()
             val withRegionLocation = window.location
             robot.drag(onNodeWithTag("caption").screenPoint(window))
@@ -267,34 +289,45 @@ class CaptionBarHitTestTest {
 
             // Replacing the call site in one composition must release the previous registration.
             robot.pressKey(KeyEvent.VK_R)
-            waitForIdle()
+            waitUntil(timeoutMillis = 5_000) {
+                onAllNodesWithTag("alternate-caption").fetchSemanticsNodes().size == 1
+            }
+            onNodeWithTag("caption").assertDoesNotExist()
+            val alternateCaption = onNodeWithTag("alternate-caption")
+            alternateCaption.assertIsDisplayed()
             val replacementLocation = window.location
-            robot.drag(onNodeWithTag("caption").screenPoint(window, bottomOffset = -1))
+            robot.drag(alternateCaption.screenPoint(window, bottomOffset = -1))
             waitUntil(timeoutMillis = 5_000) { window.x >= replacementLocation.x + 40 }
 
             // The lower boundary and the point below it must remain client input.
             for (offset in listOf(0, 1)) {
                 val initialLocation = window.location
-                robot.drag(onNodeWithTag("caption").screenPoint(window, bottomOffset = offset))
+                robot.drag(alternateCaption.screenPoint(window, bottomOffset = offset))
                 waitForIdle()
                 assertEquals(initialLocation, window.location)
             }
 
             // Remove using the keyboard while the pointer is still inside the caption region.
-            val removedPoint = onNodeWithTag("caption").screenPoint(window)
+            val removedPoint = alternateCaption.screenPoint(window)
             robot.mouseMove(removedPoint.x, removedPoint.y)
             robot.delay(150)
             robot.pressKey(KeyEvent.VK_SPACE)
-            onNodeWithTag("caption").assertDoesNotExist()
+            waitUntil(timeoutMillis = 5_000) {
+                onAllNodesWithTag("alternate-caption").fetchSemanticsNodes().isEmpty()
+            }
+            alternateCaption.assertDoesNotExist()
             val removedLocation = window.location
             robot.drag(removedPoint)
             waitForIdle()
             assertEquals(removedLocation, window.location)
 
             robot.pressKey(KeyEvent.VK_SPACE)
-            onNodeWithTag("caption").assertIsDisplayed()
+            waitUntil(timeoutMillis = 5_000) {
+                onAllNodesWithTag("alternate-caption").fetchSemanticsNodes().size == 1
+            }
+            alternateCaption.assertIsDisplayed()
             val registeredAgainLocation = window.location
-            robot.drag(onNodeWithTag("caption").screenPoint(window))
+            robot.drag(alternateCaption.screenPoint(window))
             waitUntil(timeoutMillis = 5_000) { window.x >= registeredAgainLocation.x + 40 }
         }
     }
@@ -302,20 +335,13 @@ class CaptionBarHitTestTest {
 
 @OptIn(UnstableSaltUiApi::class)
 @Composable
-private fun DuplicateCaptionContent(duplicate: Boolean, onAddRegion: () -> Unit) {
+private fun DuplicateCaptionContent(duplicate: Boolean) {
     Box(Modifier.fillMaxSize()) {
-        CaptionBarHitTest()
+        CaptionBarHitTest(Modifier.testTag("caption"))
         if (duplicate) {
             // A separate layout branch still belongs to the same native window.
             Box { CaptionBarHitTest() }
         }
-        Box(
-            Modifier
-                .align(Alignment.BottomStart)
-                .size(100.dp)
-                .testTag("add-region")
-                .clickable(onClick = onAddRegion)
-        )
     }
 }
 
@@ -334,14 +360,6 @@ private fun SemanticsNodeInteraction.screenPoint(
         (bounds.bottom / transform.scaleY).roundToInt() + bottomOffset
     }
     return Point(origin.x + (bounds.center.x / transform.scaleX).roundToInt(), origin.y + y)
-}
-
-private fun Robot.bringToFront(window: Window) {
-    SwingUtilities.invokeAndWait {
-        window.toFront()
-        window.requestFocus()
-    }
-    delay(200)
 }
 
 private fun Robot.click(point: Point) {

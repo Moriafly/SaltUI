@@ -51,9 +51,15 @@ import com.moriafly.salt.ui.platform.windows.windowsCaptionBarTouchInput
  * Child [SaltWindow] and [SaltDialogWindow] instances have independent registrations and may each
  * have their own region. Leaving the composition releases the registration for that window.
  *
- * Do not declare [CaptionBarHitTest] inside a Compose `Popup`. Popups inherit their parent's
- * registration instead of creating a SaltUI window scope, even when hosted in a separate native
- * window.
+ * Keep this configuration outside `AnimatedContent`, `Crossfade`, or overlapping
+ * `AnimatedVisibility` branches. Outgoing content still occupies its registration until it
+ * leaves the composition, so incoming and outgoing regions count as two active instances.
+ * Keep one configuration at window level and animate only the page content or caption controls.
+ *
+ * Only [SaltWindow] and [SaltDialogWindow] establish independent registration scopes. Do not
+ * declare [CaptionBarHitTest] in Compose `Popup`, `Dialog`, `DialogWindow`, or plain `Window`
+ * content: these child window and overlay compositions inherit the parent's registration rather
+ * than establishing a SaltUI window scope, even when backed by a separate native window.
  *
  * @throws IllegalStateException If used outside a SaltUI window or more than once in the same
  * window.
@@ -74,8 +80,9 @@ fun CaptionBarHitTest(
         // release the old window resources if this content changes window scope.
         DisposableEffect(registration, isHitTestInCaptionBarState) {
             check(!registration.isRegistered) {
-                "Only one CaptionBarHitTest may be active per SaltUI window. " +
-                    "Child windows may each have their own CaptionBarHitTest."
+                "Only one CaptionBarHitTest may be active in a SaltUI window scope. " +
+                    "Popup, Dialog, and non-SaltUI child windows inherit the host's " +
+                    "registration instead of creating their own."
             }
             registration.isRegistered = true
             onDispose {
@@ -113,5 +120,5 @@ internal class CaptionBarHitTestRegistration {
 
 internal val LocalCaptionBarHitTestRegistration =
     staticCompositionLocalOf<CaptionBarHitTestRegistration> {
-        error("CaptionBarHitTest must be used inside a SaltWindow or SaltDialogWindow.")
+        error("CaptionBarHitTest requires content hosted by a SaltWindow or SaltDialogWindow.")
     }
