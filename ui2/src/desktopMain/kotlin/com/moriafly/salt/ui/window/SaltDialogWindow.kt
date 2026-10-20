@@ -25,6 +25,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.ExperimentalComposeUiApi
@@ -160,6 +161,9 @@ fun SaltDialogWindow(
             @Suppress("UNCHECKED_CAST")
             CompositionLocalProvider(
                 LocalDialogState provides state,
+                LocalCaptionBarHitTestRegistration provides remember(window) {
+                    CaptionBarHitTestRegistration()
+                },
                 LocalSaltWindowProperties provides properties as SaltWindowProperties<Window>,
                 LocalDensity provides Density(
                     density = density.density * properties.extraDisplayScale,
