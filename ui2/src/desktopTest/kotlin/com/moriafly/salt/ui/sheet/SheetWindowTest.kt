@@ -387,11 +387,16 @@ class SheetWindowTest {
             fixture.drag(robot, restored.center.x, restored.top + 36f, restored.height * 0.35f)
             waitForIdle()
             assertEquals(medium.height, fixture.bounds.getValue("panel").height, 2f)
+            val closeButton = sheetCloseButton()
             runOnIdle {
                 assertEquals(0, fixture.requests)
                 fixture.properties = fixture.properties.copy(dismissible = false)
             }
-            onNode(sheetCloseButton()).assertDoesNotExist()
+            // SaltWindow recomposes on its real frame clock, outside the test harness clock.
+            waitUntil(timeoutMillis = 5_000) {
+                onAllNodes(closeButton).fetchSemanticsNodes().isEmpty()
+            }
+            onNode(closeButton).assertDoesNotExist()
             fixture.click(robot, "Background")
             robot.pressKey(KeyEvent.VK_ESCAPE)
             waitForIdle()
@@ -400,7 +405,10 @@ class SheetWindowTest {
                 assertEquals(0, fixture.backgroundClicks)
                 fixture.properties = fixture.properties.copy(dismissible = true)
             }
-            onNode(sheetCloseButton()).assertIsDisplayed()
+            waitUntil(timeoutMillis = 5_000) {
+                onAllNodes(closeButton).fetchSemanticsNodes().size == 1
+            }
+            onNode(closeButton).assertIsDisplayed()
             val enabled = fixture.bounds.getValue("panel")
             fixture.drag(robot, enabled.center.x, enabled.top + 36f, enabled.height * 0.35f)
             waitForIdle()
