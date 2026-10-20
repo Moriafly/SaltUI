@@ -678,6 +678,7 @@ class LinuxWindowGesturesTest {
     ) {
         private var id = 0L
         private var time = 0L
+        private val origins = mutableMapOf<Long, Offset>()
         private val input = fixture.onEdt {
             LinuxTouchInput(
                 canvas = checkNotNull(fixture.window.findSkiaLayer()).canvas,
@@ -703,7 +704,14 @@ class LinuxWindowGesturesTest {
             position: Offset
         ) = fixture.onEdt {
             time += 80
-            val screen = fixture.screen(position)
+            // A finger keeps its screen origin from touch-down. The native origin lags AWT
+            // bounds until the WM applies a move, so re-reading it would shift the contact.
+            val origin = if (phase == TouchPhase.Down) {
+                fixture.screen(Offset.Zero).also { origins[id] = it }
+            } else {
+                origins.getOrPut(id) { fixture.screen(Offset.Zero) }
+            }
+            val screen = origin + position
             assertEquals(
                 LinuxWindowGestures.TouchResult.Handled,
                 input.dispatch(
