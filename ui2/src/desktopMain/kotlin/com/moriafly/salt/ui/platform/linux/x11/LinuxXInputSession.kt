@@ -352,6 +352,8 @@ internal class LinuxXInputSession(
                         LinuxXInput2.HIERARCHY_CHANGED -> directDevices = refreshDevices(display)
 
                         LinuxXInput2.RAW_BUTTON_RELEASE -> {
+                            // dix emulates touch pointer events only at delivery, so touches
+                            // never yield raw button events; no direct-device filter is needed.
                             val raw = LinuxXInput2.RawEvent(requireNotNull(cookie.data))
                             if (raw.detail == 1) dispatch { listener.onMouseMoveEnd() }
                         }
