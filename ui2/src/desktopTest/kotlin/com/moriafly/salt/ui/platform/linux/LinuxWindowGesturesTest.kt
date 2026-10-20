@@ -34,10 +34,17 @@ import com.moriafly.salt.ui.Text
 import com.moriafly.salt.ui.platform.input.DesktopTouchScene
 import com.moriafly.salt.ui.platform.linux.input.LinuxTouchInput
 import com.moriafly.salt.ui.platform.linux.input.LinuxWindowGestures
+import com.moriafly.salt.ui.platform.linux.x11.LinuxX11
 import com.moriafly.salt.ui.platform.linux.x11.LinuxXInputSession
 import com.moriafly.salt.ui.platform.linux.x11.LinuxXInputSession.TouchPhase
 import com.moriafly.salt.ui.util.findSkiaLayer
 import com.moriafly.salt.ui.window.WindowResizeEdge
+import com.sun.jna.NativeLong
+import com.sun.jna.Pointer
+import com.sun.jna.platform.unix.X11
+import com.sun.jna.ptr.IntByReference
+import com.sun.jna.ptr.NativeLongByReference
+import com.sun.jna.ptr.PointerByReference
 import java.awt.Frame
 import java.awt.Point
 import java.awt.Robot
@@ -67,10 +74,11 @@ class LinuxWindowGesturesTest {
             mouse.move(Point(start.x + 30, start.y + 20))
             mouse.settle()
             mouse.move(Point(start.x + 110, start.y + 70))
-            await("window following mouse") {
+            mouse.release()
+            // Openbox reports a WM move to the client only when the move ends.
+            await("window moved by the drag") {
                 abs(window.x - before.x - 110) <= 1 && abs(window.y - before.y - 70) <= 1
             }
-            mouse.release()
             val released = onEdt { window.bounds }
             mouse.move(Point(start.x + 160, start.y + 100))
             mouse.settle()
@@ -297,6 +305,11 @@ class LinuxWindowGesturesTest {
     @Test
     fun nativeMouseDragFromMaximizedCaptionKeepsPointerInsideRestoredCaption() = withWindow {
         assumeTrue(Toolkit.getDefaultToolkit().isFrameStateSupported(Frame.MAXIMIZED_BOTH))
+        // Restoring a maximized window on move is WM policy; Openbox keeps it maximized.
+        assumeTrue(
+            "Requires a WM that restores maximized windows on move",
+            windowManagerName().equals("KWin", ignoreCase = true)
+        )
         NativeMouse(this).use { mouse ->
             val before = onEdt { window.bounds }
             mouse.doubleClick(mouse.screenPoint(onEdt { caption.center }))
@@ -486,6 +499,54 @@ class LinuxWindowGesturesTest {
             val previousClicks = onEdt { clicks }
             touch.tap(onEdt { content.center })
             await("click after all contacts release") { clicks == previousClicks + 1 }
+        }
+    }
+
+    /** Reads the EWMH name of the running window manager, or `null` if none is advertised. */
+    private fun windowManagerName(): String? {
+        val x11 = LinuxX11.INSTANCE
+        val display = x11.XOpenDisplay(null) ?: return null
+        try {
+            val root = x11.XDefaultRootWindow(display)
+            val check = readProperty(display, root, "_NET_SUPPORTING_WM_CHECK") { data, _ ->
+                X11.Window(data.getNativeLong(0).toLong())
+            } ?: return null
+            return readProperty(display, check, "_NET_WM_NAME") { data, count ->
+                String(data.getByteArray(0, count), Charsets.UTF_8)
+            }
+        } finally {
+            x11.XCloseDisplay(display)
+        }
+    }
+
+    private fun <T> readProperty(
+        display: X11.Display,
+        window: X11.Window,
+        name: String,
+        read: (Pointer, Int) -> T
+    ): T? {
+        val x11 = LinuxX11.INSTANCE
+        val count = NativeLongByReference()
+        val data = PointerByReference()
+        val result = x11.XGetWindowProperty(
+            display,
+            window,
+            x11.XInternAtom(display, name, false),
+            NativeLong(0),
+            NativeLong(1024),
+            false,
+            X11.Atom(0), // AnyPropertyType
+            X11.AtomByReference(),
+            IntByReference(),
+            count,
+            NativeLongByReference(),
+            data
+        )
+        try {
+            if (result != X11.Success || count.value.toInt() == 0) return null
+            return data.value?.let { read(it, count.value.toInt()) }
+        } finally {
+            data.value?.let { x11.XFree(it) }
         }
     }
 
