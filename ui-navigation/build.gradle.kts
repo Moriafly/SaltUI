@@ -82,7 +82,7 @@ kotlin {
     android {
         namespace = "com.moriafly.salt.ui.navigation"
         compileSdk = 37
-        minSdk = 23
+        minSdk = 24
 
         compilerOptions {
             jvmTarget.set(JvmTarget.JVM_21)
