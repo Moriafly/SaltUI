@@ -20,6 +20,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.onNodeWithTag
+import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.v2.runDesktopComposeUiTest
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
@@ -72,5 +74,22 @@ class MainContentTest {
             .boundsInRoot
 
         assertEquals(captionBarBounds.bottom, layerBounds.top)
+    }
+
+    @Test
+    fun navigatesToComponentsAndBack() = runDesktopComposeUiTest(width = 1280, height = 1024) {
+        setContent {
+            AppTheme {
+                MainContent()
+            }
+        }
+
+        onNodeWithText("Components").performClick()
+        waitForIdle()
+        onNodeWithText("Initially off").assertExists()
+
+        onNodeWithTag("backButton").performClick()
+        waitForIdle()
+        onNodeWithText("Version").assertExists()
     }
 }

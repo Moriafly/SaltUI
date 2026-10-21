@@ -30,7 +30,6 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.navigation3.runtime.NavKey
-import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.savedstate.serialization.SavedStateConfiguration
 import com.moriafly.salt.adaptive.window.LocalSaltAdaptiveWindow
 import com.moriafly.salt.adaptive.window.UnstableSaltAdaptiveWindowApi
@@ -38,23 +37,25 @@ import com.moriafly.salt.adaptive.window.WindowSizeClass
 import com.moriafly.salt.core.os.OS
 import com.moriafly.salt.ui.Layer
 import com.moriafly.salt.ui.UnstableSaltUiApi
+import com.moriafly.salt.ui.navigation.rememberSaltNavigator
 import com.moriafly.salt.ui.sample.ui.navigation.AppNavigation
-import com.moriafly.salt.ui.sample.ui.navigation.LocalNavBackStack
+import com.moriafly.salt.ui.sample.ui.navigation.LocalSaltNavigator
 import com.moriafly.salt.ui.sample.ui.navigation.ScreenRoute
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
 
-private val navBackStackConfig = SavedStateConfiguration {
+private val navigatorConfig = SavedStateConfiguration {
     serializersModule = SerializersModule {
         polymorphic(NavKey::class) {
             subclass(ScreenRoute.Main::class, ScreenRoute.Main.serializer())
             subclass(ScreenRoute.About::class, ScreenRoute.About.serializer())
             subclass(ScreenRoute.License::class, ScreenRoute.License.serializer())
+            subclass(ScreenRoute.List::class, ScreenRoute.List.serializer())
             subclass(ScreenRoute.Button::class, ScreenRoute.Button.serializer())
-            subclass(
-                ScreenRoute.Component::class,
-                ScreenRoute.Component.serializer()
-            )
+            subclass(ScreenRoute.Component::class, ScreenRoute.Component.serializer())
+            subclass(ScreenRoute.Dialog::class, ScreenRoute.Dialog.serializer())
+            subclass(ScreenRoute.Sheet::class, ScreenRoute.Sheet.serializer())
+            subclass(ScreenRoute.Material::class, ScreenRoute.Material.serializer())
         }
     }
 }
@@ -65,11 +66,15 @@ private val navBackStackConfig = SavedStateConfiguration {
 fun MainContent(
     windowCaptionBarHeight: Dp = 0.dp
 ) {
-    val navBackStack = rememberNavBackStack(navBackStackConfig, ScreenRoute.Main)
+    val navigator = rememberSaltNavigator(
+        configuration = navigatorConfig,
+        initRoute = ScreenRoute.Main,
+        topLevelRoutes = setOf(ScreenRoute.Main)
+    )
     val expandedLayout = LocalSaltAdaptiveWindow.current.sizeClass != WindowSizeClass.Compact
 
     CompositionLocalProvider(
-        LocalNavBackStack provides navBackStack
+        LocalSaltNavigator provides navigator
     ) {
         Box(
             modifier = Modifier
@@ -93,7 +98,7 @@ fun MainContent(
                     decorationEnabled = OS.isDesktop()
                 ) {
                     AppNavigation(
-                        navBackStack = navBackStack
+                        navigator = navigator
                     )
                 }
             }

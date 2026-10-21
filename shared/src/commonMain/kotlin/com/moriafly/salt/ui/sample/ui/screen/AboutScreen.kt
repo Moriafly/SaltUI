@@ -27,7 +27,7 @@ import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.moriafly.salt.ui.sample.ui.icons.Like
 import com.moriafly.salt.ui.sample.ui.icons.SimpleIcons
 import com.moriafly.salt.ui.sample.ui.icons.Star
-import com.moriafly.salt.ui.sample.ui.navigation.LocalNavBackStack
+import com.moriafly.salt.ui.sample.ui.navigation.LocalSaltNavigator
 import com.moriafly.salt.ui.sample.ui.navigation.ScreenRoute
 import com.moriafly.salt.ui.sample.ui.screen.basic.BasicScreenColumn
 import com.moriafly.salt.ui.screen.TitleBarButton
@@ -63,10 +63,10 @@ fun AboutScreen() {
         )
 
         RoundedColumn {
-            val navBackStack = LocalNavBackStack.current
+            val navigator = LocalSaltNavigator.current
             Item(
                 onClick = {
-                    navBackStack.add(ScreenRoute.License)
+                    navigator.navigate(ScreenRoute.License)
                 },
                 text = "License"
             )

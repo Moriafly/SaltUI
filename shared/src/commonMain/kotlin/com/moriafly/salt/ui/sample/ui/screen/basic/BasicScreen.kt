@@ -26,10 +26,11 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.testTag
 import com.moriafly.salt.ui.SaltTheme
 import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.moriafly.salt.ui.rememberScrollState
-import com.moriafly.salt.ui.sample.ui.navigation.LocalNavBackStack
+import com.moriafly.salt.ui.sample.ui.navigation.LocalSaltNavigator
 import com.moriafly.salt.ui.screen.BasicScreen
 import com.moriafly.salt.ui.screen.BasicScreenDefaults
 import com.moriafly.salt.ui.screen.BasicScreenStyle
@@ -40,11 +41,13 @@ import com.moriafly.salt.ui.verticalScroll
 fun BasicScreenBox(
     modifier: Modifier = Modifier,
     actionButton: (@Composable () -> Unit)? = {
-        val navBackStack = LocalNavBackStack.current
+        val navigator = LocalSaltNavigator.current
         BasicScreenDefaults.BackButton(
             onBack = {
-                navBackStack.removeLastOrNull()
-            }
+                navigator.back()
+            },
+            modifier = Modifier
+                .testTag("backButton")
         )
     },
     title: String? = null,
@@ -74,11 +77,13 @@ fun BasicScreenBox(
 fun BasicScreenColumn(
     modifier: Modifier = Modifier,
     actionButton: (@Composable () -> Unit)? = {
-        val navBackStack = LocalNavBackStack.current
+        val navigator = LocalSaltNavigator.current
         BasicScreenDefaults.BackButton(
             onBack = {
-                navBackStack.removeLastOrNull()
-            }
+                navigator.back()
+            },
+            modifier = Modifier
+                .testTag("backButton")
         )
     },
     title: String? = null,

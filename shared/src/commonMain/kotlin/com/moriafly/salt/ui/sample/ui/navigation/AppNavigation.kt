@@ -23,15 +23,15 @@ import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.compositionLocalOf
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
-import androidx.navigation3.runtime.NavBackStack
-import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.scene.Scene
 import androidx.navigation3.ui.NavDisplay
 import androidx.navigationevent.NavigationEvent.SwipeEdge
+import com.moriafly.salt.ui.UnstableSaltUiApi
+import com.moriafly.salt.ui.navigation.SaltNavigator
 import com.moriafly.salt.ui.sample.ui.screen.AboutScreen
 import com.moriafly.salt.ui.sample.ui.screen.ButtonScreen
 import com.moriafly.salt.ui.sample.ui.screen.ComponentScreen
@@ -42,21 +42,23 @@ import com.moriafly.salt.ui.sample.ui.screen.MainScreen
 import com.moriafly.salt.ui.sample.ui.screen.MaterialScreen
 import com.moriafly.salt.ui.sample.ui.screen.SheetScreen
 
-val LocalNavBackStack = compositionLocalOf<NavBackStack<NavKey>> {
-    error("LocalNavBackStack is not provided")
+@OptIn(UnstableSaltUiApi::class)
+val LocalSaltNavigator = staticCompositionLocalOf<SaltNavigator> {
+    error("LocalSaltNavigator is not provided")
 }
 
+@OptIn(UnstableSaltUiApi::class)
 @Composable
 fun AppNavigation(
-    navBackStack: NavBackStack<NavKey>,
+    navigator: SaltNavigator,
     modifier: Modifier = Modifier
 ) {
     NavDisplay(
-        backStack = navBackStack,
+        backStack = navigator.navBackStack,
         modifier = modifier
             .clipToBounds(),
         onBack = {
-            navBackStack.removeLastOrNull()
+            navigator.back()
         },
         transitionSpec = {
             ContentTransform(

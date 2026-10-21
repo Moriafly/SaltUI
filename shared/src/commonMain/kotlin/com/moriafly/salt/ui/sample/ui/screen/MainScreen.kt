@@ -44,7 +44,7 @@ import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.moriafly.salt.ui.sample.ui.icons.Like
 import com.moriafly.salt.ui.sample.ui.icons.Search
 import com.moriafly.salt.ui.sample.ui.icons.SimpleIcons
-import com.moriafly.salt.ui.sample.ui.navigation.LocalNavBackStack
+import com.moriafly.salt.ui.sample.ui.navigation.LocalSaltNavigator
 import com.moriafly.salt.ui.sample.ui.navigation.ScreenRoute
 import com.moriafly.salt.ui.sample.ui.screen.basic.BasicScreenColumn
 import com.moriafly.salt.ui.sample.util.AppConfig
@@ -105,24 +105,24 @@ fun MainScreen() {
             )
         }
 
-        val navBackStack = LocalNavBackStack.current
+        val navigator = LocalSaltNavigator.current
         ScreenCard {
             Item(
                 onClick = {
-                    navBackStack.add(ScreenRoute.Component)
+                    navigator.navigate(ScreenRoute.Component)
                 },
                 text = "Components",
                 sub = "ItemSwitcher examples"
             )
             Item(
                 onClick = {
-                    navBackStack.add(ScreenRoute.List)
+                    navigator.navigate(ScreenRoute.List)
                 },
                 text = "List"
             )
             Item(
                 onClick = {
-                    navBackStack.add(ScreenRoute.Button)
+                    navigator.navigate(ScreenRoute.Button)
                 },
                 text = "Button",
                 sub = "Appearance, intent, and control size"
@@ -134,17 +134,17 @@ fun MainScreen() {
             )
             Item(
                 onClick = {
-                    navBackStack.add(ScreenRoute.Dialog)
+                    navigator.navigate(ScreenRoute.Dialog)
                 },
                 text = "Dialog"
             )
             Item(
-                onClick = { navBackStack.add(ScreenRoute.Sheet) },
+                onClick = { navigator.navigate(ScreenRoute.Sheet) },
                 text = "Sheet"
             )
             Item(
                 onClick = {
-                    navBackStack.add(ScreenRoute.Material)
+                    navigator.navigate(ScreenRoute.Material)
                 },
                 text = "Material"
             )
@@ -153,7 +153,7 @@ fun MainScreen() {
         ScreenCard {
             Item(
                 onClick = {
-                    navBackStack.add(ScreenRoute.About)
+                    navigator.navigate(ScreenRoute.About)
                 },
                 text = "About"
             )
