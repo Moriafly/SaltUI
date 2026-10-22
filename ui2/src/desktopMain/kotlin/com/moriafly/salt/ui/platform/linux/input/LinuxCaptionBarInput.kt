@@ -35,17 +35,14 @@ import com.moriafly.salt.ui.platform.linux.window.LocalLinuxCaptionBarHitTest
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 internal fun Modifier.linuxCaptionBarInput(): Modifier {
-    val hitTest = LocalLinuxCaptionBarHitTest.current
-    val modifier = if (hitTest != null) {
-        val region = remember(hitTest) { LinuxCaptionBarHitTest.Region() }
-        DisposableEffect(hitTest, region) {
-            hitTest.regions.add(region)
-            onDispose { hitTest.regions.remove(region) }
-        }
-        onGloballyPositioned { region.bounds = it.boundsInWindow() }
-    } else {
-        this
+    val hitTest = LocalLinuxCaptionBarHitTest.current ?: return this
+    val region = remember(hitTest) { LinuxCaptionBarHitTest.Region() }
+    DisposableEffect(hitTest, region) {
+        hitTest.regions.add(region)
+        onDispose { hitTest.regions.remove(region) }
     }
+
+    val modifier = onGloballyPositioned { region.bounds = it.boundsInWindow() }
     val gestures = LocalLinuxWindowGestures.current ?: return modifier
     // Compose hit testing decides whether the caption or a control above it receives the press.
     return modifier.onPointerEvent(PointerEventType.Press) { event ->
