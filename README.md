@@ -9,10 +9,15 @@ SaltUI is UI components based on [Compose Multiplatform](https://github.com/JetB
 Add dependency:
 
 ```kotlin
-// Replace <TAG> with the latest version
-// e.g. implementation("io.github.moriafly:salt-ui:3.0.0-beta01")
-implementation("io.github.moriafly:salt-ui:<TAG>")
+commonMain.dependencies {
+    implementation("io.github.moriafly:salt-ui:3.0.0-beta03")
+
+    // Optional Navigation 3 integration
+    implementation("io.github.moriafly:salt-ui-navigation:3.0.0-beta03")
+}
 ```
+
+SaltUI requires Android minSdk 23; the optional Navigation 3 integration requires minSdk 24.
 
 Simple start:
 
@@ -28,8 +33,6 @@ fun App() {
 ```
 
 See demo: [shared](https://github.com/Moriafly/SaltUI/tree/main/shared).
-
-Sheet usage: [lifecycle, dismissal controls, and state retention](docs/sheet.md).
 
 ## Text Description and Translation Standards
 
@@ -56,6 +59,7 @@ SaltUI performs operations related to internal ART APIs. Please refer to the fol
 
 | SaltUI         | Compose Multiplatform | Jetpack Compose |
 |----------------|-----------------------|-----------------|
+| 3.0.0-beta03+  | 1.12.2                | 1.12.2          |
 | 3.0.0-beta02+  | 1.12.1                | 1.12.1          |
 | 3.0.0-beta01+  | 1.12.0                | 1.12.0          |
 | 3.0.0-alpha02+ | 1.12.0-rc01           | 1.12.0-rc01     |
