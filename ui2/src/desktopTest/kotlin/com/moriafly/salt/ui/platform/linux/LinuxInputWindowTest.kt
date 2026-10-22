@@ -56,7 +56,7 @@ import kotlin.concurrent.thread
 import kotlin.test.fail
 import org.junit.Assume.assumeTrue
 
-internal class LinuxInputWindow(
+internal class LinuxInputWindowTest(
     private val asDialog: Boolean = false,
     private val overlays: @Composable () -> Unit = {}
 ) : AutoCloseable {

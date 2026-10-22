@@ -99,7 +99,7 @@ class LinuxWindowGesturesTest {
             usePlatformInsets = false,
             animateTransition = false
         )
-        LinuxInputWindow(asDialog = true) {
+        LinuxInputWindowTest(asDialog = true) {
             if (depth > 0) {
                 Dialog(onDismissRequest = {}, properties = properties) {
                     Box(
@@ -561,15 +561,15 @@ class LinuxWindowGesturesTest {
     }
 
     private fun withWindow(
-        block: LinuxInputWindow.(TouchDriver) -> Unit
+        block: LinuxInputWindowTest.(TouchDriver) -> Unit
     ) {
-        LinuxInputWindow().use { fixture ->
+        LinuxInputWindowTest().use { fixture ->
             fixture.open()
             fixture.block(TouchDriver(fixture))
         }
     }
 
-    private fun LinuxInputWindow.mouse(
+    private fun LinuxInputWindowTest.mouse(
         id: Int,
         position: Offset
     ): MouseEvent {
@@ -593,7 +593,7 @@ class LinuxWindowGesturesTest {
     }
 
     private class NativeMouse(
-        private val fixture: LinuxInputWindow
+        private val fixture: LinuxInputWindowTest
     ) : AutoCloseable {
         private val robot = Robot().apply { autoDelay = 30 }
         private val helper = System.getenv("SALT_TEST_NATIVE_POINTER")?.let {
@@ -684,7 +684,7 @@ class LinuxWindowGesturesTest {
     }
 
     private class TouchDriver(
-        private val fixture: LinuxInputWindow
+        private val fixture: LinuxInputWindowTest
     ) {
         private var id = 0L
         private var time = 0L
