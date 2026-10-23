@@ -15,12 +15,12 @@
  * limitations under the License.
  */
 
-package com.moriafly.salt.ui.platform.linux
+package com.moriafly.salt.ui.platform.linux.window
 
-import com.sun.jna.Library
-import com.sun.jna.Native
-import com.sun.jna.NativeLong
+import com.moriafly.salt.ui.platform.linux.x11.LinuxX11
+import com.moriafly.salt.ui.platform.linux.x11.LinuxXcursor
 import com.sun.jna.Pointer
+import com.sun.jna.platform.unix.X11
 import java.awt.Cursor
 import java.awt.Toolkit
 import java.lang.reflect.Method
@@ -46,7 +46,9 @@ internal object LinuxResizeCursor {
         }
     }
 
-    fun get(type: Int): Cursor {
+    fun get(
+        type: Int
+    ): Cursor {
         val name = when (type) {
             Cursor.W_RESIZE_CURSOR -> "w-resize"
             Cursor.E_RESIZE_CURSOR -> "e-resize"
@@ -87,13 +89,15 @@ internal object LinuxResizeCursor {
         private val setPData = Cursor::class.java
             .getDeclaredMethod("setPData", Long::class.javaPrimitiveType)
             .accessible()
-        private val x11 = Native.load("X11", Xlib::class.java)
-        private val xcursor = Native.load("Xcursor", Xcursor::class.java)
+        private val x11 = LinuxX11.INSTANCE
+        private val xcursor = LinuxXcursor.INSTANCE
         private var theme: Theme? = null
         private val cursors = mutableMapOf<String, Cursor?>()
 
         @Synchronized
-        fun get(name: String): Cursor? {
+        fun get(
+            name: String
+        ): Cursor? {
             val currentTheme = readTheme() ?: return null
             if (currentTheme != theme) {
                 // AWT may still use old cursors; its disposer releases them when no longer referenced
@@ -125,13 +129,18 @@ internal object LinuxResizeCursor {
             }
         }
 
-        private fun load(name: String, theme: Theme): Cursor? {
+        private fun load(
+            name: String,
+            theme: Theme
+        ): Cursor? {
             val images =
                 xcursor.XcursorLibraryLoadImages(name, theme.name, theme.size) ?: return null
             try {
                 awtLock.invoke(null)
                 try {
-                    val display = Pointer(getDisplay.invoke(null) as Long)
+                    val display = X11.Display().apply {
+                        pointer = Pointer(getDisplay.invoke(null) as Long)
+                    }
                     val handle = xcursor.XcursorImagesLoadCursor(display, images)
                     if (handle.toLong() == 0L) return null
                     try {
@@ -154,29 +163,5 @@ internal object LinuxResizeCursor {
 
     private fun Method.accessible(): Method = apply {
         check(trySetAccessible()) { "AWT cursor access requires java.desktop module opens" }
-    }
-
-    private interface Xlib : Library {
-        fun XOpenDisplay(name: String?): Pointer?
-
-        fun XCloseDisplay(display: Pointer): Int
-
-        fun XFreeCursor(display: Pointer, cursor: NativeLong): Int
-    }
-
-    private interface Xcursor : Library {
-        fun XcursorGetTheme(display: Pointer): Pointer?
-
-        fun XcursorGetDefaultSize(display: Pointer): Int
-
-        fun XcursorLibraryLoadImages(
-            name: String,
-            theme: String?,
-            size: Int
-        ): Pointer?
-
-        fun XcursorImagesLoadCursor(display: Pointer, images: Pointer): NativeLong
-
-        fun XcursorImagesDestroy(images: Pointer)
     }
 }

@@ -37,6 +37,8 @@ import com.moriafly.salt.core.os.OS
 import com.moriafly.salt.ui.SaltTheme
 import com.moriafly.salt.ui.Text
 import com.moriafly.salt.ui.UnstableSaltUiApi
+import com.moriafly.salt.ui.platform.linux.decoration.LinuxClientShadow
+import com.moriafly.salt.ui.platform.linux.x11.LinuxX11
 import com.moriafly.salt.ui.window.SaltWindow
 import com.moriafly.salt.ui.window.SaltWindowProperties
 import com.sun.jna.Native
@@ -418,7 +420,7 @@ class LinuxClientShadowTest {
         if (!window.isDisplayable) return null
 
         val x11 = try {
-            X11Ext.INSTANCE
+            LinuxX11.INSTANCE
         } catch (_: UnsatisfiedLinkError) {
             return null
         }
@@ -479,7 +481,7 @@ class LinuxClientShadowTest {
         if (!window.isDisplayable) return null
 
         val x11 = try {
-            X11Ext.INSTANCE
+            LinuxX11.INSTANCE
         } catch (_: UnsatisfiedLinkError) {
             return null
         }

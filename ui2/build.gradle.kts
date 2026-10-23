@@ -35,6 +35,13 @@ dependencies {
 val configureAppleTargets = rootProject.extra["configureAppleTargets"] as Boolean
 
 tasks.withType<Test>().configureEach {
+    if (System.getProperty("os.name").startsWith("Linux")) {
+        jvmArgs(
+            "--add-opens=java.desktop/java.awt=ALL-UNNAMED",
+            "--add-opens=java.desktop/sun.awt=ALL-UNNAMED",
+            "--add-opens=java.desktop/sun.awt.X11=ALL-UNNAMED"
+        )
+    }
     testLogging {
         exceptionFormat = org.gradle.api.tasks.testing.logging.TestExceptionFormat.FULL
     }

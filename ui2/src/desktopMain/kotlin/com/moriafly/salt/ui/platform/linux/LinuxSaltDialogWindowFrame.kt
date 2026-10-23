@@ -46,6 +46,18 @@ import androidx.compose.ui.window.WindowDecoration
 import com.moriafly.salt.ui.ChangeSaltThemeIsDark
 import com.moriafly.salt.ui.SaltTheme
 import com.moriafly.salt.ui.UnstableSaltUiApi
+import com.moriafly.salt.ui.platform.linux.decoration.LinuxCaptionButtonClose
+import com.moriafly.salt.ui.platform.linux.decoration.LinuxCaptionButtonWidth
+import com.moriafly.salt.ui.platform.linux.decoration.LinuxClientShadow
+import com.moriafly.salt.ui.platform.linux.decoration.LinuxClientShadowEffect
+import com.moriafly.salt.ui.platform.linux.decoration.linuxClientShadow
+import com.moriafly.salt.ui.platform.linux.input.LinuxWindowGestures
+import com.moriafly.salt.ui.platform.linux.input.LinuxWindowInputEffect
+import com.moriafly.salt.ui.platform.linux.input.LocalLinuxWindowGestures
+import com.moriafly.salt.ui.platform.linux.window.LinuxCaptionBarHitTest
+import com.moriafly.salt.ui.platform.linux.window.LinuxWindowGestureEffects
+import com.moriafly.salt.ui.platform.linux.window.LocalLinuxCaptionBarHitTest
+import com.moriafly.salt.ui.platform.linux.window.UndecoratedWindowResizer
 import com.moriafly.salt.ui.thenIf
 import com.moriafly.salt.ui.window.CaptionButtonsAlign
 import com.moriafly.salt.ui.window.LocalIsHitTestInCaptionBarState
@@ -65,17 +77,11 @@ internal fun DialogWindowScope.LinuxSaltDialogWindowFrame(
     properties: SaltWindowProperties<ComposeDialog>,
     content: @Composable DialogWindowScope.() -> Unit
 ) {
-    DisposableEffect(window) {
-        val focus = LinuxWindowFocus.install(window)
-        onDispose { focus?.close() }
-    }
-
     val currentProperties by rememberUpdatedState(properties)
     val isHitTestInCaptionBar = remember { mutableStateOf(false) }
     val captionBarHitTest = remember { LinuxCaptionBarHitTest() }
     val undecoratedWindowResizer = remember {
         UndecoratedWindowResizer(
-            window = window,
             onResizeEdgeChange = { edge ->
                 currentProperties.onResizeEdgeChange(window, edge)
             }
@@ -84,6 +90,16 @@ internal fun DialogWindowScope.LinuxSaltDialogWindowFrame(
     val clientShadow = LinuxClientShadow.shouldUseClientShadow(decoration)
     // Dialogs are never maximized, so the shadow margin is constant
     val shadowMargin = if (clientShadow) LinuxClientShadow.margin else 0.dp
+
+    val windowGestures = remember(window) {
+        LinuxWindowGestures(
+            window = window,
+            caption = captionBarHitTest,
+            resizer = undecoratedWindowResizer,
+            captionHovered = isHitTestInCaptionBar,
+            effects = LinuxWindowGestureEffects(window, undecoratedWindowResizer)
+        )
+    }
 
     CompositionLocalProvider(
         LocalSaltWindowInfo provides SaltWindowInfo(
@@ -96,16 +112,15 @@ internal fun DialogWindowScope.LinuxSaltDialogWindowFrame(
             cornerRadius = if (clientShadow) LinuxClientShadow.cornerRadius else 0.dp
         ),
         LocalLinuxCaptionBarHitTest provides captionBarHitTest,
+        LocalLinuxWindowGestures provides windowGestures,
         LocalIsHitTestInCaptionBarState provides isHitTestInCaptionBar
     ) {
-        if (currentProperties.moveable) {
-            LinuxCaptionBarDragHandler(
-                window = window,
-                hitTest = captionBarHitTest,
-                isMoveable = properties.moveable,
-                isHitTestInCaptionBar = isHitTestInCaptionBar.value
-            )
-        }
+        LinuxWindowInputEffect(
+            window = window,
+            gestures = windowGestures,
+            moveable = properties.moveable,
+            resizable = resizable
+        )
 
         LaunchedEffect(decoration) {
             undecoratedWindowResizer.resizerThickness =
@@ -122,10 +137,6 @@ internal fun DialogWindowScope.LinuxSaltDialogWindowFrame(
                 window = window,
                 margin = shadowMargin
             )
-        }
-
-        LaunchedEffect(resizable) {
-            undecoratedWindowResizer.enabled = resizable
         }
 
         Box(

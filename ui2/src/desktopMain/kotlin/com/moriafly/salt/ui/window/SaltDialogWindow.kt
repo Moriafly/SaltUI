@@ -44,8 +44,8 @@ import androidx.compose.ui.window.WindowDecoration
 import androidx.compose.ui.window.rememberDialogState
 import com.moriafly.salt.core.os.OS
 import com.moriafly.salt.ui.UnstableSaltUiApi
-import com.moriafly.salt.ui.platform.linux.LinuxClientShadow
 import com.moriafly.salt.ui.platform.linux.LinuxSaltDialogWindowFrame
+import com.moriafly.salt.ui.platform.linux.decoration.LinuxClientShadow
 import com.moriafly.salt.ui.platform.macos.MacOSSaltDialogWindowFrame
 import com.moriafly.salt.ui.platform.windows.WindowsSaltDialogWindowFrame
 import com.moriafly.salt.ui.util.findSkiaLayer

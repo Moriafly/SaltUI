@@ -17,7 +17,7 @@
 
 @file:Suppress("unused", "ktlint:standard:property-naming")
 
-package com.moriafly.salt.ui.platform.linux
+package com.moriafly.salt.ui.platform.linux.decoration
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
