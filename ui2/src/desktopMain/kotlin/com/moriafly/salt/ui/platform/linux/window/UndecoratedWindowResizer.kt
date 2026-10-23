@@ -55,8 +55,18 @@ internal class UndecoratedWindowResizer(
     fun Content(
         modifier: Modifier = Modifier
     ) {
-        if (!enabled) return
+        if (enabled) {
+            ResizerLayout(
+                modifier = modifier
+            )
+        }
 
+    }
+
+    @Composable
+    private fun ResizerLayout(
+        modifier: Modifier = Modifier
+    ) {
         Layout(
             {
                 Side(Cursor.W_RESIZE_CURSOR, WindowResizeEdge.Left)
