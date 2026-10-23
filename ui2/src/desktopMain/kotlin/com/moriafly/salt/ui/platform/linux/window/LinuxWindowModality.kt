@@ -21,6 +21,7 @@ import java.awt.Dialog
 import java.awt.Dialog.ModalExclusionType
 import java.awt.Dialog.ModalityType
 import java.awt.Window
+import java.lang.reflect.Method
 
 /**
  * Checks native input eligibility on the EDT, using AWT's exact blocker when accessible.
@@ -28,15 +29,15 @@ import java.awt.Window
  * dialogs because AWT does not expose their blocker ordering through public methods.
  */
 internal object LinuxWindowModality {
-    private val modalBlocked = runCatching {
-        Window::class.java.getDeclaredMethod("isModalBlocked")
-            .takeIf { it.trySetAccessible() }
+    private val isModalBlockedMethod: Method? = runCatching {
+        val method = Window::class.java.getDeclaredMethod("isModalBlocked")
+        if (method.trySetAccessible()) method else null
     }.getOrNull()
 
     fun isBlocked(
         window: Window
     ): Boolean {
-        val blocked = modalBlocked?.let { method ->
+        val blocked = isModalBlockedMethod?.let { method ->
             runCatching { method.invoke(window) as Boolean }.getOrNull()
         }
         if (blocked != null) return blocked
