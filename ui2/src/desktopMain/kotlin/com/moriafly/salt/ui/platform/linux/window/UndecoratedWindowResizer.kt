@@ -60,7 +60,6 @@ internal class UndecoratedWindowResizer(
                 modifier = modifier
             )
         }
-
     }
 
     @Composable
