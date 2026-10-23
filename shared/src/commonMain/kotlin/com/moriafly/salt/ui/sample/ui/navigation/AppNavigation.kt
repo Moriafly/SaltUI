@@ -40,6 +40,7 @@ import com.moriafly.salt.ui.sample.ui.screen.LicenseScreen
 import com.moriafly.salt.ui.sample.ui.screen.ListScreen
 import com.moriafly.salt.ui.sample.ui.screen.MainScreen
 import com.moriafly.salt.ui.sample.ui.screen.MaterialScreen
+import com.moriafly.salt.ui.sample.ui.screen.MaterialTestScreen
 import com.moriafly.salt.ui.sample.ui.screen.SheetScreen
 
 @OptIn(UnstableSaltUiApi::class)
@@ -132,6 +133,7 @@ fun AppNavigation(
             entry<ScreenRoute.Dialog> { DialogScreen() }
             entry<ScreenRoute.Sheet> { SheetScreen() }
             entry<ScreenRoute.Material> { MaterialScreen() }
+            entry<ScreenRoute.MaterialTest> { MaterialTestScreen() }
         }
     )
 }
