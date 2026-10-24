@@ -25,17 +25,13 @@ import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import com.moriafly.salt.ui.SaltTheme
 import com.moriafly.salt.ui.UnstableSaltUiApi
-import com.moriafly.salt.ui.thenIf
-import dev.chrisbanes.haze.HazeInput
-import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.blur.HazeBlurStyle
-import dev.chrisbanes.haze.blur.hazeBlur
-import dev.chrisbanes.haze.hazeSource
 
 /**
  * Material effect applied by [Modifier.material] and [Modifier.subMaterial].
@@ -85,6 +81,41 @@ enum class MaterialLayer {
 }
 
 /**
+ * Describes how the content of a [MaterialSource] changes over time.
+ */
+@UnstableSaltUiApi
+@Immutable
+sealed interface MaterialSourceMode {
+    /**
+     * The source content may change at any time.
+     */
+    data object Dynamic : MaterialSourceMode
+
+    /**
+     * Declares visually unchanged content for the same [key], layout, and rendering environment,
+     * allowing material pixels to be cached and reused by consumers.
+     *
+     * Represent every content change, including asynchronous image loading, with a new [key]. Keys
+     * are compared using [Any.equals]; use an immutable value with stable equality. [Unit] can be
+     * used for content without external changes.
+     *
+     * Prefer wallpaper images or content drawn with fixed colors. Static source content must not
+     * depend on changing theme colors such as [SaltTheme.colors] without including their resolved
+     * values in [key]. The same rule applies to custom CompositionLocals, text styles, shapes, and
+     * other visual inputs: their reads inside content are not observed by the pixel cache. A
+     * Compose [Color] with a fixed value is safe; a theme color can be used as the content key.
+     *
+     * Source size, density, layout direction, dark/light mode, and consumer material styles
+     * invalidate caches automatically. Palette changes within the same dark/light mode require a
+     * new content key. Results belong to this source instance and may be rebuilt. Source content
+     * continues to compose normally; rendering paths without cache support remain dynamic.
+     */
+    data class Static(
+        val key: Any
+    ) : MaterialSourceMode
+}
+
+/**
  * Creates a Material background layer for implementing [Modifier.material] and
  * [Modifier.subMaterial].
  *
@@ -96,23 +127,25 @@ enum class MaterialLayer {
  *
  * Using a Composable instead of a Modifier here is intentional - it encourages developers to
  * explicitly specify the hierarchy of MaterialSource and use it only once.
+ *
+ * @param mode Describes whether the source content changes dynamically or is static for a content
+ * key. Static sources allow material pixels to be baked and shared by consumers. Multiple sources
+ * in the same theme, consumers extending outside the source or using a different transform, and
+ * inherited custom Haze styles currently use the dynamic pipeline to preserve their appearance.
  */
 @UnstableSaltUiApi
 @Composable
 fun MaterialSource(
     modifier: Modifier = Modifier,
     materialSelf: Boolean = true,
+    mode: MaterialSourceMode = MaterialSourceMode.Dynamic,
     content: @Composable BoxScope.() -> Unit
 ) {
     Box(
         modifier = modifier
     ) {
-        val hazeState = LocalHazeState.current
-        Box(
-            modifier = Modifier
-                .thenIf(hazeState != null) {
-                    hazeSource(hazeState)
-                },
+        MaterialSourceContent(
+            mode = mode,
             content = content
         )
 
@@ -126,6 +159,22 @@ fun MaterialSource(
     }
 }
 
+@Deprecated("Maintained for binary compatibility", level = DeprecationLevel.HIDDEN)
+@UnstableSaltUiApi
+@Composable
+fun MaterialSource(
+    modifier: Modifier = Modifier,
+    materialSelf: Boolean = true,
+    content: @Composable BoxScope.() -> Unit
+) {
+    MaterialSource(
+        modifier = modifier,
+        materialSelf = materialSelf,
+        mode = MaterialSourceMode.Dynamic,
+        content = content
+    )
+}
+
 /**
  * Disables material effects for child components, commonly used in Dialogs.
  */
@@ -135,7 +184,7 @@ fun DisableMaterial(
     content: @Composable () -> Unit
 ) {
     CompositionLocalProvider(
-        LocalHazeState provides null
+        LocalMaterialState provides null
     ) {
         content()
     }
@@ -173,9 +222,9 @@ internal fun Modifier.basicMaterial(
     isDarkTheme: Boolean,
     fallback: Color
 ): Modifier {
-    val hazeState = LocalHazeState.current
+    val state = LocalMaterialState.current
 
-    return if (hazeState != null) {
+    return if (state != null) {
         val blurStyle = when (type) {
             MaterialType.None -> HazeBlurStyle
             MaterialType.BlurryGlass -> SaltHazeStyles.blurryGlass(layer, isDarkTheme)
@@ -183,13 +232,10 @@ internal fun Modifier.basicMaterial(
             MaterialType.Mica -> SaltHazeStyles.mica(layer, isDarkTheme)
             MaterialType.Premium -> SaltHazeStyles.premium(layer, isDarkTheme)
         }
-        hazeBlur(
-            input = HazeInput.Sources(hazeState),
-            style = blurStyle
-        )
+        materialEffect(state, blurStyle)
     } else {
         background(fallback)
     }
 }
 
-internal val LocalHazeState = compositionLocalOf<HazeState?> { null }
+internal val LocalMaterialState = compositionLocalOf<MaterialState?> { null }

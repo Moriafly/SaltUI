@@ -34,6 +34,77 @@ fun App() {
 
 See demo: [shared](https://github.com/Moriafly/SaltUI/tree/main/shared).
 
+## Static material backgrounds
+
+`MaterialSource` defaults to `MaterialSourceMode.Dynamic`. For a wallpaper or another visually static
+source, opt into caching with a content version:
+
+```kotlin
+@OptIn(UnstableSaltUiApi::class)
+@Composable
+fun WallpaperBackground(wallpaperVersion: Any) {
+    MaterialSource(
+        mode = MaterialSourceMode.Static(key = wallpaperVersion)
+    ) {
+        // Draw the wallpaper here.
+    }
+}
+```
+
+Use an immutable key with stable equality. Keep it equal while the source content is unchanged;
+change it when the wallpaper changes or finishes loading. Use `Unit` for content without external
+changes. Sizes, density, layout direction, dark/light mode, and material styles are tracked internally.
+Pixels are shared by consumers using the same style; source content and foreground UI compose normally.
+
+Prefer wallpaper images or fixed drawing colors for a static source. Do not use changing theme
+colors such as `SaltTheme.colors` in static source content without including their resolved values
+in the content key. Fixed Compose `Color(...)` values are safe. The cache does not observe theme
+palette, custom `CompositionLocal`, text style, or shape reads inside source content. For example:
+
+```kotlin
+val sourceColor = SaltTheme.colors.highlight
+MaterialSource(mode = MaterialSourceMode.Static(key = sourceColor)) {
+    Box(Modifier.fillMaxSize().background(sourceColor))
+}
+```
+
+When a source depends on several inputs, combine their resolved values in an immutable content key.
+Use `Dynamic` for continuously changing content.
+
+The cache stores ARGB pixels at half the source width and height, preserving alpha and color depth.
+A 1080 × 2280 source uses approximately 2.35 MiB per style, or 4.70 MiB for two styles. This is bitmap
+storage, excluding temporary rendering resources and driver copies. A source reserves at most
+16 MiB of bitmap storage; additional styles or allocation failures use live rendering. After the last
+consumer leaves, at most one unused image remains for reentry. Changing the source key, environment,
+or size invalidates it; admitting a new style can evict the unused image.
+
+Initial frames use live rendering. Baking starts after the size stays unchanged for two frames plus
+80 ms, so resizing does not repeatedly capture intermediate sizes. Baking covers the whole source,
+even for a small consumer. Small glass or acrylic panels may save little GPU work; measure the actual
+screen before opting in. Mica and large or shared surfaces can have substantially different costs.
+
+Caching is an optimization and may fall back to dynamic rendering. The current cache path supports
+a single source per theme and consumers contained within it with the same scale and orientation.
+Multiple sources, other transforms, inherited custom Haze styles, and unsupported readback paths use
+the live pipeline.
+
+To measure the tradeoff on a connected Android 12+ device, run:
+
+```powershell
+./scripts/benchmark-material-cache.ps1 -Device <adb-device-serial>
+```
+
+The script builds a non-debuggable benchmark variant and measures moving small, large, and shared
+material surfaces in fresh processes. It exports raw steady-state and baking frame metrics, process
+PSS, bitmap allocations, cache readiness and readback latency, APK hashes, source revision, and
+repeated Dynamic/Static comparisons under
+`androidApp/build/reports/material-cache-performance`. Emulator graphics memory accounting can be
+incomplete; bitmap allocation and process PSS are reported separately.
+
+Use `-TargetApk <saved-apk>` to measure a previous build with the same instrumentation. Then use
+`-BaselineReport <previous-report-directory>` when measuring the current build to export a comparison
+report. Comparisons require matching instrumentation APK hashes.
+
 ## Text Description and Translation Standards
 
 See: [SaltUI Text Description and Translation Standards](https://moriafly.com/standards/tdts).

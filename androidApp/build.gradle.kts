@@ -27,6 +27,14 @@ android {
         getByName("release") {
             isMinifyEnabled = false
         }
+        if (providers.gradleProperty("materialBenchmark").orNull == "true") {
+            create("benchmark") {
+                initWith(getByName("release"))
+                signingConfig = signingConfigs.getByName("debug")
+                matchingFallbacks += "release"
+            }
+            testBuildType = "benchmark"
+        }
     }
 
     compileOptions {

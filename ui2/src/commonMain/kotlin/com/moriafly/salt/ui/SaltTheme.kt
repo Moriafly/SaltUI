@@ -25,10 +25,10 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.staticCompositionLocalOf
-import com.moriafly.salt.ui.material.LocalHazeState
+import com.moriafly.salt.ui.material.LocalMaterialState
+import com.moriafly.salt.ui.material.MaterialState
 import com.moriafly.salt.ui.material.MaterialType
 import com.moriafly.salt.ui.screen.BasicScreenStyle
-import dev.chrisbanes.haze.HazeState
 
 /**
  * The main entry point for defining the theme.
@@ -79,8 +79,8 @@ fun SaltTheme(
     content: @Composable () -> Unit
 ) {
     val materialType = material.type
-    val hazeState = remember(materialType) {
-        if (materialType != MaterialType.None) HazeState() else null
+    val materialState = remember(materialType) {
+        if (materialType != MaterialType.None) MaterialState() else null
     }
     val colors = if (configs.isDarkTheme) dynamicColors.dark else dynamicColors.light
 
@@ -94,7 +94,7 @@ fun SaltTheme(
         LocalSaltShapes provides shapes,
         LocalSaltMaterial provides material,
         LocalBasicScreenStyle provides basicScreenStyle,
-        LocalHazeState provides hazeState
+        LocalMaterialState provides materialState
     ) {
         ProvideTextStyle(
             value = textStyles.main,
