@@ -39,7 +39,7 @@ import androidx.window.layout.WindowMetricsCalculator
 
 internal fun View.currentWindowMetricsSize(configuration: Configuration): DpSize {
     val state =
-        (getTag(R.id.salt_adaptive_window_metrics_state) as? AndroidWindowMetricsState)
+        getTag(R.id.salt_adaptive_window_metrics_state) as? AndroidWindowMetricsState
             ?: AndroidWindowMetricsState(this).also {
                 setTag(R.id.salt_adaptive_window_metrics_state, it)
             }
