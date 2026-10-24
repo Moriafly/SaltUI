@@ -8,6 +8,7 @@ material = "1.13.0"
 material3 = "1.4.0"
 compose-multiplatform = "1.12.2"
 activity-compose = "1.12.2"
+window = "1.5.0"
 hiddenapibypass = "6.1"
 jna = "5.18.1"
 maven-publish = "0.36.0"
@@ -33,6 +34,7 @@ compose-components-resources = { group = "org.jetbrains.compose.components", nam
 compose-ui-test = { group = "org.jetbrains.compose.ui", name = "ui-test", version.ref = "compose-multiplatform" }
 compose-material3 = { group = "androidx.compose.material3", name = "material3", version.ref = "material3" }
 activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activity-compose" }
+window = { group = "androidx.window", name = "window", version.ref = "window" }
 hiddenapibypass = { group = "org.lsposed.hiddenapibypass", name = "hiddenapibypass", version.ref = "hiddenapibypass" }
 jna = { group = "net.java.dev.jna", name = "jna", version.ref = "jna" }
 jna-platform = { group = "net.java.dev.jna", name = "jna-platform", version.ref = "jna" }

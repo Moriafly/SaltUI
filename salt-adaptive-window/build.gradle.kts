@@ -89,6 +89,10 @@ kotlin {
         compileSdk = 37
         minSdk = 23
 
+        androidResources {
+            enable = true
+        }
+
         compilerOptions {
             jvmTarget.set(JvmTarget.JVM_21)
         }
@@ -127,6 +131,7 @@ kotlin {
 
         androidMain.dependencies {
             implementation(libs.compose.ui)
+            implementation(libs.window)
         }
 
         val desktopMain by getting
