@@ -45,6 +45,8 @@ internal actual fun CompositionLocalAccessorScope.platformSaltAdaptiveWindow(): 
     // AndroidX fixes b/525259151, b/525284940 and b/508799456 by reading again after global layout:
     // https://android.googlesource.com/platform/frameworks/support/+/48413c3f127790e362bd05cc72dbc1ac22628a3b
     // The fix is present in Compose UI 1.13.0-alpha01, but absent from 1.12.1.
+    // Also observe root geometry and the Resources used for WindowMetrics before drawing.
+    // These signals can invalidate the cache after a callback has consumed the pending update.
     // Apply the same API < 33 condition as AndroidX; WindowMetricsCalculator supports older APIs.
     val windowSize =
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {

@@ -51,13 +51,23 @@ internal fun View.currentWindowMetricsSize(configuration: Configuration): DpSize
 // https://android.googlesource.com/platform/frameworks/support/+/48413c3f127790e362bd05cc72dbc1ac22628a3b
 // The View tag replaces ComposeViewContext ownership; listeners are removed on detach and restored
 // on reattach. No global references retain the View or its Activity.
+// AndroidView interop also dispatches global-layout callbacks during Compose measure/layout:
+// https://github.com/androidx/androidx/commit/e09149a90454b9faabd1d2b41fed4d7d61f4b129
+// Observe root geometry and the actual metrics source independently of the pending callback flag.
 private class AndroidWindowMetricsState(private val view: View) :
     ComponentCallbacks,
     View.OnAttachStateChangeListener,
-    ViewTreeObserver.OnGlobalLayoutListener {
+    ViewTreeObserver.OnGlobalLayoutListener,
+    ViewTreeObserver.OnPreDrawListener {
     private val currentConfiguration = Configuration(view.resources.configuration)
+
+    // Configuration callbacks can lead the Resources used by WindowMetrics. Keep an independent
+    // copy of that source; Resources mutates its Configuration in place.
+    private val windowMetricsConfiguration =
+        Configuration((tryUnwrapContext(view.context) ?: view.context).resources.configuration)
     private var observer: ViewTreeObserver? = null
     private var pendingWindowInfoUpdate = false
+    private var lastRootViewSize = IntSize.Zero
 
     var size by mutableStateOf(readSize())
         private set
@@ -76,15 +86,38 @@ private class AndroidWindowMetricsState(private val view: View) :
     }
 
     override fun onGlobalLayout() {
-        if (pendingWindowInfoUpdate) {
+        refreshSizeIfNeeded()
+    }
+
+    override fun onPreDraw(): Boolean {
+        // Bounds can reach Resources after the last layout, without another public configuration
+        // callback. This only compares cached inputs; unchanged frames do not query metrics.
+        refreshSizeIfNeeded()
+        return true
+    }
+
+    private fun refreshSizeIfNeeded() {
+        val rootView = view.rootView
+        val rootViewSize = IntSize(rootView.width, rootView.height)
+        val windowMetricsContext = tryUnwrapContext(view.context)
+        val configuration = (windowMetricsContext ?: view.context).resources.configuration
+        // On API 30-32, Configuration comparison includes the bounds used by WindowMetrics.
+        // Keep this source snapshot separate from configuration callbacks that may arrive earlier.
+        val metricsSourceChanged = windowMetricsConfiguration != configuration
+        if (metricsSourceChanged) {
+            windowMetricsConfiguration.setTo(configuration)
+        }
+        // Root dimensions invalidate the cache but never replace the native window bounds.
+        if (pendingWindowInfoUpdate || rootViewSize != lastRootViewSize || metricsSourceChanged) {
             pendingWindowInfoUpdate = false
-            size = readSize()
+            lastRootViewSize = rootViewSize
+            size = readSize(windowMetricsContext)
         }
     }
 
     override fun onConfigurationChanged(configuration: Configuration) {
         val changedFlags = currentConfiguration.updateFrom(configuration)
-        if (changedFlags and MaskForNonWindowMetricsChanges.inv() != 0) {
+        if (changedFlags and MASK_FOR_NON_WINDOW_METRICS_CHANGES.inv() != 0) {
             // Do not query bounds here: API <= 32 can still report the old window frame.
             pendingWindowInfoUpdate = true
         }
@@ -98,26 +131,34 @@ private class AndroidWindowMetricsState(private val view: View) :
     private fun observeLayout() {
         stopObservingLayout()
         view.context.registerComponentCallbacks(this)
-        observer = view.viewTreeObserver.also { it.addOnGlobalLayoutListener(this) }
+        observer = view.viewTreeObserver.also {
+            it.addOnGlobalLayoutListener(this)
+            it.addOnPreDrawListener(this)
+        }
         size = readSize()
     }
 
     private fun stopObservingLayout() {
         observer?.let {
-            if (it.isAlive) it.removeOnGlobalLayoutListener(this)
+            if (it.isAlive) {
+                it.removeOnGlobalLayoutListener(this)
+                it.removeOnPreDrawListener(this)
+            }
             view.context.unregisterComponentCallbacks(this)
         }
         observer = null
         pendingWindowInfoUpdate = false
+        lastRootViewSize = IntSize.Zero
     }
 
     // Match AndroidWindowInfo.calculateWindowSize, including pre-30 window metrics and the
     // unsupported-context fallback. Display metrics alone would break split-screen windows.
-    private fun readSize(): DpSize {
+    private fun readSize(unwrapped: Context? = tryUnwrapContext(view.context)): DpSize {
         val context = view.context
-        val unwrapped = tryUnwrapContext(context)
         return if (unwrapped != null) {
-            val metrics = WindowMetricsCalculator.getOrCreate().computeCurrentWindowMetrics(unwrapped)
+            val metrics = WindowMetricsCalculator.getOrCreate().computeCurrentWindowMetrics(
+                unwrapped
+            )
             with(Density(unwrapped)) {
                 IntSize(metrics.bounds.width(), metrics.bounds.height()).toSize().toDpSize()
             }
@@ -144,7 +185,7 @@ private fun tryUnwrapContext(context: Context): Context? {
 }
 
 // Copied from ComposeViewContext: changes excluded here cannot affect window metrics.
-private const val MaskForNonWindowMetricsChanges =
+private const val MASK_FOR_NON_WINDOW_METRICS_CHANGES =
     ActivityInfo.CONFIG_MCC or
         ActivityInfo.CONFIG_MNC or
         ActivityInfo.CONFIG_LOCALE or
