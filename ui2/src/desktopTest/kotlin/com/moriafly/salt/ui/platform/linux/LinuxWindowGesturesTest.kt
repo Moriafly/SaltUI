@@ -21,6 +21,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ComposeUiFlags
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.awt.ComposeDialog
 import androidx.compose.ui.geometry.Offset
@@ -56,7 +57,9 @@ import kotlin.math.abs
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertTrue
+import org.junit.AfterClass
 import org.junit.Assume.assumeTrue
+import org.junit.BeforeClass
 
 /**
  * Mouse tests use native pointer input through the complete window dispatch path. Touch tests
@@ -64,6 +67,28 @@ import org.junit.Assume.assumeTrue
  * not emulate a physical touchscreen. Both routes use the same production gesture implementation.
  */
 class LinuxWindowGesturesTest {
+    companion object {
+        private var previousUnchangedMoveEvents = false
+
+        @BeforeClass
+        @JvmStatic
+        fun enableUnchangedMoveEvents() {
+            previousUnchangedMoveEvents =
+                ComposeUiFlags.isTriggerMoveEventsWhenLocationHasNotChangedEnabled
+            // Compose 1.12.x can retain a filtered stationary mouse Move in HitPathTracker,
+            // causing the next touch Press to include stale mouse state and lose the click.
+            // Process unchanged moves, as 1.13.0-beta01 does by default, until Compose is upgraded.
+            ComposeUiFlags.isTriggerMoveEventsWhenLocationHasNotChangedEnabled = true
+        }
+
+        @AfterClass
+        @JvmStatic
+        fun restoreUnchangedMoveEvents() {
+            ComposeUiFlags.isTriggerMoveEventsWhenLocationHasNotChangedEnabled =
+                previousUnchangedMoveEvents
+        }
+    }
+
     @Test
     fun nativeMouseCaptionDragMovesWindowAndReleaseStopsIt() = withWindow {
         NativeMouse(this).use { mouse ->
