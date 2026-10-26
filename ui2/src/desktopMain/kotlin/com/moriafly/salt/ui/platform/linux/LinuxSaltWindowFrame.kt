@@ -163,7 +163,9 @@ internal fun FrameWindowScope.LinuxSaltWindowFrame(
                 modifier = Modifier
                     .fillMaxSize()
                     .thenIf(shadowMargin > 0.dp) {
-                        linuxClientShadow()
+                        linuxClientShadow(
+                            isBackgroundOpaque = SaltTheme.colors.background.alpha == 1f
+                        )
                     }
                     .thenIf(clientShadow) {
                         clipToBounds()

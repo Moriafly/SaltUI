@@ -148,7 +148,9 @@ internal fun DialogWindowScope.LinuxSaltDialogWindowFrame(
                 modifier = Modifier
                     .fillMaxSize()
                     .thenIf(clientShadow) {
-                        linuxClientShadow()
+                        linuxClientShadow(
+                            isBackgroundOpaque = SaltTheme.colors.background.alpha == 1f
+                        )
                             .clipToBounds()
                             .background(SaltTheme.colors.background)
                     }
