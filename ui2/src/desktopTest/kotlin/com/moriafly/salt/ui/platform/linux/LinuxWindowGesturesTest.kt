@@ -506,6 +506,7 @@ class LinuxWindowGesturesTest {
             await("multi-touch resize layout") {
                 window.width == expectedWidth && content.width == expectedWidth * systemScale
             }
+            touch.reset()
             val previousClicks = onEdt { clicks }
             touch.tap(onEdt { content.center })
             await("click after all contacts release") { clicks == previousClicks + 1 }
