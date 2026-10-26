@@ -30,6 +30,7 @@ import android.view.ViewTreeObserver
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.IntSize
@@ -68,6 +69,7 @@ private class AndroidWindowMetricsState(private val view: View) :
     private var observer: ViewTreeObserver? = null
     private var pendingWindowInfoUpdate = false
     private var lastRootViewSize = IntSize.Zero
+    private var deferOrientationDraw = false
 
     var size by mutableStateOf(readSize())
         private set
@@ -93,6 +95,13 @@ private class AndroidWindowMetricsState(private val view: View) :
         // Bounds can reach Resources after the last layout, without another public configuration
         // callback. This only compares cached inputs; unchanged frames do not query metrics.
         refreshSizeIfNeeded()
+        if (deferOrientationDraw) {
+            deferOrientationDraw = false
+            // Layout has already finished. Publish the pending snapshot changes and cancel this
+            // draw so the next frame can recompose and lay out with the new orientation.
+            Snapshot.sendApplyNotifications()
+            return false
+        }
         return true
     }
 
@@ -111,8 +120,19 @@ private class AndroidWindowMetricsState(private val view: View) :
         if (pendingWindowInfoUpdate || rootViewSize != lastRootViewSize || metricsSourceChanged) {
             pendingWindowInfoUpdate = false
             lastRootViewSize = rootViewSize
-            size = readSize(windowMetricsContext)
+            updateSize(readSize(windowMetricsContext))
         }
+    }
+
+    private fun updateSize(newSize: DpSize) {
+        val wasLandscape = size.width > size.height
+        val isLandscape = newSize.width > newSize.height
+        if (wasLandscape != isLandscape) {
+            // Keep the flag until pre-draw: global layout may publish the change first.
+            // Restrict draw cancellation to orientation changes so continuous resizing can draw.
+            deferOrientationDraw = true
+        }
+        size = newSize
     }
 
     override fun onConfigurationChanged(configuration: Configuration) {
@@ -135,7 +155,7 @@ private class AndroidWindowMetricsState(private val view: View) :
             it.addOnGlobalLayoutListener(this)
             it.addOnPreDrawListener(this)
         }
-        size = readSize()
+        updateSize(readSize())
     }
 
     private fun stopObservingLayout() {
@@ -149,6 +169,7 @@ private class AndroidWindowMetricsState(private val view: View) :
         observer = null
         pendingWindowInfoUpdate = false
         lastRootViewSize = IntSize.Zero
+        deferOrientationDraw = false
     }
 
     // Match AndroidWindowInfo.calculateWindowSize, including pre-30 window metrics and the
