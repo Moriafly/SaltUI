@@ -56,6 +56,7 @@ private val navigatorConfig = SavedStateConfiguration {
             subclass(ScreenRoute.Dialog::class, ScreenRoute.Dialog.serializer())
             subclass(ScreenRoute.Sheet::class, ScreenRoute.Sheet.serializer())
             subclass(ScreenRoute.Material::class, ScreenRoute.Material.serializer())
+            subclass(ScreenRoute.MaterialTest::class, ScreenRoute.MaterialTest.serializer())
         }
     }
 }
