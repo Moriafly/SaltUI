@@ -99,6 +99,74 @@ class SheetInteractionTest {
     private val device get() = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
 
     @Test
+    fun sheetInheritsSystemBarsAndAllowsContentToManageThem() {
+        val statusBar = WindowInsetsCompat.Type.statusBars()
+        val navigationBar = WindowInsetsCompat.Type.navigationBars()
+        for (displayMode in listOf(SheetDisplayMode.Bottom, SheetDisplayMode.Floating)) {
+            val fixture = AndroidSheetFixture(displayMode = displayMode, systemBarControls = true)
+            ActivityScenario.launch(MainActivity::class.java).use { scenario ->
+                scenario.onActivity { activity ->
+                    val controller = WindowCompat.getInsetsController(
+                        activity.window,
+                        activity.window.decorView
+                    )
+                    controller.show(navigationBar)
+                    controller.hide(statusBar)
+                    activity.setContent { fixture.Content() }
+                }
+                shown(By.text("Open sheet"))
+                assertBarVisibility(scenario, statusBar) { it.window.decorView }
+                click(By.text("Open sheet"))
+                shown(By.text("Fixture sheet"))
+                assertBarVisibility(scenario, statusBar) { fixture.dialogView }
+                listOf(0, statusBar or navigationBar, navigationBar)
+                    .forEachIndexed { index, hiddenBars ->
+                        scenario.onActivity { fixture.nextHiddenBars = hiddenBars }
+                        click(By.text("Change system bars"))
+                        assertBarVisibility(scenario, hiddenBars) { fixture.dialogView }
+                        click(By.text("Inside"))
+                        shown(By.text("Inside: ${index + 1}"))
+                        assertBarVisibility(scenario, hiddenBars) { fixture.dialogView }
+                    }
+                click(By.text("Program close"))
+                assertTrue(device.wait(Until.gone(By.text("Fixture sheet")), 5_000))
+                assertBarVisibility(scenario, statusBar) { it.window.decorView }
+                click(By.text("Open sheet"))
+                shown(By.text("Fixture sheet"))
+                assertBarVisibility(scenario, statusBar) { fixture.dialogView }
+                click(By.text("Program close"))
+                assertTrue(device.wait(Until.gone(By.text("Fixture sheet")), 5_000))
+                assertBarVisibility(scenario, statusBar) { it.window.decorView }
+            }
+        }
+    }
+
+    private fun assertBarVisibility(
+        scenario: ActivityScenario<MainActivity>,
+        hiddenBars: Int,
+        view: (MainActivity) -> android.view.View?
+    ) {
+        val statusBar = WindowInsetsCompat.Type.statusBars()
+        val navigationBar = WindowInsetsCompat.Type.navigationBars()
+        val expectedStatus = hiddenBars and statusBar == 0
+        val expectedNavigation = hiddenBars and navigationBar == 0
+        var actualStatus: Boolean? = null
+        var actualNavigation: Boolean? = null
+        val deadline = SystemClock.uptimeMillis() + 5_000
+        do {
+            scenario.onActivity { activity ->
+                val insets = view(activity)?.let(ViewCompat::getRootWindowInsets)
+                actualStatus = insets?.isVisible(statusBar)
+                actualNavigation = insets?.isVisible(navigationBar)
+            }
+            if (actualStatus == expectedStatus && actualNavigation == expectedNavigation) return
+            SystemClock.sleep(50)
+        } while (SystemClock.uptimeMillis() < deadline)
+        assertEquals("status bar visibility", expectedStatus, actualStatus)
+        assertEquals("navigation bar visibility", expectedNavigation, actualNavigation)
+    }
+
+    @Test
     fun bottomSheetRestoresOwnerSystemBarsConfiguredThroughWindowUtil() {
         verifyWindowUtilSystemBars(SheetDisplayMode.Bottom)
     }
@@ -818,6 +886,7 @@ private class AndroidSheetFixture(
     private val rounded: Boolean = false,
     private val noActions: Boolean = false,
     private val edgeToEdge: Boolean = false,
+    private val systemBarControls: Boolean = false,
     private val displayMode: SheetDisplayMode = SheetDisplayMode.Bottom,
     private val handoff: Boolean = false,
     private val dismissalProperties: SheetProperties = SheetProperties(dismissible = dismissible)
@@ -837,6 +906,9 @@ private class AndroidSheetFixture(
     var statusDarkIcons: (() -> Boolean)? = null
     var navigationDarkIcons: (() -> Boolean)? = null
     var navigationBarInsets: (() -> Insets)? = null
+    var dialogView: android.view.View? = null
+    private var changeSystemBars: (Int) -> Unit = {}
+    var nextHiddenBars = 0
     val windowSize = AtomicReference(DpSize.Unspecified)
     var contentMargin = 0f
 
@@ -918,7 +990,25 @@ private class AndroidSheetFixture(
     @Composable
     private fun RecordSheetWindow() {
         val dialogView = LocalView.current
+        this.dialogView = dialogView
         val dialogWindow = (dialogView.parent as? DialogWindowProvider)?.window
+        if (systemBarControls && dialogWindow != null) {
+            val controller = WindowCompat.getInsetsController(dialogWindow, dialogWindow.decorView)
+            changeSystemBars = { hiddenBars ->
+                val statusBar = WindowInsetsCompat.Type.statusBars()
+                val navigationBar = WindowInsetsCompat.Type.navigationBars()
+                if (hiddenBars and statusBar == 0) {
+                    controller.show(statusBar)
+                } else {
+                    controller.hide(statusBar)
+                }
+                if (hiddenBars and navigationBar == 0) {
+                    controller.show(navigationBar)
+                } else {
+                    controller.hide(navigationBar)
+                }
+            }
+        }
         navigationBarInsets = {
             ViewCompat.getRootWindowInsets(dialogView)
                 ?.getInsets(WindowInsetsCompat.Type.navigationBars()) ?: Insets.NONE
@@ -971,6 +1061,12 @@ private class AndroidSheetFixture(
     @Composable
     private fun ButtonContent() {
         Button(onClick = { insideClicks++ }, text = "Inside")
+        if (systemBarControls) {
+            Button(
+                onClick = { changeSystemBars(nextHiddenBars) },
+                text = "Change system bars"
+            )
+        }
         if (handoff) {
             Button(
                 onClick = {

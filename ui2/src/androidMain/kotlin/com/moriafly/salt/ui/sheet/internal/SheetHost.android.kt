@@ -65,6 +65,10 @@ internal actual fun SheetHost(
 ) {
     val ownerSize = LocalWindowInfo.current.containerDpSize
     val ownerView = LocalView.current
+    // Keep one owner snapshot per presentation, before the Dialog can change the visible insets.
+    val ownerBarVisibility = remember(ownerView, lease) {
+        SheetSystemBars.readOwnerVisibility(ownerView)
+    }
     SheetOwnerScrim(ownerView = ownerView, coordinator = lease.coordinator)
     val bottom = displayMode.isBottom(
         adaptiveWindow = adaptiveWindow,
@@ -80,6 +84,9 @@ internal actual fun SheetHost(
         )
     ) {
         val window = (LocalView.current.parent as? DialogWindowProvider)?.window
+        val systemBars = remember(window, ownerBarVisibility) {
+            window?.let { SheetSystemBars(window = it, ownerVisibility = ownerBarVisibility) }
+        }
         val keyboard = LocalSoftwareKeyboardController.current
         val imeInsets = WindowInsets.ime
         val density = LocalDensity.current
@@ -115,6 +122,7 @@ internal actual fun SheetHost(
         val replacementPending = hasVisibleSheet &&
             coordinator.activeLease?.windowAttached != true
         SideEffect {
+            systemBars?.inheritOwnerVisibility()
             // The visual transition must not keep the closing dialog in the input path.
             window?.configureSheetInput(
                 inputEnabled = inputEnabled,
