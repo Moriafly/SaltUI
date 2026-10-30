@@ -21,7 +21,6 @@ package com.moriafly.salt.ui.sheet.internal
 
 import android.view.View
 import android.view.Window
-import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 
@@ -29,8 +28,12 @@ import androidx.core.view.WindowInsetsCompat
  * Initializes one Sheet dialog window with the owner's opening system bar visibility.
  *
  * Call [inheritOwnerVisibility] from the host's SideEffect after a successful composition.
- * Only the dialog's controller is changed; the owner keeps its own requests, so dismissal requires
- * no restoration. Further visibility changes belong to the developer controlling the dialog.
+ * Only the dialog's controller is changed. On Android 10 (API 29) and earlier, the platform can
+ * propagate cleared system UI flags to other windows during focus changes, removing the owner's
+ * hide requests. Restoring the opening snapshot could overwrite newer host requests, so no
+ * restoration is done on dismissal.
+ * On these versions, immersive hosts should reapply their current visibility when focus returns.
+ * Further visibility changes belong to the developer controlling the dialog.
  */
 internal class SheetSystemBars(
     window: Window,
@@ -72,7 +75,12 @@ internal class SheetSystemBars(
          * uses the platform's default visible bars.
          */
         fun readOwnerVisibility(ownerView: View): Visibility {
-            val insets = ViewCompat.getRootWindowInsets(ownerView)
+            // On Android 6–10 (API 23–29), root insets can retain layout space for hidden bars.
+            // ViewCompat.getRootWindowInsets() omits the window's system UI flags during conversion,
+            // so isVisible() can mistake that space for visible bars. Passing the View includes
+            // the window's hide flags in the calculation. API 30+ uses native visibility instead.
+            val insets = ownerView.rootWindowInsets
+                ?.let { WindowInsetsCompat.toWindowInsetsCompat(it, ownerView) }
             return Visibility(
                 statusBarVisible = insets?.isVisible(WindowInsetsCompat.Type.statusBars()) != false,
                 navigationBarVisible =

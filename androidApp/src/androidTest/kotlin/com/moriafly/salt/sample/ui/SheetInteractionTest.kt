@@ -99,7 +99,38 @@ class SheetInteractionTest {
     private val device get() = UiDevice.getInstance(InstrumentationRegistry.getInstrumentation())
 
     @Test
+    fun sheetInheritsHiddenStatusBarOnLegacyAndroid() {
+        assumeTrue(Build.VERSION.SDK_INT < 30)
+        // On API 29 and below, inspect System UI itself so the assertion cannot repeat the
+        // compat insets misreading that this regression test is intended to catch.
+        val statusBar = By.res("com.android.systemui", "status_bar")
+        for (displayMode in listOf(SheetDisplayMode.Bottom, SheetDisplayMode.Floating)) {
+            val fixture = AndroidSheetFixture(displayMode = displayMode)
+            ActivityScenario.launch(MainActivity::class.java).use { scenario ->
+                scenario.onActivity { activity ->
+                    WindowCompat.getInsetsController(activity.window, activity.window.decorView)
+                        .hide(WindowInsetsCompat.Type.statusBars())
+                    activity.setContent { fixture.Content() }
+                }
+                shown(By.text("Open sheet"))
+                assertTrue(device.wait(Until.gone(statusBar), 5_000))
+                click(By.text("Open sheet"))
+                shown(By.text("Fixture sheet"))
+                assertTrue(device.wait(Until.gone(statusBar), 5_000))
+                click(By.text("Inside"))
+                shown(By.text("Inside: 1"))
+                assertTrue(device.wait(Until.gone(statusBar), 5_000))
+                click(By.text("Program close"))
+                assertTrue(device.wait(Until.gone(By.text("Fixture sheet")), 5_000))
+            }
+        }
+    }
+
+    @Test
     fun sheetInheritsSystemBarsAndAllowsContentToManageThem() {
+        // On Android 10 (API 29) and earlier, dialog focus can clear the owner's hide flags.
+        // Opening inheritance is tested separately there; this full isolation check needs API 30+.
+        assumeTrue(Build.VERSION.SDK_INT >= 30)
         val statusBar = WindowInsetsCompat.Type.statusBars()
         val navigationBar = WindowInsetsCompat.Type.navigationBars()
         for (displayMode in listOf(SheetDisplayMode.Bottom, SheetDisplayMode.Floating)) {
