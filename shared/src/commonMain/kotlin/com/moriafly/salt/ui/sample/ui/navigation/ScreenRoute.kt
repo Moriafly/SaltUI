@@ -40,6 +40,21 @@ sealed class ScreenRoute : NavKey {
     data object Component : ScreenRoute()
 
     @Serializable
+    data object Items : ScreenRoute()
+
+    @Serializable
+    data object Layouts : ScreenRoute()
+
+    @Serializable
+    data object CollapsingHeader : ScreenRoute()
+
+    @Serializable
+    data object NestedCollapsed : ScreenRoute()
+
+    @Serializable
+    data object BottomSheet : ScreenRoute()
+
+    @Serializable
     data object Dialog : ScreenRoute()
 
     @Serializable

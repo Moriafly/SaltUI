@@ -18,11 +18,12 @@
 package com.moriafly.salt.ui.sample.ui
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
@@ -36,11 +37,14 @@ import com.moriafly.salt.adaptive.window.UnstableSaltAdaptiveWindowApi
 import com.moriafly.salt.adaptive.window.WindowSizeClass
 import com.moriafly.salt.core.os.OS
 import com.moriafly.salt.ui.Layer
+import com.moriafly.salt.ui.Item
+import com.moriafly.salt.ui.ItemOuterTitle
 import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.moriafly.salt.ui.navigation.rememberSaltNavigator
 import com.moriafly.salt.ui.sample.ui.navigation.AppNavigation
 import com.moriafly.salt.ui.sample.ui.navigation.LocalSaltNavigator
 import com.moriafly.salt.ui.sample.ui.navigation.ScreenRoute
+import com.moriafly.salt.ui.sidebar.SideBar
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
 
@@ -53,6 +57,11 @@ private val navigatorConfig = SavedStateConfiguration {
             subclass(ScreenRoute.List::class, ScreenRoute.List.serializer())
             subclass(ScreenRoute.Button::class, ScreenRoute.Button.serializer())
             subclass(ScreenRoute.Component::class, ScreenRoute.Component.serializer())
+            subclass(ScreenRoute.Items::class, ScreenRoute.Items.serializer())
+            subclass(ScreenRoute.Layouts::class, ScreenRoute.Layouts.serializer())
+            subclass(ScreenRoute.CollapsingHeader::class, ScreenRoute.CollapsingHeader.serializer())
+            subclass(ScreenRoute.NestedCollapsed::class, ScreenRoute.NestedCollapsed.serializer())
+            subclass(ScreenRoute.BottomSheet::class, ScreenRoute.BottomSheet.serializer())
             subclass(ScreenRoute.Dialog::class, ScreenRoute.Dialog.serializer())
             subclass(ScreenRoute.Sheet::class, ScreenRoute.Sheet.serializer())
             subclass(ScreenRoute.Material::class, ScreenRoute.Material.serializer())
@@ -82,17 +91,44 @@ fun MainContent(
         ) {
             Row {
                 if (expandedLayout) {
-                    Box(
+                    SideBar(
                         modifier = Modifier
                             .padding(top = windowCaptionBarHeight)
-                            .width(220.dp)
-                            .fillMaxHeight()
                     ) {
+                        Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
+                            ItemOuterTitle("SaltUI")
+                            listOf(
+                                "Home" to ScreenRoute.Main,
+                                "Switchers" to ScreenRoute.Component,
+                                "Items" to ScreenRoute.Items,
+                                "Buttons" to ScreenRoute.Button,
+                                "List" to ScreenRoute.List,
+                                "Layouts and scrolling" to ScreenRoute.Layouts,
+                                "Collapsing header" to ScreenRoute.CollapsingHeader,
+                                "Nested collapsed" to ScreenRoute.NestedCollapsed,
+                                "Bottom sheet scaffold" to ScreenRoute.BottomSheet,
+                                "Dialogs" to ScreenRoute.Dialog,
+                                "Sheets" to ScreenRoute.Sheet,
+                                "Theme and material" to ScreenRoute.Material,
+                                "About" to ScreenRoute.About
+                            ).forEach { (label, route) ->
+                                Item(
+                                    onClick = {
+                                        if (navigator.navBackStack.lastOrNull() != route) {
+                                            navigator.navigate(ScreenRoute.Main)
+                                            navigator.navigate(route)
+                                        }
+                                    },
+                                    text = label
+                                )
+                            }
+                        }
                     }
                 }
 
                 Layer(
                     modifier = Modifier
+                        .weight(1f)
                         .padding(top = windowCaptionBarHeight)
                         .testTag("mainContentLayer"),
                     decorationEnabled = OS.isDesktop()

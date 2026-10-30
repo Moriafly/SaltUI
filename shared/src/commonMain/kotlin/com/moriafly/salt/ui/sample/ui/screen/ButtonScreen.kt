@@ -23,6 +23,10 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.unit.dp
@@ -36,6 +40,7 @@ import com.moriafly.salt.ui.ItemOuterTip
 import com.moriafly.salt.ui.ItemOuterTitle
 import com.moriafly.salt.ui.Text
 import com.moriafly.salt.ui.UnstableSaltUiApi
+import com.moriafly.salt.ui.button.PillButton
 import com.moriafly.salt.ui.outerPadding
 import com.moriafly.salt.ui.sample.ui.icons.SimpleIcons
 import com.moriafly.salt.ui.sample.ui.icons.Star
@@ -45,22 +50,25 @@ import com.moriafly.salt.ui.sample.ui.screen.basic.BasicScreenColumn
 @OptIn(UnstableSaltUiApi::class)
 @Composable
 fun ButtonScreen() {
+    var lastAction by rememberSaveable { mutableStateOf("Tap a button to try it") }
+
     BasicScreenColumn(
-        title = "Button"
+        title = "Button",
+        subtitle = lastAction
     ) {
         ItemOuterTitle("Appearance")
         ButtonFlowRow {
             Button(
-                onClick = {},
+                onClick = { lastAction = "Filled tapped" },
                 text = "Filled"
             )
             Button(
-                onClick = {},
+                onClick = { lastAction = "Subtle tapped" },
                 text = "Subtle",
                 appearance = ButtonAppearance.Subtle
             )
             Button(
-                onClick = {},
+                onClick = { lastAction = "Plain tapped" },
                 text = "Plain",
                 appearance = ButtonAppearance.Plain
             )
@@ -74,7 +82,7 @@ fun ButtonScreen() {
         ButtonFlowRow {
             ControlSize.entries.forEach { size ->
                 Button(
-                    onClick = {},
+                    onClick = { lastAction = "${size.name} tapped" },
                     text = size.name,
                     size = size
                 )
@@ -88,12 +96,12 @@ fun ButtonScreen() {
         ItemOuterTitle("Intent")
         ButtonFlowRow {
             Button(
-                onClick = {},
+                onClick = { lastAction = "Delete tapped" },
                 text = "Delete",
                 intent = ButtonIntent.Destructive
             )
             Button(
-                onClick = {},
+                onClick = { lastAction = "Remove tapped" },
                 text = "Remove",
                 appearance = ButtonAppearance.Subtle,
                 intent = ButtonIntent.Destructive
@@ -103,7 +111,7 @@ fun ButtonScreen() {
         ItemOuterTitle("Content")
         ButtonFlowRow {
             Button(
-                onClick = {},
+                onClick = { lastAction = "Favorite tapped" },
                 text = "Favorite",
                 leadingIcon = {
                     Icon(
@@ -113,7 +121,7 @@ fun ButtonScreen() {
                 }
             )
             Button(
-                onClick = {},
+                onClick = { lastAction = "Custom slot tapped" },
                 appearance = ButtonAppearance.Subtle,
                 size = ControlSize.Regular
             ) {
@@ -130,6 +138,20 @@ fun ButtonScreen() {
             "Prefer the text overload for standard labels and leading icons; use the content slot " +
                 "for richer layouts such as a trailing icon"
         )
+
+        ItemOuterTitle("Pill button")
+        ButtonFlowRow {
+            PillButton(
+                onClick = { lastAction = "Pill button tapped" },
+                text = { Text("Favorite") },
+                icon = {
+                    Icon(
+                        painter = rememberVectorPainter(SimpleIcons.Star),
+                        contentDescription = null
+                    )
+                }
+            )
+        }
 
         ItemOuterTitle("State")
         ButtonFlowRow {

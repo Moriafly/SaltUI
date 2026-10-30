@@ -34,15 +34,11 @@ import com.moriafly.salt.ui.Button
 import com.moriafly.salt.ui.ButtonAppearance
 import com.moriafly.salt.ui.Icon
 import com.moriafly.salt.ui.Item
-import com.moriafly.salt.ui.ItemInfo
-import com.moriafly.salt.ui.ItemInfoType
-import com.moriafly.salt.ui.ItemLabelValueContainer
+import com.moriafly.salt.ui.ItemButton
 import com.moriafly.salt.ui.ItemOuterLargeTitle
 import com.moriafly.salt.ui.ItemSwitcher
-import com.moriafly.salt.ui.LabelValue
 import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.moriafly.salt.ui.sample.ui.icons.Like
-import com.moriafly.salt.ui.sample.ui.icons.Search
 import com.moriafly.salt.ui.sample.ui.icons.SimpleIcons
 import com.moriafly.salt.ui.sample.ui.navigation.LocalSaltNavigator
 import com.moriafly.salt.ui.sample.ui.navigation.ScreenRoute
@@ -70,14 +66,6 @@ fun MainScreen() {
                     contentDescription = "About SaltUI"
                 )
             }
-            TitleBarButton(
-                onClick = {}
-            ) {
-                Icon(
-                    painter = rememberVectorPainter(SimpleIcons.Search),
-                    contentDescription = null
-                )
-            }
         }
     ) {
         ItemOuterLargeTitle(
@@ -85,16 +73,8 @@ fun MainScreen() {
             sub = "UI Components for Compose Multiplatform (Android/Desktop/iOS)"
         )
 
-        ScreenCard {
-            ItemInfo(
-                text = "Coming!",
-                infoType = ItemInfoType.Success
-            )
-        }
-
         ScreenCard(
-            header = "Appearance",
-            footer = "This is footer!"
+            header = "Appearance"
         ) {
             ItemSwitcher(
                 state = AppConfig.isDarkTheme,
@@ -106,7 +86,7 @@ fun MainScreen() {
         }
 
         val navigator = LocalSaltNavigator.current
-        ScreenCard {
+        ScreenCard(header = "Explore") {
             Item(
                 onClick = {
                     navigator.navigate(ScreenRoute.Component)
@@ -129,8 +109,27 @@ fun MainScreen() {
             )
             Item(
                 onClick = {
+                    navigator.navigate(ScreenRoute.Items)
                 },
-                text = "Item"
+                text = "Items",
+                sub = "Editing, selection, sliders, and information"
+            )
+            Item(
+                onClick = { navigator.navigate(ScreenRoute.Layouts) },
+                text = "Layouts and scrolling",
+                sub = "Cards, grids, and pagers"
+            )
+            Item(
+                onClick = { navigator.navigate(ScreenRoute.CollapsingHeader) },
+                text = "Collapsing header"
+            )
+            Item(
+                onClick = { navigator.navigate(ScreenRoute.NestedCollapsed) },
+                text = "Nested collapsed"
+            )
+            Item(
+                onClick = { navigator.navigate(ScreenRoute.BottomSheet) },
+                text = "Bottom sheet scaffold"
             )
             Item(
                 onClick = {
@@ -146,7 +145,15 @@ fun MainScreen() {
                 onClick = {
                     navigator.navigate(ScreenRoute.Material)
                 },
-                text = "Material"
+                text = "Theme and material"
+            )
+        }
+
+        ScreenCard(header = "Navigation") {
+            ItemButton(
+                onClick = { navigator.forward() },
+                text = "Go forward",
+                enabled = navigator.navForwardStack.isNotEmpty()
             )
         }
 
@@ -159,34 +166,6 @@ fun MainScreen() {
             )
         }
 
-        ScreenCard {
-            ItemLabelValueContainer {
-                LabelValue(
-                    label = "Version",
-                    value = "3.0"
-                )
-                LabelValue(
-                    label = "Developer",
-                    value = "Moriafly"
-                )
-                LabelValue(
-                    label = "Year",
-                    value = "2026"
-                )
-                LabelValue(
-                    label = "设备名称",
-                    value = "测试 DESKTOP"
-                )
-                LabelValue(
-                    label = "处理器",
-                    value = "测试 AMD"
-                )
-                LabelValue(
-                    label = "产品 ID",
-                    value = "测试 ABC"
-                )
-            }
-        }
     }
     MainWelcomeSheet(
         visible = welcomeSheetVisible,
