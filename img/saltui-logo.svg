@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 50 56" role="img" aria-labelledby="title desc">
+  <title id="title">SaltUI logo</title>
+  <desc id="desc">A blue geometric crystal with a transparent center.</desc>
+  <path d="M15.5 22.5 25 17l9.5 5.5L49.25 14 25 0 .75 14Z" fill="#55B1FF"/>
+  <path d="M25 39 15.5 33.5v-11L.75 14v28L25 56Z" fill="#0470E6"/>
+  <path d="M34.5 22.5v11L25 39v17l24.25-14V14Z" fill="#0355B5"/>
+</svg>

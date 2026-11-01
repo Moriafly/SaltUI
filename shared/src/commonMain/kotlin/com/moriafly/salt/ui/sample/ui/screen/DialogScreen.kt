@@ -5,15 +5,20 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import com.moriafly.salt.ui.Item
-import com.moriafly.salt.ui.ItemArrowType
+import com.moriafly.salt.ui.ItemButton
+import com.moriafly.salt.ui.ItemValue
 import com.moriafly.salt.ui.RoundedColumn
 import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.moriafly.salt.ui.dialog.AdaptiveDialogSize
 import com.moriafly.salt.ui.dialog.BasicAdaptiveDialog
+import com.moriafly.salt.ui.dialog.InputDialog
 import com.moriafly.salt.ui.dialog.YesDialog
 import com.moriafly.salt.ui.dialog.YesNoDialog
 import com.moriafly.salt.ui.popup.rememberPopupState
@@ -23,6 +28,10 @@ import com.moriafly.salt.ui.sample.ui.screen.basic.BasicScreenColumn
 @OptIn(UnstableSaltUiApi::class)
 @Composable
 fun DialogScreen() {
+    var inputVisible by rememberSaveable { mutableStateOf(false) }
+    var draft by rememberSaveable { mutableStateOf("") }
+    var savedText by rememberSaveable { mutableStateOf("") }
+
     BasicScreenColumn(
         title = "Dialog"
     ) {
@@ -70,29 +79,48 @@ fun DialogScreen() {
                 confirmText = "Continue"
             )
         }
+        if (inputVisible) {
+            InputDialog(
+                onDismissRequest = { inputVisible = false },
+                onConfirm = {
+                    savedText = draft
+                    inputVisible = false
+                },
+                onChange = { draft = it },
+                title = "Edit name",
+                text = draft,
+                hint = "Enter a name",
+                confirmText = "Save"
+            )
+        }
 
         RoundedColumn {
-            Item(
+            ItemButton(
                 onClick = {
                     basicAdaptiveDialogPopupState.expend()
                 },
-                text = "BasicAdaptiveDialog",
-                arrowType = ItemArrowType.Link
+                text = "BasicAdaptiveDialog"
             )
-            Item(
+            ItemButton(
                 onClick = {
                     yesDialogPopupState.expend()
                 },
-                text = "YesDialog",
-                arrowType = ItemArrowType.Link
+                text = "YesDialog"
             )
-            Item(
+            ItemButton(
                 onClick = {
                     yesNoDialogPopupState.expend()
                 },
-                text = "YesNoDialog",
-                arrowType = ItemArrowType.Link
+                text = "YesNoDialog"
             )
+            ItemButton(
+                onClick = {
+                    draft = savedText
+                    inputVisible = true
+                },
+                text = "InputDialog"
+            )
+            ItemValue(text = "Saved name", sub = savedText.ifBlank { "None" })
         }
     }
 }

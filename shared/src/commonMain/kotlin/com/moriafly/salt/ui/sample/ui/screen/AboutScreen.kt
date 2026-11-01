@@ -18,44 +18,20 @@
 package com.moriafly.salt.ui.sample.ui.screen
 
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.graphics.vector.rememberVectorPainter
-import com.moriafly.salt.ui.Icon
 import com.moriafly.salt.ui.Item
 import com.moriafly.salt.ui.ItemOuterLargeTitle
 import com.moriafly.salt.ui.RoundedColumn
 import com.moriafly.salt.ui.UnstableSaltUiApi
-import com.moriafly.salt.ui.sample.ui.icons.Like
-import com.moriafly.salt.ui.sample.ui.icons.SimpleIcons
-import com.moriafly.salt.ui.sample.ui.icons.Star
 import com.moriafly.salt.ui.sample.ui.navigation.LocalSaltNavigator
 import com.moriafly.salt.ui.sample.ui.navigation.ScreenRoute
 import com.moriafly.salt.ui.sample.ui.screen.basic.BasicScreenColumn
-import com.moriafly.salt.ui.screen.TitleBarButton
 
 @Suppress("ktlint:compose:modifier-missing-check")
 @OptIn(UnstableSaltUiApi::class)
 @Composable
 fun AboutScreen() {
     BasicScreenColumn(
-        title = "About",
-        toolButtons = {
-            TitleBarButton(
-                onClick = {}
-            ) {
-                Icon(
-                    painter = rememberVectorPainter(SimpleIcons.Like),
-                    contentDescription = null
-                )
-            }
-            TitleBarButton(
-                onClick = {}
-            ) {
-                Icon(
-                    painter = rememberVectorPainter(SimpleIcons.Star),
-                    contentDescription = null
-                )
-            }
-        }
+        title = "About"
     ) {
         ItemOuterLargeTitle(
             text = "SaltUI 3",
