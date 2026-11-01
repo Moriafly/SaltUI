@@ -20,6 +20,7 @@ package com.moriafly.salt.ui.sample.ui.screen
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -40,8 +41,8 @@ import com.moriafly.salt.ui.SaltTheme
 import com.moriafly.salt.ui.Text
 import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.moriafly.salt.ui.lazy.LazyColumn
-import com.moriafly.salt.ui.nested.NestedHeaderLayout
 import com.moriafly.salt.ui.nested.NestedCollapsed
+import com.moriafly.salt.ui.nested.NestedHeaderLayout
 import com.moriafly.salt.ui.rememberBottomSheetState
 import com.moriafly.salt.ui.sample.ui.screen.basic.BasicScreenBox
 import kotlinx.coroutines.launch
@@ -96,7 +97,7 @@ fun NestedCollapsedScreen() {
         ) { collapsedPadding ->
             LazyColumn(
                 modifier = Modifier.fillMaxSize(),
-                contentPadding = collapsedPadding + androidx.compose.foundation.layout.PaddingValues(
+                contentPadding = collapsedPadding + PaddingValues(
                     bottom = contentPadding.calculateBottomPadding()
                 )
             ) {

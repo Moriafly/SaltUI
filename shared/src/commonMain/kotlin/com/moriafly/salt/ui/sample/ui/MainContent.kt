@@ -36,9 +36,9 @@ import com.moriafly.salt.adaptive.window.LocalSaltAdaptiveWindow
 import com.moriafly.salt.adaptive.window.UnstableSaltAdaptiveWindowApi
 import com.moriafly.salt.adaptive.window.WindowSizeClass
 import com.moriafly.salt.core.os.OS
-import com.moriafly.salt.ui.Layer
 import com.moriafly.salt.ui.Item
 import com.moriafly.salt.ui.ItemOuterTitle
+import com.moriafly.salt.ui.Layer
 import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.moriafly.salt.ui.navigation.rememberSaltNavigator
 import com.moriafly.salt.ui.sample.ui.navigation.AppNavigation
@@ -47,6 +47,22 @@ import com.moriafly.salt.ui.sample.ui.navigation.ScreenRoute
 import com.moriafly.salt.ui.sidebar.SideBar
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.polymorphic
+
+private val sidebarDestinations: List<Pair<String, ScreenRoute>> = listOf(
+    "Home" to ScreenRoute.Main,
+    "Switchers" to ScreenRoute.Component,
+    "Items" to ScreenRoute.Items,
+    "Buttons" to ScreenRoute.Button,
+    "List" to ScreenRoute.List,
+    "Layouts and scrolling" to ScreenRoute.Layouts,
+    "Collapsing header" to ScreenRoute.CollapsingHeader,
+    "Nested collapsed" to ScreenRoute.NestedCollapsed,
+    "Bottom sheet scaffold" to ScreenRoute.BottomSheet,
+    "Dialogs" to ScreenRoute.Dialog,
+    "Sheets" to ScreenRoute.Sheet,
+    "Theme and material" to ScreenRoute.Material,
+    "About" to ScreenRoute.About
+)
 
 private val navigatorConfig = SavedStateConfiguration {
     serializersModule = SerializersModule {
@@ -97,21 +113,7 @@ fun MainContent(
                     ) {
                         Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
                             ItemOuterTitle("SaltUI")
-                            listOf(
-                                "Home" to ScreenRoute.Main,
-                                "Switchers" to ScreenRoute.Component,
-                                "Items" to ScreenRoute.Items,
-                                "Buttons" to ScreenRoute.Button,
-                                "List" to ScreenRoute.List,
-                                "Layouts and scrolling" to ScreenRoute.Layouts,
-                                "Collapsing header" to ScreenRoute.CollapsingHeader,
-                                "Nested collapsed" to ScreenRoute.NestedCollapsed,
-                                "Bottom sheet scaffold" to ScreenRoute.BottomSheet,
-                                "Dialogs" to ScreenRoute.Dialog,
-                                "Sheets" to ScreenRoute.Sheet,
-                                "Theme and material" to ScreenRoute.Material,
-                                "About" to ScreenRoute.About
-                            ).forEach { (label, route) ->
+                            sidebarDestinations.forEach { (label, route) ->
                                 Item(
                                     onClick = {
                                         if (navigator.navBackStack.lastOrNull() != route) {

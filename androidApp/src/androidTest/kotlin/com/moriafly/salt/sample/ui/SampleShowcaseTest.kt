@@ -27,8 +27,7 @@ import androidx.test.uiautomator.BySelector
 import androidx.test.uiautomator.UiDevice
 import androidx.test.uiautomator.UiObject2
 import androidx.test.uiautomator.Until
-import org.junit.Assert.assertNotNull
-import org.junit.Assert.assertTrue
+import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.junit.runner.RunWith
 import java.io.ByteArrayOutputStream
@@ -120,9 +119,9 @@ class SampleShowcaseTest {
                 .findAll(hierarchy.toString())
                 .map { it.groupValues[1] }
                 .toList()
-            assertNotNull("Could not find $selector; visible text: $labels", result)
+            throw AssertionError("Could not find $selector; visible text: $labels")
         }
-        return result!!
+        return result
     }
 
     private fun click(selector: BySelector) {
@@ -131,12 +130,12 @@ class SampleShowcaseTest {
 
     private fun waitForOrientation(isLandscape: Boolean) {
         val deadline = SystemClock.uptimeMillis() + 5_000
-        while ((device.displayWidth > device.displayHeight) != isLandscape &&
+        while (device.displayWidth > device.displayHeight != isLandscape &&
             SystemClock.uptimeMillis() < deadline
         ) {
             SystemClock.sleep(50)
         }
-        assertTrue((device.displayWidth > device.displayHeight) == isLandscape)
+        assertEquals(isLandscape, device.displayWidth > device.displayHeight)
         device.waitForIdle()
     }
 

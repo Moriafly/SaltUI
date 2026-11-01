@@ -165,7 +165,6 @@ fun MainScreen() {
                 text = "About"
             )
         }
-
     }
     MainWelcomeSheet(
         visible = welcomeSheetVisible,
