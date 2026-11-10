@@ -17,7 +17,9 @@
 
 package com.moriafly.salt.ui.sample.ui.screen
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.size
@@ -28,6 +30,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.unit.dp
 import com.moriafly.salt.ui.Button
@@ -38,9 +41,13 @@ import com.moriafly.salt.ui.ControlSize
 import com.moriafly.salt.ui.Icon
 import com.moriafly.salt.ui.ItemOuterTip
 import com.moriafly.salt.ui.ItemOuterTitle
+import com.moriafly.salt.ui.SaltTheme
 import com.moriafly.salt.ui.Text
 import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.moriafly.salt.ui.button.PillButton
+import com.moriafly.salt.ui.material.glass
+import com.moriafly.salt.ui.material.glassSource
+import com.moriafly.salt.ui.material.rememberGlassSource
 import com.moriafly.salt.ui.outerPadding
 import com.moriafly.salt.ui.sample.ui.icons.SimpleIcons
 import com.moriafly.salt.ui.sample.ui.icons.Star
@@ -51,6 +58,7 @@ import com.moriafly.salt.ui.sample.ui.screen.basic.BasicScreenColumn
 @Composable
 fun ButtonScreen() {
     var lastAction by rememberSaveable { mutableStateOf("Tap a button to try it") }
+    val glassSource = rememberGlassSource()
 
     BasicScreenColumn(
         title = "Button",
@@ -77,6 +85,28 @@ fun ButtonScreen() {
             "Use Filled for the prominent action, Subtle for a low-emphasis action with a quiet " +
                 "container, and Plain for lightweight actions"
         )
+
+        ItemOuterTitle("Glass")
+        ButtonFlowRow {
+            Box {
+                Box(
+                    modifier = Modifier
+                        .matchParentSize()
+                        .glassSource(glassSource)
+                        .background(
+                            Brush.linearGradient(
+                                listOf(SaltTheme.colors.highlight, SaltTheme.colors.background)
+                            )
+                        )
+                )
+                Button(
+                    onClick = { lastAction = "Glass tapped" },
+                    text = "Glass button",
+                    modifier = Modifier.glass(source = glassSource),
+                    appearance = ButtonAppearance.Plain
+                )
+            }
+        }
 
         ItemOuterTitle("Control size")
         ButtonFlowRow {

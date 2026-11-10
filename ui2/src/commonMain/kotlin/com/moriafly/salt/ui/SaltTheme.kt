@@ -58,6 +58,7 @@ fun SaltTheme(
         shapes = shapes,
         material = SaltTheme.material,
         basicScreenStyle = SaltTheme.basicScreenStyle,
+        glassEffect = SaltTheme.glassEffect,
         content = content
     )
 }
