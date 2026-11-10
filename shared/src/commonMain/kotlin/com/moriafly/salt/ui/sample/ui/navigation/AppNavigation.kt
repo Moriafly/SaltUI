@@ -36,6 +36,7 @@ import com.moriafly.salt.ui.sample.ui.screen.AboutScreen
 import com.moriafly.salt.ui.sample.ui.screen.ButtonScreen
 import com.moriafly.salt.ui.sample.ui.screen.ComponentScreen
 import com.moriafly.salt.ui.sample.ui.screen.DialogScreen
+import com.moriafly.salt.ui.sample.ui.screen.GlassScreen
 import com.moriafly.salt.ui.sample.ui.screen.LicenseScreen
 import com.moriafly.salt.ui.sample.ui.screen.ItemsScreen
 import com.moriafly.salt.ui.sample.ui.screen.LayoutsScreen
@@ -142,6 +143,7 @@ fun AppNavigation(
             entry<ScreenRoute.Dialog> { DialogScreen() }
             entry<ScreenRoute.Sheet> { SheetScreen() }
             entry<ScreenRoute.Material> { MaterialScreen() }
+            entry<ScreenRoute.Glass> { GlassScreen() }
         }
     )
 }

@@ -183,6 +183,7 @@ kotlin {
             implementation(libs.haze)
             implementation(libs.haze.blur)
             implementation(libs.haze.blur.materials)
+            implementation(libs.haze.glass)
             implementation(libs.collection)
             implementation(libs.graphics.shapes)
         }

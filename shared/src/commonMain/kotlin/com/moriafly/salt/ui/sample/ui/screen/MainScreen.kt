@@ -147,6 +147,10 @@ fun MainScreen() {
                 },
                 text = "Theme and material"
             )
+            Item(
+                onClick = { navigator.navigate(ScreenRoute.Glass) },
+                text = "Glass"
+            )
         }
 
         ScreenCard(header = "Navigation") {

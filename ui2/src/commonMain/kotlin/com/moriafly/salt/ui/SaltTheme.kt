@@ -25,6 +25,8 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.staticCompositionLocalOf
+import com.moriafly.salt.ui.material.GlassEffect
+import com.moriafly.salt.ui.material.LocalGlassEffect
 import com.moriafly.salt.ui.material.LocalHazeState
 import com.moriafly.salt.ui.material.MaterialType
 import com.moriafly.salt.ui.screen.BasicScreenStyle
@@ -76,6 +78,7 @@ fun SaltTheme(
     shapes: SaltShapes = SaltTheme.shapes,
     material: SaltMaterial = SaltTheme.material,
     basicScreenStyle: BasicScreenStyle = SaltTheme.basicScreenStyle,
+    glassEffect: GlassEffect = SaltTheme.glassEffect,
     content: @Composable () -> Unit
 ) {
     val materialType = material.type
@@ -94,7 +97,8 @@ fun SaltTheme(
         LocalSaltShapes provides shapes,
         LocalSaltMaterial provides material,
         LocalBasicScreenStyle provides basicScreenStyle,
-        LocalHazeState provides hazeState
+        LocalHazeState provides hazeState,
+        LocalGlassEffect provides glassEffect
     ) {
         ProvideTextStyle(
             value = textStyles.main,
@@ -125,6 +129,12 @@ fun ChangeSaltThemeIsDark(
 }
 
 object SaltTheme {
+    @UnstableSaltUiApi
+    val glassEffect: GlassEffect
+        @Composable
+        @ReadOnlyComposable
+        get() = LocalGlassEffect.current
+
     val configs: SaltConfigs
         @Composable
         @ReadOnlyComposable
