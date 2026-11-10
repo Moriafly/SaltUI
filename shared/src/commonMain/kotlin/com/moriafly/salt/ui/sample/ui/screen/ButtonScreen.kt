@@ -22,6 +22,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
@@ -29,6 +31,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
@@ -88,7 +91,11 @@ fun ButtonScreen() {
 
         ItemOuterTitle("Glass")
         ButtonFlowRow {
-            Box {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(64.dp)
+            ) {
                 Box(
                     modifier = Modifier
                         .matchParentSize()
@@ -101,10 +108,13 @@ fun ButtonScreen() {
                 )
                 Button(
                     onClick = { lastAction = "Glass tapped" },
-                    text = "Glass button",
-                    modifier = Modifier.glass(source = glassSource),
+                    modifier = Modifier
+                        .align(Alignment.Center)
+                        .glass(source = glassSource),
                     appearance = ButtonAppearance.Plain
-                )
+                ) {
+                    Text("Glass button", color = SaltTheme.colors.text)
+                }
             }
         }
 
