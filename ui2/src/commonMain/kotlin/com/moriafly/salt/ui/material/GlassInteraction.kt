@@ -37,6 +37,7 @@ import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.PointerId
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.IntSize
+import com.moriafly.salt.ui.UnstableSaltUiApi
 import kotlin.coroutines.coroutineContext
 import kotlin.math.abs
 import kotlin.math.cos
@@ -46,8 +47,14 @@ import kotlin.math.sqrt
 import kotlin.math.tanh
 import kotlinx.coroutines.flow.filter
 
+/**
+ * The visual transform of one glass surface, for content drawn outside that surface.
+ * [translation] and [pivot] are in pixels; [pivot] is relative to the glass surface.
+ * Use each state with only one glass surface.
+ */
+@UnstableSaltUiApi
 @Stable
-internal class GlassInteraction {
+class GlassInteractionState internal constructor() {
     var translation by mutableStateOf(Offset.Zero)
         private set
 
@@ -57,7 +64,7 @@ internal class GlassInteraction {
     var pivot by mutableStateOf(Offset.Zero)
         private set
 
-    var isAnimating by mutableStateOf(false)
+    internal var isAnimating by mutableStateOf(false)
         private set
 
     // Pointer coordinates are local; displacement and target are normalized by the surface height.
@@ -71,7 +78,7 @@ internal class GlassInteraction {
     private var velocity = Offset.Zero
     private var target = Offset.Zero
 
-    fun press(position: Offset, size: IntSize): Boolean {
+    internal fun press(position: Offset, size: IntSize): Boolean {
         if (!position.isFinite || size.width <= 0 || size.height <= 0) {
             return false
         }
@@ -84,7 +91,7 @@ internal class GlassInteraction {
         return true
     }
 
-    fun move(position: Offset) {
+    internal fun move(position: Offset) {
         if (!isPressed || !position.isFinite) {
             return
         }
@@ -95,7 +102,7 @@ internal class GlassInteraction {
         isAnimating = !isSettled()
     }
 
-    fun release(cancelled: Boolean = false) {
+    internal fun release(cancelled: Boolean = false) {
         if (!isPressed) {
             return
         }
@@ -108,7 +115,7 @@ internal class GlassInteraction {
         isAnimating = !isSettled()
     }
 
-    fun advance(seconds: Float) {
+    internal fun advance(seconds: Float) {
         if (!seconds.isFinite() || seconds <= 0f) {
             return
         }
@@ -171,7 +178,7 @@ internal class GlassInteraction {
         displacement = target + wave * decay
     }
 
-    fun stopMotion() {
+    internal fun stopMotion() {
         pressure = 0f
         pressureVelocity = 0f
         displacement = Offset.Zero
@@ -182,7 +189,7 @@ internal class GlassInteraction {
         isAnimating = false
     }
 
-    fun transformOrigin(size: Size): TransformOrigin {
+    internal fun transformOrigin(size: Size): TransformOrigin {
         if (scale == 1f || size.width <= 0f || size.height <= 0f) {
             return TransformOrigin.Center
         }
@@ -209,9 +216,13 @@ internal class GlassInteraction {
     }
 }
 
+/**
+ * Remembers the interaction state for one glass surface.
+ */
+@UnstableSaltUiApi
 @Composable
-internal fun rememberGlassInteraction(): GlassInteraction {
-    val interaction = remember { GlassInteraction() }
+fun rememberGlassInteractionState(): GlassInteractionState {
+    val interaction = remember { GlassInteractionState() }
     LaunchedEffect(interaction) {
         val durationScale = coroutineContext[MotionDurationScale]
         snapshotFlow { interaction.isAnimating }
@@ -246,7 +257,8 @@ internal fun rememberGlassInteraction(): GlassInteraction {
  * Observe the original hit region without consuming the child's pointer events.
  * Keep the glass interaction active until the tracked pointer is released or cancelled.
  */
-internal fun Modifier.glassPointerInput(interaction: GlassInteraction): Modifier =
+@OptIn(UnstableSaltUiApi::class)
+internal fun Modifier.glassPointerInput(interaction: GlassInteractionState): Modifier =
     pointerInput(interaction) {
         var trackedPointer: PointerId? = null
         try {

@@ -389,7 +389,7 @@ fun Modifier.glassSource(source: GlassSource): Modifier = this
  * Unmarked content behind translucent source pixels can remain visible, but is not blurred.
  * [effect] selects a solid color, blur, regular glass or glass without an added color, and defaults to
  * [SaltTheme.glassEffect]. Its colors and glass appearance follow the light or dark
- * [SaltTheme.configs].
+ * [SaltTheme.configs]. [interactionState] can be shared with other content to follow the surface.
  * Add click handling separately.
  *
  * Source content in the same Compose hierarchy is clipped beneath glass surfaces while remaining
@@ -405,7 +405,8 @@ fun Modifier.glassSource(source: GlassSource): Modifier = this
 fun Modifier.glass(
     source: GlassSource,
     shape: RoundedCornerShape = CircleShape,
-    effect: GlassEffect = SaltTheme.glassEffect
+    effect: GlassEffect = SaltTheme.glassEffect,
+    interactionState: GlassInteractionState = rememberGlassInteractionState()
 ): Modifier {
     val isDarkTheme = SaltTheme.configs.isDarkTheme
     val background = when (effect) {
@@ -414,16 +415,15 @@ fun Modifier.glass(
         is GlassEffect.Regular -> if (isDarkTheme) effect.darkColor else effect.lightColor
         GlassEffect.Transparent -> Color.Transparent
     }
-    val interaction = rememberGlassInteraction()
     return this
-        .glassPointerInput(interaction)
+        .glassPointerInput(interactionState)
         // Move the material and its automatically tracked source cutout together.
         .graphicsLayer {
-            scaleX = interaction.scale
-            scaleY = interaction.scale
-            transformOrigin = interaction.transformOrigin(size)
-            translationX = interaction.translation.x
-            translationY = interaction.translation.y
+            scaleX = interactionState.scale
+            scaleY = interactionState.scale
+            transformOrigin = interactionState.transformOrigin(size)
+            translationX = interactionState.translation.x
+            translationY = interactionState.translation.y
         }
         // The glass cutout, when needed, observes the material's transform here.
         .then(
@@ -483,21 +483,21 @@ fun Modifier.glass(
         )
         // Undo the material transform for the content's hit testing.
         .graphicsLayer {
-            val inverseScale = 1f / interaction.scale
+            val inverseScale = 1f / interactionState.scale
             scaleX = inverseScale
             scaleY = inverseScale
-            transformOrigin = interaction.transformOrigin(size)
-            translationX = -interaction.translation.x * inverseScale
-            translationY = -interaction.translation.y * inverseScale
+            transformOrigin = interactionState.transformOrigin(size)
+            translationX = -interactionState.translation.x * inverseScale
+            translationY = -interactionState.translation.y * inverseScale
         }
         // Reapply the transform to content drawing without changing its hit region.
         .drawWithContent {
-            val glassScale = interaction.scale
-            val translation = interaction.translation
+            val glassScale = interactionState.scale
+            val translation = interactionState.translation
             if (glassScale == 1f && translation == Offset.Zero) {
                 drawContent()
             } else {
-                val origin = interaction.transformOrigin(size)
+                val origin = interactionState.transformOrigin(size)
                 val pivot = Offset(
                     x = size.width * origin.pivotFractionX,
                     y = size.height * origin.pivotFractionY
