@@ -34,17 +34,15 @@ internal object GlassStyles {
                 blurRadius = OpticalSizeValue.Fixed(2.5.dp)
             )
         }
-        // Haze 2.1.0 exposes only a system-selected Regular preset. Match its light/dark
-        // differences here so they follow SaltTheme instead.
+        specularIntensity(0f)
+        // Follow SaltTheme for the Regular preset's light or dark appearance.
         if (isDarkTheme) {
-            specularIntensity(0.38f)
-            edgeShadow(Color.Black.copy(alpha = 0.32f))
+            edgeShadow(Color(0x33000000))
             ambientResponse(0.08f)
             contrast(0.08f)
             whitePoint(-0.22f)
             chromaMultiplier(1.1f)
         } else {
-            specularIntensity(GlassDefaults.specularIntensity)
             edgeShadow(GlassDefaults.edgeShadow)
             ambientResponse(GlassDefaults.ambientResponse)
             contrast(GlassDefaults.contrast)
