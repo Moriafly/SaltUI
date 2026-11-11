@@ -143,6 +143,9 @@ class GlassSource internal constructor() {
         val bottomLeft: Offset,
         val bottomRight: Offset
     ) {
+        val widthInRoot = (topRight - origin).getDistance()
+        val heightInRoot = (bottomLeft - origin).getDistance()
+
         // LayoutCoordinates can mutate without changing identity, so retain transformed corners
         // to detect position and transform changes.
         constructor(coordinates: LayoutCoordinates) : this(
@@ -232,8 +235,26 @@ class GlassSource internal constructor() {
                         return@forEach
                     }
 
+                    val width = bounds.size.width.toFloat()
+                    val height = bounds.size.height.toFloat()
+                    val rootWidth = bounds.widthInRoot
+                    val rootHeight = bounds.heightInRoot
+                    if (!rootWidth.isFinite() || !rootHeight.isFinite() ||
+                        rootWidth <= CutoutEdgeOverlapPx * 2f ||
+                        rootHeight <= CutoutEdgeOverlapPx * 2f
+                    ) {
+                        return@forEach
+                    }
+                    val insetX = CutoutEdgeOverlapPx * width / rootWidth
+                    val insetY = CutoutEdgeOverlapPx * height / rootHeight
+
                     transform.reset()
                     sourceCoordinates.transformFrom(bounds.coordinates, transform)
+                    transform.translate(insetX, insetY)
+                    transform.scale(
+                        x = (width - insetX * 2f) / width,
+                        y = (height - insetY * 2f) / height
+                    )
                     shapePath.reset()
                     shapePath.addOutline(
                         surface.shape.createOutline(
@@ -262,6 +283,11 @@ class GlassSource internal constructor() {
             } finally {
                 canvas.restore()
             }
+        }
+
+        private companion object {
+            // Keep source pixels under the antialiased edge, measured in root pixels.
+            private const val CutoutEdgeOverlapPx = 2.5f
         }
     }
 
@@ -450,6 +476,7 @@ fun Modifier.glass(
                                 )
                             )
                         }
+                        // Inherit Haze's performance mode; full resolution can cost more to render.
                         .hazeGlass(input = source.hazeInput, style = style)
                 }
             }
