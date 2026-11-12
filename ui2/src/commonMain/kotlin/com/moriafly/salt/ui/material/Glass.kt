@@ -387,8 +387,8 @@ fun Modifier.glassSource(source: GlassSource): Modifier = this
 /**
  * Draws glass using content explicitly marked with [glassSource] and the same [source].
  * Unmarked content behind translucent source pixels can remain visible, but is not blurred.
- * [effect] selects a solid color, blur, regular glass or glass without an added color, and defaults to
- * [SaltTheme.glassEffect]. Its colors and glass appearance follow the light or dark
+ * [effect] selects a solid color, blur, regular glass or glass without an added color. It defaults
+ * to [SaltTheme.glassEffect]. Its colors and glass appearance follow the light or dark
  * [SaltTheme.configs]. [interactionState] can be shared with other content to follow the surface.
  * Add click handling separately.
  *
@@ -462,7 +462,7 @@ fun Modifier.glass(
                         }
                     }
                     val android = OS.current as? OS.Android
-                    // Haze 2.1's transparent fallback does not replay its source on Android below 13.
+                    // Haze 2.1's transparent fallback does not replay its source below Android 13.
                     val keepSourceVisible = background.alpha == 0f && android != null &&
                         android.versionSdk < OS.Android.ANDROID_13
                     Modifier

@@ -23,6 +23,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -39,6 +40,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.IntSize
 import com.moriafly.salt.ui.UnstableSaltUiApi
 import kotlin.coroutines.coroutineContext
+import kotlin.jvm.JvmSynthetic
 import kotlin.math.abs
 import kotlin.math.cos
 import kotlin.math.exp
@@ -67,6 +69,10 @@ class GlassInteractionState internal constructor() {
     internal var isAnimating by mutableStateOf(false)
         private set
 
+    @get:JvmSynthetic
+    internal var animationRequest by mutableLongStateOf(0L)
+        private set
+
     // Pointer coordinates are local; displacement and target are normalized by the surface height.
     private var isPressed = false
     private var origin = Offset.Zero
@@ -87,7 +93,7 @@ class GlassInteractionState internal constructor() {
         this.size = size
         updatePivot(position)
         target = Offset.Zero
-        isAnimating = !isSettled()
+        requestAnimationIfNeeded()
         return true
     }
 
@@ -99,7 +105,7 @@ class GlassInteractionState internal constructor() {
         // Bound the target so a pointer far outside the surface cannot drag it indefinitely.
         val delta = (position - origin) / size.height.toFloat()
         target = Offset(tanh(delta.x * 0.65f), tanh(delta.y * 0.65f))
-        isAnimating = !isSettled()
+        requestAnimationIfNeeded()
     }
 
     internal fun release(cancelled: Boolean = false) {
@@ -112,7 +118,15 @@ class GlassInteractionState internal constructor() {
             pressureVelocity += 7f
         }
         target = Offset.Zero
-        isAnimating = !isSettled()
+        requestAnimationIfNeeded()
+    }
+
+    private fun requestAnimationIfNeeded() {
+        val needsAnimation = !isSettled()
+        if (needsAnimation && !isAnimating) {
+            animationRequest++
+        }
+        isAnimating = needsAnimation
     }
 
     internal fun advance(seconds: Float) {
@@ -150,9 +164,11 @@ class GlassInteractionState internal constructor() {
         val pressureDecay = exp(-pressureDecayRate * seconds)
         val pressureSine = sin(pressureAngle)
         val pressureCosine = cos(pressureAngle)
-        val pressureWave = pressureDistance * pressureCosine + pressureSineCoefficient * pressureSine
+        val pressureWave =
+            pressureDistance * pressureCosine + pressureSineCoefficient * pressureSine
         pressureVelocity = pressureDecay * (
-            -pressureDecayRate * pressureWave - pressureDistance * pressureAngularRate * pressureSine +
+            -pressureDecayRate * pressureWave -
+                pressureDistance * pressureAngularRate * pressureSine +
                 pressureSineCoefficient * pressureAngularRate * pressureCosine
             )
         pressure = pressureTarget + pressureDecay * pressureWave
@@ -225,9 +241,13 @@ fun rememberGlassInteractionState(): GlassInteractionState {
     val interaction = remember { GlassInteractionState() }
     LaunchedEffect(interaction) {
         val durationScale = coroutineContext[MotionDurationScale]
-        snapshotFlow { interaction.isAnimating }
-            .filter { it }
+        // A distinct request survives conflation when an animation settles and restarts quickly.
+        snapshotFlow { interaction.animationRequest }
+            .filter { it != 0L }
             .collect {
+                if (!interaction.isAnimating) {
+                    return@collect
+                }
                 var previousTime = withFrameNanos { time ->
                     val scale = durationScale?.scaleFactor ?: 1f
                     if (!scale.isFinite() || scale <= 0f) {
