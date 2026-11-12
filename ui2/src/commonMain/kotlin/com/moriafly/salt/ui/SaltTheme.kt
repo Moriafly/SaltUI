@@ -109,6 +109,41 @@ fun SaltTheme(
 }
 
 /**
+ * Preserves the theme entry point used by binaries compiled before glass effects were added.
+ */
+@Deprecated(
+    message = "Maintained for binary compatibility",
+    level = DeprecationLevel.HIDDEN
+)
+@UnstableSaltUiApi
+@Composable
+fun SaltTheme(
+    configs: SaltConfigs = SaltConfigs.default(),
+    dynamicColors: SaltDynamicColors = SaltDynamicColors(
+        light = SaltColors.defaultLight(),
+        dark = SaltColors.defaultDark()
+    ),
+    textStyles: SaltTextStyles = SaltTheme.textStyles,
+    dimens: SaltDimens = SaltTheme.dimens,
+    shapes: SaltShapes = SaltTheme.shapes,
+    material: SaltMaterial = SaltTheme.material,
+    basicScreenStyle: BasicScreenStyle = SaltTheme.basicScreenStyle,
+    content: @Composable () -> Unit
+) {
+    SaltTheme(
+        configs = configs,
+        dynamicColors = dynamicColors,
+        textStyles = textStyles,
+        dimens = dimens,
+        shapes = shapes,
+        material = material,
+        basicScreenStyle = basicScreenStyle,
+        glassEffect = SaltTheme.glassEffect,
+        content = content
+    )
+}
+
+/**
  * Dynamically changes the theme's dark mode configuration.
  */
 @UnstableSaltUiApi
@@ -130,12 +165,6 @@ fun ChangeSaltThemeIsDark(
 }
 
 object SaltTheme {
-    @UnstableSaltUiApi
-    val glassEffect: GlassEffect
-        @Composable
-        @ReadOnlyComposable
-        get() = LocalGlassEffect.current
-
     val configs: SaltConfigs
         @Composable
         @ReadOnlyComposable
@@ -176,6 +205,12 @@ object SaltTheme {
         @Composable
         @ReadOnlyComposable
         get() = LocalBasicScreenStyle.current
+
+    @UnstableSaltUiApi
+    val glassEffect: GlassEffect
+        @Composable
+        @ReadOnlyComposable
+        get() = LocalGlassEffect.current
 }
 
 private val LocalSaltConfigs = staticCompositionLocalOf { SaltConfigs.default() }
