@@ -398,7 +398,8 @@ fun Modifier.glassSource(source: GlassSource): Modifier = this
  * On Android below 13, transparent glass leaves the original source visible during fallback.
  * The cutout does not follow transparency or non-rectangular clipping applied by an ancestor.
  * The content and source cutout follow the pressed material as it scales and moves, while the
- * content's hit region remains at its original layout position.
+ * content's hit region remains at its original layout position. The press ends when another
+ * gesture, such as scrolling, claims the pointer movement.
  */
 @UnstableSaltUiApi
 @Composable

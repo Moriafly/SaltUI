@@ -275,6 +275,7 @@ fun rememberGlassInteractionState(): GlassInteractionState {
 
 /**
  * Observe the original hit region without consuming the child's pointer events.
+ * Cancel the interaction once another gesture, such as scrolling, claims the movement.
  * Keep the glass interaction active until the tracked pointer is released or cancelled.
  */
 @OptIn(UnstableSaltUiApi::class)
@@ -291,17 +292,30 @@ internal fun Modifier.glassPointerInput(interaction: GlassInteractionState): Mod
                         if (down != null && interaction.press(down.position, size)) {
                             trackedPointer = down.id
                         }
-                    } else {
-                        val change = event.changes.firstOrNull { it.id == tracked }
-                        if (change == null || !change.pressed) {
-                            if (change != null) {
-                                interaction.move(change.position)
-                            }
-                            interaction.release(cancelled = change == null)
-                            trackedPointer = null
-                        } else {
+                        continue
+                    }
+
+                    val change = event.changes.firstOrNull { it.id == tracked }
+                    if (change == null || !change.pressed) {
+                        if (change != null) {
                             interaction.move(change.position)
                         }
+                        interaction.release(cancelled = change == null)
+                        trackedPointer = null
+                        continue
+                    }
+
+                    // Another gesture can only claim this movement after the main pass, so the
+                    // final pass decides whether the surface still follows the pointer.
+                    val claimed = awaitPointerEvent(PointerEventPass.Final)
+                        .changes
+                        .firstOrNull { it.id == tracked }
+                        ?.isConsumed == true
+                    if (claimed) {
+                        interaction.release(cancelled = true)
+                        trackedPointer = null
+                    } else {
+                        interaction.move(change.position)
                     }
                 }
             }
