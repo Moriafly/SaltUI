@@ -23,7 +23,6 @@ import android.view.InputDevice
 import android.view.MotionEvent
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
@@ -39,12 +38,17 @@ import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.By
 import androidx.test.uiautomator.UiDevice
 import androidx.test.uiautomator.Until
+import com.moriafly.salt.ui.Button
+import com.moriafly.salt.ui.ButtonAppearance
+import com.moriafly.salt.ui.Icon
 import com.moriafly.salt.ui.SaltConfigs
 import com.moriafly.salt.ui.SaltTheme
 import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.moriafly.salt.ui.material.GlassEffect
 import com.moriafly.salt.ui.material.glass
 import com.moriafly.salt.ui.material.rememberGlassSource
+import com.moriafly.salt.ui.sample.ui.icons.SimpleIcons
+import com.moriafly.salt.ui.sample.ui.icons.Star
 import kotlin.math.abs
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -70,18 +74,25 @@ class GlassInteractionLightTest {
                                 .background(Color.DarkGray),
                             contentAlignment = Alignment.Center
                         ) {
-                            Box(
+                            Button(
+                                onClick = {},
                                 modifier = Modifier
-                                    .size(
-                                        width = 260.dp,
-                                        height = 80.dp
-                                    )
                                     .glass(
                                         source = source,
                                         effect = GlassEffect.Regular()
                                     )
-                                    .clickable { }
-                                    .semantics { contentDescription = "Glass surface" }
+                                    .size(
+                                        width = 260.dp,
+                                        height = 80.dp
+                                    )
+                                    .semantics { contentDescription = "Glass surface" },
+                                appearance = ButtonAppearance.Glass,
+                                leadingIcon = {
+                                    Icon(
+                                        imageVector = SimpleIcons.Star,
+                                        contentDescription = null
+                                    )
+                                }
                             )
                         }
                     }

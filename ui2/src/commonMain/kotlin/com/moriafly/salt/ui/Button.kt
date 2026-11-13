@@ -196,6 +196,46 @@ fun Button(
 }
 
 /**
+ * A button with an icon and no visible text.
+ *
+ * The default container is circular. [size] controls both the container and icon size.
+ * Provide an accessible description for the icon when it represents the button's action.
+ */
+@Composable
+fun Button(
+    onClick: () -> Unit,
+    leadingIcon: @Composable () -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    appearance: ButtonAppearance = ButtonAppearance.Filled,
+    intent: ButtonIntent = ButtonIntent.Normal,
+    size: ControlSize = LocalControlSize.current
+) {
+    BasicButton(
+        onClick = onClick,
+        modifier = modifier
+            .size(ButtonDefaults.containerHeight(size)),
+        enabled = enabled,
+        size = size,
+        colors = ButtonDefaults.colors(
+            appearance = appearance,
+            intent = intent
+        ),
+        contentPadding = PaddingValues(0.dp),
+        indication = if (appearance == ButtonAppearance.Glass) null else LocalIndication.current
+    ) {
+        Box(
+            modifier = Modifier
+                .size(ButtonDefaults.iconSize(size)),
+            contentAlignment = Alignment.Center,
+            propagateMinConstraints = true
+        ) {
+            leadingIcon()
+        }
+    }
+}
+
+/**
  * A button whose label is supplied by a flexible [RowScope] content slot.
  *
  * [appearance] describes how the button is drawn, while [intent] describes the meaning of its

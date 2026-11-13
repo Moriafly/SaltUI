@@ -53,12 +53,15 @@ import com.moriafly.salt.ui.BasicButton
 import com.moriafly.salt.ui.Button
 import com.moriafly.salt.ui.ButtonAppearance
 import com.moriafly.salt.ui.ButtonDefaults
+import com.moriafly.salt.ui.Icon
 import com.moriafly.salt.ui.SaltTheme
 import com.moriafly.salt.ui.Text
 import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.moriafly.salt.ui.material.GlassEffect
 import com.moriafly.salt.ui.material.glass
 import com.moriafly.salt.ui.material.rememberGlassSource
+import com.moriafly.salt.ui.sample.ui.icons.SimpleIcons
+import com.moriafly.salt.ui.sample.ui.icons.Star
 import kotlin.math.abs
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -79,6 +82,7 @@ class GlassButtonFocusTest {
                         val source = rememberGlassSource()
                         var firstClicks by remember { mutableIntStateOf(0) }
                         var secondClicks by remember { mutableIntStateOf(0) }
+                        var iconClicks by remember { mutableIntStateOf(0) }
                         var glassAppearance by remember { mutableStateOf(true) }
                         Column(
                             modifier = Modifier
@@ -124,7 +128,32 @@ class GlassButtonFocusTest {
                             ) {
                                 Text("Glass icon")
                             }
+                            Button(
+                                onClick = { iconClicks++ },
+                                modifier = Modifier.glass(
+                                    source = source,
+                                    effect = GlassEffect.Solid()
+                                ),
+                                appearance = ButtonAppearance.Glass,
+                                leadingIcon = {
+                                    Icon(
+                                        imageVector = SimpleIcons.Star,
+                                        contentDescription = "Icon-only glass button"
+                                    )
+                                }
+                            )
+                            Button(
+                                onClick = { iconClicks++ },
+                                enabled = false,
+                                leadingIcon = {
+                                    Icon(
+                                        imageVector = SimpleIcons.Star,
+                                        contentDescription = "Disabled icon button"
+                                    )
+                                }
+                            )
                             Text("First: $firstClicks, second: $secondClicks")
+                            Text("Icon: $iconClicks")
                             Text("Appearance: ${if (glassAppearance) "Glass" else "Plain"}")
                         }
                     }
@@ -134,6 +163,10 @@ class GlassButtonFocusTest {
             val first = button("Glass action")
             val firstBounds = first.visibleBounds
             val secondBounds = button("Glass icon").visibleBounds
+            val iconBounds = button("Icon-only glass button").visibleBounds
+            val disabledIcon = button("Disabled icon button")
+            assertTrue("The icon-only button should be square", iconBounds.width() == iconBounds.height())
+            assertFalse("The disabled icon-only button should be disabled", disabledIcon.isEnabled)
             val unfocused = screenshot()
 
             device.pressKeyCode(KeyEvent.KEYCODE_TAB)
@@ -176,6 +209,29 @@ class GlassButtonFocusTest {
 
             device.pressKeyCode(KeyEvent.KEYCODE_ENTER)
             shown("First: 2, second: 1")
+            device.pressKeyCode(KeyEvent.KEYCODE_TAB)
+            waitForFocus("Icon-only glass button")
+            waitForScreenshot("The outline must follow focus to the icon-only button") {
+                changedPixels(unfocused, it, secondBounds) <= 10 &&
+                    changedPixels(unfocused, it, iconBounds) > 10
+            }
+            device.pressKeyCode(KeyEvent.KEYCODE_ENTER)
+            shown("Icon: 1")
+            device.executeShellCommand("input mouse tap ${iconBounds.centerX()} ${iconBounds.centerY()}")
+            shown("Icon: 2")
+            waitForScreenshot("Mouse click must not leave an icon button focus outline") {
+                changedPixels(unfocused, it, iconBounds) <= 10
+            }
+            device.click(iconBounds.centerX(), iconBounds.centerY())
+            shown("Icon: 3")
+            device.click(iconBounds.right - 1, iconBounds.centerY())
+            shown("Icon: 4")
+            device.click(iconBounds.right + iconBounds.width() / 2, iconBounds.centerY())
+            device.waitForIdle()
+            shown("Icon: 4")
+            device.click(disabledIcon.visibleBounds.centerX(), disabledIcon.visibleBounds.centerY())
+            device.waitForIdle()
+            shown("Icon: 4")
             device.click(firstBounds.centerX(), firstBounds.centerY())
             shown("First: 3, second: 1")
             waitForScreenshot("Touch must not leave a keyboard focus outline") {
@@ -257,7 +313,8 @@ class GlassButtonFocusTest {
             ?: throw AssertionError("Could not find $text")
 
     private fun button(text: String): UiObject2 =
-        generateSequence(shown(text)) { it.parent }.firstOrNull { it.isClickable }
+        generateSequence(device.findObject(By.desc(text)) ?: shown(text)) { it.parent }
+            .firstOrNull { it.isClickable }
             ?: throw AssertionError("Could not find a clickable button for $text")
 
     private fun waitForFocus(text: String) {

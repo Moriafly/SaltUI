@@ -26,13 +26,11 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
@@ -58,11 +56,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.moriafly.salt.core.os.OS
-import com.moriafly.salt.ui.BasicButton
 import com.moriafly.salt.ui.Button
 import com.moriafly.salt.ui.ButtonAppearance
-import com.moriafly.salt.ui.ButtonColors
-import com.moriafly.salt.ui.ButtonDefaults
 import com.moriafly.salt.ui.Icon
 import com.moriafly.salt.ui.LocalControlSize
 import com.moriafly.salt.ui.SaltTheme
@@ -212,12 +207,6 @@ private fun GlassDemoRow(
 ) {
     val controlSize = LocalControlSize.current
     val textColor = SaltTheme.colors.text
-    val buttonColors = ButtonColors(
-        containerColor = Color.Transparent,
-        contentColor = textColor,
-        disabledContainerColor = Color.Transparent,
-        disabledContentColor = textColor
-    )
     var isFavorite by remember { mutableStateOf(false) }
     var clickCount by remember { mutableIntStateOf(0) }
 
@@ -225,28 +214,24 @@ private fun GlassDemoRow(
         horizontalArrangement = Arrangement.spacedBy(4.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        BasicButton(
+        Button(
             onClick = { isFavorite = !isFavorite },
             modifier = Modifier
-                .size(ButtonDefaults.containerHeight(controlSize))
                 .glass(source = source, shape = CircleShape, effect = effect),
             size = controlSize,
-            shape = CircleShape,
-            colors = buttonColors,
-            contentPadding = PaddingValues(0.dp),
-            indication = null
-        ) {
-            Icon(
-                imageVector = SimpleIcons.Star,
-                contentDescription = if (isFavorite) {
-                    "Remove $label from favorites"
-                } else {
-                    "Add $label to favorites"
-                },
-                modifier = Modifier.size(ButtonDefaults.iconSize(controlSize)),
-                tint = if (isFavorite) SaltTheme.colors.highlight else textColor
-            )
-        }
+            appearance = ButtonAppearance.Glass,
+            leadingIcon = {
+                Icon(
+                    imageVector = SimpleIcons.Star,
+                    contentDescription = if (isFavorite) {
+                        "Remove $label from favorites"
+                    } else {
+                        "Add $label to favorites"
+                    },
+                    tint = if (isFavorite) SaltTheme.colors.highlight else textColor
+                )
+            }
+        )
         Button(
             onClick = { clickCount++ },
             modifier = Modifier

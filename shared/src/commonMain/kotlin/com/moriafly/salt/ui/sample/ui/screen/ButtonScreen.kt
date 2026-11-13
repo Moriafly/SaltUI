@@ -152,6 +152,15 @@ fun ButtonScreen() {
         ButtonFlowRow {
             Button(
                 onClick = { lastAction = "Favorite tapped" },
+                leadingIcon = {
+                    Icon(
+                        imageVector = SimpleIcons.Star,
+                        contentDescription = "Favorite"
+                    )
+                }
+            )
+            Button(
+                onClick = { lastAction = "Favorite tapped" },
                 text = "Favorite",
                 leadingIcon = {
                     Icon(
@@ -175,8 +184,8 @@ fun ButtonScreen() {
             }
         }
         ItemOuterTip(
-            "Prefer the text overload for standard labels and leading icons; use the content slot " +
-                "for richer layouts such as a trailing icon"
+            "Use leadingIcon alone for an icon button, add text for a label, or use the content " +
+                "slot for richer layouts"
         )
 
         ItemOuterTitle("Pill button")
