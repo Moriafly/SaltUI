@@ -56,7 +56,6 @@ import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.LayoutDirection
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.toSize
 import com.moriafly.salt.core.os.OS
 import com.moriafly.salt.ui.SaltTheme
@@ -287,6 +286,7 @@ class GlassSource internal constructor() {
 
         private companion object {
             // Keep source pixels under the antialiased edge, measured in root pixels.
+            @Suppress("ConstPropertyName")
             private const val CutoutEdgeOverlapPx = 2.5f
         }
     }
@@ -479,6 +479,11 @@ fun Modifier.glass(
                         }
                         // Inherit Haze's performance mode; full resolution can cost more to render.
                         .hazeGlass(input = source.hazeInput, style = style)
+                        .glassInteractionLight(
+                            interaction = interactionState,
+                            shape = shape,
+                            isDarkTheme = isDarkTheme
+                        )
                 }
             }
         )

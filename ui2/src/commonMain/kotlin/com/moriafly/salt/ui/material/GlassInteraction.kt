@@ -18,6 +18,7 @@
 package com.moriafly.salt.ui.material
 
 import androidx.compose.animation.core.Spring
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
@@ -31,15 +32,21 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.MotionDurationScale
+import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.TransformOrigin
+import androidx.compose.ui.graphics.drawOutline
 import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.PointerId
+import androidx.compose.ui.input.pointer.PointerType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.IntSize
 import com.moriafly.salt.ui.UnstableSaltUiApi
-import kotlin.coroutines.coroutineContext
+import kotlinx.coroutines.flow.filter
 import kotlin.jvm.JvmSynthetic
 import kotlin.math.abs
 import kotlin.math.cos
@@ -47,7 +54,6 @@ import kotlin.math.exp
 import kotlin.math.sin
 import kotlin.math.sqrt
 import kotlin.math.tanh
-import kotlinx.coroutines.flow.filter
 
 /**
  * The visual transform of one glass surface, for content drawn outside that surface.
@@ -74,15 +80,39 @@ class GlassInteractionState internal constructor() {
         private set
 
     // Pointer coordinates are local; displacement and target are normalized by the surface height.
-    private var isPressed = false
+    private var isPressed by mutableStateOf(false)
     private var origin = Offset.Zero
     private var size = IntSize.Zero
+
     // Pressure drives scale, while displacement drives translation. Both retain spring velocity.
-    private var pressure = 0f
+    private var pressure by mutableFloatStateOf(0f)
     private var pressureVelocity = 0f
     private var displacement = Offset.Zero
     private var velocity = Offset.Zero
     private var target = Offset.Zero
+
+    @get:JvmSynthetic
+    internal var hoverPosition by mutableStateOf<Offset?>(null)
+        private set
+
+    @get:JvmSynthetic
+    internal val lightStrength: Float
+        // Reduced motion keeps the surface still while retaining pressed feedback.
+        get() = if (isPressed && !isAnimating && scale == 1f) {
+            1f
+        } else {
+            pressure.coerceIn(0f, 1f)
+        }
+
+    internal fun updateHover(position: Offset, size: IntSize) {
+        hoverPosition = position.takeIf {
+            it.isFinite && it.x in 0f..size.width.toFloat() && it.y in 0f..size.height.toFloat()
+        }
+    }
+
+    internal fun clearHover() {
+        hoverPosition = null
+    }
 
     internal fun press(position: Offset, size: IntSize): Boolean {
         if (!position.isFinite || size.width <= 0 || size.height <= 0) {
@@ -170,7 +200,7 @@ class GlassInteractionState internal constructor() {
             -pressureDecayRate * pressureWave -
                 pressureDistance * pressureAngularRate * pressureSine +
                 pressureSineCoefficient * pressureAngularRate * pressureCosine
-            )
+        )
         pressure = pressureTarget + pressureDecay * pressureWave
     }
 
@@ -190,7 +220,7 @@ class GlassInteractionState internal constructor() {
         velocity = (
             wave * -decayRate - distance * (angularRate * sine) +
                 sineCoefficient * (angularRate * cosine)
-            ) * decay
+        ) * decay
         displacement = target + wave * decay
     }
 
@@ -286,6 +316,16 @@ internal fun Modifier.glassPointerInput(interaction: GlassInteractionState): Mod
             awaitPointerEventScope {
                 while (true) {
                     val event = awaitPointerEvent(PointerEventPass.Initial)
+                    when (event.type) {
+                        PointerEventType.Enter, PointerEventType.Move -> {
+                            event.changes
+                                .lastOrNull {
+                                    it.type == PointerType.Mouse || it.type == PointerType.Stylus
+                                }
+                                ?.let { interaction.updateHover(it.position, size) }
+                        }
+                        PointerEventType.Exit -> interaction.clearHover()
+                    }
                     val tracked = trackedPointer
                     if (tracked == null) {
                         val down = event.changes.firstOrNull { it.pressed && !it.previousPressed }
@@ -321,8 +361,44 @@ internal fun Modifier.glassPointerInput(interaction: GlassInteractionState): Mod
             }
         } finally {
             interaction.release(cancelled = true)
+            interaction.clearHover()
         }
     }
+
+@OptIn(UnstableSaltUiApi::class)
+internal fun Modifier.glassInteractionLight(
+    interaction: GlassInteractionState,
+    shape: RoundedCornerShape,
+    isDarkTheme: Boolean
+): Modifier = drawWithCache {
+    val outline = shape.createOutline(size, layoutDirection, this)
+    // Cover long controls without spreading a single light across an entire wide bar.
+    val radius = maxOf(
+        size.minDimension * 1.4f,
+        minOf(size.maxDimension * 0.9f, size.minDimension * 5f)
+    )
+    val lightAlpha = if (isDarkTheme) 0.5f else 0.7f
+    onDrawWithContent {
+        val pressStrength = interaction.lightStrength
+        val hoverPosition = interaction.hoverPosition
+        val position = if (pressStrength > 0f) interaction.pivot else hoverPosition
+        if (position != null && size.minDimension > 0f) {
+            val strength = maxOf(pressStrength, if (hoverPosition != null) 0.55f else 0f)
+            drawOutline(
+                outline = outline,
+                brush = Brush.radialGradient(
+                    colors = listOf(
+                        Color.White.copy(alpha = lightAlpha * strength),
+                        Color.Transparent
+                    ),
+                    center = position,
+                    radius = radius
+                )
+            )
+        }
+        drawContent()
+    }
+}
 
 private val Offset.isFinite: Boolean
     get() = x.isFinite() && y.isFinite()

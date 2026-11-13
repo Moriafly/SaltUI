@@ -111,7 +111,7 @@ fun ButtonScreen() {
                     modifier = Modifier
                         .align(Alignment.Center)
                         .glass(source = glassSource),
-                    appearance = ButtonAppearance.Plain
+                    appearance = ButtonAppearance.Glass
                 ) {
                     Text("Glass button", color = SaltTheme.colors.text)
                 }

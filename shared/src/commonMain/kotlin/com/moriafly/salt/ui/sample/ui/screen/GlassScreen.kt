@@ -59,6 +59,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.moriafly.salt.core.os.OS
 import com.moriafly.salt.ui.BasicButton
+import com.moriafly.salt.ui.Button
+import com.moriafly.salt.ui.ButtonAppearance
 import com.moriafly.salt.ui.ButtonColors
 import com.moriafly.salt.ui.ButtonDefaults
 import com.moriafly.salt.ui.Icon
@@ -231,7 +233,8 @@ private fun GlassDemoRow(
             size = controlSize,
             shape = CircleShape,
             colors = buttonColors,
-            contentPadding = PaddingValues(0.dp)
+            contentPadding = PaddingValues(0.dp),
+            indication = null
         ) {
             Icon(
                 imageVector = SimpleIcons.Star,
@@ -244,14 +247,13 @@ private fun GlassDemoRow(
                 tint = if (isFavorite) SaltTheme.colors.highlight else textColor
             )
         }
-        BasicButton(
+        Button(
             onClick = { clickCount++ },
             modifier = Modifier
                 .widthIn(min = 164.dp)
                 .glass(source = source, shape = CircleShape, effect = effect),
             size = controlSize,
-            shape = CircleShape,
-            colors = buttonColors
+            appearance = ButtonAppearance.Glass
         ) {
             Text("$label ($clickCount)")
         }
