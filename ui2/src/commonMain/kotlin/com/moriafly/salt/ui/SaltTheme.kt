@@ -25,6 +25,8 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.staticCompositionLocalOf
+import com.moriafly.salt.ui.material.GlassEffect
+import com.moriafly.salt.ui.material.LocalGlassEffect
 import com.moriafly.salt.ui.material.LocalHazeState
 import com.moriafly.salt.ui.material.MaterialType
 import com.moriafly.salt.ui.screen.BasicScreenStyle
@@ -56,6 +58,7 @@ fun SaltTheme(
         shapes = shapes,
         material = SaltTheme.material,
         basicScreenStyle = SaltTheme.basicScreenStyle,
+        glassEffect = SaltTheme.glassEffect,
         content = content
     )
 }
@@ -76,6 +79,7 @@ fun SaltTheme(
     shapes: SaltShapes = SaltTheme.shapes,
     material: SaltMaterial = SaltTheme.material,
     basicScreenStyle: BasicScreenStyle = SaltTheme.basicScreenStyle,
+    glassEffect: GlassEffect = SaltTheme.glassEffect,
     content: @Composable () -> Unit
 ) {
     val materialType = material.type
@@ -94,13 +98,49 @@ fun SaltTheme(
         LocalSaltShapes provides shapes,
         LocalSaltMaterial provides material,
         LocalBasicScreenStyle provides basicScreenStyle,
-        LocalHazeState provides hazeState
+        LocalHazeState provides hazeState,
+        LocalGlassEffect provides glassEffect
     ) {
         ProvideTextStyle(
             value = textStyles.main,
             content = content
         )
     }
+}
+
+/**
+ * Preserves the theme entry point used by binaries compiled before glass effects were added.
+ */
+@Deprecated(
+    message = "Maintained for binary compatibility",
+    level = DeprecationLevel.HIDDEN
+)
+@UnstableSaltUiApi
+@Composable
+fun SaltTheme(
+    configs: SaltConfigs = SaltConfigs.default(),
+    dynamicColors: SaltDynamicColors = SaltDynamicColors(
+        light = SaltColors.defaultLight(),
+        dark = SaltColors.defaultDark()
+    ),
+    textStyles: SaltTextStyles = SaltTheme.textStyles,
+    dimens: SaltDimens = SaltTheme.dimens,
+    shapes: SaltShapes = SaltTheme.shapes,
+    material: SaltMaterial = SaltTheme.material,
+    basicScreenStyle: BasicScreenStyle = SaltTheme.basicScreenStyle,
+    content: @Composable () -> Unit
+) {
+    SaltTheme(
+        configs = configs,
+        dynamicColors = dynamicColors,
+        textStyles = textStyles,
+        dimens = dimens,
+        shapes = shapes,
+        material = material,
+        basicScreenStyle = basicScreenStyle,
+        glassEffect = SaltTheme.glassEffect,
+        content = content
+    )
 }
 
 /**
@@ -165,6 +205,12 @@ object SaltTheme {
         @Composable
         @ReadOnlyComposable
         get() = LocalBasicScreenStyle.current
+
+    @UnstableSaltUiApi
+    val glassEffect: GlassEffect
+        @Composable
+        @ReadOnlyComposable
+        get() = LocalGlassEffect.current
 }
 
 private val LocalSaltConfigs = staticCompositionLocalOf { SaltConfigs.default() }

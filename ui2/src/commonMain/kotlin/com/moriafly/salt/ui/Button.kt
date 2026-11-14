@@ -20,6 +20,7 @@
 package com.moriafly.salt.ui
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Indication
 import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -39,28 +40,48 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.takeOrElse
+import androidx.compose.ui.input.InputMode
+import androidx.compose.ui.platform.LocalInputModeManager
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 
-/** The visual treatment of a [Button]. */
+/**
+ * The visual treatment of a [Button].
+ */
 enum class ButtonAppearance {
-    /** A contrasting filled container for the most prominent action in a surface. */
+    /**
+     * A contrasting filled container for the most prominent action in a surface.
+     */
     Filled,
 
-    /** A low-emphasis action on a quiet neutral container. */
+    /**
+     * A low-emphasis action on a quiet neutral container.
+     */
     Subtle,
 
-    /** A borderless action whose highlighted content provides its interactive affordance. */
-    Plain
+    /**
+     * A borderless action whose highlighted content provides its interactive affordance.
+     */
+    Plain,
+
+    /**
+     * A transparent button whose pointer feedback is supplied by Modifier.glass.
+     */
+    Glass
 }
 
 /** Semantic intent that can affect the colors of a [Button]. */
@@ -175,6 +196,46 @@ fun Button(
 }
 
 /**
+ * A button with an icon and no visible text.
+ *
+ * The default container is circular. [size] controls both the container and icon size.
+ * Provide an accessible description for the icon when it represents the button's action.
+ */
+@Composable
+fun Button(
+    onClick: () -> Unit,
+    leadingIcon: @Composable () -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    appearance: ButtonAppearance = ButtonAppearance.Filled,
+    intent: ButtonIntent = ButtonIntent.Normal,
+    size: ControlSize = LocalControlSize.current
+) {
+    BasicButton(
+        onClick = onClick,
+        modifier = modifier
+            .size(ButtonDefaults.containerHeight(size)),
+        enabled = enabled,
+        size = size,
+        colors = ButtonDefaults.colors(
+            appearance = appearance,
+            intent = intent
+        ),
+        contentPadding = PaddingValues(0.dp),
+        indication = if (appearance == ButtonAppearance.Glass) null else LocalIndication.current
+    ) {
+        Box(
+            modifier = Modifier
+                .size(ButtonDefaults.iconSize(size)),
+            contentAlignment = Alignment.Center,
+            propagateMinConstraints = true
+        ) {
+            leadingIcon()
+        }
+    }
+}
+
+/**
  * A button whose label is supplied by a flexible [RowScope] content slot.
  *
  * [appearance] describes how the button is drawn, while [intent] describes the meaning of its
@@ -200,6 +261,7 @@ fun Button(
             appearance = appearance,
             intent = intent
         ),
+        indication = if (appearance == ButtonAppearance.Glass) null else LocalIndication.current,
         content = content
     )
 }
@@ -209,6 +271,7 @@ fun Button(
  *
  * Prefer [Button] for product UI. Use this primitive for custom branded or specialized buttons
  * that still need Salt's sizing, interaction, semantics, and inherited content styling.
+ * Keyboard focus shows an outline independently of [indication].
  */
 @Composable
 fun BasicButton(
@@ -221,11 +284,15 @@ fun BasicButton(
     border: BorderStroke? = null,
     contentPadding: PaddingValues = ButtonDefaults.contentPadding(size),
     interactionSource: MutableInteractionSource? = null,
+    indication: Indication? = LocalIndication.current,
     content: @Composable RowScope.() -> Unit
 ) {
     val resolvedInteractionSource = interactionSource ?: remember { MutableInteractionSource() }
     val metrics = platformButtonMetrics(size)
     val contentColor = colors.contentColor(enabled)
+    var isFocused by remember { mutableStateOf(false) }
+    val showFocusOutline = enabled && isFocused &&
+        LocalInputModeManager.current.inputMode == InputMode.Keyboard
 
     ProvideContentColorTextStyle(
         contentColor = contentColor,
@@ -233,15 +300,30 @@ fun BasicButton(
     ) {
         Row(
             modifier = modifier
+                .onFocusChanged { isFocused = it.isFocused }
                 .defaultMinSize(minHeight = metrics.containerHeight)
                 .clip(shape)
                 .background(colors.containerColor(enabled))
+                .thenIf(showFocusOutline) {
+                    border(
+                        width = 1.dp,
+                        color = if (colors.containerColor.alpha == 0f) {
+                            SaltTheme.colors.highlight
+                        } else {
+                            contentColor
+                        },
+                        shape = shape
+                    )
+                }
                 .thenIf(border != null) {
-                    this.border(requireNotNull(border), shape)
+                    border(
+                        border = border,
+                        shape = shape
+                    )
                 }
                 .clickable(
                     interactionSource = resolvedInteractionSource,
-                    indication = LocalIndication.current,
+                    indication = indication,
                     enabled = enabled,
                     role = Role.Button,
                     onClick = onClick
@@ -312,6 +394,13 @@ object ButtonDefaults {
                 disabledContainerColor = Color.Transparent,
                 disabledContentColor = disabledContentColor
             )
+
+            ButtonAppearance.Glass -> ButtonColors(
+                containerColor = Color.Transparent,
+                contentColor = if (destructive) themeColors.error else themeColors.text,
+                disabledContainerColor = Color.Transparent,
+                disabledContentColor = disabledContentColor
+            )
         }
     }
 
@@ -358,6 +447,38 @@ fun TextButton(
             maxLines = 1
         )
     }
+}
+
+@Deprecated(
+    message = "Retained for binary compatibility",
+    level = DeprecationLevel.HIDDEN
+)
+@Composable
+fun BasicButton(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    size: ControlSize = LocalControlSize.current,
+    shape: Shape = ButtonDefaults.shape,
+    colors: ButtonColors = ButtonDefaults.colors(),
+    border: BorderStroke? = null,
+    contentPadding: PaddingValues = ButtonDefaults.contentPadding(size),
+    interactionSource: MutableInteractionSource? = null,
+    content: @Composable RowScope.() -> Unit
+) {
+    BasicButton(
+        onClick = onClick,
+        modifier = modifier,
+        enabled = enabled,
+        size = size,
+        shape = shape,
+        colors = colors,
+        border = border,
+        contentPadding = contentPadding,
+        interactionSource = interactionSource,
+        indication = LocalIndication.current,
+        content = content
+    )
 }
 
 @Immutable

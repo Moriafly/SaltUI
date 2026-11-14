@@ -17,6 +17,8 @@
 
 package com.moriafly.salt.ui
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.SideEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -29,9 +31,12 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.v2.runComposeUiTest
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import kotlin.math.abs
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 @OptIn(ExperimentalTestApi::class)
 class ButtonTest {
@@ -256,8 +261,47 @@ class ButtonTest {
         assertEquals(1, clickCount)
     }
 
+    @Test
+    fun iconOnlyButton_centersItsIconInASquareAndRespondsToClick() = runComposeUiTest {
+        var clickCount = 0
+        setContent {
+            SaltTheme {
+                Button(
+                    onClick = { clickCount++ },
+                    modifier = Modifier.testTag(BUTTON_TAG),
+                    leadingIcon = {
+                        Box(
+                            modifier = Modifier
+                                .testTag(ICON_TAG)
+                                .background(Color.Red)
+                        )
+                    }
+                )
+            }
+        }
+
+        val button = onNodeWithTag(BUTTON_TAG).getUnclippedBoundsInRoot()
+        val icon = onNodeWithTag(ICON_TAG, useUnmergedTree = true).getUnclippedBoundsInRoot()
+        val buttonWidth = button.right - button.left
+        val buttonHeight = button.bottom - button.top
+        val iconWidth = icon.right - icon.left
+        val iconHeight = icon.bottom - icon.top
+        val buttonCenterX = button.left + buttonWidth / 2
+        val buttonCenterY = button.top + buttonHeight / 2
+        val iconCenterX = icon.left + iconWidth / 2
+        val iconCenterY = icon.top + iconHeight / 2
+        assertEquals(buttonWidth, buttonHeight)
+        assertTrue(iconWidth > 0.dp && iconWidth < buttonWidth)
+        assertTrue(abs((buttonCenterX - iconCenterX).value) < 1f)
+        assertTrue(abs((buttonCenterY - iconCenterY).value) < 1f)
+
+        onNodeWithTag(BUTTON_TAG).performClick()
+        assertEquals(1, clickCount)
+    }
+
     private companion object {
         const val BUTTON_TAG = "button"
+        const val ICON_TAG = "icon"
     }
 }
 
