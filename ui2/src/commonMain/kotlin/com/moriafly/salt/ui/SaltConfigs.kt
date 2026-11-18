@@ -60,9 +60,12 @@ class SaltConfigs(
     )
 
     companion object {
+        /**
+         * Creates a theme configuration with a ripple as the default interaction feedback.
+         */
         fun default(
             isDarkTheme: Boolean = false,
-            indication: Indication = AlphaIndication
+            indication: Indication = ripple()
         ): SaltConfigs = SaltConfigs(
             isDarkTheme = isDarkTheme,
             indication = indication
@@ -76,8 +79,8 @@ class SaltConfigs(
 )
 fun saltConfigs(
     isDarkTheme: Boolean = false,
-    indication: Indication = AlphaIndication,
-): SaltConfigs = SaltConfigs(
+    indication: Indication = ripple(),
+): SaltConfigs = SaltConfigs.default(
     isDarkTheme = isDarkTheme,
     indication = indication
 )
