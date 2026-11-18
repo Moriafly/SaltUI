@@ -19,19 +19,47 @@
 
 package com.moriafly.salt.core.os
 
+import kotlin.jvm.JvmName
+
 /**
  * Represents the operating system platform and its version information.
  * Use [OS.current] to get the current platform.
  */
 sealed class OS {
     /**
-     * Android platform with API level (SDK Int).
+     * Detected Android platform with major and minor SDK levels. Read it through [OS.current].
      *
-     * @property versionSdk Android API level, e.g., 35 for Android 15
+     * @property versionSdk Android `SDK_INT`, e.g., 37 for all Android 17 releases
+     * @property versionSdkMinor Minor SDK level, e.g., 2 for SDK 37.2. The base SDK and releases
+     *     before Android 16 use 0.
      */
-    data class Android(
-        val versionSdk: Int
+    @ConsistentCopyVisibility
+    data class Android internal constructor(
+        val versionSdk: Int,
+        val versionSdkMinor: Int
     ) : OS() {
+        @Deprecated(
+            message = "Retained for binary compatibility",
+            level = DeprecationLevel.HIDDEN
+        )
+        constructor(
+            versionSdk: Int
+        ) : this(
+            versionSdk = versionSdk,
+            versionSdkMinor = 0
+        )
+
+        @Deprecated(
+            message = "Retained for binary compatibility",
+            level = DeprecationLevel.HIDDEN
+        )
+        fun copy(
+            versionSdk: Int = this.versionSdk
+        ): Android = copy(
+            versionSdk = versionSdk,
+            versionSdkMinor = versionSdkMinor
+        )
+
         companion object {
             const val ANDROID_6 = 23
             const val ANDROID_7 = 24
@@ -56,9 +84,19 @@ sealed class OS {
      *
      * @property windowsBuild Windows build number (e.g., 22631 for Windows 11 23H2)
      */
-    data class Windows(
+    @ConsistentCopyVisibility
+    data class Windows internal constructor(
         val windowsBuild: Int
     ) : OS() {
+        @JvmName("copy")
+        @Deprecated(
+            message = "Retained for binary compatibility",
+            level = DeprecationLevel.HIDDEN
+        )
+        fun copyForBinaryCompatibility(
+            windowsBuild: Int = this.windowsBuild
+        ): Windows = Windows(windowsBuild)
+
         fun isAtLeastWindows11(): Boolean = windowsBuild >= WINDOWS_11_21H2
 
         companion object {
@@ -91,10 +129,24 @@ sealed class OS {
      * @property version macOS version string (e.g., "14.2.1" for Sonoma)
      * @property build macOS build string (e.g., "23D56"), empty if unavailable
      */
-    data class MacOS(
+    @ConsistentCopyVisibility
+    data class MacOS internal constructor(
         val version: String,
         val build: String
-    ) : OS()
+    ) : OS() {
+        @JvmName("copy")
+        @Deprecated(
+            message = "Retained for binary compatibility",
+            level = DeprecationLevel.HIDDEN
+        )
+        fun copyForBinaryCompatibility(
+            version: String = this.version,
+            build: String = this.build
+        ): MacOS = MacOS(
+            version = version,
+            build = build
+        )
+    }
 
     /**
      * Linux platform.
@@ -102,10 +154,24 @@ sealed class OS {
      * @property version Linux kernel version string (e.g., "5.15.0-78-generic")
      * @property distro Optional Linux distribution name (e.g., "Ubuntu 22.04"), empty if unavailable
      */
-    data class Linux(
+    @ConsistentCopyVisibility
+    data class Linux internal constructor(
         val version: String,
         val distro: String
-    ) : OS()
+    ) : OS() {
+        @JvmName("copy")
+        @Deprecated(
+            message = "Retained for binary compatibility",
+            level = DeprecationLevel.HIDDEN
+        )
+        fun copyForBinaryCompatibility(
+            version: String = this.version,
+            distro: String = this.distro
+        ): Linux = Linux(
+            version = version,
+            distro = distro
+        )
+    }
 
     object IOS : OS()
 
