@@ -89,6 +89,7 @@ internal class RippleContainer(context: Context) : ViewGroup(context) {
      * @return a [RippleHostView] for [this] [RippleHostKey]. This result will be cached if
      *   possible, to allow re-using the same [RippleHostView].
      */
+    @Suppress("ForbiddenComment")
     fun RippleHostKey.getRippleHostView(): RippleHostView {
         val existingRippleHostView = rippleHostMap[this]
         if (existingRippleHostView != null) {
@@ -118,8 +119,8 @@ internal class RippleContainer(context: Context) : ViewGroup(context) {
                     // linked to an instance
                     val existingInstance = rippleHostMap[host]
 
-                    // A future optimization could check whether this host is still animating
-                    // and use a temporary host for the new ripple so the active one can finish.
+                    // TODO: If this host is still animating, consider using a temporary host
+                    //  for the new ripple so the active one can finish.
                     if (existingInstance != null) {
                         existingInstance.onResetRippleHostView()
                         rippleHostMap.remove(existingInstance)
