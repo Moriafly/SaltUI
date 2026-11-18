@@ -17,6 +17,7 @@
 
 package com.moriafly.salt.ui.material
 
+import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.Spring
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
@@ -35,6 +36,7 @@ import androidx.compose.ui.MotionDurationScale
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.geometry.lerp
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.TransformOrigin
@@ -45,6 +47,7 @@ import androidx.compose.ui.input.pointer.PointerId
 import androidx.compose.ui.input.pointer.PointerType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.util.lerp
 import com.moriafly.salt.ui.UnstableSaltUiApi
 import kotlinx.coroutines.flow.filter
 import kotlin.jvm.JvmSynthetic
@@ -372,28 +375,36 @@ internal fun Modifier.glassInteractionLight(
     isDarkTheme: Boolean
 ): Modifier = drawWithCache {
     val outline = shape.createOutline(size, layoutDirection, this)
-    // Cover long controls without spreading a single light across an entire wide bar.
-    val radius = maxOf(
-        size.minDimension * 1.4f,
-        minOf(size.maxDimension * 0.9f, size.minDimension * 5f)
+    // Base the light's reach on the short side so it stays local on wide bars.
+    val hoverLightRadius = size.minDimension * 0.9f
+    val pressedLightRadius = size.minDimension * 1.4f
+    val pressedLightAlpha = if (isDarkTheme) 0.10f else 0.06f
+    val hoverLightAlpha = pressedLightAlpha * 0.25f
+    val lightColors = listOf(
+        Color.White,
+        Color.White.copy(alpha = 0.35f),
+        Color.White.copy(alpha = 0f)
     )
-    val lightAlpha = if (isDarkTheme) 0.5f else 0.7f
     onDrawWithContent {
-        val pressStrength = interaction.lightStrength
+        val pressLightProgress = LinearOutSlowInEasing.transform(interaction.lightStrength)
         val hoverPosition = interaction.hoverPosition
-        val position = if (pressStrength > 0f) interaction.pivot else hoverPosition
-        if (position != null && size.minDimension > 0f) {
-            val strength = maxOf(pressStrength, if (hoverPosition != null) 0.55f else 0f)
+        val lightCenter = when {
+            hoverPosition != null -> lerp(hoverPosition, interaction.pivot, pressLightProgress)
+            pressLightProgress > 0f -> interaction.pivot
+            else -> null
+        }
+        if (lightCenter != null && pressedLightRadius > 0f) {
+            val restingLightAlpha = if (hoverPosition != null) hoverLightAlpha else 0f
+            val lightAlpha = lerp(restingLightAlpha, pressedLightAlpha, pressLightProgress)
+            val lightRadius = lerp(hoverLightRadius, pressedLightRadius, pressLightProgress)
             drawOutline(
                 outline = outline,
                 brush = Brush.radialGradient(
-                    colors = listOf(
-                        Color.White.copy(alpha = lightAlpha * strength),
-                        Color.Transparent
-                    ),
-                    center = position,
-                    radius = radius
-                )
+                    colors = lightColors,
+                    center = lightCenter,
+                    radius = lightRadius
+                ),
+                alpha = lightAlpha
             )
         }
         drawContent()
