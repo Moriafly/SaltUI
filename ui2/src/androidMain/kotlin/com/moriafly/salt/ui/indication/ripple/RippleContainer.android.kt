@@ -118,6 +118,8 @@ internal class RippleContainer(context: Context) : ViewGroup(context) {
                     // linked to an instance
                     val existingInstance = rippleHostMap[host]
 
+                    // A future optimization could check whether this host is still animating
+                    // and use a temporary host for the new ripple so the active one can finish.
                     if (existingInstance != null) {
                         existingInstance.onResetRippleHostView()
                         rippleHostMap.remove(existingInstance)
