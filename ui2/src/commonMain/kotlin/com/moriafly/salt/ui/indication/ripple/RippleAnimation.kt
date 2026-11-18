@@ -169,7 +169,7 @@ internal fun getRippleStartRadius(size: Size) = max(size.width, size.height) * 0
  * - fits within the border of the surface it belongs to for unbounded ripples
  */
 internal fun Density.getRippleEndRadius(bounded: Boolean, size: Size): Float {
-    val radiusCoveringBounds = (Offset(size.width, size.height).getDistance() / 2f)
+    val radiusCoveringBounds = Offset(size.width, size.height).getDistance() / 2f
     return if (bounded) {
         radiusCoveringBounds + BoundedRippleExtraRadius.toPx()
     } else {
