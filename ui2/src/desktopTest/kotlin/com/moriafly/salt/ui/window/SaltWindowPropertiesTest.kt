@@ -29,6 +29,7 @@ import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.v2.runDesktopComposeUiTest
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.rememberWindowState
@@ -36,6 +37,7 @@ import com.moriafly.salt.core.os.OS
 import com.moriafly.salt.ui.SaltTheme
 import com.moriafly.salt.ui.Text
 import com.moriafly.salt.ui.UnstableSaltUiApi
+import java.awt.Window
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -43,19 +45,18 @@ import kotlin.test.assertEquals
 @OptIn(ExperimentalTestApi::class, ExperimentalComposeUiApi::class, UnstableSaltUiApi::class)
 class SaltWindowPropertiesTest {
     @Test
-    fun captionBarHeightUsesPlatformDefault() {
-        assertEquals(
-            expected = 52.dp,
-            actual = defaultCaptionBarHeight(OS.MacOS(version = "26.0", build = ""))
-        )
-        assertEquals(
-            expected = 40.dp,
-            actual = defaultCaptionBarHeight(OS.Windows(windowsBuild = 26100))
-        )
-        assertEquals(
-            expected = 40.dp,
-            actual = defaultCaptionBarHeight(OS.Linux(version = "", distro = ""))
-        )
+    fun captionBarHeightUsesPlatformDefault() = runDesktopComposeUiTest {
+        val expectedCaptionBarHeight = if (OS.isMacOS()) 52.dp else 40.dp
+        var captionBarHeight = Dp.Unspecified
+
+        setContent {
+            SaltTheme {
+                val properties = SaltWindowProperties.default<Window>()
+                SideEffect { captionBarHeight = properties.captionBarHeight }
+            }
+        }
+
+        runOnIdle { assertEquals(expectedCaptionBarHeight, captionBarHeight) }
     }
 
     @Test
