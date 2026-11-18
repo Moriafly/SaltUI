@@ -27,22 +27,38 @@ import kotlin.jvm.JvmName
  */
 sealed class OS {
     /**
-     * Android platform with API level (SDK Int).
+     * Detected Android platform with major and minor SDK levels. Read it through [OS.current].
      *
-     * @property versionSdk Android API level, e.g., 35 for Android 15
+     * @property versionSdk Android `SDK_INT`, e.g., 37 for all Android 17 releases
+     * @property versionSdkMinor Minor SDK level, e.g., 2 for SDK 37.2. The base SDK and releases
+     *     before Android 16 use 0.
      */
     @ConsistentCopyVisibility
     data class Android internal constructor(
-        val versionSdk: Int
+        val versionSdk: Int,
+        val versionSdkMinor: Int
     ) : OS() {
-        @JvmName("copy")
         @Deprecated(
             message = "Retained for binary compatibility",
             level = DeprecationLevel.HIDDEN
         )
-        fun copyForBinaryCompatibility(
+        constructor(
+            versionSdk: Int
+        ) : this(
+            versionSdk = versionSdk,
+            versionSdkMinor = 0
+        )
+
+        @Deprecated(
+            message = "Retained for binary compatibility",
+            level = DeprecationLevel.HIDDEN
+        )
+        fun copy(
             versionSdk: Int = this.versionSdk
-        ): Android = Android(versionSdk)
+        ): Android = copy(
+            versionSdk = versionSdk,
+            versionSdkMinor = versionSdkMinor
+        )
 
         companion object {
             const val ANDROID_6 = 23

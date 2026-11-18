@@ -19,4 +19,16 @@ package com.moriafly.salt.core.os
 
 import android.os.Build
 
-internal actual fun os(): OS = OS.Android(Build.VERSION.SDK_INT)
+internal actual fun os(): OS {
+    val versionSdk = Build.VERSION.SDK_INT
+    val versionSdkMinor =
+        if (versionSdk >= Build.VERSION_CODES.BAKLAVA) {
+            Build.getMinorSdkVersion(Build.VERSION.SDK_INT_FULL)
+        } else {
+            0
+        }
+    return OS.Android(
+        versionSdk = versionSdk,
+        versionSdkMinor = versionSdkMinor
+    )
+}
