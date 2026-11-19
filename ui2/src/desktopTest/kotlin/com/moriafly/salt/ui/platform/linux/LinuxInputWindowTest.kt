@@ -158,9 +158,9 @@ internal class LinuxInputWindowTest(
                     decoration = WindowDecoration.Undecorated(resizerThickness = 4.dp),
                     properties = SaltWindowProperties.default(
                         captionButtonsVisible = false,
-                        extraDisplayScale = 1.25f,
-                        onResizeEdgeChange = { _, value -> edge = value }
+                        extraDisplayScale = 1.25f
                     ),
+                    onResizeEdgeChange = { _, value -> edge = value },
                     init = { window = it }
                 ) {
                     InputContent()
@@ -176,9 +176,9 @@ internal class LinuxInputWindowTest(
                     decoration = WindowDecoration.Undecorated(resizerThickness = 4.dp),
                     properties = SaltWindowProperties.default(
                         captionButtonsVisible = false,
-                        extraDisplayScale = 1.25f,
-                        onResizeEdgeChange = { _, value -> edge = value }
+                        extraDisplayScale = 1.25f
                     ),
+                    onResizeEdgeChange = { _, value -> edge = value },
                     init = { window = it }
                 ) {
                     InputContent()

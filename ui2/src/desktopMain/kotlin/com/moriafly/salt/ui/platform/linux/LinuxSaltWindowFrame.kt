@@ -68,6 +68,7 @@ import com.moriafly.salt.ui.window.LocalSaltWindowInfo
 import com.moriafly.salt.ui.window.LocalWindowState
 import com.moriafly.salt.ui.window.SaltWindowInfo
 import com.moriafly.salt.ui.window.SaltWindowProperties
+import com.moriafly.salt.ui.window.WindowResizeEdge
 import com.moriafly.salt.ui.window.internal.LocalSaltWindowContentDecoration
 import com.moriafly.salt.ui.window.internal.SaltWindowContentDecoration
 import java.awt.event.WindowEvent
@@ -78,16 +79,18 @@ import java.awt.event.WindowEvent
 internal fun FrameWindowScope.LinuxSaltWindowFrame(
     resizable: Boolean,
     decoration: WindowDecoration,
-    properties: SaltWindowProperties<ComposeWindow>,
+    properties: SaltWindowProperties,
+    onResizeEdgeChange: (ComposeWindow, WindowResizeEdge) -> Unit,
     content: @Composable FrameWindowScope.() -> Unit
 ) {
-    val currentProperties by rememberUpdatedState(properties)
     val isHitTestInCaptionBar = remember { mutableStateOf(false) }
     val captionBarHitTest = remember { LinuxCaptionBarHitTest() }
+
+    val currentOnResizeEdgeChange by rememberUpdatedState(onResizeEdgeChange)
     val undecoratedWindowResizer = remember {
         UndecoratedWindowResizer(
             onResizeEdgeChange = { edge ->
-                currentProperties.onResizeEdgeChange(window, edge)
+                currentOnResizeEdgeChange(window, edge)
             }
         )
     }

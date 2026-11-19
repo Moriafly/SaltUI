@@ -51,6 +51,7 @@ import com.moriafly.salt.ui.window.LocalSaltWindowInfo
 import com.moriafly.salt.ui.window.LocalWindowState
 import com.moriafly.salt.ui.window.SaltWindowInfo
 import com.moriafly.salt.ui.window.SaltWindowProperties
+import com.moriafly.salt.ui.window.WindowResizeEdge
 import java.awt.event.WindowEvent
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -58,10 +59,12 @@ import java.awt.event.WindowEvent
 @Composable
 internal fun FrameWindowScope.WindowsSaltWindowFrame(
     resizable: Boolean,
-    properties: SaltWindowProperties<ComposeWindow>,
+    properties: SaltWindowProperties,
+    onResizeEdgeChange: (ComposeWindow, WindowResizeEdge) -> Unit,
     content: @Composable FrameWindowScope.() -> Unit
 ) {
     val currentResizable by rememberUpdatedState(resizable)
+    // The styler lives as long as the window, so the hit test reads the latest properties
     val currentProperties by rememberUpdatedState(properties)
 
     val isHitTestInCaptionBar = remember { mutableStateOf(false) }
@@ -82,6 +85,8 @@ internal fun FrameWindowScope.WindowsSaltWindowFrame(
         var minimizeButtonRect by remember { mutableStateOf(Rect.Zero) }
         var maximizeButtonRect by remember { mutableStateOf(Rect.Zero) }
         var closeButtonRect by remember { mutableStateOf(Rect.Zero) }
+
+        val currentOnResizeEdgeChange by rememberUpdatedState(onResizeEdgeChange)
 
         val styler = remember(window) {
             WindowsSaltWindowStyler(
@@ -118,7 +123,7 @@ internal fun FrameWindowScope.WindowsSaltWindowFrame(
                     windowClientInsets.insets = windowInsets
                 },
                 onResizeEdgeChange = { edge ->
-                    currentProperties.onResizeEdgeChange(window, edge)
+                    currentOnResizeEdgeChange(window, edge)
                 }
             )
         }

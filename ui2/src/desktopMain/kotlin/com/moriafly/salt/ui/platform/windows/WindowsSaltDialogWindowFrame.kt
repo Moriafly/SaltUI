@@ -49,6 +49,7 @@ import com.moriafly.salt.ui.window.LocalIsHitTestInCaptionBarState
 import com.moriafly.salt.ui.window.LocalSaltWindowInfo
 import com.moriafly.salt.ui.window.SaltWindowInfo
 import com.moriafly.salt.ui.window.SaltWindowProperties
+import com.moriafly.salt.ui.window.WindowResizeEdge
 import java.awt.event.WindowEvent
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -56,7 +57,8 @@ import java.awt.event.WindowEvent
 @Composable
 internal fun DialogWindowScope.WindowsSaltDialogWindowFrame(
     resizable: Boolean,
-    properties: SaltWindowProperties<ComposeDialog>,
+    properties: SaltWindowProperties,
+    onResizeEdgeChange: (ComposeDialog, WindowResizeEdge) -> Unit,
     content: @Composable DialogWindowScope.() -> Unit
 ) {
     val currentProperties by rememberUpdatedState(properties)
@@ -75,6 +77,8 @@ internal fun DialogWindowScope.WindowsSaltDialogWindowFrame(
 
         var captionBarRect by remember { mutableStateOf(Rect.Zero) }
         var closeButtonRect by remember { mutableStateOf(Rect.Zero) }
+
+        val currentOnResizeEdgeChange by rememberUpdatedState(onResizeEdgeChange)
 
         val styler = remember(window) {
             WindowsSaltWindowStyler(
@@ -98,7 +102,7 @@ internal fun DialogWindowScope.WindowsSaltDialogWindowFrame(
                     windowClientInsets.insets = windowInsets
                 },
                 onResizeEdgeChange = { edge ->
-                    properties.onResizeEdgeChange(window, edge)
+                    currentOnResizeEdgeChange(window, edge)
                 }
             ).apply {
                 updateBorderAndShadow(true)

@@ -33,7 +33,7 @@ import com.moriafly.salt.ui.window.SaltWindowProperties
 @UnstableSaltUiApi
 @Composable
 internal fun DialogWindowScope.MacOSSaltDialogWindowFrame(
-    properties: SaltWindowProperties<ComposeDialog>,
+    properties: SaltWindowProperties,
     content: @Composable DialogWindowScope.() -> Unit
 ) {
     val isHitTestInCaptionBar = remember { mutableStateOf(false) }

@@ -54,7 +54,6 @@ import com.moriafly.salt.ui.window.internal.SaltWindowEnvironment
 import com.moriafly.salt.ui.window.internal.resolveForPlatform
 import java.awt.Dialog.ModalityType
 import java.awt.Dimension
-import java.awt.Window
 import java.awt.event.ComponentEvent
 import java.awt.event.ComponentListener
 import java.awt.event.WindowAdapter
@@ -79,6 +78,11 @@ import java.awt.event.WindowEvent
  * undecorated.
  *
  * @param properties [SaltWindowProperties]
+ * @param onVisibleChange Called when the dialog becomes visible or hidden. Do **not** observe
+ * `window.isVisible` inside the content; report it here instead.
+ * @param onResizeEdgeChange Called when the pointer enters, moves along, or leaves a resize edge.
+ * The callback receives the [WindowResizeEdge] indicating which edge the pointer is on, or
+ * [WindowResizeEdge.None] if not on any resize edge.
  * @param init https://youtrack.jetbrains.com/issue/CMP-8719
  * ```
  * init = { it.modalityType = ModalityType.MODELESS }
@@ -105,17 +109,17 @@ fun SaltDialogWindow(
     focusable: Boolean = true,
     alwaysOnTop: Boolean = false,
     modalityType: DialogModalityType = DialogModalityType.DocumentModal,
-    properties: SaltWindowProperties<ComposeDialog> = SaltWindowProperties.default(),
+    properties: SaltWindowProperties = SaltWindowProperties.default(),
     onPreviewKeyEvent: ((KeyEvent) -> Boolean) = { false },
     onKeyEvent: ((KeyEvent) -> Boolean) = { false },
+    onVisibleChange: (ComposeDialog, Boolean) -> Unit = { _, _ -> },
+    onResizeEdgeChange: (ComposeDialog, WindowResizeEdge) -> Unit = { _, _ -> },
     init: (ComposeDialog) -> Unit = {},
     content: @Composable DialogWindowScope.() -> Unit
 ) {
     require(properties.captionButtonHeight <= properties.captionBarHeight) {
         "Caption button height must be less than caption bar height"
     }
-
-    val currentProperties by rememberUpdatedState(properties)
 
     // On Linux the window is always undecorated
     val resolvedDecoration = decoration.resolveForPlatform()
@@ -164,7 +168,7 @@ fun SaltDialogWindow(
                 LocalCaptionBarHitTestRegistration provides remember(window) {
                     CaptionBarHitTestRegistration()
                 },
-                LocalSaltWindowProperties provides properties as SaltWindowProperties<Window>,
+                LocalSaltWindowProperties provides properties,
                 LocalDensity provides Density(
                     density = density.density * properties.extraDisplayScale,
                     fontScale = density.fontScale * properties.extraFontScale
@@ -181,6 +185,7 @@ fun SaltDialogWindow(
                         Dimension(minSize.width.value.toInt(), minSize.height.value.toInt())
                 }
 
+                val currentOnVisibleChange by rememberUpdatedState(onVisibleChange)
                 DisposableEffect(window) {
                     val adapter = object : WindowAdapter(), ComponentListener {
                         override fun windowActivated(e: WindowEvent?) {
@@ -205,11 +210,11 @@ fun SaltDialogWindow(
                         }
 
                         override fun componentShown(e: ComponentEvent?) {
-                            currentProperties.onVisibleChange(window, true)
+                            currentOnVisibleChange(window, true)
                         }
 
                         override fun componentHidden(e: ComponentEvent?) {
-                            currentProperties.onVisibleChange(window, false)
+                            currentOnVisibleChange(window, false)
                         }
                     }
 
@@ -233,6 +238,7 @@ fun SaltDialogWindow(
                             WindowsSaltDialogWindowFrame(
                                 resizable = resizable,
                                 properties = properties,
+                                onResizeEdgeChange = onResizeEdgeChange,
                                 content = content
                             )
 
@@ -247,6 +253,7 @@ fun SaltDialogWindow(
                                 resizable = resizable,
                                 decoration = decoration,
                                 properties = properties,
+                                onResizeEdgeChange = onResizeEdgeChange,
                                 content = content
                             )
 

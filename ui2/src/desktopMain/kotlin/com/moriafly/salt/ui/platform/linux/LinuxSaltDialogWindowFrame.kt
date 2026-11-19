@@ -64,6 +64,7 @@ import com.moriafly.salt.ui.window.LocalIsHitTestInCaptionBarState
 import com.moriafly.salt.ui.window.LocalSaltWindowInfo
 import com.moriafly.salt.ui.window.SaltWindowInfo
 import com.moriafly.salt.ui.window.SaltWindowProperties
+import com.moriafly.salt.ui.window.WindowResizeEdge
 import com.moriafly.salt.ui.window.internal.LocalSaltWindowContentDecoration
 import com.moriafly.salt.ui.window.internal.SaltWindowContentDecoration
 import java.awt.event.WindowEvent
@@ -74,19 +75,22 @@ import java.awt.event.WindowEvent
 internal fun DialogWindowScope.LinuxSaltDialogWindowFrame(
     resizable: Boolean,
     decoration: WindowDecoration,
-    properties: SaltWindowProperties<ComposeDialog>,
+    properties: SaltWindowProperties,
+    onResizeEdgeChange: (ComposeDialog, WindowResizeEdge) -> Unit,
     content: @Composable DialogWindowScope.() -> Unit
 ) {
-    val currentProperties by rememberUpdatedState(properties)
     val isHitTestInCaptionBar = remember { mutableStateOf(false) }
     val captionBarHitTest = remember { LinuxCaptionBarHitTest() }
+
+    val currentOnResizeEdgeChange by rememberUpdatedState(onResizeEdgeChange)
     val undecoratedWindowResizer = remember {
         UndecoratedWindowResizer(
             onResizeEdgeChange = { edge ->
-                currentProperties.onResizeEdgeChange(window, edge)
+                currentOnResizeEdgeChange(window, edge)
             }
         )
     }
+
     val clientShadow = LinuxClientShadow.shouldUseClientShadow(decoration)
     // Dialogs are never maximized, so the shadow margin is constant
     val shadowMargin = if (clientShadow) LinuxClientShadow.margin else 0.dp
