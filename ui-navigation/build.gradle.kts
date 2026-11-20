@@ -112,9 +112,8 @@ kotlin {
     sourceSets {
         commonMain.dependencies {
             api(project(":ui2"))
+            api(libs.androidx.navigation3.runtime)
             implementation(libs.kotlinx.serialization.json)
-            implementation(libs.androidx.navigation3.ui)
-            implementation(libs.androidx.navigationevent.compose)
         }
 
         commonTest.dependencies {

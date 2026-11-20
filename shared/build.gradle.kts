@@ -68,7 +68,6 @@ kotlin {
 
     sourceSets {
         val commonMain by getting
-        val desktopMain by getting
         val iosArm64Main by getting
         val iosSimulatorArm64Main by getting
 
@@ -87,8 +86,9 @@ kotlin {
         commonMain.dependencies {
             implementation(libs.compose.runtime)
             implementation(libs.compose.foundation)
-            implementation(compose.material)
+            implementation(libs.compose.material)
             implementation(libs.compose.ui)
+            implementation(libs.bundles.compose.support)
             implementation(libs.compose.ui.tooling.preview)
             implementation(libs.compose.components.resources)
             implementation(libs.haze)
@@ -98,10 +98,6 @@ kotlin {
 
             api(project(":ui2"))
             api(project(":ui-navigation"))
-        }
-
-        desktopMain.dependencies {
-            implementation(compose.desktop.currentOs)
         }
     }
 }

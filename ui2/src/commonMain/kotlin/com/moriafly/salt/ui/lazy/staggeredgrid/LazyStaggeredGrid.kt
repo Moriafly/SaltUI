@@ -18,19 +18,23 @@
 
 package com.moriafly.salt.ui.lazy.staggeredgrid
 
+import androidx.compose.foundation.ComposeFoundationFlags
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.OverscrollEffect
 import androidx.compose.foundation.gestures.FlingBehavior
 import androidx.compose.foundation.gestures.Orientation
-import androidx.compose.foundation.gestures.ScrollableDefaults
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalGraphicsContext
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.moriafly.salt.ui.gestures.ScrollableDefaults
 import com.moriafly.salt.ui.lazy.layout.LazyLayout
+import com.moriafly.salt.ui.lazy.layout.LazyLayoutCacheWindow
 import com.moriafly.salt.ui.lazy.layout.lazyLayoutBeyondBoundsModifier
 import com.moriafly.salt.ui.lazy.layout.lazyLayoutItemAnimator
 import com.moriafly.salt.ui.lazy.layout.lazyLayoutSemantics
@@ -61,12 +65,31 @@ internal fun LazyStaggeredGrid(
     mainAxisSpacing: Dp = 0.dp,
     /** The horizontal spacing for items/lines. */
     crossAxisSpacing: Dp = 0.dp,
+    /**
+     * cacheWindow specifies the size of the ahead and behind window to be used as per
+     * [com.moriafly.salt.ui.lazy.layout.LazyLayoutCacheWindow]
+     */
+    cacheWindow: LazyLayoutCacheWindow,
     /** The content of the grid */
     content: LazyStaggeredGridScope.() -> Unit,
 ) {
     val itemProviderLambda = rememberStaggeredGridItemProviderLambda(state, content)
     val coroutineScope = rememberCoroutineScope()
     val graphicsContext = LocalGraphicsContext.current
+    val cacheWindowLogic =
+        remember(state, cacheWindow) {
+            if (ComposeFoundationFlags.isUsingCacheWindowInStaggeredGrids)
+                LazyStaggeredGridCacheWindowLogic(
+                    cacheWindow = cacheWindow,
+                    laneCount = { Snapshot.withoutReadObservation { state.laneCount } },
+                    laneInfo = Snapshot.withoutReadObservation { state.laneInfo },
+                    prefetchState = Snapshot.withoutReadObservation { state.prefetchState },
+                    isRequestHighPriority = {
+                        Snapshot.withoutReadObservation { state.executeRequestsInHighPriorityMode }
+                    },
+                )
+            else null
+        }
     val measurePolicy =
         rememberStaggeredGridMeasurePolicy(
             state,
@@ -79,6 +102,7 @@ internal fun LazyStaggeredGrid(
             coroutineScope,
             slots,
             graphicsContext,
+            cacheWindowLogic,
         )
     val semanticState = rememberLazyStaggeredGridSemanticState(state, reverseLayout)
 
@@ -107,7 +131,6 @@ internal fun LazyStaggeredGrid(
                     reverseScrolling = reverseLayout,
                 )
                 .then(beyondBoundsModifier)
-                .lazyLayoutItemAnimator(state.itemAnimator)
                 .scrollableArea(
                     state = state,
                     orientation = orientation,
@@ -116,7 +139,8 @@ internal fun LazyStaggeredGrid(
                     flingBehavior = flingBehavior,
                     interactionSource = state.mutableInteractionSource,
                     overscrollEffect = overscrollEffect,
-                ),
+                )
+                .lazyLayoutItemAnimator(state.itemAnimator),
         prefetchState = state.prefetchState,
         itemProvider = itemProviderLambda,
         measurePolicy = measurePolicy,
@@ -124,7 +148,4 @@ internal fun LazyStaggeredGrid(
 }
 
 /** Slot configuration of staggered grid */
-internal class LazyStaggeredGridSlots(
-    val positions: IntArray,
-    val sizes: IntArray
-)
+internal class LazyStaggeredGridSlots(val positions: IntArray, val sizes: IntArray)

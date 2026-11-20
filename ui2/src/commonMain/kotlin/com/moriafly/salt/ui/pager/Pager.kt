@@ -25,10 +25,13 @@ import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.VisibilityThreshold
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.rememberSplineBasedDecay
+import androidx.compose.foundation.ComposeFoundationFlags.isAbsorbNonGestureNestedScrollInPagerFixEnabled
 import androidx.compose.foundation.ComposeFoundationFlags.isReverseLayoutNestedScrollConnectionInPagerFixEnabled
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.OverscrollEffect
+import androidx.compose.foundation.gestures.BringIntoViewSpec
 import androidx.compose.foundation.gestures.FlingBehavior
+import androidx.compose.foundation.gestures.LocalBringIntoViewSpec
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.TargetedFlingBehavior
 import androidx.compose.foundation.gestures.snapping.SnapPosition
@@ -56,13 +59,13 @@ import androidx.compose.ui.unit.dp
 import com.moriafly.salt.ui.gestures.snapping.SnapLayoutInfoProvider
 import com.moriafly.salt.ui.gestures.snapping.calculateFinalSnappingBound
 import com.moriafly.salt.ui.internal.requirePrecondition
-import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
 import kotlin.math.abs
 import kotlin.math.absoluteValue
 import kotlin.math.roundToInt
 import kotlin.math.sign
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 
 /**
  * A Pager that scrolls horizontally. Pages are lazily placed in accordance to the available
@@ -107,8 +110,12 @@ import kotlin.math.sign
  * @param overscrollEffect the [OverscrollEffect] that will be used to render overscroll for this
  *   Pager. Note that the [OverscrollEffect.node] will be applied internally as well - you do not
  *   need to use Modifier.overscroll separately.
+ * @param bringIntoViewSpec the [BringIntoViewSpec] that will be used to scroll pages into view when
+ *   a page receives a bring into view request.
  * @param pageContent This Pager's page Composable.
- * @see SnapLayoutInfoProvider for the implementation
+ * @sample androidx.compose.foundation.samples.SimpleHorizontalPagerSample
+ * @sample androidx.compose.foundation.samples.HorizontalPagerWithScrollableContent
+ * @see androidx.compose.foundation.gestures.snapping.SnapLayoutInfoProvider for the implementation
  *   of a [SnapLayoutInfoProvider] that uses [com.moriafly.salt.ui.lazy.LazyListState].
  *
  * Please refer to the samples to learn how to use this API.
@@ -130,6 +137,7 @@ fun HorizontalPager(
         PagerDefaults.pageNestedScrollConnection(state, Orientation.Horizontal),
     snapPosition: SnapPosition = SnapPosition.Start,
     overscrollEffect: OverscrollEffect? = rememberOverscrollEffect(),
+    bringIntoViewSpec: BringIntoViewSpec,
     pageContent: @Composable PagerScope.(page: Int) -> Unit,
 ) {
     Pager(
@@ -149,6 +157,46 @@ fun HorizontalPager(
         pageNestedScrollConnection = pageNestedScrollConnection,
         snapPosition = snapPosition,
         overscrollEffect = overscrollEffect,
+        bringIntoViewSpec = bringIntoViewSpec,
+        pageContent = pageContent,
+    )
+}
+
+@Composable
+fun HorizontalPager(
+    state: PagerState,
+    modifier: Modifier = Modifier,
+    contentPadding: PaddingValues = PaddingValues(0.dp),
+    pageSize: PageSize = PageSize.Fill,
+    beyondViewportPageCount: Int = PagerDefaults.BeyondViewportPageCount,
+    pageSpacing: Dp = 0.dp,
+    verticalAlignment: Alignment.Vertical = Alignment.CenterVertically,
+    flingBehavior: TargetedFlingBehavior = PagerDefaults.flingBehavior(state = state),
+    userScrollEnabled: Boolean = true,
+    reverseLayout: Boolean = false,
+    key: ((index: Int) -> Any)? = null,
+    pageNestedScrollConnection: NestedScrollConnection =
+        PagerDefaults.pageNestedScrollConnection(state, Orientation.Horizontal),
+    snapPosition: SnapPosition = SnapPosition.Start,
+    overscrollEffect: OverscrollEffect? = rememberOverscrollEffect(),
+    pageContent: @Composable PagerScope.(page: Int) -> Unit,
+) {
+    HorizontalPager(
+        state = state,
+        modifier = modifier,
+        contentPadding = contentPadding,
+        pageSize = pageSize,
+        beyondViewportPageCount = beyondViewportPageCount,
+        pageSpacing = pageSpacing,
+        verticalAlignment = verticalAlignment,
+        flingBehavior = flingBehavior,
+        userScrollEnabled = userScrollEnabled,
+        reverseLayout = reverseLayout,
+        key = key,
+        pageNestedScrollConnection = pageNestedScrollConnection,
+        snapPosition = snapPosition,
+        overscrollEffect = overscrollEffect,
+        bringIntoViewSpec = PagerDefaults.bringIntoViewSpec(state),
         pageContent = pageContent,
     )
 }
@@ -236,8 +284,11 @@ fun HorizontalPager(
  * @param overscrollEffect the [OverscrollEffect] that will be used to render overscroll for this
  *   Pager. Note that the [OverscrollEffect.node] will be applied internally as well - you do not
  *   need to use Modifier.overscroll separately.
+ * @param bringIntoViewSpec the [BringIntoViewSpec] that will be used to scroll pages into view when
+ *   a page receives a bring into view request.
  * @param pageContent This Pager's page Composable.
- * @see SnapLayoutInfoProvider for the implementation
+ * @sample androidx.compose.foundation.samples.SimpleVerticalPagerSample
+ * @see androidx.compose.foundation.gestures.snapping.SnapLayoutInfoProvider for the implementation
  *   of a [SnapLayoutInfoProvider] that uses [com.moriafly.salt.ui.lazy.LazyListState].
  *
  * Please refer to the sample to learn how to use this API.
@@ -259,6 +310,7 @@ fun VerticalPager(
         PagerDefaults.pageNestedScrollConnection(state, Orientation.Vertical),
     snapPosition: SnapPosition = SnapPosition.Start,
     overscrollEffect: OverscrollEffect? = rememberOverscrollEffect(),
+    bringIntoViewSpec: BringIntoViewSpec,
     pageContent: @Composable PagerScope.(page: Int) -> Unit,
 ) {
     Pager(
@@ -278,6 +330,46 @@ fun VerticalPager(
         pageNestedScrollConnection = pageNestedScrollConnection,
         snapPosition = snapPosition,
         overscrollEffect = overscrollEffect,
+        bringIntoViewSpec = bringIntoViewSpec,
+        pageContent = pageContent,
+    )
+}
+
+@Composable
+fun VerticalPager(
+    state: PagerState,
+    modifier: Modifier = Modifier,
+    contentPadding: PaddingValues = PaddingValues(0.dp),
+    pageSize: PageSize = PageSize.Fill,
+    beyondViewportPageCount: Int = PagerDefaults.BeyondViewportPageCount,
+    pageSpacing: Dp = 0.dp,
+    horizontalAlignment: Alignment.Horizontal = Alignment.CenterHorizontally,
+    flingBehavior: TargetedFlingBehavior = PagerDefaults.flingBehavior(state = state),
+    userScrollEnabled: Boolean = true,
+    reverseLayout: Boolean = false,
+    key: ((index: Int) -> Any)? = null,
+    pageNestedScrollConnection: NestedScrollConnection =
+        PagerDefaults.pageNestedScrollConnection(state, Orientation.Vertical),
+    snapPosition: SnapPosition = SnapPosition.Start,
+    overscrollEffect: OverscrollEffect? = rememberOverscrollEffect(),
+    pageContent: @Composable PagerScope.(page: Int) -> Unit,
+) {
+    VerticalPager(
+        state = state,
+        modifier = modifier,
+        contentPadding = contentPadding,
+        pageSize = pageSize,
+        beyondViewportPageCount = beyondViewportPageCount,
+        pageSpacing = pageSpacing,
+        horizontalAlignment = horizontalAlignment,
+        flingBehavior = flingBehavior,
+        userScrollEnabled = userScrollEnabled,
+        reverseLayout = reverseLayout,
+        key = key,
+        pageNestedScrollConnection = pageNestedScrollConnection,
+        snapPosition = snapPosition,
+        overscrollEffect = overscrollEffect,
+        bringIntoViewSpec = PagerDefaults.bringIntoViewSpec(state),
         pageContent = pageContent,
     )
 }
@@ -322,6 +414,7 @@ fun VerticalPager(
 
 /** Contains the default values used by [Pager]. */
 object PagerDefaults {
+
     /**
      * A [snapFlingBehavior] that will snap pages to the start of the layout. One can use the given
      * parameters to control how the snapping animation will happen.
@@ -402,8 +495,7 @@ object PagerDefaults {
                 SnapLayoutInfoProvider(state, pagerSnapDistance) {
                     flingVelocity,
                     lowerBound,
-                    upperBound
-                    ->
+                    upperBound ->
                     calculateFinalSnappingBound(
                         pagerState = state,
                         layoutDirection = layoutDirection,
@@ -419,6 +511,22 @@ object PagerDefaults {
                 decayAnimationSpec = decayAnimationSpec,
                 snapAnimationSpec = snapAnimationSpec,
             )
+        }
+    }
+
+    /**
+     * Pager's default [BringIntoViewSpec] that settles bring into view requests in accordance with
+     * the pager's snapping logic.
+     *
+     * @param state state of the pager
+     */
+    @Composable
+    @OptIn(ExperimentalFoundationApi::class)
+    fun bringIntoViewSpec(state: PagerState): BringIntoViewSpec {
+        val defaultBringIntoViewSpec = LocalBringIntoViewSpec.current
+        val layoutDirection = LocalLayoutDirection.current
+        return remember(state, defaultBringIntoViewSpec, layoutDirection) {
+            DefaultPagerBringIntoViewSpec(state, defaultBringIntoViewSpec, layoutDirection)
         }
     }
 
@@ -445,8 +553,7 @@ object PagerDefaults {
      * and layout before and after the visible pages. It does not include the pages automatically
      * composed and laid out by the pre-fetcher in the direction of the scroll during scroll events.
      */
-    @Suppress("ktlint:standard:property-naming", "ConstPropertyName")
-    const val BeyondViewportPageCount = 0
+    const val BeyondViewportPageCount: Int = 0
 }
 
 internal fun SnapPosition.currentPageOffset(
@@ -472,70 +579,175 @@ internal fun SnapPosition.currentPageOffset(
     return (snapOffset - currentPageOffsetFraction * (pageSize + spaceBetweenPages)).roundToInt()
 }
 
+private class DefaultPagerBringIntoViewSpec(
+    val pagerState: PagerState,
+    val defaultBringIntoViewSpec: BringIntoViewSpec,
+    val layoutDirection: LayoutDirection,
+) : BringIntoViewSpec {
+
+    /**
+     * [calculateScrollDistance] for Pager behaves differently than in a normal list. We must always
+     * respect the snapped pages over bringing a child into view. The logic here will behave like
+     * so:
+     * 1) If there's an ongoing request from the default bring into view spec, override the value to
+     *    make it land on the closest page to the requested offset.
+     * 2) If there's no ongoing request it means that either we moved enough to fulfill the
+     *    previously on going request or we didn't need move at all. 2a) If we didn't move at all we
+     *    do nothing (pagerState.firstVisiblePageOffset == 0) 2b) If we fulfilled the default
+     *    request, settle to the next page in the direction where we were scrolling before. We use
+     *    firstVisiblePage as anchor, but the goal is to keep the pager snapped.
+     */
+    override fun calculateScrollDistance(offset: Float, size: Float, containerSize: Float): Float {
+        val proposedOffsetMove =
+            defaultBringIntoViewSpec.calculateScrollDistance(offset, size, containerSize)
+
+        val isItemOutView =
+            if (offset > 0) {
+                offset + size > containerSize
+            } else {
+                offset + size <= Int.VisibilityThreshold
+            }
+
+        val finalOffset =
+            if (proposedOffsetMove.absoluteValue != 0.0f && isItemOutView) {
+                overrideProposedOffsetMove(proposedOffsetMove)
+            } else {
+                // if there's no info from the default behavior, or if we already satisfied their
+                // request.
+                if (pagerState.firstVisiblePageOffset.absoluteValue < 1e-6) {
+                    // do nothing, we're settled
+                    0f
+                } else {
+                    settlingScrollDistance(containerSize)
+                }
+            }
+        return finalOffset
+    }
+
+    /** At this point the target is visible we just need to scroll to settle. */
+    private fun settlingScrollDistance(containerSize: Float): Float {
+        val reversedFirstPageScroll = pagerState.layoutAwareFirstOffset * -1f
+        return if (pagerState.shouldChangeScrollDirection) {
+                if (pagerState.lastScrolledForward) {
+                    reversedFirstPageScroll
+                } else {
+                    reversedFirstPageScroll + pagerState.pageSizeWithSpacing
+                }
+            } else {
+                if (pagerState.lastScrolledForward) {
+                    reversedFirstPageScroll + pagerState.pageSizeWithSpacing
+                } else {
+                    reversedFirstPageScroll
+                }
+            }
+            .coerceIn(-containerSize, containerSize)
+    }
+
+    private fun overrideProposedOffsetMove(proposedOffsetMove: Float): Float {
+        var correctedOffset = pagerState.layoutAwareFirstOffset.toFloat() * -1
+
+        // if moving forward, start from the first visible page, move as many pages as proposed.
+        while (proposedOffsetMove > 0.0f && correctedOffset < proposedOffsetMove) {
+            correctedOffset += pagerState.pageSizeWithSpacing
+        }
+
+        // if moving backwards, start from the first visible page, move as many pages as proposed.
+        while (proposedOffsetMove < 0.0f && correctedOffset > proposedOffsetMove) {
+            correctedOffset -= pagerState.pageSizeWithSpacing
+        }
+        return correctedOffset
+    }
+
+    private val PagerState.shouldChangeScrollDirection: Boolean
+        get() =
+            (layoutDirection == LayoutDirection.Rtl &&
+                layoutInfo.orientation == Orientation.Horizontal)
+
+    val PagerState.layoutAwareFirstOffset: Int
+        get() =
+            if (shouldChangeScrollDirection) {
+                -firstVisiblePageOffset + pageSizeWithSpacing
+            } else {
+                firstVisiblePageOffset
+            }
+}
+
 private class DefaultPagerNestedScrollConnection(
     val state: PagerState,
     val orientation: Orientation,
     val layoutDirection: LayoutDirection,
 ) : NestedScrollConnection {
-    fun Velocity.consumeOnOrientation(
-        orientation: Orientation
-    ): Velocity = if (orientation == Orientation.Vertical) {
-        copy(x = 0f)
-    } else {
-        copy(y = 0f)
+
+    fun Velocity.consumeOnOrientation(orientation: Orientation): Velocity {
+        return if (orientation == Orientation.Vertical) {
+            copy(x = 0f)
+        } else {
+            copy(y = 0f)
+        }
+    }
+
+    fun Offset.consumeOnOrientation(orientation: Orientation): Offset {
+        return if (orientation == Orientation.Vertical) {
+            copy(x = 0f)
+        } else {
+            copy(y = 0f)
+        }
     }
 
     @OptIn(ExperimentalFoundationApi::class)
-    override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset = if (
-        // rounding error and drag only
-        source == NestedScrollSource.UserInput &&
-        abs(state.currentPageOffsetFraction) > 1e-6 &&
-        // only need to treat deltas on this Pager's orientation
-        available.toFloat().absoluteValue > 0f
-    ) {
-        // find the current and next page (in the direction of dragging)
-        val layoutInfo = state.layoutInfo
-        val currentPageOffset = state.currentPageOffsetFraction * state.pageSize
-        val pageAvailableSpace = layoutInfo.pageSize + layoutInfo.pageSpacing
-        val nextClosestPageOffset =
-            currentPageOffset + pageAvailableSpace * -sign(state.currentPageOffsetFraction)
+    override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
+        return if (
+            // rounding error and drag only
+            source == NestedScrollSource.UserInput &&
+                abs(state.currentPageOffsetFraction) > 1e-6 &&
+                // only need to treat deltas on this Pager's orientation
+                available.toFloat().absoluteValue > 0f
+        ) {
+            // find the current and next page (in the direction of dragging)
+            val layoutInfo = state.layoutInfo
+            val currentPageOffset = state.currentPageOffsetFraction * state.pageSize
+            val pageAvailableSpace = layoutInfo.pageSize + layoutInfo.pageSpacing
+            val nextClosestPageOffset =
+                currentPageOffset + pageAvailableSpace * -sign(state.currentPageOffsetFraction)
 
-        val minBound: Float
-        val maxBound: Float
-        // build min and max bounds in absolute coordinates for nested scroll
-        if (state.currentPageOffsetFraction > 0f) {
-            minBound = nextClosestPageOffset
-            maxBound = currentPageOffset
-        } else {
-            minBound = currentPageOffset
-            maxBound = nextClosestPageOffset
-        }
-
-        val delta = available.toFloat()
-        val coerced = delta.coerceIn(minBound, maxBound)
-        // dispatch and return reversed as usual.
-        // we need to be mindful of reverseLayout which flips the sign for horizontal layouts
-        // see [ScrollableDefaults.reverseDirection] for context.
-        val consumed =
-            if (
-                isReverseLayoutNestedScrollConnectionInPagerFixEnabled &&
-                    orientation == Orientation.Horizontal &&
-                    ((layoutDirection == LayoutDirection.Rtl) xor layoutInfo.reverseLayout)
-            ) {
-                state.dispatchRawDelta(coerced)
+            val minBound: Float
+            val maxBound: Float
+            // build min and max bounds in absolute coordinates for nested scroll
+            if (state.currentPageOffsetFraction > 0f) {
+                minBound = nextClosestPageOffset
+                maxBound = currentPageOffset
             } else {
-                -state.dispatchRawDelta(-coerced)
+                minBound = currentPageOffset
+                maxBound = nextClosestPageOffset
             }
-        available.copy(
-            x = if (orientation == Orientation.Horizontal) consumed else available.x,
-            y = if (orientation == Orientation.Vertical) consumed else available.y,
-        )
-    } else {
-        Offset.Zero
+
+            val delta = available.toFloat()
+            val coerced = delta.coerceIn(minBound, maxBound)
+            // dispatch and return reversed as usual.
+            // we need to be mindful of reverseLayout which flips the sign for horizontal layouts
+            // see [ScrollableDefaults.reverseDirection] for context.
+            val consumed =
+                if (
+                    isReverseLayoutNestedScrollConnectionInPagerFixEnabled &&
+                        orientation == Orientation.Horizontal &&
+                        ((layoutDirection == LayoutDirection.Rtl) xor layoutInfo.reverseLayout)
+                ) {
+                    state.dispatchRawDelta(coerced)
+                } else {
+                    -state.dispatchRawDelta(-coerced)
+                }
+            available.copy(
+                x = if (orientation == Orientation.Horizontal) consumed else available.x,
+                y = if (orientation == Orientation.Vertical) consumed else available.y,
+            )
+        } else {
+            Offset.Zero
+        }
     }
 
     private fun Offset.toFloat() = if (orientation == Orientation.Horizontal) x else y
 
+    @OptIn(ExperimentalFoundationApi::class)
     override fun onPostScroll(
         consumed: Offset,
         available: Offset,
@@ -544,11 +756,19 @@ private class DefaultPagerNestedScrollConnection(
         if (source == NestedScrollSource.SideEffect && available.mainAxis() != 0f) {
             throw CancellationException("Scroll cancelled")
         }
+        if (
+            isAbsorbNonGestureNestedScrollInPagerFixEnabled &&
+                !state.isGestureInProgress &&
+                available.mainAxis() != 0f
+        ) {
+            return available.consumeOnOrientation(orientation)
+        }
         return Offset.Zero
     }
 
-    override suspend fun onPostFling(consumed: Velocity, available: Velocity): Velocity =
-        available.consumeOnOrientation(orientation)
+    override suspend fun onPostFling(consumed: Velocity, available: Velocity): Velocity {
+        return available.consumeOnOrientation(orientation)
+    }
 
     private fun Offset.mainAxis(): Float =
         if (orientation == Orientation.Horizontal) this.x else this.y
@@ -560,18 +780,22 @@ internal fun Modifier.pagerSemantics(
     scope: CoroutineScope,
     userScrollEnabled: Boolean,
 ): Modifier {
-    fun performForwardPaging(): Boolean = if (state.canScrollForward) {
-        scope.launch { state.animateToNextPage() }
-        true
-    } else {
-        false
+    fun performForwardPaging(): Boolean {
+        return if (state.canScrollForward) {
+            scope.launch { state.animateToNextPage() }
+            true
+        } else {
+            false
+        }
     }
 
-    fun performBackwardPaging(): Boolean = if (state.canScrollBackward) {
-        scope.launch { state.animateToPreviousPage() }
-        true
-    } else {
-        false
+    fun performBackwardPaging(): Boolean {
+        return if (state.canScrollBackward) {
+            scope.launch { state.animateToPreviousPage() }
+            true
+        } else {
+            false
+        }
     }
 
     return if (userScrollEnabled) {
@@ -597,7 +821,6 @@ private inline fun debugLog(generateMsg: () -> String) {
     }
 }
 
-@Suppress("ktlint:standard:property-naming", "ConstPropertyName")
 internal object PagerDebugConfig {
     const val MainPagerComposable = false
     const val PagerState = false

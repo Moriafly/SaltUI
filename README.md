@@ -57,7 +57,7 @@ All artifacts are published to Maven Central under `io.github.moriafly`. **Keep 
 | Requirement | Version |
 | --- | --- |
 | Kotlin | 2.4.20 |
-| Compose Multiplatform | 1.12.2 |
+| Compose Multiplatform | 1.13.0-rc01 |
 | Android Gradle Plugin | 9.1.1 |
 | JDK | 21 |
 
@@ -184,6 +184,7 @@ SaltUI performs operations related to internal ART APIs. Please refer to the fol
 
 | SaltUI | Compose Multiplatform | Jetpack Compose |
 | --- | --- | --- |
+| Development branch | 1.13.0-rc01 | 1.13.0-rc01 |
 | 3.0.0+ | 1.12.2 | 1.12.2 |
 | 3.0.0-beta03+ | 1.12.2 | 1.12.2 |
 | 3.0.0-beta02+ | 1.12.1 | 1.12.1 |

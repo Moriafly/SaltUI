@@ -8,7 +8,8 @@ plugins {
 
 dependencies {
     implementation(project(":shared"))
-    implementation(compose.desktop.currentOs)
+    implementation(libs.compose.foundation)
+    implementation(libs.compose.ui)
 
     testImplementation(libs.kotlin.test)
     testImplementation(libs.compose.ui.test)

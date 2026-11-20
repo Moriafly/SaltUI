@@ -90,6 +90,6 @@ class MainContentTest {
 
         onNodeWithTag("backButton").performClick()
         waitForIdle()
-        onNodeWithText("Version").assertExists()
+        onNodeWithText("Explore").assertExists()
     }
 }

@@ -35,7 +35,8 @@ import com.moriafly.salt.ui.lazy.layout.placeablesCount
  * Represents one measured item of the lazy list. It can in fact consist of multiple placeables if
  * the user emit multiple layout nodes in the item callback.
  */
-internal class LazyListMeasuredItem(
+internal class LazyListMeasuredItem
+constructor(
     override val index: Int,
     override val placeables: List<Placeable>,
     private val isVertical: Boolean,
@@ -59,8 +60,7 @@ internal class LazyListMeasuredItem(
     override val contentType: Any?,
     private val animator: LazyLayoutItemAnimator<LazyListMeasuredItem>,
     override val constraints: Constraints,
-) : LazyListItemInfo,
-    LazyLayoutMeasuredItem {
+) : LazyListItemInfo, LazyLayoutMeasuredItem {
     override var offset: Int = 0
         private set
 
@@ -69,7 +69,6 @@ internal class LazyListMeasuredItem(
 
     /** In lists we only have one lane. */
     override val lane: Int = 0
-
     /** And each item takes one span. */
     override val span: Int = 1
 
@@ -151,15 +150,14 @@ internal class LazyListMeasuredItem(
     fun position(mainAxisOffset: Int, layoutWidth: Int, layoutHeight: Int) {
         this.offset = mainAxisOffset
         mainAxisLayoutSize = if (isVertical) layoutHeight else layoutWidth
-        @Suppress("NAME_SHADOWING")
-        var mainAxisOffset = mainAxisOffset
+        @Suppress("NAME_SHADOWING") var mainAxisOffset = mainAxisOffset
         placeables.fastForEachIndexed { index, placeable ->
             val indexInArray = index * 2
             if (isVertical) {
                 placeableOffsets[indexInArray] =
                     requirePreconditionNotNull(horizontalAlignment) {
-                        "null horizontalAlignment when isVertical == true"
-                    }
+                            "null horizontalAlignment when isVertical == true"
+                        }
                         .align(placeable.width, layoutWidth, layoutDirection)
                 placeableOffsets[indexInArray + 1] = mainAxisOffset
                 mainAxisOffset += placeable.height
@@ -167,8 +165,8 @@ internal class LazyListMeasuredItem(
                 placeableOffsets[indexInArray] = mainAxisOffset
                 placeableOffsets[indexInArray + 1] =
                     requirePreconditionNotNull(verticalAlignment) {
-                        "null verticalAlignment when isVertical == false"
-                    }
+                            "null verticalAlignment when isVertical == false"
+                        }
                         .align(placeable.height, layoutHeight)
                 mainAxisOffset += placeable.width
             }
@@ -223,9 +221,7 @@ internal class LazyListMeasuredItem(
 
     fun place(scope: Placeable.PlacementScope, isLookingAhead: Boolean) =
         with(scope) {
-            requirePrecondition(mainAxisLayoutSize != Unset) {
-                "position() should be called first"
-            }
+            requirePrecondition(mainAxisLayoutSize != Unset) { "position() should be called first" }
             repeat(placeablesCount) { index ->
                 val placeable = placeables[index]
                 val minOffset = minMainAxisOffset - placeable.mainAxisSize
@@ -248,14 +244,10 @@ internal class LazyListMeasuredItem(
                         // cancel the animation if current and target offsets are both out of the
                         // bounds
                         if (
-                            (
-                                targetOffset.mainAxis <= minOffset &&
-                                    animatedOffset.mainAxis <= minOffset
-                            ) ||
-                            (
-                                targetOffset.mainAxis >= maxOffset &&
-                                    animatedOffset.mainAxis >= maxOffset
-                            )
+                            (targetOffset.mainAxis <= minOffset &&
+                                animatedOffset.mainAxis <= minOffset) ||
+                                (targetOffset.mainAxis >= maxOffset &&
+                                    animatedOffset.mainAxis >= maxOffset)
                         ) {
                             animation.cancelPlacementAnimation()
                         }
@@ -266,14 +258,26 @@ internal class LazyListMeasuredItem(
                     layer = null
                 }
                 if (reverseLayout) {
-                    offset =
-                        offset.copy { mainAxisOffset ->
-                            mainAxisLayoutSize - mainAxisOffset - placeable.mainAxisSize
-                        }
+                    offset = offset.copy { mainAxisOffset ->
+                        mainAxisLayoutSize - mainAxisOffset - placeable.mainAxisSize
+                    }
                 }
                 offset += visualOffset
                 if (!isLookingAhead) {
-                    animation?.placementOffset = offset
+                    animation?.placementOffset =
+                        if (!isVertical && layoutDirection == LayoutDirection.Rtl) {
+                            /**
+                             * [offset] here is relative to the absolute size of the layout, hence
+                             * we add back padding.
+                             */
+                            offset.copy { mainAxisOffset ->
+                                (mainAxisLayoutSize + beforeContentPadding + afterContentPadding) -
+                                    mainAxisOffset -
+                                    placeable.mainAxisSize
+                            }
+                        } else {
+                            offset
+                        }
                 }
                 if (isVertical) {
                     if (layer != null) {
@@ -301,5 +305,4 @@ internal class LazyListMeasuredItem(
         if (isVertical) IntOffset(x, mainAxisMap(y)) else IntOffset(mainAxisMap(x), y)
 }
 
-@Suppress("ktlint:standard:property-naming")
 private const val Unset = Int.MIN_VALUE

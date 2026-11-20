@@ -25,7 +25,6 @@ import androidx.compose.animation.core.DecayAnimationSpec
 import androidx.compose.animation.core.animate
 import androidx.compose.animation.core.animateDecay
 import androidx.compose.animation.splineBasedDecay
-import androidx.compose.foundation.ComposeFoundationFlags.isClearNestedScrollCoroutineScopeFixEnabled
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.MutatePriority
 import androidx.compose.foundation.OverscrollEffect
@@ -45,7 +44,6 @@ import androidx.compose.foundation.gestures.ScrollScope
 import androidx.compose.foundation.gestures.ScrollableElement
 import androidx.compose.foundation.gestures.ScrollableNestedScrollConnection
 import androidx.compose.foundation.gestures.ScrollableState
-import androidx.compose.foundation.gestures.VerticalAxisThresholdAngle
 import androidx.compose.foundation.gestures.platformScrollConfig
 import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -89,10 +87,8 @@ import kotlinx.coroutines.CoroutineStart
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import kotlin.math.PI
 import kotlin.math.abs
 import kotlin.math.absoluteValue
-import kotlin.math.atan2
 
 @OptIn(ExperimentalFoundationApi::class)
 internal class ScrollableNode(
@@ -199,7 +195,7 @@ internal class ScrollableNode(
     override fun onDragStarted(startedPosition: Offset) {}
 
     override fun onDragStopped(event: DragEvent.DragStopped) {
-        if (isClearNestedScrollCoroutineScopeFixEnabled && !isAttached) return
+        if (!isAttached) return
         nestedScrollDispatcher.coroutineScope.launch {
             // Indirect pointer Events should be reverted to account for the reverse we
             // do in Scrollable. Regular touchscreen events are inverted in scrollable, but
@@ -501,8 +497,7 @@ internal class ScrollingLogic(
      *   [VerticalAxisThresholdAngle].
      */
     fun Offset.toSingleAxisDeltaFromAngle(): Float {
-        val angle = atan2(this.y.absoluteValue, this.x.absoluteValue)
-        return if (angle >= VerticalAxisThresholdAngle) {
+        return if (y.absoluteValue >= x.absoluteValue) {
             if (orientation == Vertical) this.y else 0f
         } else {
             if (orientation == Horizontal) this.x else 0f
@@ -832,6 +827,3 @@ private suspend fun ScrollingLogic.semanticsScrollBy(offset: Offset): Offset {
     }
     return previousValue.toOffset()
 }
-
-@Suppress("ktlint:standard:property-naming")
-private const val VerticalAxisThresholdAngle = PI / 4

@@ -18,6 +18,7 @@
 
 package com.moriafly.salt.ui.lazy
 
+import androidx.annotation.IntRange as AndroidXIntRange
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.MutatePriority
 import androidx.compose.foundation.ScrollIndicatorState
@@ -51,6 +52,7 @@ import com.moriafly.salt.ui.internal.checkPrecondition
 import com.moriafly.salt.ui.lazy.LazyListState.Companion.Saver
 import com.moriafly.salt.ui.lazy.layout.AwaitFirstLayoutModifier
 import com.moriafly.salt.ui.lazy.layout.CacheWindowLogic
+import com.moriafly.salt.ui.lazy.layout.DummyHandle
 import com.moriafly.salt.ui.lazy.layout.LazyLayoutBeyondBoundsInfo
 import com.moriafly.salt.ui.lazy.layout.LazyLayoutCacheWindow
 import com.moriafly.salt.ui.lazy.layout.LazyLayoutItemAnimator
@@ -59,11 +61,10 @@ import com.moriafly.salt.ui.lazy.layout.LazyLayoutPrefetchState
 import com.moriafly.salt.ui.lazy.layout.LazyLayoutScrollDeltaBetweenPasses
 import com.moriafly.salt.ui.lazy.layout.ObservableScopeInvalidator
 import com.moriafly.salt.ui.lazy.layout.animateScrollToItem
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
 import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.math.abs
-import androidx.annotation.IntRange as AndroidXIntRange
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 
 /**
  * Creates a [LazyListState] that is remembered across compositions.
@@ -79,8 +80,10 @@ import androidx.annotation.IntRange as AndroidXIntRange
 fun rememberLazyListState(
     initialFirstVisibleItemIndex: Int = 0,
     initialFirstVisibleItemScrollOffset: Int = 0,
-): LazyListState = rememberSaveable(saver = Saver) {
-    LazyListState(initialFirstVisibleItemIndex, initialFirstVisibleItemScrollOffset)
+): LazyListState {
+    return rememberSaveable(saver = Saver) {
+        LazyListState(initialFirstVisibleItemIndex, initialFirstVisibleItemScrollOffset)
+    }
 }
 
 /**
@@ -96,20 +99,23 @@ fun rememberLazyListState(
  *   list
  */
 @ExperimentalFoundationApi
+@Deprecated(
+    """Providing `LazyLayoutCacheWindow` via `LazyColumn` or `LazyRow` composables should be preferred over using `LazyListPrefetchStrategy` here."""
+)
+@Suppress("DEPRECATION")
 @Composable
 fun rememberLazyListState(
     initialFirstVisibleItemIndex: Int = 0,
     initialFirstVisibleItemScrollOffset: Int = 0,
     prefetchStrategy: LazyListPrefetchStrategy = remember { LazyListPrefetchStrategy() },
-): LazyListState = rememberSaveable(
-    prefetchStrategy,
-    saver = LazyListState.saver(prefetchStrategy)
-) {
-    LazyListState(
-        initialFirstVisibleItemIndex,
-        initialFirstVisibleItemScrollOffset,
-        prefetchStrategy,
-    )
+): LazyListState {
+    return rememberSaveable(prefetchStrategy, saver = LazyListState.saver(prefetchStrategy)) {
+        LazyListState(
+            initialFirstVisibleItemIndex,
+            initialFirstVisibleItemScrollOffset,
+            prefetchStrategy,
+        )
+    }
 }
 
 /**
@@ -125,17 +131,23 @@ fun rememberLazyListState(
  *   [LazyListState.firstVisibleItemScrollOffset]
  */
 @ExperimentalFoundationApi
+@Deprecated(
+    """`CacheWindow` is now specified via lazy list composable arguments as `CacheWindow`."""
+)
 @Composable
 fun rememberLazyListState(
     cacheWindow: LazyLayoutCacheWindow,
     initialFirstVisibleItemIndex: Int = 0,
     initialFirstVisibleItemScrollOffset: Int = 0,
-): LazyListState = rememberSaveable(cacheWindow, saver = LazyListState.saver(cacheWindow)) {
-    LazyListState(
-        cacheWindow,
-        initialFirstVisibleItemIndex,
-        initialFirstVisibleItemScrollOffset,
-    )
+): LazyListState {
+    return rememberSaveable(cacheWindow, saver = LazyListState.saver(cacheWindow)) {
+        @Suppress("DEPRECATION")
+        LazyListState(
+            cacheWindow,
+            initialFirstVisibleItemIndex,
+            initialFirstVisibleItemScrollOffset,
+        )
+    }
 }
 
 /**
@@ -146,18 +158,38 @@ fun rememberLazyListState(
  * @param firstVisibleItemIndex the initial value for [LazyListState.firstVisibleItemIndex]
  * @param firstVisibleItemScrollOffset the initial value for
  *   [LazyListState.firstVisibleItemScrollOffset]
- * @param prefetchStrategy the [LazyListPrefetchStrategy] to use for prefetching content in this
- *   list
  */
 @OptIn(ExperimentalFoundationApi::class)
 @Stable
 class LazyListState
-    @ExperimentalFoundationApi
-    constructor(
+    internal constructor(
+        @Suppress("DEPRECATION") internal val legacyPrefetchStrategy: LazyListPrefetchStrategy?,
         firstVisibleItemIndex: Int = 0,
         firstVisibleItemScrollOffset: Int = 0,
-        internal val prefetchStrategy: LazyListPrefetchStrategy = LazyListPrefetchStrategy(),
     ) : ScrollableState {
+
+        /**
+         * A state object that can be hoisted to control and observe scrolling.
+         *
+         * In most cases, this will be created via [rememberLazyListState].
+         *
+         * @param firstVisibleItemIndex the initial value for [LazyListState.firstVisibleItemIndex]
+         * @param firstVisibleItemScrollOffset the initial value for
+         *   [LazyListState.firstVisibleItemScrollOffset]
+         * @param prefetchStrategy the [LazyListPrefetchStrategy] to use for prefetching content in this
+         *   list
+         */
+        @ExperimentalFoundationApi
+        @Deprecated(
+            """`LazyListPrefetchStrategy` is deprecated. Prefetching behaviour should be specified via lazy list composable arguments as a `CacheWindow`."""
+        )
+        @Suppress("DEPRECATION")
+        constructor(
+            firstVisibleItemIndex: Int = 0,
+            firstVisibleItemScrollOffset: Int = 0,
+            prefetchStrategy: LazyListPrefetchStrategy = LazyListPrefetchStrategy(),
+        ) : this(prefetchStrategy, firstVisibleItemIndex, firstVisibleItemScrollOffset)
+
         /**
          * @param cacheWindow specifies the size of the ahead and behind window to be used as per
          *   [LazyLayoutCacheWindow].
@@ -166,14 +198,17 @@ class LazyListState
          *   [LazyListState.firstVisibleItemScrollOffset]
          */
         @ExperimentalFoundationApi
+        @Deprecated(
+            """`CacheWindow` is now specified via lazy list composable arguments as `CacheWindow`."""
+        )
         constructor(
             cacheWindow: LazyLayoutCacheWindow,
             firstVisibleItemIndex: Int = 0,
             firstVisibleItemScrollOffset: Int = 0,
         ) : this(
+            LazyListCacheWindowStrategy(cacheWindow),
             firstVisibleItemIndex,
             firstVisibleItemScrollOffset,
-            LazyListCacheWindowStrategy(cacheWindow),
         )
 
         /**
@@ -184,7 +219,7 @@ class LazyListState
         constructor(
             firstVisibleItemIndex: Int = 0,
             firstVisibleItemScrollOffset: Int = 0,
-        ) : this(firstVisibleItemIndex, firstVisibleItemScrollOffset, LazyListPrefetchStrategy())
+        ) : this(null, firstVisibleItemIndex, firstVisibleItemScrollOffset)
 
         internal var hasLookaheadOccurred: Boolean = false
             private set
@@ -206,6 +241,16 @@ class LazyListState
          *
          * Note that this property is observable and if you use it in the composable function it will be
          * recomposed on every change causing potential performance issues.
+         *
+         * If you want to run some side effects like sending an analytics event or updating a state
+         * based on this value consider using "snapshotFlow":
+         *
+         * @sample androidx.compose.foundation.samples.UsingListScrollPositionForSideEffectSample
+         *
+         * If you need to use it in the composition then consider wrapping the calculation into a
+         * derived state in order to only have recompositions when the derived value changes:
+         *
+         * @sample androidx.compose.foundation.samples.UsingListScrollPositionInCompositionSample
          */
         val firstVisibleItemIndex: Int
             @FrequentlyChangingValue get() = scrollPosition.index
@@ -223,8 +268,7 @@ class LazyListState
             @FrequentlyChangingValue get() = scrollPosition.scrollOffset
 
         /** Backing state for [layoutInfo] */
-        internal val layoutInfoState =
-            mutableStateOf(EmptyLazyListMeasureResult, neverEqualPolicy())
+        internal val layoutInfoState = mutableStateOf(EmptyLazyListMeasureResult, neverEqualPolicy())
 
         /**
          * The object of [LazyListLayoutInfo] calculated during the last layout pass. For example, you
@@ -234,6 +278,11 @@ class LazyListState
          * use it in the composable function it will be recomposed on every change causing potential
          * performance issues including infinity recomposition loop. Therefore, avoid using it in the
          * composition.
+         *
+         * If you want to run some side effects like sending an analytics event or updating a state
+         * based on this value consider using "snapshotFlow":
+         *
+         * @sample androidx.compose.foundation.samples.UsingListLayoutInfoForSideEffectSample
          */
         val layoutInfo: LazyListLayoutInfo
             @FrequentlyChangingValue get() = layoutInfoState.value
@@ -246,8 +295,7 @@ class LazyListState
         val interactionSource: InteractionSource
             get() = internalInteractionSource
 
-        internal val internalInteractionSource: MutableInteractionSource =
-            MutableInteractionSource()
+        internal val internalInteractionSource: MutableInteractionSource = MutableInteractionSource()
 
         /**
          * The amount of scroll to be consumed in the next layout pass. Scrolling forward is negative
@@ -268,14 +316,12 @@ class LazyListState
         private val scrollableState = SaltScrollableState { -onScroll(-it) }
 
         /** Only used for testing to confirm that we're not making too many measure passes */
-        // @VisibleForTesting
-        @Suppress("ktlint:standard:no-consecutive-comments")
+        /*@VisibleForTesting*/
         internal var numMeasurePasses: Int = 0
             private set
 
         /** Only used for testing to disable prefetching when needed to test the main logic. */
-        // @VisibleForTesting
-        @Suppress("ktlint:standard:no-consecutive-comments")
+        /*@VisibleForTesting*/
         internal var prefetchingEnabled: Boolean = true
 
         /**
@@ -303,14 +349,31 @@ class LazyListState
 
         internal val beyondBoundsInfo = LazyLayoutBeyondBoundsInfo()
 
-        @Suppress("DEPRECATION") // b/420551535
-        internal val prefetchState =
-            LazyLayoutPrefetchState(prefetchStrategy.prefetchScheduler) {
-                with(prefetchStrategy) {
+        /**
+         * [legacyPrefetchState] will always be null if [LazyListState] is constructed without
+         * specifying either a [LazyLayoutCacheWindow] or a [LazyListPrefetchStrategy] explicitly.
+         */
+        internal val legacyPrefetchState = legacyPrefetchStrategy?.let { legacyPrefetchStrategy ->
+            @Suppress("DEPRECATION") // b/420551535
+            LazyLayoutPrefetchState(legacyPrefetchStrategy.prefetchScheduler) {
+                with(legacyPrefetchStrategy) {
                     onNestedPrefetch(Snapshot.withoutReadObservation { firstVisibleItemIndex })
                 }
             }
+        }
 
+        private val prefetchState
+            get() =
+                Snapshot.withoutReadObservation { layoutInfoState.value.prefetchState }
+                    ?: legacyPrefetchState
+
+        @Suppress("DEPRECATION")
+        private val prefetchStrategy
+            get() =
+                Snapshot.withoutReadObservation { layoutInfoState.value.prefetchStrategy }
+                    ?: legacyPrefetchStrategy
+
+        @Suppress("DEPRECATION")
         private val prefetchScope: LazyListPrefetchScope =
             object : LazyListPrefetchScope {
                 override fun schedulePrefetch(
@@ -320,30 +383,30 @@ class LazyListState
                     // Without read observation since this can be triggered from scroll - this will then
                     // cause us to recompose when the measure result changes. We don't care since the
                     // prefetch is best effort.
-                    val lastMeasureResult = Snapshot.withoutReadObservation {
-                        layoutInfoState.value
-                    }
-                    return prefetchState.schedulePrecompositionAndPremeasure(
-                        index,
-                        lastMeasureResult.childConstraints,
-                        executeRequestsInHighPriorityMode,
-                    ) {
-                        if (onPrefetchFinished != null) {
-                            var mainAxisItemSize = 0
-                            repeat(placeablesCount) {
-                                mainAxisItemSize +=
-                                    if (lastMeasureResult.orientation == Orientation.Vertical) {
-                                        getSize(it).height
-                                    } else {
-                                        getSize(it).width
-                                    }
-                            }
+                    val lastMeasureResult = Snapshot.withoutReadObservation { layoutInfoState.value }
+                    val prefetchHandle =
+                        prefetchState?.schedulePrecompositionAndPremeasure(
+                            index,
+                            lastMeasureResult.childConstraints,
+                            executeRequestsInHighPriorityMode,
+                        ) {
+                            if (onPrefetchFinished != null) {
+                                var mainAxisItemSize = 0
+                                repeat(placeablesCount) {
+                                    mainAxisItemSize +=
+                                        if (lastMeasureResult.orientation == Orientation.Vertical) {
+                                            getSize(it).height
+                                        } else {
+                                            getSize(it).width
+                                        }
+                                }
 
-                            onPrefetchFinished.invoke(
-                                LazyListPrefetchResultScopeImpl(index, mainAxisItemSize)
-                            )
+                                onPrefetchFinished.invoke(
+                                    LazyListPrefetchResultScopeImpl(index, mainAxisItemSize)
+                                )
+                            }
                         }
-                    }
+                    return prefetchHandle ?: DummyHandle
                 }
             }
 
@@ -366,9 +429,10 @@ class LazyListState
                     get() = layoutInfo.singleAxisViewportSize
             }
 
-        private fun calculateScrollOffset(): Int =
-            (layoutInfo.visibleItemsAverageSize() * firstVisibleItemIndex) +
+        private fun calculateScrollOffset(): Int {
+            return (layoutInfo.visibleItemsAverageSize() * firstVisibleItemIndex) +
                 firstVisibleItemScrollOffset
+        }
 
         /** Stores currently pinned items which are always composed. */
         internal val pinnedItems = LazyLayoutPinnedItemList()
@@ -384,10 +448,7 @@ class LazyListState
          *   positive offset refers to forward scroll, so in a top-to-bottom list, positive offset will
          *   scroll the item further upward (taking it partly offscreen).
          */
-        suspend fun scrollToItem(
-            @AndroidXIntRange(from = 0) index: Int,
-            scrollOffset: Int = 0
-        ) {
+        suspend fun scrollToItem(@AndroidXIntRange(from = 0) index: Int, scrollOffset: Int = 0) {
             scroll { snapToItemIndexInternal(index, scrollOffset, forceRemeasure = true) }
         }
 
@@ -408,10 +469,7 @@ class LazyListState
          *   positive offset refers to forward scroll, so in a top-to-bottom list, positive offset will
          *   scroll the item further upward (taking it partly offscreen).
          */
-        fun requestScrollToItem(
-            @AndroidXIntRange(from = 0) index: Int,
-            scrollOffset: Int = 0
-        ) {
+        fun requestScrollToItem(@AndroidXIntRange(from = 0) index: Int, scrollOffset: Int = 0) {
             // Cancel any scroll in progress.
             if (isScrollInProgress) {
                 layoutInfoState.value.coroutineScope.launch { scroll {} }
@@ -424,11 +482,7 @@ class LazyListState
          * Snaps to the requested scroll position. Synchronously executes remeasure if [forceRemeasure]
          * is true, and schedules a remeasure if false.
          */
-        internal fun snapToItemIndexInternal(
-            index: Int,
-            scrollOffset: Int,
-            forceRemeasure: Boolean
-        ) {
+        internal fun snapToItemIndexInternal(index: Int, scrollOffset: Int, forceRemeasure: Boolean) {
             val positionChanged =
                 scrollPosition.index != index || scrollPosition.scrollOffset != scrollOffset
             // sometimes this method is called not to scroll, but to stay on the same index when
@@ -498,7 +552,7 @@ class LazyListState
 
         // TODO: Coroutine scrolling APIs will allow this to be private again once we have more
         //  fine-grained control over scrolling
-        // @VisibleForTesting
+        /*@VisibleForTesting*/
         internal fun onScroll(distance: Float): Float {
             if (distance < 0 && !canScrollForward || distance > 0 && !canScrollBackward) {
                 return 0f
@@ -553,10 +607,7 @@ class LazyListState
                     )
                 } else {
                     remeasurement?.forceRemeasure()
-                    notifyPrefetchOnScroll(
-                        preScrollToBeConsumed - scrollToBeConsumed,
-                        this.layoutInfo
-                    )
+                    notifyPrefetchOnScroll(preScrollToBeConsumed - scrollToBeConsumed, this.layoutInfo)
                 }
             }
 
@@ -574,11 +625,12 @@ class LazyListState
             }
         }
 
-        private fun notifyPrefetchOnScroll(delta: Float, layoutInfo: LazyListLayoutInfo) {
-            if (prefetchingEnabled) {
-                with(prefetchStrategy) { prefetchScope.onScroll(delta, layoutInfo) }
+        private fun notifyPrefetchOnScroll(delta: Float, layoutInfo: LazyListLayoutInfo) =
+            prefetchStrategy?.apply {
+                if (prefetchingEnabled) {
+                    prefetchScope.onScroll(delta, layoutInfo)
+                }
             }
-        }
 
         /**
          * Animate (smooth scroll) to the given item.
@@ -590,7 +642,7 @@ class LazyListState
          */
         suspend fun animateScrollToItem(
             @AndroidXIntRange(from = 0) index: Int,
-            scrollOffset: Int = 0
+            scrollOffset: Int = 0,
         ) {
             try {
                 skipItemPlacementAnimation = true
@@ -607,11 +659,11 @@ class LazyListState
         internal fun applyMeasureResult(
             result: LazyListMeasureResult,
             isLookingAhead: Boolean,
-            visibleItemsStayedTheSame: Boolean = false
+            visibleItemsStayedTheSame: Boolean = false,
         ) {
             // update the prefetch state with the number of nested prefetch items this layout
             // should use.
-            prefetchState.idealNestedPrefetchCount = result.visibleItemsInfo.size
+            result.prefetchState?.idealNestedPrefetchCount = result.visibleItemsInfo.size
 
             if (!isLookingAhead && hasLookaheadOccurred) {
                 // If there was already a lookahead pass, record this result as approach result
@@ -619,14 +671,15 @@ class LazyListState
                 Snapshot.withoutReadObservation {
                     if (
                         _lazyLayoutScrollDeltaBetweenPasses.isActive &&
-                        result.firstVisibleItem?.index == scrollPosition.index &&
-                        result.firstVisibleItemScrollOffset == scrollPosition.scrollOffset
+                            result.firstVisibleItem?.index == scrollPosition.index &&
+                            result.firstVisibleItemScrollOffset == scrollPosition.scrollOffset
                     ) {
                         _lazyLayoutScrollDeltaBetweenPasses.stop()
                     }
                 }
             } else {
                 if (isLookingAhead) {
+                    (prefetchStrategy as? CacheWindowLogic)?.hasLookaheadOccurred = true
                     hasLookaheadOccurred = true
                 }
 
@@ -640,8 +693,10 @@ class LazyListState
                 } else {
                     traceVisibleItems(result) // trace when visible window changed
                     scrollPosition.updateFromMeasureResult(result)
-                    if (prefetchingEnabled) {
-                        with(prefetchStrategy) { prefetchScope.onVisibleItemsUpdated(result) }
+                    prefetchStrategy?.apply {
+                        if (prefetchingEnabled) {
+                            prefetchScope.onVisibleItemsUpdated(result)
+                        }
                     }
                 }
 
@@ -666,7 +721,6 @@ class LazyListState
         internal val scrollDeltaBetweenPasses: Float
             get() = _lazyLayoutScrollDeltaBetweenPasses.scrollDeltaBetweenPasses
 
-        @Suppress("ktlint:standard:backing-property-naming")
         private val _lazyLayoutScrollDeltaBetweenPasses = LazyLayoutScrollDeltaBetweenPasses()
 
         /**
@@ -678,10 +732,7 @@ class LazyListState
         internal fun updateScrollPositionIfTheFirstItemWasMoved(
             itemProvider: LazyListItemProvider,
             firstItemIndex: Int,
-        ): Int = scrollPosition.updateScrollPositionIfTheFirstItemWasMoved(
-            itemProvider,
-            firstItemIndex
-        )
+        ): Int = scrollPosition.updateScrollPositionIfTheFirstItemWasMoved(itemProvider, firstItemIndex)
 
         companion object {
             /** The default [Saver] implementation for [LazyListState]. */
@@ -689,20 +740,21 @@ class LazyListState
                 listSaver(
                     save = { listOf(it.firstVisibleItemIndex, it.firstVisibleItemScrollOffset) },
                     restore = {
+                        @Suppress("DEPRECATION")
                         LazyListState(
                             firstVisibleItemIndex = it[0],
                             firstVisibleItemScrollOffset = it[1],
                         )
-                    }
+                    },
                 )
 
             /**
              * A [Saver] implementation for [LazyListState] that handles setting a custom
              * [LazyListPrefetchStrategy].
              */
-            internal fun saver(
-                prefetchStrategy: LazyListPrefetchStrategy
-            ): Saver<LazyListState, *> =
+            @ExperimentalFoundationApi
+            @Suppress("DEPRECATION")
+            internal fun saver(prefetchStrategy: LazyListPrefetchStrategy): Saver<LazyListState, *> =
                 listSaver(
                     save = { listOf(it.firstVisibleItemIndex, it.firstVisibleItemScrollOffset) },
                     restore = {
@@ -711,29 +763,30 @@ class LazyListState
                             firstVisibleItemScrollOffset = it[1],
                             prefetchStrategy,
                         )
-                    }
+                    },
                 )
 
             /**
              * A [Saver] implementation for [LazyListState] that handles setting a custom
              * [LazyLayoutCacheWindow].
              */
-            internal fun saver(
-                cacheWindow: LazyLayoutCacheWindow
-            ): Saver<LazyListState, *> =
+            @ExperimentalFoundationApi
+            internal fun saver(cacheWindow: LazyLayoutCacheWindow): Saver<LazyListState, *> =
                 listSaver(
                     save = { listOf(it.firstVisibleItemIndex, it.firstVisibleItemScrollOffset) },
                     restore = {
+                        @Suppress("DEPRECATION")
                         LazyListState(
                             firstVisibleItemIndex = it[0],
                             firstVisibleItemScrollOffset = it[1],
                             cacheWindow = cacheWindow,
                         )
-                    }
+                    },
                 )
         }
     }
 
+@OptIn(ExperimentalFoundationApi::class)
 private val EmptyLazyListMeasureResult =
     LazyListMeasureResult(
         firstVisibleItem = null,
@@ -764,7 +817,8 @@ private val EmptyLazyListMeasureResult =
         density = Density(1f),
         childConstraints = Constraints(),
         stickingItemsCombinedSize = 0,
+        prefetchState = null,
+        prefetchStrategy = null,
     )
 
-@Suppress("ktlint:standard:property-naming")
 private const val NumberOfItemsToTeleport = 100
