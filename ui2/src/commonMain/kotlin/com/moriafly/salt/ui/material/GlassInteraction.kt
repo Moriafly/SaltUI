@@ -34,6 +34,7 @@ import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.MotionDurationScale
 import androidx.compose.ui.draw.drawWithCache
+import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.geometry.lerp
@@ -41,6 +42,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.drawOutline
+import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.PointerId
@@ -367,6 +369,29 @@ internal fun Modifier.glassPointerInput(interaction: GlassInteractionState): Mod
             interaction.clearHover()
         }
     }
+
+@OptIn(UnstableSaltUiApi::class)
+internal fun Modifier.drawGlassInteraction(
+    interaction: GlassInteractionState
+): Modifier = drawWithContent {
+    val scale = interaction.scale
+    val translation = interaction.translation
+    if (scale == 1f && translation == Offset.Zero) {
+        drawContent()
+    } else {
+        val origin = interaction.transformOrigin(size)
+        val pivot = Offset(
+            x = size.width * origin.pivotFractionX,
+            y = size.height * origin.pivotFractionY
+        )
+        withTransform({
+            translate(translation.x, translation.y)
+            scale(scaleX = scale, scaleY = scale, pivot = pivot)
+        }) {
+            this@drawWithContent.drawContent()
+        }
+    }
+}
 
 @OptIn(UnstableSaltUiApi::class)
 internal fun Modifier.glassInteractionLight(

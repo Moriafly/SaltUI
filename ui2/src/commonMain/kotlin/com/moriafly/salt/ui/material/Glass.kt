@@ -31,7 +31,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.ClipOp
 import androidx.compose.ui.graphics.Color
@@ -40,7 +39,6 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathOperation
 import androidx.compose.ui.graphics.addOutline
 import androidx.compose.ui.graphics.drawscope.ContentDrawScope
-import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.findRootCoordinates
@@ -497,23 +495,5 @@ fun Modifier.glass(
             translationY = -interactionState.translation.y * inverseScale
         }
         // Reapply the transform to content drawing without changing its hit region.
-        .drawWithContent {
-            val glassScale = interactionState.scale
-            val translation = interactionState.translation
-            if (glassScale == 1f && translation == Offset.Zero) {
-                drawContent()
-            } else {
-                val origin = interactionState.transformOrigin(size)
-                val pivot = Offset(
-                    x = size.width * origin.pivotFractionX,
-                    y = size.height * origin.pivotFractionY
-                )
-                withTransform({
-                    translate(translation.x, translation.y)
-                    scale(scaleX = glassScale, scaleY = glassScale, pivot = pivot)
-                }) {
-                    this@drawWithContent.drawContent()
-                }
-            }
-        }
+        .drawGlassInteraction(interactionState)
 }
