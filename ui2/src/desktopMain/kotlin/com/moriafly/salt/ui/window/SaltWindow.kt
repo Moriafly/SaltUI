@@ -81,6 +81,34 @@ import java.awt.event.WindowEvent
  * available, or [decoration] is [WindowDecoration.Undecorated], the window stays fully
  * undecorated.
  *
+ * @param properties The window appearance and adjustability. Keep the value stable between
+ * compositions when nothing changed so the window decoration can skip recomposition.
+ * @param onVisibleChange Called when the window becomes visible or hidden. Do **not** observe
+ * `window.isVisible` inside the content:
+ * ```
+ * SaltWindow(
+ *     // ...
+ * ) {
+ *     LaunchedEffect(window.isVisible) {
+ *         // Do something
+ *     }
+ * }
+ * ```
+ * Report it here instead:
+ * ```
+ * SaltWindow(
+ *     // ...,
+ *     onVisibleChange = { window, visible ->
+ *         // Do something
+ *     }
+ * ) {
+ *     // ...
+ * }
+ * ```
+ * @param onResizeEdgeChange Called when the pointer enters, moves along, or leaves a resize edge.
+ * The callback receives the [WindowResizeEdge] indicating which edge the pointer is on, or
+ * [WindowResizeEdge.None] if not on any resize edge.
+ *
  * @see [Window]
  * @see [SwingWindow]
  * @see [SaltWindowProperties]
@@ -101,17 +129,17 @@ fun SaltWindow(
     enabled: Boolean = true,
     focusable: Boolean = true,
     alwaysOnTop: Boolean = false,
-    properties: SaltWindowProperties<ComposeWindow> = SaltWindowProperties.default(),
+    properties: SaltWindowProperties = SaltWindowProperties.default(),
     onPreviewKeyEvent: (KeyEvent) -> Boolean = { false },
     onKeyEvent: (KeyEvent) -> Boolean = { false },
+    onVisibleChange: (ComposeWindow, Boolean) -> Unit = { _, _ -> },
+    onResizeEdgeChange: (ComposeWindow, WindowResizeEdge) -> Unit = { _, _ -> },
     init: (ComposeWindow) -> Unit = {},
     content: @Composable FrameWindowScope.() -> Unit
 ) {
     require(properties.captionButtonHeight <= properties.captionBarHeight) {
         "Caption button height must be less than caption bar height"
     }
-
-    val currentProperties by rememberUpdatedState(properties)
 
     // On Linux the window is always undecorated
     val resolvedDecoration = decoration.resolveForPlatform()
@@ -159,7 +187,7 @@ fun SaltWindow(
                 LocalCaptionBarHitTestRegistration provides remember(window) {
                     CaptionBarHitTestRegistration()
                 },
-                LocalSaltWindowProperties provides properties as SaltWindowProperties<Window>,
+                LocalSaltWindowProperties provides properties,
                 LocalDensity provides Density(
                     density = density.density * properties.extraDisplayScale,
                     fontScale = density.fontScale * properties.extraFontScale
@@ -176,6 +204,7 @@ fun SaltWindow(
                         Dimension(minSize.width.value.toInt(), minSize.height.value.toInt())
                 }
 
+                val currentOnVisibleChange by rememberUpdatedState(onVisibleChange)
                 DisposableEffect(window) {
                     val adapter = object : WindowAdapter(), ComponentListener {
                         override fun windowActivated(e: WindowEvent?) {
@@ -200,11 +229,11 @@ fun SaltWindow(
                         }
 
                         override fun componentShown(e: ComponentEvent?) {
-                            currentProperties.onVisibleChange(window, true)
+                            currentOnVisibleChange(window, true)
                         }
 
                         override fun componentHidden(e: ComponentEvent?) {
-                            currentProperties.onVisibleChange(window, false)
+                            currentOnVisibleChange(window, false)
                         }
                     }
 
@@ -228,6 +257,7 @@ fun SaltWindow(
                             WindowsSaltWindowFrame(
                                 resizable = resizable,
                                 properties = properties,
+                                onResizeEdgeChange = onResizeEdgeChange,
                                 content = content
                             )
 
@@ -242,6 +272,7 @@ fun SaltWindow(
                                 resizable = resizable,
                                 decoration = decoration,
                                 properties = properties,
+                                onResizeEdgeChange = onResizeEdgeChange,
                                 content = content
                             )
 

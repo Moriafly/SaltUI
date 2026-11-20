@@ -37,7 +37,6 @@ import com.moriafly.salt.core.os.OS
 import com.moriafly.salt.ui.SaltTheme
 import com.moriafly.salt.ui.Text
 import com.moriafly.salt.ui.UnstableSaltUiApi
-import java.awt.Window
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.test.Test
 import kotlin.test.assertEquals
@@ -51,7 +50,7 @@ class SaltWindowPropertiesTest {
 
         setContent {
             SaltTheme {
-                val properties = SaltWindowProperties.default<Window>()
+                val properties = SaltWindowProperties.default()
                 SideEffect { captionBarHeight = properties.captionBarHeight }
             }
         }

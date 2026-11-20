@@ -18,6 +18,7 @@
 package com.moriafly.salt.ui.window
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpSize
@@ -26,43 +27,19 @@ import com.moriafly.salt.core.os.OS
 import com.moriafly.salt.ui.SaltTheme
 import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.moriafly.salt.ui.platform.macos.MacOSWindowMetrics
-import java.awt.Window
 
 /**
  * # Properties for SaltWindow
  *
+ * Describes the window appearance and adjustability only. Visibility and resize-edge changes are
+ * reported through the `onVisibleChange` and `onResizeEdgeChange` parameters of [SaltWindow] and
+ * [SaltDialogWindow], so this type stays comparable by value and callback changes do not
+ * invalidate composition that only reads appearance.
+ *
+ * Keep this type value-only. Adding callbacks or other reference types here would degrade the
+ * comparison to instance identity and make the window decoration rebuild on every composition.
+ *
  * @property minSize The minimum size of the window.
- * @property onVisibleChange The callback to be invoked when the visibility of the window changes.
- * To replace obtaining the window isVisible state in Composable.
- *
- * Do **not** use this:
- * ```
- * SaltWindow(
- *     // ...
- * ) {
- *     LaunchEffect(window.isVisible) {
- *         // Do something
- *     }
- * }
- * ```
- *
- * Please use:
- * ```
- * SaltWindow(
- *     // ...,
- *     properties = SaltWindowProperties(
- *         onVisibleChanged = { window, visible ->
- *             // Do something
- *         }
- *     )
- * ) {
- *     // ...
- * }
- * ```
- *
- * @property onResizeEdgeChange The callback to be invoked when the pointer moves to or away from
- * a resize edge of the window. The callback receives the [WindowResizeEdge] indicating which edge
- * the pointer is on, or [WindowResizeEdge.None] if not on any resize edge.
  * @property captionBarHeight The height of the caption bar. The platform default is 52.dp on macOS
  * and 40.dp on Windows and Linux.
  * @property captionButtonsVisible Whether the caption buttons are visible.
@@ -82,10 +59,9 @@ import java.awt.Window
  * @property moveable Whether the window is moveable.
  */
 @UnstableSaltUiApi
-data class SaltWindowProperties<T : Window>(
+@Immutable
+data class SaltWindowProperties(
     val minSize: DpSize,
-    val onVisibleChange: (T, Boolean) -> Unit,
-    val onResizeEdgeChange: (T, WindowResizeEdge) -> Unit,
     val captionBarHeight: Dp,
     val captionButtonsVisible: Boolean,
     val captionButtonHeight: Dp,
@@ -100,10 +76,8 @@ data class SaltWindowProperties<T : Window>(
 ) {
     companion object {
         @Composable
-        fun <T : Window> default(
+        fun default(
             minSize: DpSize = DpSize.Zero,
-            onVisibleChange: (T, Boolean) -> Unit = { _, _ -> },
-            onResizeEdgeChange: (T, WindowResizeEdge) -> Unit = { _, _ -> },
             captionBarHeight: Dp = defaultCaptionBarHeight(),
             captionButtonsVisible: Boolean = true,
             captionButtonHeight: Dp = captionBarHeight,
@@ -115,10 +89,8 @@ data class SaltWindowProperties<T : Window>(
             minimizeButtonEnabled: Boolean = true,
             maximizeOrRestoreButtonEnabled: Boolean = true,
             moveable: Boolean = true
-        ): SaltWindowProperties<T> = SaltWindowProperties(
+        ): SaltWindowProperties = SaltWindowProperties(
             minSize = minSize,
-            onVisibleChange = onVisibleChange,
-            onResizeEdgeChange = onResizeEdgeChange,
             captionBarHeight = captionBarHeight,
             captionButtonsVisible = captionButtonsVisible,
             captionButtonHeight = captionButtonHeight,
@@ -142,6 +114,6 @@ internal fun defaultCaptionBarHeight(os: OS = OS.current): Dp = when (os) {
 // Caption appearance and interaction flags can change while the window stays open. Track readers
 // so a caption update does not invalidate unrelated content throughout the window.
 @UnstableSaltUiApi
-val LocalSaltWindowProperties = compositionLocalOf<SaltWindowProperties<Window>> {
+val LocalSaltWindowProperties = compositionLocalOf<SaltWindowProperties> {
     error("SaltWindowProperties is not provided")
 }
