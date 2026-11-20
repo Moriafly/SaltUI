@@ -62,6 +62,7 @@ import com.moriafly.salt.ui.thenIf
 import dev.chrisbanes.haze.HazeInput
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.blur.hazeBlur
+import dev.chrisbanes.haze.glass.GlassStyle
 import dev.chrisbanes.haze.glass.hazeGlass
 import dev.chrisbanes.haze.hazeSource
 import kotlin.jvm.JvmSynthetic
@@ -460,28 +461,14 @@ fun Modifier.glass(
                             backgroundColor(background)
                         }
                     }
-                    val android = OS.current as? OS.Android
-                    // Haze 2.1's transparent fallback does not replay its source below Android 13.
-                    val keepSourceVisible = background.alpha == 0f && android != null &&
-                        android.versionSdk < OS.Android.ANDROID_13
-                    Modifier
-                        .thenIf(!keepSourceVisible) {
-                            then(
-                                GlassSource.SurfaceElement(
-                                    source = source,
-                                    shape = shape,
-                                    density = LocalDensity.current,
-                                    layoutDirection = LocalLayoutDirection.current
-                                )
-                            )
-                        }
-                        // Inherit Haze's performance mode; full resolution can cost more to render.
-                        .hazeGlass(input = source.hazeInput, style = style)
-                        .glassInteractionLight(
-                            interaction = interactionState,
-                            shape = shape,
-                            isDarkTheme = isDarkTheme
-                        )
+                    Modifier.refractiveGlass(
+                        source = source,
+                        shape = shape,
+                        glassStyle = style,
+                        isBackgroundFullyTransparent = background.alpha == 0f,
+                        interactionState = interactionState,
+                        isDarkTheme = isDarkTheme
+                    )
                 }
             }
         )
@@ -496,4 +483,39 @@ fun Modifier.glass(
         }
         // Reapply the transform to content drawing without changing its hit region.
         .drawGlassInteraction(interactionState)
+}
+
+@OptIn(UnstableSaltUiApi::class)
+@Composable
+private fun Modifier.refractiveGlass(
+    source: GlassSource,
+    shape: RoundedCornerShape,
+    glassStyle: GlassStyle,
+    isBackgroundFullyTransparent: Boolean,
+    interactionState: GlassInteractionState,
+    isDarkTheme: Boolean
+): Modifier {
+    val os = OS.current
+    // Haze 2.1's transparent fallback does not replay its source below Android 13.
+    val keepSourceVisible = isBackgroundFullyTransparent &&
+        os is OS.Android &&
+        os.versionSdk < OS.Android.ANDROID_13
+    return this
+        .thenIf(!keepSourceVisible) {
+            then(
+                GlassSource.SurfaceElement(
+                    source = source,
+                    shape = shape,
+                    density = LocalDensity.current,
+                    layoutDirection = LocalLayoutDirection.current
+                )
+            )
+        }
+        // Inherit Haze's performance mode; full resolution can cost more to render.
+        .hazeGlass(input = source.hazeInput, style = glassStyle)
+        .glassInteractionLight(
+            interaction = interactionState,
+            shape = shape,
+            isDarkTheme = isDarkTheme
+        )
 }
