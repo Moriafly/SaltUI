@@ -493,8 +493,7 @@ internal class ScrollingLogic(
      * @return Returns a single axis delta based on the angle. If the angle is mostly horizontal,
      *   and we are in a horizontal scrollable, this will return the x component. If the angle is
      *   mostly vertical, and we are in a vertical scrollable, this will return the y component.
-     *   Otherwise, this will return 0. Mostly horizontal means angles smaller than
-     *   [VerticalAxisThresholdAngle].
+     *   Otherwise, this will return 0. The larger component determines the dominant axis.
      */
     fun Offset.toSingleAxisDeltaFromAngle(): Float {
         return if (y.absoluteValue >= x.absoluteValue) {

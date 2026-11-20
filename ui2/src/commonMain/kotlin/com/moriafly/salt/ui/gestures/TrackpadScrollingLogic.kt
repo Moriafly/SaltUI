@@ -91,7 +91,7 @@ internal class TrackpadScrollingLogic(
         var sent = false
         change.historical.fastForEach { historicalChange ->
             val delta = -historicalChange.panOffset
-            if (canConsumePan(delta)) {
+            if (isOnScrollAxis(delta)) {
                 sent = channel.trySend(
                     TrackpadScrollDelta(delta, historicalChange.uptimeMillis, isEnd = false)
                 ).isSuccess || sent
@@ -99,7 +99,7 @@ internal class TrackpadScrollingLogic(
         }
         val delta = -change.panOffset
         val isPanEnd = pointerEvent.type == PointerEventType.PanEnd
-        if (canConsumePan(delta) || isPanEnd) {
+        if (isOnScrollAxis(delta) || isPanEnd) {
             sent = channel.trySend(
                 TrackpadScrollDelta(delta, change.uptimeMillis, isEnd = isPanEnd)
             ).isSuccess || sent
@@ -109,8 +109,9 @@ internal class TrackpadScrollingLogic(
 
     private fun Offset.isZero(): Boolean = x == 0f && y == 0f
 
-    private fun canConsumePan(delta: Offset): Boolean = with(scrollingLogic) {
-        canConsumeDelta(delta.toSingleAxisDeltaFromAngle())
+    private fun isOnScrollAxis(delta: Offset): Boolean = with(scrollingLogic) {
+        // Forward edge deltas to nested scroll and overscroll even at the end of the local range.
+        delta.toSingleAxisDeltaFromAngle() != 0f
     }
 
     private fun Channel<TrackpadScrollDelta>.sumOrNull(): TrackpadScrollDelta? {
