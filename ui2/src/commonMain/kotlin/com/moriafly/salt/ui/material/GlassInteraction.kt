@@ -19,7 +19,6 @@ package com.moriafly.salt.ui.material
 
 import androidx.compose.animation.core.LinearOutSlowInEasing
 import androidx.compose.animation.core.Spring
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Stable
@@ -40,6 +39,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.geometry.lerp
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.drawOutline
 import androidx.compose.ui.graphics.drawscope.withTransform
@@ -48,7 +48,9 @@ import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.PointerId
 import androidx.compose.ui.input.pointer.PointerType
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.unit.isSpecified
 import androidx.compose.ui.util.lerp
 import com.moriafly.salt.ui.UnstableSaltUiApi
 import kotlinx.coroutines.flow.filter
@@ -372,18 +374,22 @@ internal fun Modifier.glassPointerInput(interaction: GlassInteractionState): Mod
 
 @OptIn(UnstableSaltUiApi::class)
 internal fun Modifier.drawGlassInteraction(
-    interaction: GlassInteractionState
+    interaction: GlassInteractionState,
+    maxTranslation: Dp = Dp.Unspecified
 ): Modifier = drawWithContent {
     val scale = interaction.scale
-    val translation = interaction.translation
+    val offset = interaction.translation
+    val translation = if (maxTranslation.isSpecified) {
+        val limit = maxTranslation.toPx()
+        Offset(offset.x.coerceIn(-limit, limit), offset.y.coerceIn(-limit, limit))
+    } else {
+        offset
+    }
     if (scale == 1f && translation == Offset.Zero) {
         drawContent()
     } else {
         val origin = interaction.transformOrigin(size)
-        val pivot = Offset(
-            x = size.width * origin.pivotFractionX,
-            y = size.height * origin.pivotFractionY
-        )
+        val pivot = Offset(size.width * origin.pivotFractionX, size.height * origin.pivotFractionY)
         withTransform({
             translate(translation.x, translation.y)
             scale(scaleX = scale, scaleY = scale, pivot = pivot)
@@ -396,7 +402,7 @@ internal fun Modifier.drawGlassInteraction(
 @OptIn(UnstableSaltUiApi::class)
 internal fun Modifier.glassInteractionLight(
     interaction: GlassInteractionState,
-    shape: RoundedCornerShape,
+    shape: Shape,
     isDarkTheme: Boolean
 ): Modifier = drawWithCache {
     val outline = shape.createOutline(size, layoutDirection, this)
