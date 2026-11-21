@@ -15,12 +15,12 @@
  * limitations under the License.
  */
 
-@file:Suppress("unused")
+// The compatibility overload keeps its published parameter order.
+@file:Suppress("unused", "ktlint:compose:param-order-check")
 
 package com.moriafly.salt.ui.popup
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -44,6 +44,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.toggleableState
 import androidx.compose.ui.state.ToggleableState
 import androidx.compose.ui.unit.dp
+import com.moriafly.salt.core.os.OS
 import com.moriafly.salt.ui.SaltTheme
 import com.moriafly.salt.ui.Text
 import com.moriafly.salt.ui.UnstableSaltUiApi
@@ -51,6 +52,7 @@ import com.moriafly.salt.ui.UnstableSaltUiApi
 @get:Composable
 internal expect val popupMenuItemPadding: PaddingValues
 
+@Suppress("ktlint:compose:modifier-missing-check")
 @UnstableSaltUiApi
 @Composable
 fun PopupMenuItem(
@@ -62,6 +64,7 @@ fun PopupMenuItem(
     iconPaddingValues: PaddingValues = PaddingValues(0.dp),
     iconColor: Color? = SaltTheme.colors.text
 ) {
+    val desktop = OS.isDesktop()
     Row(
         modifier = Modifier
             .semantics {
@@ -79,19 +82,16 @@ fun PopupMenuItem(
                 minWidth = DropdownMenuItemDefaultMinWidth,
                 maxWidth = DropdownMenuItemDefaultMaxWidth
             )
-            .background(
-                if (selected == true) {
-                    SaltTheme.colors.highlight.copy(alpha = 0.1f)
-                } else {
-                    Color.Unspecified
-                }
-            )
             .clickable {
                 onClick()
             }
             .padding(popupMenuItemPadding),
         verticalAlignment = Alignment.CenterVertically
     ) {
+        if (desktop && selected != null) {
+            MenuSelectionMark(marked = selected, size = 16.dp)
+            Spacer(Modifier.width(8.dp))
+        }
         Column(
             modifier = Modifier
                 .weight(1f)
@@ -99,17 +99,13 @@ fun PopupMenuItem(
         ) {
             Text(
                 text = text,
-                color = if (selected == true) SaltTheme.colors.highlight else SaltTheme.colors.text
+                color = SaltTheme.colors.text
             )
             sub?.let {
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(
                     text = sub,
-                    color = if (selected == true) {
-                        SaltTheme.colors.highlight
-                    } else {
-                        SaltTheme.colors.subText
-                    },
+                    color = SaltTheme.colors.subText,
                     style = SaltTheme.textStyles.sub
                 )
             }
@@ -124,6 +120,10 @@ fun PopupMenuItem(
                 contentDescription = null,
                 colorFilter = iconColor?.let { ColorFilter.tint(iconColor) }
             )
+        }
+        if (!desktop && selected != null) {
+            Spacer(Modifier.width(8.dp))
+            MenuSelectionMark(marked = selected, size = 20.dp)
         }
     }
 }
