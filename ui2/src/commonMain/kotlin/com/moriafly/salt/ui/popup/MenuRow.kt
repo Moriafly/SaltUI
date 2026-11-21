@@ -85,11 +85,11 @@ internal sealed interface MenuSelection {
 internal fun MenuRow(
     enabled: Boolean,
     desktop: Boolean,
+    highlighted: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    highlighted: Boolean = false,
     revealForKeyboard: Boolean = false,
-    useMenuFocus: Boolean = false,
+    useMenuFocus: Boolean = true,
     selection: MenuSelection? = null,
     reserveSelectionSpace: Boolean = false,
     onHover: () -> Unit = {},

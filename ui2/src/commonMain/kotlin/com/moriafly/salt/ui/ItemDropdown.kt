@@ -142,9 +142,7 @@ fun ItemDropdown(
     sub: String? = null,
     content: @Composable ItemDropdownScope.() -> Unit
 ) {
-    val anchor = if (OS.isDesktop()) rememberPopupMenuAnchor() else null
-    val anchorModifier = if (anchor == null) Modifier else Modifier.popupMenuAnchor(anchor)
-
+    val anchor = rememberPopupMenuAnchor()
     Box(
         modifier = modifier
     ) {
@@ -153,13 +151,9 @@ fun ItemDropdown(
                 .fillMaxWidth()
                 .heightIn(SaltTheme.dimens.item)
                 .enabledAlpha(enabled)
-                .then(anchorModifier)
+                .popupMenuAnchor(anchor)
                 .clickable(enabled = enabled) {
-                    if (anchor == null) {
-                        state.expend()
-                    } else {
-                        anchor.open(state::expend)
-                    }
+                    anchor.open(state::expend)
                 }
                 .innerPadding(vertical = false),
             verticalAlignment = Alignment.CenterVertically
@@ -214,12 +208,14 @@ fun ItemDropdown(
         PopupMenuPanel(
             expanded = state.expend,
             onDismissRequest = state::dismiss,
-            offset = if (anchor == null) DpOffset(16.dp, 0.dp) else DpOffset.Zero,
+            modifier = Modifier,
+            offset = if (OS.isDesktop()) DpOffset.Zero else DpOffset(16.dp, 0.dp),
             properties = PopupProperties(focusable = true),
             style = style,
             anchor = anchor,
             popupPositionProvider = null,
-            scrollable = true
+            scrollable = true,
+            dropdownSlideSelection = true
         ) {
             val scope = ItemDropdownScopeImpl(state, this)
             scope.content()

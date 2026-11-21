@@ -35,6 +35,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
@@ -52,6 +53,7 @@ import androidx.compose.ui.graphics.addOutline
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalGraphicsContext
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -98,6 +100,8 @@ internal fun PopupMenuPanel(
     scrollable: Boolean,
     modifier: Modifier = Modifier,
     useIntrinsicWidth: Boolean = true,
+    dropdownSlideSelection: Boolean = false,
+    isSlideSelecting: (() -> Boolean)? = null,
     visible: MutableTransitionState<Boolean> = remember { MutableTransitionState(false) },
     content: @Composable ColumnScope.() -> Unit
 ) {
@@ -184,6 +188,8 @@ internal fun PopupMenuPanel(
                 style = style,
                 scrollable = scrollable,
                 useIntrinsicWidth = useIntrinsicWidth,
+                dropdownSlideSelection = dropdownSlideSelection,
+                isSlideSelecting = isSlideSelecting,
                 onDismissOutside = onDismissRequest.takeIf {
                     expanded && properties.dismissOnClickOutside
                 },
@@ -203,6 +209,8 @@ private fun MenuSurface(
     style: PopupMenuStyle,
     scrollable: Boolean,
     useIntrinsicWidth: Boolean,
+    dropdownSlideSelection: Boolean,
+    isSlideSelecting: (() -> Boolean)?,
     onDismissOutside: (() -> Unit)?,
     modifier: Modifier = Modifier,
     content: @Composable ColumnScope.() -> Unit
@@ -249,6 +257,17 @@ private fun MenuSurface(
     val scrollState = rememberScrollState()
     val direction = LocalLayoutDirection.current
     val currentDismiss by rememberUpdatedState(onDismissOutside)
+    val dropdownDrag = if (dropdownSlideSelection && !desktop) {
+        remember { MenuDragSelection<DropdownMenuItem>() }
+    } else {
+        null
+    }
+    val currentSlideSelecting by rememberUpdatedState(isSlideSelecting)
+    val followsConsumedMovement = remember(dropdownDrag) {
+        {
+            dropdownDrag?.isSlideSelecting == true || currentSlideSelecting?.invoke() == true
+        }
+    }
     Box(
         modifier = modifier
             .widthIn(max = if (windowSize.width > 0.dp) maxWidth else Dp.Unspecified)
@@ -272,7 +291,7 @@ private fun MenuSurface(
                 }
             }
             .thenIf(visible.targetState && glassInteraction != null) {
-                glassPointerInput(requireNotNull(glassInteraction))
+                glassPointerInput(requireNotNull(glassInteraction), followsConsumedMovement)
             }
             .thenIf(!visible.targetState) {
                 clearAndSetSemantics { hideFromAccessibility() }
@@ -332,6 +351,19 @@ private fun MenuSurface(
                 )
             }
             val padding = if (desktop) DesktopMenuContentPadding else MobileMenuContentPadding
+            val dragModifier = if (dropdownDrag != null) {
+                Modifier
+                    .onGloballyPositioned { dropdownDrag.coordinates = it }
+                    .menuDragSelection(
+                        selection = dropdownDrag,
+                        enabled = visible.targetState,
+                        canSlide = { scrollState.maxValue == 0 },
+                        entryEnabled = { true },
+                        onActivate = { it.onClick() }
+                    )
+            } else {
+                Modifier
+            }
             Column(
                 modifier = Modifier
                     .padding(padding)
@@ -341,9 +373,13 @@ private fun MenuSurface(
                             enabled =
                                 visible.targetState && scrollState.maxValue > 0
                         )
-                    },
-                content = content
-            )
+                    }
+                    .then(dragModifier)
+            ) {
+                CompositionLocalProvider(LocalDropdownDragSelection provides dropdownDrag) {
+                    content()
+                }
+            }
         }
     }
 }

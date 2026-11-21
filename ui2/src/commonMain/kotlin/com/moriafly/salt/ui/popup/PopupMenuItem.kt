@@ -32,15 +32,28 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.unit.dp
 import com.moriafly.salt.core.os.OS
 import com.moriafly.salt.ui.SaltTheme
 import com.moriafly.salt.ui.Text
 import com.moriafly.salt.ui.UnstableSaltUiApi
+
+internal class DropdownMenuItem(
+    val onClick: () -> Unit
+)
+
+internal val LocalDropdownDragSelection =
+    staticCompositionLocalOf<MenuDragSelection<DropdownMenuItem>?> { null }
 
 /**
  * Displays an action in a [PopupMenu] or [com.moriafly.salt.ui.ItemDropdown].
@@ -124,12 +137,29 @@ private fun DropdownMenuItemRow(
     selection: MenuSelection? = null,
     content: @Composable RowScope.() -> Unit
 ) {
+    val desktop = OS.isDesktop()
+    val drag = LocalDropdownDragSelection.current
+    var dragModifier: Modifier = Modifier
+    var highlighted = false
+    if (drag != null && enabled) {
+        val click by rememberUpdatedState(onClick)
+        val dragItem = remember { DropdownMenuItem { click() } }
+        DisposableEffect(drag, dragItem) {
+            onDispose { drag.rows.remove(dragItem) }
+        }
+        dragModifier = Modifier.onGloballyPositioned { drag.rows[dragItem] = it }
+        highlighted = drag.highlightedItem == dragItem
+    }
     MenuRow(
+        modifier = modifier
+            .sizeIn(minWidth = 180.dp, maxWidth = 340.dp)
+            .then(dragModifier),
         enabled = enabled,
-        desktop = OS.isDesktop(),
-        onClick = onClick,
-        modifier = modifier.sizeIn(minWidth = 180.dp, maxWidth = 340.dp),
+        desktop = desktop,
+        highlighted = highlighted,
+        useMenuFocus = false,
         selection = selection,
+        onClick = onClick,
         content = content
     )
 }

@@ -57,6 +57,7 @@ import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.input.key.type
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.semantics.onClick
@@ -142,6 +143,7 @@ fun PopupActionMenu(
         popupPositionProvider = popupPositionProvider,
         scrollable = false,
         useIntrinsicWidth = desktop,
+        isSlideSelecting = { navigation.isSlideSelecting },
         visible = visible
     ) {
         if (root != null && currentPage != null) {
@@ -249,6 +251,28 @@ private fun MenuPageContent(
     val reserveIconSpace = page.entries.any { entry ->
         entry is MenuEntry.Item && entry.leadingIcon != null
     }
+    val drag = if (desktop) null else remember { MenuDragSelection<Int>() }
+    val dragModifier = if (drag == null) {
+        Modifier
+    } else {
+        Modifier
+            .onGloballyPositioned { drag.coordinates = it }
+            .menuDragSelection(
+                selection = drag,
+                enabled = active,
+                canSlide = { scroll.maxValue == 0 },
+                entryEnabled = { page.entries.getOrNull(it)?.enabled == true },
+                onSlideSelectingChange = { navigation.isSlideSelecting = it },
+                onActivate = { index ->
+                    navigation.activate(
+                        page = page,
+                        index = index,
+                        keyboard = false,
+                        onDismissRequest = onDismissRequest
+                    )
+                }
+            )
+    }
 
     Column(modifier = modifier) {
         val parent = page.parent
@@ -259,8 +283,7 @@ private fun MenuPageContent(
                 enabled = active,
                 desktop = false,
                 highlighted = false,
-                onClick = { navigation.back(page, keepFocus = false) },
-                useMenuFocus = true
+                onClick = { navigation.back(page, keepFocus = false) }
             ) {
                 Icon(
                     imageVector = SaltIcons.ArrowBack,
@@ -288,20 +311,24 @@ private fun MenuPageContent(
         Column(
             modifier = Modifier
                 .verticalScroll(scroll, enabled = active && scroll.maxValue > 0)
+                .then(dragModifier)
         ) {
             page.entries.forEachIndexed { index, entry ->
                 when (entry) {
                     is MenuEntry.Item -> {
                         val keyboardSelected = navigation.cursor == MenuCursor(page.path, index)
-                        val highlighted = keyboardSelected || openIndex == index
+                        val highlighted = keyboardSelected || openIndex == index ||
+                            drag?.highlightedItem == index
+                        val rowModifier = entry.rowModifier.thenIf(drag != null) {
+                            onGloballyPositioned { drag?.rows?.set(index, it) }
+                        }
                         Box {
                             MenuRow(
-                                modifier = entry.rowModifier,
+                                modifier = rowModifier,
                                 enabled = active && entry.enabled,
                                 desktop = desktop,
                                 highlighted = highlighted,
                                 revealForKeyboard = keyboardSelected,
-                                useMenuFocus = true,
                                 selection = (entry as? MenuEntry.Action)?.selection,
                                 reserveSelectionSpace = reserveSelectionSpace,
                                 onHover = { navigation.hover(page, index) },
@@ -435,10 +462,12 @@ private class MenuNavigation {
     var cursor by mutableStateOf<MenuCursor?>(null)
         private set
     var lastPages: List<MenuPage> = emptyList()
+    var isSlideSelecting: Boolean = false
 
     fun reset() {
         path = emptyList()
         cursor = null
+        isSlideSelecting = false
     }
 
     fun activate(page: MenuPage, index: Int, keyboard: Boolean, onDismissRequest: () -> Unit) {

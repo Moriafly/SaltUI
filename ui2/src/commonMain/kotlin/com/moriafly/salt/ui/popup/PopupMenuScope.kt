@@ -23,7 +23,8 @@ import androidx.compose.ui.Modifier
 import com.moriafly.salt.ui.UnstableSaltUiApi
 
 /**
- * Declares the entries shown by [PopupActionMenu] for keyboard and pointer navigation.
+ * Declares the entries shown by [PopupActionMenu]. The menu uses this declaration
+ * for keyboard navigation and touch slide selection.
  */
 @LayoutScopeMarker
 @UnstableSaltUiApi
