@@ -185,13 +185,13 @@ private fun SheetViewport(
             floatingHiddenBase = {
                 maxHeight.toPx() / 2 + viewportInsets.getBottom(this)
             },
+            actions = actions,
             modifier = Modifier
                 .align(if (bottom) Alignment.BottomCenter else Alignment.Center)
                 .width(panelWidth)
                 .consumeWindowInsets(environment.contentInsets.only(WindowInsetsSides.Bottom))
                 .nestedScroll(nestedScroll)
                 .then(modifier),
-            actions = actions,
             content = content
         )
     }

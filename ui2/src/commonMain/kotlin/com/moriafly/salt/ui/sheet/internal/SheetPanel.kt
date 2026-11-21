@@ -70,8 +70,8 @@ internal fun SheetPanel(
     imeInsets: WindowInsets,
     availableHeight: Int,
     floatingHiddenBase: Density.() -> Float,
-    modifier: Modifier,
     actions: @Composable RowScope.() -> Unit,
+    modifier: Modifier = Modifier,
     content: @Composable SheetScope.() -> Unit
 ) {
     val canResize = if (state.ready) {
@@ -89,6 +89,42 @@ internal fun SheetPanel(
         contentColor = SaltTheme.colors.text,
         textStyle = SaltTheme.textStyles.main
     ) {
+        val panelModifier = Modifier
+            .graphicsLayer {
+                alpha = 1f
+                scaleX = 1f
+                scaleY = 1f
+                if (bottom) {
+                    translationY = state.surfaceHeight - state.visibleHeight
+                } else {
+                    translationY = (floatingHiddenBase(this) + size.height / 2) *
+                        (1f - state.presentationProgress)
+                }
+            }
+            .clip(shape = shape)
+            .drawWithContent {
+                drawContent()
+                drawSheetScrim(dimAlpha())
+            }
+            .background(color = SaltTheme.colors.background)
+            .border(
+                width = 0.5.dp,
+                color = SaltTheme.colors.stroke,
+                shape = shape
+            )
+            .semantics {
+                dialog()
+                isTraversalGroup = true
+                paneTitle = title ?: "Sheet"
+            }
+            .sheetHeightActions(
+                state = state,
+                enabled = bottom && visible
+            )
+            // Blank interior space stays in the panel's hit path rather than the scrim's.
+            .pointerInput(Unit) { }
+            .then(modifier)
+
         SheetLayout(
             state = state,
             properties = properties,
@@ -96,41 +132,7 @@ internal fun SheetPanel(
             bottomInsets = bottomInsets,
             imeInsets = imeInsets,
             availableHeight = availableHeight,
-            modifier = Modifier
-                .graphicsLayer {
-                    alpha = 1f
-                    scaleX = 1f
-                    scaleY = 1f
-                    if (bottom) {
-                        translationY = state.surfaceHeight - state.visibleHeight
-                    } else {
-                        translationY = (floatingHiddenBase(this) + size.height / 2) *
-                            (1f - state.presentationProgress)
-                    }
-                }
-                .clip(shape = shape)
-                .drawWithContent {
-                    drawContent()
-                    drawSheetScrim(dimAlpha())
-                }
-                .background(color = SaltTheme.colors.background)
-                .border(
-                    width = 0.5.dp,
-                    color = SaltTheme.colors.stroke,
-                    shape = shape
-                )
-                .semantics {
-                    dialog()
-                    isTraversalGroup = true
-                    paneTitle = title ?: "Sheet"
-                }
-                .sheetHeightActions(
-                    state = state,
-                    enabled = bottom && visible
-                )
-                // Blank interior space stays in the panel's hit path rather than the scrim's.
-                .pointerInput(Unit) { }
-                .then(modifier),
+            modifier = panelModifier,
             header = { compactChrome ->
                 SheetHeader(
                     state = state,
