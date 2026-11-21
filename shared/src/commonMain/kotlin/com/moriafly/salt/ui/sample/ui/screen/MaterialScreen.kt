@@ -2,6 +2,7 @@ package com.moriafly.salt.ui.sample.ui.screen
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.size
@@ -25,11 +26,14 @@ import com.moriafly.salt.ui.sample.ui.screen.basic.BasicScreenColumn
 import com.moriafly.salt.ui.sample.util.AppConfig
 import com.moriafly.salt.ui.screen.BasicScreenStyle
 
+@Suppress("ktlint:compose:modifier-missing-check")
 @OptIn(UnstableSaltUiApi::class, UnstableSaltAdaptiveWindowApi::class)
 @Composable
-fun MaterialScreen() {
+fun MaterialScreen(contentPadding: PaddingValues) {
     BasicScreenColumn(
-        title = "Theme and material"
+        actionButton = null,
+        title = "Theme and material",
+        contentPadding = contentPadding
     ) {
         ItemOuterTitle("Appearance")
         RoundedColumn {

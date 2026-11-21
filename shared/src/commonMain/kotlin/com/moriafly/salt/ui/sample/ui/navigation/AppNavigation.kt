@@ -31,6 +31,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
@@ -52,12 +55,9 @@ import com.moriafly.salt.ui.sample.ui.screen.CollapsingHeaderScreen
 import com.moriafly.salt.ui.sample.ui.screen.ComponentScreen
 import com.moriafly.salt.ui.sample.ui.screen.DialogScreen
 import com.moriafly.salt.ui.sample.ui.screen.GlassScreen
-import com.moriafly.salt.ui.sample.ui.screen.ItemsScreen
 import com.moriafly.salt.ui.sample.ui.screen.LayoutsScreen
 import com.moriafly.salt.ui.sample.ui.screen.LicenseScreen
 import com.moriafly.salt.ui.sample.ui.screen.ListScreen
-import com.moriafly.salt.ui.sample.ui.screen.MainScreen
-import com.moriafly.salt.ui.sample.ui.screen.MaterialScreen
 import com.moriafly.salt.ui.sample.ui.screen.NestedCollapsedScreen
 import com.moriafly.salt.ui.sample.ui.screen.PopupMenuScreen
 import com.moriafly.salt.ui.sample.ui.screen.SheetScreen
@@ -79,10 +79,27 @@ val LocalSaltNavigator = staticCompositionLocalOf<SaltNavigator> {
 @Composable
 fun AppNavigation(
     navigator: SaltNavigator,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    topLevelContent: @Composable () -> Unit
 ) {
+    val backStack = navigator.navBackStack
+    val restoredTopLevelIndex = backStack.indexOfLast { it in navigator.topLevelRoutes }
+    if (restoredTopLevelIndex > 0) {
+        // Older Sample versions stored these tabs above Home.
+        LaunchedEffect(navigator, restoredTopLevelIndex) {
+            backStack.subList(0, restoredTopLevelIndex).clear()
+        }
+        return
+    }
+
+    val currentTopLevelContent by rememberUpdatedState(topLevelContent)
+    // Keep the pager in one entry while the navigator replaces its logical root.
+    val displayBackStack = backStack.mapIndexed { index, route ->
+        if (index == 0) ScreenRoute.Main else route
+    }
+
     NavDisplay(
-        backStack = navigator.navBackStack,
+        backStack = displayBackStack,
         modifier = modifier.clipToBounds(),
         onBack = {
             navigator.back()
@@ -109,20 +126,18 @@ fun AppNavigation(
             )
         },
         entryProvider = entryProvider {
-            entry<ScreenRoute.Main> { MainScreen() }
+            entry<ScreenRoute.Main> { currentTopLevelContent() }
             entry<ScreenRoute.About> { AboutScreen() }
             entry<ScreenRoute.License> { LicenseScreen() }
             entry<ScreenRoute.List> { ListScreen() }
             entry<ScreenRoute.Button> { ButtonScreen() }
             entry<ScreenRoute.Component> { ComponentScreen() }
-            entry<ScreenRoute.Items> { ItemsScreen() }
             entry<ScreenRoute.Layouts> { LayoutsScreen() }
             entry<ScreenRoute.CollapsingHeader> { CollapsingHeaderScreen() }
             entry<ScreenRoute.NestedCollapsed> { NestedCollapsedScreen() }
             entry<ScreenRoute.BottomSheet> { BottomSheetScreen() }
             entry<ScreenRoute.Dialog> { DialogScreen() }
             entry<ScreenRoute.Sheet> { SheetScreen() }
-            entry<ScreenRoute.Material> { MaterialScreen() }
             entry<ScreenRoute.Glass> { GlassScreen() }
             entry<ScreenRoute.PopupMenus> { PopupMenuScreen() }
         }
