@@ -279,6 +279,7 @@ private fun MenuSurface(
     val dark = SaltTheme.configs.isDarkTheme
     val menuRadius = if (desktop) 10.dp else mobileMenuCornerRadius()
     val shape = remember(menuRadius) { SmoothRoundedRectangleShape(menuRadius) }
+    val direction = LocalLayoutDirection.current
     val material = menuMaterial(
         shape = shape,
         cornerRadius = menuRadius,
@@ -288,12 +289,11 @@ private fun MenuSurface(
         dark = dark
     )
     val glassInteraction = if (backdrop != null) rememberGlassInteractionState() else null
+    val currentDismiss by rememberUpdatedState(onDismissOutside)
     val windowSize = LocalWindowInfo.current.containerDpSize
     val maxWidth = (windowSize.width - 24.dp).coerceAtLeast(1.dp)
     val maxHeight = (windowSize.height - 24.dp).coerceAtLeast(1.dp)
     val scrollState = rememberScrollState()
-    val direction = LocalLayoutDirection.current
-    val currentDismiss by rememberUpdatedState(onDismissOutside)
     val dropdownDrag = if (dropdownSlideSelection && !desktop) {
         remember { MenuDragSelection<DropdownMenuItem>() }
     } else {
