@@ -61,9 +61,9 @@ data class SaltDynamicColors(
  * @param highlight highlight color.
  * @param text main text color.
  * @param subText sub text color.
- * @param background main background color.
- * @param subBackground sub background color.
- * @param popup background color for UI elements like [com.moriafly.salt.ui.popup.PopupMenu].
+ * @param background Base surface of a window or page.
+ * @param subBackground Surface for cards and sections within the page.
+ * @param popup Elevated surface for menus and dialogs above the page.
  * @param stroke stroke color.
  * @param onHighlight Text or icon color for elements that are above or behind the highlight.
  * @param success success color.
@@ -149,7 +149,7 @@ class SaltColors(
             subText: Color = Color(0xFF8C8C8C),
             background: Color = LightBackground,
             subBackground: Color = LightSubBackground,
-            popup: Color = subBackground.compositeOver(background),
+            popup: Color = Color.White,
             stroke: Color = subText.copy(alpha = 0.15f),
             onHighlight: Color = Color.White,
             success: Color = SaltPalette.SuccessLightIcon,
@@ -175,7 +175,7 @@ class SaltColors(
             subText: Color = Color(0xBFE1E6EB),
             background: Color = DarkBackground,
             subBackground: Color = DarkSubBackground,
-            popup: Color = subBackground.compositeOver(background),
+            popup: Color = Color(0xFF303030),
             stroke: Color = subText.copy(alpha = 0.1f),
             onHighlight: Color = Color.White,
             success: Color = SaltPalette.SuccessDarkIcon,
