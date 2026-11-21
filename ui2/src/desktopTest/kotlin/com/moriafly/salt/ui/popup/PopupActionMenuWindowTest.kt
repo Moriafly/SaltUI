@@ -94,8 +94,7 @@ class PopupActionMenuWindowTest {
                 SideEffect { window = this.window }
                 SaltTheme {
                     PopupMenuBackdrop(
-                        modifier = Modifier.fillMaxSize(),
-                        revealWindowBackdrop = verifyPointerAnchor
+                        modifier = Modifier.fillMaxSize()
                     ) {
                         Box(Modifier.offset(x = 96.dp, y = 84.dp)) {
                             var expanded by remember { mutableStateOf(false) }

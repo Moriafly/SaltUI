@@ -32,14 +32,19 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.geometry.isFinite
 import androidx.compose.ui.graphics.ClipOp
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Matrix
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathOperation
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.addOutline
 import androidx.compose.ui.graphics.drawscope.ContentDrawScope
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.withSave
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.findRootCoordinates
 import androidx.compose.ui.node.DrawModifierNode
@@ -127,14 +132,22 @@ class GlassSource internal constructor() {
     internal val hazeInput = HazeInput.Sources(hazeState)
     private val surfaces = mutableStateListOf<GlassSurface>()
 
+    @Composable
+    internal fun cutout(
+        shape: Shape,
+        useWindowCoordinates: Boolean = false
+    ): Modifier = SurfaceElement(
+        source = this,
+        shape = shape,
+        density = LocalDensity.current,
+        layoutDirection = LocalLayoutDirection.current,
+        useWindowCoordinates = useWindowCoordinates
+    )
+
     private class GlassSurface(
-        shape: RoundedCornerShape,
-        density: Density,
-        layoutDirection: LayoutDirection
+        properties: SurfaceElement
     ) {
-        var shape by mutableStateOf(shape)
-        var density by mutableStateOf(density)
-        var layoutDirection by mutableStateOf(layoutDirection)
+        var properties by mutableStateOf(properties)
         var bounds by mutableStateOf<SurfaceBounds?>(null)
     }
 
@@ -190,7 +203,7 @@ class GlassSource internal constructor() {
         private val transform = Matrix()
         private val shapePath = Path()
         private val visiblePath = Path()
-        private val cutoutPath = Path()
+        private val clippedPath = Path()
 
         override fun onPlaced(coordinates: LayoutCoordinates) {
             this.coordinates = coordinates
@@ -221,72 +234,109 @@ class GlassSource internal constructor() {
 
             val root = sourceCoordinates.findRootCoordinates()
             val canvas = drawContext.canvas
-            canvas.save()
-            try {
-                source.surfaces.forEach { surface ->
-                    val bounds = surface.bounds ?: return@forEach
-                    if (bounds.root !== root || !bounds.coordinates.isAttached ||
-                        bounds.size.width <= 0 || bounds.size.height <= 0
-                    ) {
-                        return@forEach
-                    }
-
-                    val visibleBounds = sourceCoordinates.localBoundingBoxOf(
-                        sourceCoordinates = bounds.coordinates,
-                        clipBounds = true
-                    )
-                    if (visibleBounds.isEmpty) {
-                        return@forEach
-                    }
-
-                    val width = bounds.size.width.toFloat()
-                    val height = bounds.size.height.toFloat()
-                    val rootWidth = bounds.widthInRoot
-                    val rootHeight = bounds.heightInRoot
-                    if (!rootWidth.isFinite() || !rootHeight.isFinite() ||
-                        rootWidth <= CutoutEdgeOverlapPx * 2f ||
-                        rootHeight <= CutoutEdgeOverlapPx * 2f
-                    ) {
-                        return@forEach
-                    }
-                    val insetX = CutoutEdgeOverlapPx * width / rootWidth
-                    val insetY = CutoutEdgeOverlapPx * height / rootHeight
-
-                    transform.reset()
-                    sourceCoordinates.transformFrom(bounds.coordinates, transform)
-                    transform.translate(insetX, insetY)
-                    transform.scale(
-                        x = (width - insetX * 2f) / width,
-                        y = (height - insetY * 2f) / height
-                    )
-                    shapePath.reset()
-                    shapePath.addOutline(
-                        surface.shape.createOutline(
-                            size = bounds.size.toSize(),
-                            layoutDirection = surface.layoutDirection,
-                            density = surface.density
-                        )
-                    )
-                    shapePath.transform(transform)
-                    val shapeBounds = shapePath.getBounds()
-                    if (shapeBounds.left >= visibleBounds.left &&
-                        shapeBounds.top >= visibleBounds.top &&
-                        shapeBounds.right <= visibleBounds.right &&
-                        shapeBounds.bottom <= visibleBounds.bottom
-                    ) {
-                        canvas.clipPath(shapePath, ClipOp.Difference)
-                    } else {
-                        visiblePath.reset()
-                        visiblePath.addRect(visibleBounds)
-                        cutoutPath.reset()
-                        cutoutPath.op(shapePath, visiblePath, PathOperation.Intersect)
-                        canvas.clipPath(cutoutPath, ClipOp.Difference)
-                    }
+            canvas.withSave {
+                for (surface in source.surfaces) {
+                    val cutout = cutoutPath(
+                        surface = surface,
+                        sourceCoordinates = sourceCoordinates,
+                        sourceRoot = root,
+                        sourceSize = size
+                    ) ?: continue
+                    canvas.clipPath(cutout, ClipOp.Difference)
                 }
                 drawContent()
-            } finally {
-                canvas.restore()
             }
+        }
+
+        private fun cutoutPath(
+            surface: GlassSurface,
+            sourceCoordinates: LayoutCoordinates,
+            sourceRoot: LayoutCoordinates,
+            sourceSize: Size
+        ): Path? {
+            val bounds = surface.bounds ?: return null
+            val surfaceCoordinates = bounds.coordinates
+            val surfaceSize = bounds.size
+            if (!surfaceCoordinates.isAttached || surfaceSize.width <= 0 ||
+                surfaceSize.height <= 0
+            ) {
+                return null
+            }
+
+            val properties = surface.properties
+            val sameRoot = bounds.root === sourceRoot
+            val visibleBounds = when {
+                sameRoot -> sourceCoordinates.localBoundingBoxOf(
+                    sourceCoordinates = surfaceCoordinates,
+                    clipBounds = true
+                )
+                properties.useWindowCoordinates -> Rect(Offset.Zero, sourceSize)
+                else -> return null
+            }
+            if (visibleBounds.isEmpty) {
+                return null
+            }
+
+            val rootWidth = bounds.widthInRoot
+            val rootHeight = bounds.heightInRoot
+            if (!rootWidth.isFinite() || !rootHeight.isFinite() ||
+                rootWidth <= CutoutEdgeOverlapPx * 2f || rootHeight <= CutoutEdgeOverlapPx * 2f
+            ) {
+                return null
+            }
+            val insetX = CutoutEdgeOverlapPx / rootWidth
+            val insetY = CutoutEdgeOverlapPx / rootHeight
+
+            transform.reset()
+            if (sameRoot) {
+                sourceCoordinates.transformFrom(surfaceCoordinates, transform)
+            } else if (!sourceCoordinates.transformFromWindow(surfaceCoordinates)) {
+                return null
+            }
+            transform.translate(insetX * surfaceSize.width, insetY * surfaceSize.height)
+            transform.scale(x = 1f - 2f * insetX, y = 1f - 2f * insetY)
+
+            val outline = properties.shape.createOutline(
+                size = surfaceSize.toSize(),
+                layoutDirection = properties.layoutDirection,
+                density = properties.density
+            )
+            shapePath.reset()
+            shapePath.addOutline(outline)
+            shapePath.transform(transform)
+
+            val shapeBounds = shapePath.getBounds()
+            if (shapeBounds.left >= visibleBounds.left &&
+                shapeBounds.top >= visibleBounds.top &&
+                shapeBounds.right <= visibleBounds.right &&
+                shapeBounds.bottom <= visibleBounds.bottom
+            ) {
+                return shapePath
+            }
+
+            visiblePath.reset()
+            visiblePath.addRect(visibleBounds)
+            clippedPath.reset()
+            clippedPath.op(shapePath, visiblePath, PathOperation.Intersect)
+            return clippedPath
+        }
+
+        // Same-canvas popups have their own layout roots but use the same window coordinates.
+        private fun LayoutCoordinates.transformFromWindow(coordinates: LayoutCoordinates): Boolean {
+            val origin = windowToLocal(coordinates.localToWindow(Offset.Zero))
+            val horizontal = windowToLocal(coordinates.localToWindow(Offset(1f, 0f))) - origin
+            val vertical = windowToLocal(coordinates.localToWindow(Offset(0f, 1f))) - origin
+            if (!origin.isFinite || !horizontal.isFinite || !vertical.isFinite) {
+                return false
+            }
+
+            transform[0, 0] = horizontal.x
+            transform[0, 1] = horizontal.y
+            transform[1, 0] = vertical.x
+            transform[1, 1] = vertical.y
+            transform[3, 0] = origin.x
+            transform[3, 1] = origin.y
+            return true
         }
 
         private companion object {
@@ -296,16 +346,17 @@ class GlassSource internal constructor() {
         }
     }
 
-    internal data class SurfaceElement(
+    private data class SurfaceElement(
         val source: GlassSource,
-        val shape: RoundedCornerShape,
+        val shape: Shape,
         val density: Density,
-        val layoutDirection: LayoutDirection
+        val layoutDirection: LayoutDirection,
+        val useWindowCoordinates: Boolean = false
     ) : ModifierNodeElement<SurfaceNode>() {
-        override fun create() = SurfaceNode(source, shape, density, layoutDirection)
+        override fun create() = SurfaceNode(this)
 
         override fun update(node: SurfaceNode) {
-            node.update(source, shape, density, layoutDirection)
+            node.update(this)
         }
 
         override fun InspectorInfo.inspectableProperties() {
@@ -313,19 +364,16 @@ class GlassSource internal constructor() {
         }
     }
 
-    internal class SurfaceNode(
-        private var source: GlassSource,
-        shape: RoundedCornerShape,
-        density: Density,
-        layoutDirection: LayoutDirection
+    private class SurfaceNode(
+        properties: SurfaceElement
     ) : Modifier.Node(),
         LayoutAwareModifierNode,
         GlobalPositionAwareModifierNode,
         UnplacedAwareModifierNode {
-        private val surface = GlassSurface(shape, density, layoutDirection)
+        private val surface = GlassSurface(properties)
 
         override fun onAttach() {
-            source.surfaces.add(surface)
+            surface.properties.source.surfaces.add(surface)
         }
 
         override fun onPlaced(coordinates: LayoutCoordinates) {
@@ -342,25 +390,16 @@ class GlassSource internal constructor() {
 
         override fun onDetach() {
             surface.bounds = null
-            source.surfaces.remove(surface)
+            surface.properties.source.surfaces.remove(surface)
         }
 
-        fun update(
-            source: GlassSource,
-            shape: RoundedCornerShape,
-            density: Density,
-            layoutDirection: LayoutDirection
-        ) {
-            if (this.source !== source) {
-                if (isAttached) {
-                    this.source.surfaces.remove(surface)
-                    source.surfaces.add(surface)
-                }
-                this.source = source
+        fun update(properties: SurfaceElement) {
+            val previousSource = surface.properties.source
+            if (isAttached && previousSource !== properties.source) {
+                previousSource.surfaces.remove(surface)
+                properties.source.surfaces.add(surface)
             }
-            surface.shape = shape
-            surface.density = density
-            surface.layoutDirection = layoutDirection
+            surface.properties = properties
         }
     }
 }
@@ -445,14 +484,7 @@ fun Modifier.glass(
                     } else {
                         val style = remember(isDarkTheme) { GlassStyles.blur(isDarkTheme) }
                         Modifier
-                            .then(
-                                GlassSource.SurfaceElement(
-                                    source = source,
-                                    shape = shape,
-                                    density = LocalDensity.current,
-                                    layoutDirection = LocalLayoutDirection.current
-                                )
-                            )
+                            .then(source.cutout(shape))
                             .clip(shape)
                             .hazeBlur(input = source.hazeInput, style = style)
                     }
@@ -524,14 +556,7 @@ private fun Modifier.refractiveGlass(
         os.versionSdk < OS.Android.ANDROID_13
     return this
         .thenIf(!keepSourceVisible) {
-            then(
-                GlassSource.SurfaceElement(
-                    source = source,
-                    shape = shape,
-                    density = LocalDensity.current,
-                    layoutDirection = LocalLayoutDirection.current
-                )
-            )
+            then(source.cutout(shape))
         }
         // Inherit Haze's performance mode; full resolution can cost more to render.
         .hazeGlass(input = source.hazeInput, style = glassStyle)

@@ -26,35 +26,29 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.drawWithCache
-import androidx.compose.ui.graphics.BlendMode
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
-import androidx.compose.ui.graphics.drawOutline
+import androidx.compose.ui.platform.LocalWindowInfo
+import androidx.compose.ui.platform.WindowInfo
 import com.moriafly.salt.ui.UnstableSaltUiApi
-import dev.chrisbanes.haze.HazeInput
-import dev.chrisbanes.haze.HazeState
+import com.moriafly.salt.ui.material.GlassSource
+import com.moriafly.salt.ui.material.glassSource
 import dev.chrisbanes.haze.hazeSource
 
 /**
  * Captures the content behind descendant menus for the SaltUI glass effect.
- * Wrap the window or the part of the page that menus should sample.
- *
- * Set [revealWindowBackdrop] when the desktop host has a native material such as Acrylic or
- * Vibrancy. Menus in the host canvas reveal that material. Separate popup windows use the
- * regular glass fill when capture is available.
+ * Include the Compose background fills that should be sampled in [content]. The menu blends
+ * the captured colors and their alpha with its own translucent fill. Backgrounds outside
+ * this capture can show through the resulting translucent pixels.
  */
 @UnstableSaltUiApi
 @Composable
 fun PopupMenuBackdrop(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
-    revealWindowBackdrop: Boolean = false,
     content: @Composable BoxScope.() -> Unit
 ) {
     ProvidePopupBackdrop(
-        enabled = enabled,
-        revealWindowBackdrop = revealWindowBackdrop
+        enabled = enabled
     ) { backdropSource ->
         Box(
             modifier = modifier.then(backdropSource),
@@ -66,39 +60,45 @@ fun PopupMenuBackdrop(
 @Composable
 internal fun ProvidePopupBackdrop(
     enabled: Boolean = true,
-    revealWindowBackdrop: Boolean = false,
     content: @Composable (backdropSource: Modifier) -> Unit
 ) {
-    val hazeState = remember { HazeState() }
-    val backdrop = remember(hazeState, enabled, revealWindowBackdrop) {
-        if (enabled) {
-            PopupBackdrop(
-                input = HazeInput.Sources(hazeState),
-                revealWindowBackdrop = revealWindowBackdrop
+    val backdrop = if (enabled) {
+        val windowInfo = LocalWindowInfo.current
+        remember(windowInfo) { PopupBackdrop(windowInfo) }
+    } else {
+        null
+    }
+    CompositionLocalProvider(LocalPopupBackdrop provides backdrop) {
+        content(backdrop?.sourceModifier ?: Modifier)
+    }
+}
+
+@OptIn(UnstableSaltUiApi::class)
+internal class PopupBackdrop(
+    private val windowInfo: WindowInfo
+) {
+    private val source = GlassSource()
+    private val sharesHostCanvas = popupSharesHostCanvas
+
+    val input = source.hazeInput
+    val sourceModifier = if (sharesHostCanvas) {
+        Modifier.glassSource(source)
+    } else {
+        Modifier.hazeSource(source.hazeState)
+    }
+
+    @Composable
+    fun cutout(shape: Shape): Modifier =
+        if (sharesHostCanvas && LocalWindowInfo.current === windowInfo) {
+            source.cutout(
+                shape = shape,
+                useWindowCoordinates = true
             )
         } else {
-            null
+            Modifier
         }
-    }
-    val backdropSource = if (backdrop != null) Modifier.hazeSource(hazeState) else Modifier
-    CompositionLocalProvider(LocalPopupBackdrop provides backdrop) {
-        content(backdropSource)
-    }
 }
-
-internal class PopupBackdrop(
-    val input: HazeInput.Sources,
-    val revealWindowBackdrop: Boolean
-)
 
 internal val LocalPopupBackdrop = staticCompositionLocalOf<PopupBackdrop?> { null }
-
-// Clear Compose's background before drawing the translucent menu over native material.
-internal fun Modifier.revealPopupWindowBackdrop(shape: Shape): Modifier = drawWithCache {
-    val outline = shape.createOutline(size, layoutDirection, this)
-    onDrawBehind {
-        drawOutline(outline, Color.Black, blendMode = BlendMode.DstOut)
-    }
-}
 
 internal expect val popupSharesHostCanvas: Boolean

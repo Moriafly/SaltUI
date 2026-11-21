@@ -33,6 +33,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
@@ -66,9 +67,6 @@ import com.moriafly.salt.ui.sample.ui.screen.SheetScreen
 private const val NAVIGATION_TRANSITION_DURATION_MILLIS = 500
 private val NavigationTransitionEasing = CubicBezierEasing(0.2833f, 0.99f, 0.31833f, 0.99f)
 private val NavigationDimmingColor = Color.Black.copy(alpha = 0.1f)
-private val NavigationSceneDecorators = listOf(
-    SceneDecoratorStrategy<NavKey> { scene -> NavigationPageScene(scene) }
-)
 
 @OptIn(UnstableSaltUiApi::class)
 val LocalSaltNavigator = staticCompositionLocalOf<SaltNavigator> {
@@ -77,8 +75,9 @@ val LocalSaltNavigator = staticCompositionLocalOf<SaltNavigator> {
 
 @OptIn(UnstableSaltUiApi::class)
 @Composable
-fun AppNavigation(
+internal fun AppNavigation(
     navigator: SaltNavigator,
+    transparentTopLevelBackground: Boolean,
     modifier: Modifier = Modifier,
     topLevelContent: @Composable () -> Unit
 ) {
@@ -97,6 +96,17 @@ fun AppNavigation(
     val displayBackStack = backStack.mapIndexed { index, route ->
         if (index == 0) ScreenRoute.Main else route
     }
+    val sceneDecorators = remember(transparentTopLevelBackground) {
+        listOf(
+            SceneDecoratorStrategy<NavKey> { scene ->
+                val isTopLevel = scene.previousEntries.isEmpty()
+                NavigationPageScene(
+                    source = scene,
+                    transparentBackground = transparentTopLevelBackground && isTopLevel
+                )
+            }
+        )
+    }
 
     NavDisplay(
         backStack = displayBackStack,
@@ -104,7 +114,7 @@ fun AppNavigation(
         onBack = {
             navigator.back()
         },
-        sceneDecoratorStrategies = NavigationSceneDecorators,
+        sceneDecoratorStrategies = sceneDecorators,
         transitionSpec = {
             pushTransition()
         },
@@ -145,15 +155,21 @@ fun AppNavigation(
 }
 
 private data class NavigationPageScene(
-    private val source: Scene<NavKey>
+    private val source: Scene<NavKey>,
+    private val transparentBackground: Boolean
 ) : Scene<NavKey> by source {
     override val key: Any = source::class to source.key
 
     override val content: @Composable () -> Unit = {
+        val backgroundColor = if (transparentBackground) {
+            Color.Transparent
+        } else {
+            SaltTheme.colors.background
+        }
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(SaltTheme.colors.background)
+                .background(backgroundColor)
         ) {
             source.content()
         }

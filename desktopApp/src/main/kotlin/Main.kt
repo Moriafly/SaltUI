@@ -33,6 +33,7 @@ import com.moriafly.salt.ui.sample.ui.MainContent
 import com.moriafly.salt.ui.sample.ui.component.ComposeIcon
 import com.moriafly.salt.ui.sample.ui.theme.AppTheme
 import com.moriafly.salt.ui.sample.util.AppConfig
+import com.moriafly.salt.ui.sample.util.AppConfig.WindowBackground
 import com.moriafly.salt.ui.window.CaptionBarHitTest
 import com.moriafly.salt.ui.window.DesktopCaptionBar
 import com.moriafly.salt.ui.window.LocalSaltWindowInfo
@@ -41,49 +42,63 @@ import com.moriafly.salt.ui.window.SaltWindowBackgroundType
 import com.moriafly.salt.ui.window.SaltWindowProperties
 
 @OptIn(ExperimentalComposeUiApi::class, UnstableSaltUiApi::class)
-fun main() = application {
-    AppTheme {
-        val backgroundType = when {
-            SaltWindowBackgroundType.Vibrancy.isSupported() -> SaltWindowBackgroundType.Vibrancy
-            SaltWindowBackgroundType.Acrylic.isSupported() -> SaltWindowBackgroundType.Acrylic
-            SaltWindowBackgroundType.Mica.isSupported() -> SaltWindowBackgroundType.Mica
-            else -> SaltWindowBackgroundType.None
-        }
-        SaltWindow(
-            onCloseRequest = ::exitApplication,
-            state = rememberWindowState(
-                size = DpSize(960.dp, 720.dp),
-                position = WindowPosition.Aligned(Alignment.Center)
-            ),
-            title = "SaltUI",
-            resizable = true,
-            properties = SaltWindowProperties.default(
-                captionButtonIsDarkTheme = AppConfig.isDarkTheme,
-                backgroundType = backgroundType,
-                backgroundIsDarkTheme = AppConfig.isDarkTheme
-            )
-        ) {
-            MainContent(
-                windowCaptionBarHeight = LocalSaltWindowInfo.current.captionBarHeight,
-                revealWindowBackdrop = backgroundType != SaltWindowBackgroundType.None
-            )
+fun main() {
+    AppConfig.supportedWindowBackgrounds = windowBackgroundTypes
+        .filterValues { it.isSupported() }
+        .keys
+        .toList()
 
-            DesktopCaptionBar {
-                Row(
-                    modifier = Modifier
-                        .fillMaxSize(),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Spacer(Modifier.width(12.dp))
-                    ComposeIcon()
-                    Spacer(Modifier.width(8.dp))
-                    Text(
-                        text = "SaltUI"
-                    )
+    application {
+        AppTheme {
+            val backgroundType = windowBackgroundTypes.getValue(AppConfig.windowBackground)
+            SaltWindow(
+                onCloseRequest = ::exitApplication,
+                state = rememberWindowState(
+                    size = DpSize(960.dp, 720.dp),
+                    position = WindowPosition.Aligned(Alignment.Center)
+                ),
+                title = "SaltUI",
+                resizable = true,
+                properties = SaltWindowProperties.default(
+                    captionButtonIsDarkTheme = AppConfig.isDarkTheme,
+                    backgroundType = backgroundType,
+                    backgroundIsDarkTheme = AppConfig.isDarkTheme
+                )
+            ) {
+                MainContent(
+                    windowCaptionBarHeight = LocalSaltWindowInfo.current.captionBarHeight,
+                    transparentTopLevelBackground = backgroundType != SaltWindowBackgroundType.None
+                )
+
+                DesktopCaptionBar {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxSize(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Spacer(Modifier.width(12.dp))
+                        ComposeIcon()
+                        Spacer(Modifier.width(8.dp))
+                        Text(
+                            text = "SaltUI"
+                        )
+                    }
                 }
-            }
 
-            CaptionBarHitTest()
+                CaptionBarHitTest()
+            }
         }
     }
 }
+
+@OptIn(UnstableSaltUiApi::class)
+private val windowBackgroundTypes = mapOf(
+    WindowBackground.Default to if (SaltWindowBackgroundType.Vibrancy.isSupported()) {
+        SaltWindowBackgroundType.Vibrancy
+    } else {
+        SaltWindowBackgroundType.None
+    },
+    WindowBackground.Acrylic to SaltWindowBackgroundType.Acrylic,
+    WindowBackground.Mica to SaltWindowBackgroundType.Mica,
+    WindowBackground.MicaAlt to SaltWindowBackgroundType.MicaAlt
+)

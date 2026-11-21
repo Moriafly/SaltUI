@@ -132,7 +132,7 @@ private val navigatorConfig = SavedStateConfiguration {
 @Composable
 fun MainContent(
     windowCaptionBarHeight: Dp = 0.dp,
-    revealWindowBackdrop: Boolean = false
+    transparentTopLevelBackground: Boolean = false
 ) {
     val navigator = rememberSaltNavigator(
         configuration = navigatorConfig,
@@ -143,19 +143,19 @@ fun MainContent(
     CompositionLocalProvider(
         LocalSaltNavigator provides navigator
     ) {
-        Layer(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(top = windowCaptionBarHeight)
-                .testTag("mainContentLayer"),
-            decorationEnabled = OS.isDesktop()
+        PopupMenuBackdrop(
+            modifier = Modifier.fillMaxSize()
         ) {
-            PopupMenuBackdrop(
-                modifier = Modifier.fillMaxSize(),
-                revealWindowBackdrop = revealWindowBackdrop
+            Layer(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(top = windowCaptionBarHeight)
+                    .testTag("mainContentLayer"),
+                decorationEnabled = OS.isDesktop()
             ) {
                 AppNavigation(
                     navigator = navigator,
+                    transparentTopLevelBackground = transparentTopLevelBackground,
                     modifier = Modifier.fillMaxSize()
                 ) {
                     TopLevelNavigation(navigator)

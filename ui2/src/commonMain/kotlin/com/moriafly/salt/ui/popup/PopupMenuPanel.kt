@@ -320,18 +320,9 @@ private fun MenuSurface(
     } else {
         LocalPopupBackdrop.current
     }
-    val reveal = backdrop?.revealWindowBackdrop == true && popupSharesHostCanvas
     val dark = SaltTheme.configs.isDarkTheme
     val menuRadius = if (desktop) 10.dp else mobileMenuCornerRadius()
     val shape = remember(menuRadius) { SmoothRoundedRectangleShape(menuRadius) }
-    val material = menuMaterial(
-        shape = shape,
-        cornerRadius = menuRadius,
-        style = style,
-        backdrop = backdrop,
-        revealWindowBackdrop = reveal,
-        dark = dark
-    )
     val glassInteraction = if (backdrop != null) rememberGlassInteractionState() else null
     val dropdownDrag = if (dropdownSlideSelection && !desktop) {
         remember { MenuDragSelection<DropdownMenuItem>() }
@@ -341,7 +332,6 @@ private fun MenuSurface(
     Box(
         modifier = modifier
             .menuSurfaceSize(useIntrinsicWidth)
-            .thenIf(reveal) { revealPopupWindowBackdrop(shape) }
             .menuSurfaceInput(
                 expanded = visible.targetState,
                 shape = shape,
@@ -363,7 +353,16 @@ private fun MenuSurface(
             ),
             propagateMinConstraints = true
         ) {
-            Box(Modifier.matchParentSize().graphicsLayer().then(material))
+            Box(
+                modifier = Modifier
+                    .matchParentSize()
+                    .menuMaterial(
+                        shape = shape,
+                        style = style,
+                        backdrop = backdrop,
+                        isDarkTheme = dark
+                    )
+            )
             if (glassInteraction != null) {
                 Box(
                     Modifier

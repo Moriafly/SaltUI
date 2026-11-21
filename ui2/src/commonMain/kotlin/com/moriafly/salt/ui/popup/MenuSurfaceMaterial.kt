@@ -30,14 +30,17 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.addOutline
 import androidx.compose.ui.graphics.drawscope.clipPath
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.isSpecified
 import androidx.compose.ui.graphics.shadow.Shadow
 import androidx.compose.ui.graphics.shadow.ShadowContext
+import androidx.compose.ui.graphics.takeOrElse
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import com.moriafly.salt.core.os.OS
 import com.moriafly.salt.ui.UnstableSaltUiApi
+import com.moriafly.salt.ui.internal.SmoothRoundedRectangleShape
 import com.moriafly.salt.ui.material.GlassStyles
 import com.moriafly.salt.ui.thenIf
 import dev.chrisbanes.haze.HazeInput
@@ -77,29 +80,40 @@ internal fun Modifier.menuShadow(
 
 @OptIn(UnstableSaltUiApi::class)
 @Composable
-internal fun menuMaterial(
-    shape: Shape,
-    cornerRadius: Dp,
+internal fun Modifier.menuMaterial(
+    shape: SmoothRoundedRectangleShape,
     style: PopupMenuStyle,
     backdrop: PopupBackdrop?,
-    revealWindowBackdrop: Boolean,
-    dark: Boolean
+    isDarkTheme: Boolean
 ): Modifier {
+    val surface = menuEdge(shape = shape, color = style.borderColor)
     val material = style.material.withAndroidFallback()
     if (backdrop == null || material == PopupMenuMaterial.Solid) {
-        return Modifier
-            .thenIf(style.containerColor.isSpecified) { background(style.containerColor) }
-            .menuEdge(shape = shape, color = style.borderColor)
+        return surface.thenIf(style.containerColor.isSpecified) { background(style.containerColor) }
     }
-    return menuSampledMaterial(
-        shape = shape,
-        cornerRadius = cornerRadius,
-        style = style,
-        input = backdrop.input,
-        revealWindowBackdrop = revealWindowBackdrop,
-        blur = material == PopupMenuMaterial.Blur,
-        dark = dark
-    )
+
+    val backdropColor = style.backdropColor.takeOrElse { Color.Transparent }
+    val tintColor = style.tintColor.takeOrElse { Color.Transparent }
+    val sampledSurface = surface
+        .graphicsLayer()
+        .then(backdrop.cutout(shape))
+        .thenIf(backdropColor.alpha == 1f) { background(backdropColor) }
+
+    return if (material == PopupMenuMaterial.Blur) {
+        sampledSurface.menuBlur(
+            input = backdrop.input,
+            backdropColor = backdropColor,
+            tintColor = tintColor
+        )
+    } else {
+        sampledSurface.menuGlass(
+            input = backdrop.input,
+            backdropColor = backdropColor,
+            tintColor = tintColor,
+            cornerRadius = shape.radius,
+            isDarkTheme = isDarkTheme
+        )
+    }
 }
 
 @OptIn(UnstableSaltUiApi::class)
@@ -117,67 +131,20 @@ private fun Modifier.menuEdge(shape: Shape, color: Color): Modifier = thenIf(col
     border(Dp.Hairline, color, shape)
 }
 
-@OptIn(UnstableSaltUiApi::class)
-@Composable
-private fun menuSampledMaterial(
-    shape: Shape,
-    cornerRadius: Dp,
-    style: PopupMenuStyle,
-    input: HazeInput.Sources,
-    revealWindowBackdrop: Boolean,
-    blur: Boolean,
-    dark: Boolean
-): Modifier {
-    val baseFill = if (revealWindowBackdrop) {
-        style.windowBackdropColor
-    } else {
-        style.containerColor
-    }
-    val base = Modifier
-        .thenIf(baseFill.isSpecified && (revealWindowBackdrop || baseFill.alpha == 1f)) {
-            background(baseFill)
-        }
-        .menuEdge(shape = shape, color = style.borderColor)
-    val effectBackground = if (revealWindowBackdrop || !style.containerColor.isSpecified) {
-        Color.Transparent
-    } else {
-        style.containerColor
-    }
-    val effectOpacity = if (revealWindowBackdrop) style.windowBackdropOpacity else 1f
-    return if (blur) {
-        base.menuBlur(
-            input = input,
-            background = effectBackground,
-            opacity = effectOpacity,
-            tintColor = style.tintColor
-        )
-    } else {
-        base.menuGlass(
-            input = input,
-            background = effectBackground,
-            opacity = effectOpacity,
-            tintColor = style.tintColor,
-            cornerRadius = cornerRadius,
-            dark = dark
-        )
-    }
-}
-
 @Composable
 private fun Modifier.menuBlur(
     input: HazeInput.Sources,
-    background: Color,
-    opacity: Float,
+    backdropColor: Color,
     tintColor: Color
 ): Modifier {
-    val style = remember(background, opacity, tintColor) {
+    val style = remember(backdropColor, tintColor) {
         HazeBlurStyle {
-            backgroundColor(background)
+            backgroundColor(backdropColor)
             colorEffects(listOf(HazeColorEffect.tint(tintColor)))
-            fallbackColorEffect(HazeColorEffect.tint(background))
+            fallbackColorEffect(HazeColorEffect.tint(backdropColor))
             blurRadius(12.dp)
             noiseFactor(0f)
-            alpha(opacity)
+            alpha(1f)
         }
     }
     return hazeBlur(input = input, style = style)
@@ -187,23 +154,22 @@ private fun Modifier.menuBlur(
 @Composable
 private fun Modifier.menuGlass(
     input: HazeInput.Sources,
-    background: Color,
-    opacity: Float,
+    backdropColor: Color,
     tintColor: Color,
     cornerRadius: Dp,
-    dark: Boolean
+    isDarkTheme: Boolean
 ): Modifier {
-    val style = remember(cornerRadius, dark, background, opacity, tintColor) {
-        GlassStyles.regular(dark).then {
+    val style = remember(cornerRadius, isDarkTheme, backdropColor, tintColor) {
+        GlassStyles.regular(isDarkTheme).then {
             // The optical mask is round-rect; the popup still clips to its smooth outline.
             shape(RoundedCornerShape(cornerRadius))
             tint(tintColor)
-            if (dark) {
+            if (isDarkTheme) {
                 // Preserve the theme's elevated color when sampling a dark page.
                 whitePoint(0f)
             }
-            backgroundColor(background)
-            alpha(opacity)
+            backgroundColor(backdropColor)
+            alpha(1f)
         }
     }
     return hazeGlass(input = input, style = style)

@@ -27,4 +27,15 @@ import com.moriafly.salt.ui.screen.BasicScreenStyle
 object AppConfig {
     var isDarkTheme by mutableStateOf(false)
     var titleBarBackdropType by mutableStateOf(BasicScreenStyle.TitleBarBackdropType.default())
+    var windowBackground by mutableStateOf(WindowBackground.Default)
+    var supportedWindowBackgrounds: List<WindowBackground> = emptyList()
+
+    enum class WindowBackground(
+        val label: String
+    ) {
+        Default("Default"),
+        Acrylic("Acrylic"),
+        Mica("Mica"),
+        MicaAlt("Mica Alt")
+    }
 }

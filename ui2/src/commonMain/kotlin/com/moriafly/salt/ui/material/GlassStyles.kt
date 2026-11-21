@@ -27,6 +27,8 @@ import dev.chrisbanes.haze.glass.GlassStyle
 import dev.chrisbanes.haze.glass.OpticalSizeValue
 
 internal object GlassStyles {
+    const val DARK_CONTRAST = 0.08f
+
     fun regular(isDarkTheme: Boolean): GlassStyle = GlassStyle.regular.then {
         optics {
             copy(
@@ -39,7 +41,7 @@ internal object GlassStyles {
         if (isDarkTheme) {
             edgeShadow(Color(0x33000000))
             ambientResponse(0.08f)
-            contrast(0.08f)
+            contrast(DARK_CONTRAST)
             whitePoint(-0.22f)
             chromaMultiplier(1.1f)
         } else {
