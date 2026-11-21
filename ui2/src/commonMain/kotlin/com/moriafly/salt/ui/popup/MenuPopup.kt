@@ -73,6 +73,10 @@ import com.moriafly.salt.core.os.OS
 import com.moriafly.salt.ui.SaltTheme
 import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.moriafly.salt.ui.internal.SmoothRoundedRectangleShape
+import com.moriafly.salt.ui.material.drawGlassInteraction
+import com.moriafly.salt.ui.material.glassInteractionLight
+import com.moriafly.salt.ui.material.glassPointerInput
+import com.moriafly.salt.ui.material.rememberGlassInteractionState
 import com.moriafly.salt.ui.rememberScrollState
 import com.moriafly.salt.ui.thenIf
 import com.moriafly.salt.ui.verticalScroll
@@ -235,6 +239,7 @@ private fun MenuSurface(
         revealWindowBackdrop = reveal,
         dark = dark
     )
+    val glassInteraction = if (backdrop != null) rememberGlassInteractionState() else null
     val windowSize = LocalWindowInfo.current.containerDpSize
     val maxWidth = (windowSize.width - 24.dp).coerceAtLeast(1.dp)
     val maxHeight = (windowSize.height - 24.dp).coerceAtLeast(1.dp)
@@ -262,6 +267,9 @@ private fun MenuSurface(
                         }
                     }
                 }
+            }
+            .thenIf(visible.targetState && glassInteraction != null) {
+                glassPointerInput(requireNotNull(glassInteraction))
             }
             .thenIf(!visible.targetState) {
                 clearAndSetSemantics { hideFromAccessibility() }
@@ -297,6 +305,9 @@ private fun MenuSurface(
                         }
                     }
                 }
+                .thenIf(!desktop && glassInteraction != null) {
+                    drawGlassInteraction(requireNotNull(glassInteraction), maxTranslation = 3.dp)
+                }
                 .thenIf(desktop) {
                     menuShadow(
                         shape = shape,
@@ -309,6 +320,14 @@ private fun MenuSurface(
             propagateMinConstraints = true
         ) {
             Box(Modifier.matchParentSize().graphicsLayer().then(material))
+            if (glassInteraction != null) {
+                Box(
+                    Modifier
+                        .matchParentSize()
+                        .graphicsLayer()
+                        .glassInteractionLight(glassInteraction, shape, dark)
+                )
+            }
             val padding = if (desktop) DesktopMenuContentPadding else MobileMenuContentPadding
             Column(
                 modifier = Modifier
