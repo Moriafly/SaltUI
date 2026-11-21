@@ -43,9 +43,10 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.PopupProperties
 import com.moriafly.salt.core.os.OS
-import com.moriafly.salt.ui.popup.PopupMenu
 import com.moriafly.salt.ui.popup.PopupMenuDefaults
+import com.moriafly.salt.ui.popup.PopupMenuPanel
 import com.moriafly.salt.ui.popup.PopupMenuStyle
 import com.moriafly.salt.ui.popup.PopupState
 import com.moriafly.salt.ui.popup.popupMenuAnchor
@@ -210,12 +211,15 @@ fun ItemDropdown(
             ItemPopupArrow()
         }
 
-        PopupMenu(
+        PopupMenuPanel(
             expanded = state.expend,
             onDismissRequest = state::dismiss,
             offset = if (anchor == null) DpOffset(16.dp, 0.dp) else DpOffset.Zero,
+            properties = PopupProperties(focusable = true),
             style = style,
-            anchor = anchor
+            anchor = anchor,
+            popupPositionProvider = null,
+            scrollable = true
         ) {
             val scope = ItemDropdownScopeImpl(state, this)
             scope.content()
