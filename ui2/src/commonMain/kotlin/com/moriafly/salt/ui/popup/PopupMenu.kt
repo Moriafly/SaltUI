@@ -23,8 +23,6 @@ import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.rememberTransition
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.IntrinsicSize
@@ -59,9 +57,10 @@ import com.moriafly.salt.ui.verticalScroll
 import kotlin.math.roundToInt
 
 /**
- * Build on Google Jetpack Compose Popup.
+ * An anchored popup for custom menu content.
  *
- * @param backgroundColor background color of the popup.
+ * Wrap the content behind the menu in [PopupMenuBackdrop] to use glass.
+ * [backgroundColor] is the container color and also fills the menu without a backdrop.
  */
 @UnstableSaltUiApi
 @Composable
@@ -164,12 +163,19 @@ internal fun DropdownMenuContent(
     } else {
         modifier
     }
+    val shape = SaltTheme.shapes.medium
+    val material = menuMaterial(
+        shape = shape,
+        cornerRadius = if (animate) mobileMenuCornerRadius() else 10.dp,
+        style = PopupMenuDefaults.style(containerColor = backgroundColor),
+        backdrop = LocalPopupBackdrop.current,
+        dark = SaltTheme.configs.isDarkTheme
+    )
     Column(
         modifier = contentModifier
             .width(IntrinsicSize.Max)
-            .clip(SaltTheme.shapes.medium)
-            .border(1.dp, SaltTheme.colors.stroke, SaltTheme.shapes.medium)
-            .background(backgroundColor)
+            .clip(shape)
+            .then(material)
             .verticalScroll(rememberScrollState()),
         content = content
     )

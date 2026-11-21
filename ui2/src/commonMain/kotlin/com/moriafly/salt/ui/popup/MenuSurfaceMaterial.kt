@@ -1,0 +1,103 @@
+/*
+ * SaltUI
+ * Copyright (C) 2026 Moriafly
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.moriafly.salt.ui.popup
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.isSpecified
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
+import com.moriafly.salt.core.os.OS
+import com.moriafly.salt.ui.UnstableSaltUiApi
+import com.moriafly.salt.ui.material.GlassStyles
+import com.moriafly.salt.ui.thenIf
+import dev.chrisbanes.haze.blur.HazeBlurStyle
+import dev.chrisbanes.haze.blur.HazeColorEffect
+import dev.chrisbanes.haze.blur.hazeBlur
+import dev.chrisbanes.haze.glass.hazeGlass
+
+@OptIn(UnstableSaltUiApi::class)
+@Composable
+internal fun menuMaterial(
+    shape: Shape,
+    cornerRadius: Dp,
+    style: PopupMenuStyle,
+    backdrop: PopupBackdrop?,
+    dark: Boolean
+): Modifier {
+    val edge = Modifier.thenIf(style.borderColor.isSpecified) {
+        border(Dp.Hairline, style.borderColor, shape)
+    }
+    val android = OS.current as? OS.Android
+    if (backdrop == null ||
+        style.material == PopupMenuMaterial.Solid ||
+        (android != null && android.versionSdk < OS.Android.ANDROID_12)
+    ) {
+        return Modifier
+            .thenIf(style.containerColor.isSpecified) { background(style.containerColor) }
+            .then(edge)
+    }
+
+    val effectBackground = if (style.containerColor.isSpecified) {
+        style.containerColor
+    } else {
+        Color.Transparent
+    }
+    val base = Modifier
+        .thenIf(effectBackground.alpha == 1f) { background(effectBackground) }
+        .then(edge)
+    val blur = style.material == PopupMenuMaterial.Blur ||
+        (android != null && android.versionSdk < OS.Android.ANDROID_13)
+    return if (blur) {
+        val blurStyle = remember(effectBackground, style.tintColor) {
+            HazeBlurStyle {
+                backgroundColor(effectBackground)
+                colorEffects(listOf(HazeColorEffect.tint(style.tintColor)))
+                fallbackColorEffect(HazeColorEffect.tint(effectBackground))
+                blurRadius(12.dp)
+                noiseFactor(0f)
+            }
+        }
+        base.hazeBlur(input = backdrop.input, style = blurStyle)
+    } else {
+        val glassStyle = remember(
+            cornerRadius,
+            dark,
+            effectBackground,
+            style.tintColor
+        ) {
+            GlassStyles.regular(dark).then {
+                // The optical mask is round-rect; the popup still clips to its smooth outline.
+                shape(RoundedCornerShape(cornerRadius))
+                tint(style.tintColor)
+                if (dark) {
+                    // Preserve the theme's elevated color when sampling a dark page.
+                    whitePoint(0f)
+                }
+                backgroundColor(effectBackground)
+            }
+        }
+        base.hazeGlass(input = backdrop.input, style = glassStyle)
+    }
+}
