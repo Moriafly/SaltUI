@@ -312,12 +312,15 @@ fun rememberGlassInteractionState(): GlassInteractionState {
 
 /**
  * Observe the original hit region without consuming the child's pointer events.
- * Cancel the interaction once another gesture, such as scrolling, claims the movement.
- * Keep the glass interaction active until the tracked pointer is released or cancelled.
+ * A gesture that claims movement cancels the feedback unless [followsConsumedMovement] opts in
+ * because the owning control is handling that gesture.
  */
 @OptIn(UnstableSaltUiApi::class)
-internal fun Modifier.glassPointerInput(interaction: GlassInteractionState): Modifier =
-    pointerInput(interaction) {
+internal fun Modifier.glassPointerInput(
+    interaction: GlassInteractionState,
+    followsConsumedMovement: () -> Boolean = { false }
+): Modifier =
+    pointerInput(interaction, followsConsumedMovement) {
         var trackedPointer: PointerId? = null
         try {
             awaitPointerEventScope {
@@ -335,7 +338,9 @@ internal fun Modifier.glassPointerInput(interaction: GlassInteractionState): Mod
                     }
                     val tracked = trackedPointer
                     if (tracked == null) {
-                        val down = event.changes.firstOrNull { it.pressed && !it.previousPressed }
+                        val down = event.changes.firstOrNull {
+                            it.pressed && !it.previousPressed && !it.isConsumed
+                        }
                         if (down != null && interaction.press(down.position, size)) {
                             trackedPointer = down.id
                         }
@@ -352,13 +357,12 @@ internal fun Modifier.glassPointerInput(interaction: GlassInteractionState): Mod
                         continue
                     }
 
-                    // Another gesture can only claim this movement after the main pass, so the
-                    // final pass decides whether the surface still follows the pointer.
+                    // Earlier passes let both ancestors and descendants claim this movement.
                     val claimed = awaitPointerEvent(PointerEventPass.Final)
                         .changes
                         .firstOrNull { it.id == tracked }
                         ?.isConsumed == true
-                    if (claimed) {
+                    if (claimed && !followsConsumedMovement()) {
                         interaction.release(cancelled = true)
                         trackedPointer = null
                     } else {
