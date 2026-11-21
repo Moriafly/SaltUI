@@ -36,11 +36,13 @@ internal enum class PopupMenuMaterial {
 }
 
 /**
- * Appearance of a popup menu surface.
+ * Appearance shared by a menu and its submenus.
  *
  * [containerColor] fills the surface and is used on platforms without backdrop effects.
  * [tintColor] colors the sampled backdrop. Use its alpha to control the tint strength.
  * [borderColor] draws the outline. Use [Color.Transparent] to hide it.
+ * [windowBackdropColor] and [windowBackdropOpacity] control the fill and sampled effect
+ * when a desktop menu reveals its host window's native material.
  */
 @Immutable
 @UnstableSaltUiApi
@@ -48,8 +50,14 @@ internal data class PopupMenuStyle(
     val material: PopupMenuMaterial,
     val containerColor: Color,
     val tintColor: Color,
-    val borderColor: Color
-)
+    val borderColor: Color,
+    val windowBackdropColor: Color,
+    val windowBackdropOpacity: Float
+) {
+    init {
+        require(windowBackdropOpacity in 0f..1f) { "windowBackdropOpacity must be in 0..1." }
+    }
+}
 
 @UnstableSaltUiApi
 internal object PopupMenuDefaults {
@@ -57,6 +65,8 @@ internal object PopupMenuDefaults {
      * Resolves a menu style from the current theme. The container defaults to the theme's popup
      * color. The tint uses the container color at up to 60% opacity in light mode and 78% in dark.
      * The outline uses the theme stroke in light mode and white at 16% in dark mode.
+     * For native window material, the fill uses up to 26% opacity in light mode and 34% in dark,
+     * and the sampled effect is drawn at 72% opacity.
      */
     @Composable
     @ReadOnlyComposable
@@ -70,12 +80,18 @@ internal object PopupMenuDefaults {
             Color.White.copy(alpha = 0.16f)
         } else {
             SaltTheme.colors.stroke
-        }
+        },
+        windowBackdropColor: Color = containerColor.withMaxAlpha(
+            if (SaltTheme.configs.isDarkTheme) 0.34f else 0.26f
+        ),
+        windowBackdropOpacity: Float = 0.72f
     ): PopupMenuStyle = PopupMenuStyle(
         material = material,
         containerColor = containerColor,
         tintColor = tintColor,
-        borderColor = borderColor
+        borderColor = borderColor,
+        windowBackdropColor = windowBackdropColor,
+        windowBackdropOpacity = windowBackdropOpacity
     )
 }
 

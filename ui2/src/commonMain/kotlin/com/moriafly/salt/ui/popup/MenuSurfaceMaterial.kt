@@ -44,6 +44,7 @@ internal fun menuMaterial(
     cornerRadius: Dp,
     style: PopupMenuStyle,
     backdrop: PopupBackdrop?,
+    revealWindowBackdrop: Boolean,
     dark: Boolean
 ): Modifier {
     val edge = Modifier.thenIf(style.borderColor.isSpecified) {
@@ -59,24 +60,33 @@ internal fun menuMaterial(
             .then(edge)
     }
 
-    val effectBackground = if (style.containerColor.isSpecified) {
-        style.containerColor
+    val baseFill = if (revealWindowBackdrop) {
+        style.windowBackdropColor
     } else {
-        Color.Transparent
+        style.containerColor
     }
     val base = Modifier
-        .thenIf(effectBackground.alpha == 1f) { background(effectBackground) }
+        .thenIf(baseFill.isSpecified && (revealWindowBackdrop || baseFill.alpha == 1f)) {
+            background(baseFill)
+        }
         .then(edge)
+    val effectBackground = if (revealWindowBackdrop || !style.containerColor.isSpecified) {
+        Color.Transparent
+    } else {
+        style.containerColor
+    }
+    val effectOpacity = if (revealWindowBackdrop) style.windowBackdropOpacity else 1f
     val blur = style.material == PopupMenuMaterial.Blur ||
         (android != null && android.versionSdk < OS.Android.ANDROID_13)
     return if (blur) {
-        val blurStyle = remember(effectBackground, style.tintColor) {
+        val blurStyle = remember(effectBackground, effectOpacity, style.tintColor) {
             HazeBlurStyle {
                 backgroundColor(effectBackground)
                 colorEffects(listOf(HazeColorEffect.tint(style.tintColor)))
                 fallbackColorEffect(HazeColorEffect.tint(effectBackground))
                 blurRadius(12.dp)
                 noiseFactor(0f)
+                alpha(effectOpacity)
             }
         }
         base.hazeBlur(input = backdrop.input, style = blurStyle)
@@ -85,6 +95,7 @@ internal fun menuMaterial(
             cornerRadius,
             dark,
             effectBackground,
+            effectOpacity,
             style.tintColor
         ) {
             GlassStyles.regular(dark).then {
@@ -96,6 +107,7 @@ internal fun menuMaterial(
                     whitePoint(0f)
                 }
                 backgroundColor(effectBackground)
+                alpha(effectOpacity)
             }
         }
         base.hazeGlass(input = backdrop.input, style = glassStyle)

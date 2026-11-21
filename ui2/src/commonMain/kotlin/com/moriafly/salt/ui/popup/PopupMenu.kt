@@ -53,6 +53,7 @@ import com.moriafly.salt.core.os.OS
 import com.moriafly.salt.ui.SaltTheme
 import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.moriafly.salt.ui.rememberScrollState
+import com.moriafly.salt.ui.thenIf
 import com.moriafly.salt.ui.verticalScroll
 import kotlin.math.roundToInt
 
@@ -164,16 +165,20 @@ internal fun DropdownMenuContent(
         modifier
     }
     val shape = SaltTheme.shapes.medium
+    val backdrop = LocalPopupBackdrop.current
+    val reveal = backdrop?.revealWindowBackdrop == true && popupSharesHostCanvas
     val material = menuMaterial(
         shape = shape,
         cornerRadius = if (animate) mobileMenuCornerRadius() else 10.dp,
         style = PopupMenuDefaults.style(containerColor = backgroundColor),
-        backdrop = LocalPopupBackdrop.current,
+        backdrop = backdrop,
+        revealWindowBackdrop = reveal,
         dark = SaltTheme.configs.isDarkTheme
     )
     Column(
         modifier = contentModifier
             .width(IntrinsicSize.Max)
+            .thenIf(reveal) { revealPopupWindowBackdrop(shape) }
             .clip(shape)
             .then(material)
             .verticalScroll(rememberScrollState()),
