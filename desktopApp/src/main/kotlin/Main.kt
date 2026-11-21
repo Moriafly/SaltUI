@@ -43,6 +43,12 @@ import com.moriafly.salt.ui.window.SaltWindowProperties
 @OptIn(ExperimentalComposeUiApi::class, UnstableSaltUiApi::class)
 fun main() = application {
     AppTheme {
+        val backgroundType = when {
+            SaltWindowBackgroundType.Vibrancy.isSupported() -> SaltWindowBackgroundType.Vibrancy
+            SaltWindowBackgroundType.Acrylic.isSupported() -> SaltWindowBackgroundType.Acrylic
+            SaltWindowBackgroundType.Mica.isSupported() -> SaltWindowBackgroundType.Mica
+            else -> SaltWindowBackgroundType.None
+        }
         SaltWindow(
             onCloseRequest = ::exitApplication,
             state = rememberWindowState(
@@ -53,18 +59,13 @@ fun main() = application {
             resizable = true,
             properties = SaltWindowProperties.default(
                 captionButtonIsDarkTheme = AppConfig.isDarkTheme,
-                backgroundType = when {
-                    SaltWindowBackgroundType.Vibrancy.isSupported() ->
-                        SaltWindowBackgroundType.Vibrancy
-
-                    SaltWindowBackgroundType.Mica.isSupported() -> SaltWindowBackgroundType.Mica
-                    else -> SaltWindowBackgroundType.None
-                },
+                backgroundType = backgroundType,
                 backgroundIsDarkTheme = AppConfig.isDarkTheme
             )
         ) {
             MainContent(
-                windowCaptionBarHeight = LocalSaltWindowInfo.current.captionBarHeight
+                windowCaptionBarHeight = LocalSaltWindowInfo.current.captionBarHeight,
+                revealWindowBackdrop = backgroundType != SaltWindowBackgroundType.None
             )
 
             DesktopCaptionBar {

@@ -41,6 +41,7 @@ import com.moriafly.salt.ui.ItemOuterTitle
 import com.moriafly.salt.ui.Layer
 import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.moriafly.salt.ui.navigation.rememberSaltNavigator
+import com.moriafly.salt.ui.popup.PopupMenuBackdrop
 import com.moriafly.salt.ui.sample.ui.navigation.AppNavigation
 import com.moriafly.salt.ui.sample.ui.navigation.LocalSaltNavigator
 import com.moriafly.salt.ui.sample.ui.navigation.ScreenRoute
@@ -91,7 +92,8 @@ private val navigatorConfig = SavedStateConfiguration {
 @OptIn(UnstableSaltUiApi::class, UnstableSaltAdaptiveWindowApi::class)
 @Composable
 fun MainContent(
-    windowCaptionBarHeight: Dp = 0.dp
+    windowCaptionBarHeight: Dp = 0.dp,
+    revealWindowBackdrop: Boolean = false
 ) {
     val navigator = rememberSaltNavigator(
         configuration = navigatorConfig,
@@ -137,9 +139,14 @@ fun MainContent(
                         .testTag("mainContentLayer"),
                     decorationEnabled = OS.isDesktop()
                 ) {
-                    AppNavigation(
-                        navigator = navigator
-                    )
+                    PopupMenuBackdrop(
+                        modifier = Modifier.fillMaxSize(),
+                        revealWindowBackdrop = revealWindowBackdrop
+                    ) {
+                        AppNavigation(
+                            navigator = navigator
+                        )
+                    }
                 }
             }
         }
