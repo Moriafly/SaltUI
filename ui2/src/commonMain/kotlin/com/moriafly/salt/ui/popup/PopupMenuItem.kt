@@ -21,10 +21,9 @@
 package com.moriafly.salt.ui.popup
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -33,25 +32,43 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.painter.Painter
-import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.semantics.role
-import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.semantics.toggleableState
-import androidx.compose.ui.state.ToggleableState
 import androidx.compose.ui.unit.dp
 import com.moriafly.salt.core.os.OS
 import com.moriafly.salt.ui.SaltTheme
 import com.moriafly.salt.ui.Text
 import com.moriafly.salt.ui.UnstableSaltUiApi
 
-@get:Composable
-internal expect val popupMenuItemPadding: PaddingValues
+/**
+ * Displays an action in a [PopupMenu] or [com.moriafly.salt.ui.ItemDropdown].
+ */
+@UnstableSaltUiApi
+@Composable
+fun PopupMenuItem(
+    text: @Composable () -> Unit,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    leadingIcon: (@Composable () -> Unit)? = null,
+    trailingContent: (@Composable () -> Unit)? = null,
+    enabled: Boolean = true
+) {
+    DropdownMenuItemRow(
+        onClick = onClick,
+        enabled = enabled,
+        modifier = modifier
+    ) {
+        MenuItemContent(
+            text = text,
+            leadingIcon = leadingIcon,
+            trailingContent = trailingContent
+        )
+    }
+}
 
+// This overload keeps the original source and JVM signature for existing callers.
 @Suppress("ktlint:compose:modifier-missing-check")
 @UnstableSaltUiApi
 @Composable
@@ -64,43 +81,17 @@ fun PopupMenuItem(
     iconPaddingValues: PaddingValues = PaddingValues(0.dp),
     iconColor: Color? = SaltTheme.colors.text
 ) {
-    val desktop = OS.isDesktop()
-    Row(
-        modifier = Modifier
-            .semantics {
-                this.role = Role.RadioButton
-
-                if (selected != null) {
-                    this.toggleableState = when (selected) {
-                        true -> ToggleableState.On
-                        false -> ToggleableState.Off
-                    }
-                }
-            }
-            .fillMaxWidth()
-            .sizeIn(
-                minWidth = DropdownMenuItemDefaultMinWidth,
-                maxWidth = DropdownMenuItemDefaultMaxWidth
-            )
-            .clickable {
-                onClick()
-            }
-            .padding(popupMenuItemPadding),
-        verticalAlignment = Alignment.CenterVertically
+    DropdownMenuItemRow(
+        onClick = onClick,
+        enabled = true,
+        selection = selected?.let { MenuSelection.Radio(it) }
     ) {
-        if (desktop && selected != null) {
-            MenuSelectionMark(marked = selected, size = 16.dp)
-            Spacer(Modifier.width(8.dp))
-        }
         Column(
             modifier = Modifier
                 .weight(1f)
                 .fillMaxWidth()
         ) {
-            Text(
-                text = text,
-                color = SaltTheme.colors.text
-            )
+            Text(text = text)
             sub?.let {
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(
@@ -121,13 +112,24 @@ fun PopupMenuItem(
                 colorFilter = iconColor?.let { ColorFilter.tint(iconColor) }
             )
         }
-        if (!desktop && selected != null) {
-            Spacer(Modifier.width(8.dp))
-            MenuSelectionMark(marked = selected, size = 20.dp)
-        }
     }
 }
 
-private val DropdownMenuItemDefaultMinWidth = 180.dp
-private val DropdownMenuItemDefaultMaxWidth = 280.dp
-private val DropdownMenuItemDefaultMinHeight = 48.dp
+@OptIn(UnstableSaltUiApi::class)
+@Composable
+private fun DropdownMenuItemRow(
+    onClick: () -> Unit,
+    enabled: Boolean,
+    modifier: Modifier = Modifier,
+    selection: MenuSelection? = null,
+    content: @Composable RowScope.() -> Unit
+) {
+    MenuRow(
+        enabled = enabled,
+        desktop = OS.isDesktop(),
+        onClick = onClick,
+        modifier = modifier.sizeIn(minWidth = 180.dp, maxWidth = 340.dp),
+        selection = selection,
+        content = content
+    )
+}
