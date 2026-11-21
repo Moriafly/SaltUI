@@ -274,19 +274,36 @@ private fun MenuSurface(
             .heightIn(max = if (windowSize.height > 0.dp) maxHeight else Dp.Unspecified)
             .thenIf(useIntrinsicWidth) { width(IntrinsicSize.Max) }
             .thenIf(reveal) { revealPopupWindowBackdrop(shape) }
-            .thenIf(desktop) {
-                pointerInput(shape, direction) {
-                    awaitEachGesture {
-                        val down = awaitFirstDown(
-                            requireUnconsumed = false,
-                            pass = PointerEventPass.Initial
-                        )
-                        val outline = shape.createOutline(size.toSize(), direction, this)
-                        val path = Path().apply { addOutline(outline) }
-                        if (down.position !in PathHitTester(path)) {
-                            down.consume()
-                            currentDismiss?.invoke()
+            .pointerInput(shape, direction, desktop) {
+                awaitEachGesture {
+                    val down =
+                        awaitFirstDown(requireUnconsumed = false, pass = PointerEventPass.Initial)
+                    val panelSize = size.toSize()
+                    val position = placement()
+                    val point = when {
+                        desktop -> down.position
+                        position != null && (opacity?.value ?: 0f) > 0f -> {
+                            // Match the panel's entrance layer before testing the outline.
+                            val fraction = progress?.value ?: 1f
+                            val pivot = Offset(
+                                panelSize.width * position.pivot.x,
+                                panelSize.height * position.pivot.y
+                            )
+                            val shift = position.shift(fraction, MobileMenuTravel.toPx())
+                            pivot + (down.position - shift - pivot) / menuScale(fraction)
                         }
+                        else -> null
+                    }
+                    val inside = if (point != null) {
+                        val outline = shape.createOutline(panelSize, direction, this)
+                        val path = Path().apply { addOutline(outline) }
+                        point in PathHitTester(path)
+                    } else {
+                        false
+                    }
+                    if (!inside) {
+                        down.consume()
+                        currentDismiss?.invoke()
                     }
                 }
             }
