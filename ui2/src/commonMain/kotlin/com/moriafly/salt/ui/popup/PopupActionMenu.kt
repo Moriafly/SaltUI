@@ -131,7 +131,7 @@ fun PopupActionMenu(
         }
     }
 
-    MenuPopup(
+    PopupMenuPanel(
         expanded = expanded,
         onDismissRequest = onDismissRequest,
         modifier = modifier,
@@ -318,7 +318,7 @@ private fun MenuPageContent(
                             }
 
                             if (child != null && openIndex == index) {
-                                MenuPopup(
+                                PopupMenuPanel(
                                     expanded = active,
                                     onDismissRequest = null,
                                     modifier = Modifier.widthIn(min = 176.dp, max = 420.dp),

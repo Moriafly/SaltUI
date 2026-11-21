@@ -82,9 +82,12 @@ import com.moriafly.salt.ui.thenIf
 import com.moriafly.salt.ui.verticalScroll
 import kotlin.math.roundToInt
 
+/**
+ * Hosts one menu panel in a Compose popup and manages its placement and visibility.
+ */
 @OptIn(UnstableSaltUiApi::class)
 @Composable
-internal fun MenuPopup(
+internal fun PopupMenuPanel(
     expanded: Boolean,
     onDismissRequest: (() -> Unit)?,
     offset: DpOffset,

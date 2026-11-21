@@ -79,7 +79,7 @@ fun PopupMenu(
     scrollable: Boolean = true,
     content: @Composable ColumnScope.() -> Unit
 ) {
-    MenuPopup(
+    PopupMenuPanel(
         expanded = expanded,
         onDismissRequest = onDismissRequest,
         modifier = modifier,
