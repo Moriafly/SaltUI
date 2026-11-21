@@ -27,9 +27,11 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
@@ -86,7 +88,10 @@ import kotlin.math.roundToInt
 
 /**
  * Hosts one menu panel in a Compose popup and manages its placement and visibility.
+ *
+ * The outer popup layout owns the shadow gutter. The caller's modifier belongs to the panel.
  */
+@Suppress("ktlint:compose:modifier-not-used-at-root")
 @OptIn(UnstableSaltUiApi::class)
 @Composable
 internal fun PopupMenuPanel(
@@ -120,7 +125,10 @@ internal fun PopupMenuPanel(
     if (expanded || (!desktop && (!visible.isIdle || visible.currentState))) {
         val density = LocalDensity.current
         val offsetPx = with(density) { IntOffset(offset.x.roundToPx(), offset.y.roundToPx()) }
+        val shadowGutter = if (OS.isAndroid()) MenuShadowGutter else 0.dp
+        val inset = with(density) { shadowGutter.roundToPx() }
         var placement by remember { mutableStateOf<MenuPlacement?>(null) }
+        val clippingEnabled = properties.clippingEnabled
         val positionOrigin = properties.menuPositionOrigin()
         val positionProvider = remember(
             pointerPosition,
@@ -128,11 +136,17 @@ internal fun PopupMenuPanel(
             popupPositionProvider,
             density,
             desktop,
+            clippingEnabled,
             positionOrigin
         ) {
             val pointerGap = if (desktop) 0 else with(density) { 12.dp.roundToPx() }
-            val margin = with(density) { (if (desktop) 8.dp else 12.dp).roundToPx() }
+            val margin = maxOf(inset, with(density) { (if (desktop) 8.dp else 12.dp).roundToPx() })
             createMenuPositionProvider { bounds, windowSize, direction, popupSize ->
+                // The provider places the painted panel; Compose positions the larger window.
+                val panelSize = IntSize(
+                    width = (popupSize.width - 2 * inset).coerceAtLeast(0),
+                    height = (popupSize.height - 2 * inset).coerceAtLeast(0)
+                )
                 val placementAnchor = if (pointerPosition != null) {
                     val position = IntOffset(
                         x = pointerPosition.x.roundToInt(),
@@ -142,25 +156,35 @@ internal fun PopupMenuPanel(
                 } else {
                     bounds
                 }
-                val position = popupPositionProvider?.calculatePosition(
+                val requestedPosition = popupPositionProvider?.calculatePosition(
                     bounds,
                     windowSize,
                     direction,
-                    popupSize
+                    panelSize
                 ) ?: menuPosition(
                     anchor = placementAnchor,
                     windowSize = windowSize,
                     direction = direction,
-                    popupSize = popupSize,
+                    popupSize = panelSize,
                     offset = offsetPx,
                     gap = if (pointerPosition != null) pointerGap else 0,
                     margin = margin
                 )
+                val position = if (inset > 0 && clippingEnabled) {
+                    val maxX = (windowSize.width - panelSize.width - inset).coerceAtLeast(inset)
+                    val maxY = (windowSize.height - panelSize.height - inset).coerceAtLeast(inset)
+                    IntOffset(
+                        requestedPosition.x.coerceIn(inset, maxX),
+                        requestedPosition.y.coerceIn(inset, maxY)
+                    )
+                } else {
+                    requestedPosition
+                }
                 if (!desktop) {
                     placement =
-                        MenuPlacement.resolve(placementAnchor, IntRect(position, popupSize))
+                        MenuPlacement.resolve(placementAnchor, IntRect(position, panelSize))
                 }
-                position
+                position - IntOffset(inset, inset)
             }
         }
 
@@ -181,21 +205,30 @@ internal fun PopupMenuPanel(
             },
             properties = if (expanded) properties else properties.forMenuExit()
         ) {
-            MenuSurface(
-                visible = visible,
-                placement = { placement },
-                desktop = desktop,
-                style = style,
-                scrollable = scrollable,
-                useIntrinsicWidth = useIntrinsicWidth,
-                dropdownSlideSelection = dropdownSlideSelection,
-                isSlideSelecting = isSlideSelecting,
-                onDismissOutside = onDismissRequest.takeIf {
-                    expanded && properties.dismissOnClickOutside
-                },
-                modifier = modifier,
-                content = content
-            )
+            val dismissOutside = onDismissRequest.takeIf {
+                expanded && properties.dismissOnClickOutside
+            }
+            Box {
+                if (inset > 0 && dismissOutside != null) {
+                    MenuShadowDismissRegion(dismissOutside)
+                }
+
+                Box(Modifier.padding(shadowGutter)) {
+                    MenuSurface(
+                        modifier = modifier,
+                        visible = visible,
+                        placement = { placement },
+                        desktop = desktop,
+                        style = style,
+                        scrollable = scrollable,
+                        useIntrinsicWidth = useIntrinsicWidth,
+                        dropdownSlideSelection = dropdownSlideSelection,
+                        isSlideSelecting = isSlideSelecting,
+                        onDismissOutside = dismissOutside,
+                        content = content
+                    )
+                }
+            }
         }
     }
 }
@@ -347,11 +380,11 @@ private fun MenuSurface(
                 .thenIf(!desktop && glassInteraction != null) {
                     drawGlassInteraction(requireNotNull(glassInteraction), maxTranslation = 3.dp)
                 }
-                .thenIf(desktop) {
+                .thenIf(desktop || OS.isAndroid()) {
                     menuShadow(
                         shape = shape,
                         dark = dark,
-                        desktop = true,
+                        desktop = desktop,
                         shadowContext = LocalGraphicsContext.current.shadowContext
                     )
                 }
@@ -403,6 +436,22 @@ private fun MenuSurface(
 
 internal val DesktopMenuContentPadding = 4.dp
 private val MobileMenuTravel = 4.dp
+private val MenuShadowGutter = 12.dp
+
+@Composable
+private fun BoxScope.MenuShadowDismissRegion(onDismissRequest: () -> Unit) {
+    val dismiss by rememberUpdatedState(onDismissRequest)
+    Spacer(
+        Modifier
+            .matchParentSize()
+            .pointerInput(Unit) {
+                awaitEachGesture {
+                    awaitFirstDown().consume()
+                    dismiss()
+                }
+            }
+    )
+}
 
 internal expect fun PopupProperties.forMenuExit(): PopupProperties
 
