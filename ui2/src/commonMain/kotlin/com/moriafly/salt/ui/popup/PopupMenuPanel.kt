@@ -270,7 +270,11 @@ private fun MenuSurface(
         label = "Panel opacity"
     ) { if (it) 1f else 0f }
 
-    val backdrop = LocalPopupBackdrop.current.takeIf { style.material != PopupMenuMaterial.Solid }
+    val backdrop = if (style.material == PopupMenuMaterial.Solid) {
+        null
+    } else {
+        LocalPopupBackdrop.current
+    }
     val reveal = backdrop?.revealWindowBackdrop == true && popupSharesHostCanvas
     val dark = SaltTheme.configs.isDarkTheme
     val menuRadius = if (desktop) 10.dp else mobileMenuCornerRadius()

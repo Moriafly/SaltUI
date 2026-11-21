@@ -88,10 +88,7 @@ internal fun menuMaterial(
         border(Dp.Hairline, style.borderColor, shape)
     }
     val android = OS.current as? OS.Android
-    if (backdrop == null ||
-        style.material == PopupMenuMaterial.Solid ||
-        (android != null && android.versionSdk < OS.Android.ANDROID_12)
-    ) {
+    if (backdrop == null || (android != null && android.versionSdk < OS.Android.ANDROID_12)) {
         return Modifier
             .thenIf(style.containerColor.isSpecified) { background(style.containerColor) }
             .then(edge)

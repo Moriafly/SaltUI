@@ -32,7 +32,6 @@ import com.moriafly.salt.ui.UnstableSaltUiApi
 
 /**
  * An anchored popup for custom menu content.
- * Wrap the content behind the menu in [PopupMenuBackdrop] to sample the page.
  * For keyboard-navigable actions and submenus, use [PopupActionMenu].
  */
 @UnstableSaltUiApi
@@ -62,8 +61,9 @@ fun PopupMenu(
  *
  * [popupPositionProvider] overrides automatic placement and receives the trigger bounds
  * and menu panel size in pixels. [anchor] supplies a pointer position for automatic placement.
- * [style] controls the surface appearance. Set [scrollable] to false when [content] manages
- * its own scrolling.
+ * [style] controls the surface appearance. Glass and blur sample the area wrapped in
+ * [PopupMenuBackdrop]. The menu uses the style's container color when sampling is unavailable.
+ * Set [scrollable] to false when [content] manages its own scrolling.
  */
 @UnstableSaltUiApi
 @Composable
