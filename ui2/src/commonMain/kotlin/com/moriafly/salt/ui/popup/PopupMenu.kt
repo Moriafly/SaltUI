@@ -31,7 +31,6 @@ import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
-import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -51,6 +50,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupPositionProvider
 import androidx.compose.ui.window.PopupProperties
+import com.moriafly.salt.core.os.OS
 import com.moriafly.salt.ui.SaltTheme
 import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.moriafly.salt.ui.rememberScrollState
@@ -72,17 +72,20 @@ fun PopupMenu(
     backgroundColor: Color = SaltTheme.colors.popup,
     content: @Composable ColumnScope.() -> Unit
 ) {
+    val animate = !OS.isDesktop()
     val expandedStates = remember { MutableTransitionState(false) }
     expandedStates.targetState = expanded
 
-    if (expandedStates.currentState || expandedStates.targetState) {
+    if (expanded || (animate && expandedStates.currentState)) {
         val transformOriginState = remember { mutableStateOf(TransformOrigin.Center) }
         val density = LocalDensity.current
         val popupPositionProvider = DropdownMenuPositionProvider(
             offset,
             density
         ) { parentBounds, menuBounds ->
-            transformOriginState.value = calculateTransformOrigin(parentBounds, menuBounds)
+            if (animate) {
+                transformOriginState.value = calculateTransformOrigin(parentBounds, menuBounds)
+            }
         }
 
         Popup(
@@ -92,9 +95,10 @@ fun PopupMenu(
         ) {
             DropdownMenuContent(
                 expandedStates = expandedStates,
-                transformOriginState = transformOriginState,
-                modifier = modifier,
+                transformOrigin = { transformOriginState.value },
                 backgroundColor = backgroundColor,
+                animate = animate,
+                modifier = modifier,
                 content = content
             )
         }
@@ -105,12 +109,36 @@ fun PopupMenu(
 @Composable
 internal fun DropdownMenuContent(
     expandedStates: MutableTransitionState<Boolean>,
-    transformOriginState: MutableState<TransformOrigin>,
-    modifier: Modifier = Modifier,
+    transformOrigin: () -> TransformOrigin,
     backgroundColor: Color,
+    animate: Boolean,
+    modifier: Modifier = Modifier,
     content: @Composable ColumnScope.() -> Unit
 ) {
-    // Menu open/close animation.
+    val contentModifier = if (animate) {
+        modifier.dropdownMenuAnimation(
+            expandedStates = expandedStates,
+            transformOrigin = transformOrigin
+        )
+    } else {
+        modifier
+    }
+    Column(
+        modifier = contentModifier
+            .width(IntrinsicSize.Max)
+            .clip(SaltTheme.shapes.medium)
+            .border(1.dp, SaltTheme.colors.stroke, SaltTheme.shapes.medium)
+            .background(backgroundColor)
+            .verticalScroll(rememberScrollState()),
+        content = content
+    )
+}
+
+@Composable
+private fun Modifier.dropdownMenuAnimation(
+    expandedStates: MutableTransitionState<Boolean>,
+    transformOrigin: () -> TransformOrigin
+): Modifier {
     val transition = rememberTransition(transitionState = expandedStates, label = "")
 
     val scale by transition.animateFloat(
@@ -118,12 +146,12 @@ internal fun DropdownMenuContent(
             if (false isTransitioningTo true) {
                 // Dismissed to expanded.
                 tween(
-                    durationMillis = InTransitionDuration
+                    durationMillis = IN_TRANSITION_DURATION
                 )
             } else {
                 // Expanded to dismissed.
                 tween(
-                    durationMillis = OutTransitionDuration
+                    durationMillis = OUT_TRANSITION_DURATION
                 )
             }
         },
@@ -142,10 +170,10 @@ internal fun DropdownMenuContent(
         transitionSpec = {
             if (false isTransitioningTo true) {
                 // Dismissed to expanded.
-                tween(durationMillis = InTransitionDuration)
+                tween(durationMillis = IN_TRANSITION_DURATION)
             } else {
                 // Expanded to dismissed.
-                tween(durationMillis = OutTransitionDuration)
+                tween(durationMillis = OUT_TRANSITION_DURATION)
             }
         },
         label = ""
@@ -159,21 +187,12 @@ internal fun DropdownMenuContent(
         }
     }
 
-    Column(
-        modifier = modifier
-            .graphicsLayer {
-                this.scaleX = scale
-                this.scaleY = scale
-                this.alpha = alpha
-                this.transformOrigin = transformOriginState.value
-            }
-            .width(IntrinsicSize.Max)
-            .clip(SaltTheme.shapes.medium)
-            .border(1.dp, SaltTheme.colors.stroke, SaltTheme.shapes.medium)
-            .background(backgroundColor)
-            .verticalScroll(rememberScrollState()),
-        content = content
-    )
+    return graphicsLayer {
+        scaleX = scale
+        scaleY = scale
+        this.alpha = alpha
+        this.transformOrigin = transformOrigin()
+    }
 }
 
 internal fun calculateTransformOrigin(
@@ -271,8 +290,8 @@ internal data class DropdownMenuPositionProvider(
 }
 
 // Menu open/close animation.
-internal const val InTransitionDuration = 300
-internal const val OutTransitionDuration = 200
+private const val IN_TRANSITION_DURATION = 300
+private const val OUT_TRANSITION_DURATION = 200
 
 internal val DropdownMenuVerticalPadding = 8.dp
 
