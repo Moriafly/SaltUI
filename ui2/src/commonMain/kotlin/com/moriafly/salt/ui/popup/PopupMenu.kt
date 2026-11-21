@@ -39,6 +39,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalGraphicsContext
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.IntOffset
@@ -179,6 +180,14 @@ internal fun DropdownMenuContent(
         modifier = contentModifier
             .width(IntrinsicSize.Max)
             .thenIf(reveal) { revealPopupWindowBackdrop(shape) }
+            .thenIf(!animate) {
+                menuShadow(
+                    shape = shape,
+                    dark = SaltTheme.configs.isDarkTheme,
+                    desktop = true,
+                    shadowContext = LocalGraphicsContext.current.shadowContext
+                )
+            }
             .clip(shape)
             .then(material)
             .verticalScroll(rememberScrollState()),

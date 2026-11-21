@@ -23,10 +23,18 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawWithCache
+import androidx.compose.ui.graphics.ClipOp
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.addOutline
+import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.graphics.isSpecified
+import androidx.compose.ui.graphics.shadow.Shadow
+import androidx.compose.ui.graphics.shadow.ShadowContext
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import com.moriafly.salt.core.os.OS
 import com.moriafly.salt.ui.UnstableSaltUiApi
@@ -36,6 +44,35 @@ import dev.chrisbanes.haze.blur.HazeBlurStyle
 import dev.chrisbanes.haze.blur.HazeColorEffect
 import dev.chrisbanes.haze.blur.hazeBlur
 import dev.chrisbanes.haze.glass.hazeGlass
+
+internal fun Modifier.menuShadow(
+    shape: Shape,
+    dark: Boolean,
+    desktop: Boolean,
+    shadowContext: ShadowContext
+): Modifier = drawWithCache {
+    val silhouette = Path().apply {
+        addOutline(shape.createOutline(size, layoutDirection, this@drawWithCache))
+    }
+    val opacity = if (desktop) {
+        if (dark) 0.24f else 0.075f
+    } else {
+        if (dark) 0.20f else 0.045f
+    }
+    val shadow = shadowContext.createDropShadowPainter(
+        shape = shape,
+        shadow = Shadow(
+            radius = if (desktop) 9.dp else 7.dp,
+            color = Color.Black.copy(alpha = opacity),
+            offset = DpOffset(0.dp, if (desktop) 2.dp else 1.dp)
+        )
+    )
+    onDrawBehind {
+        clipPath(silhouette, ClipOp.Difference) {
+            shadow.apply { draw(size) }
+        }
+    }
+}
 
 @OptIn(UnstableSaltUiApi::class)
 @Composable
