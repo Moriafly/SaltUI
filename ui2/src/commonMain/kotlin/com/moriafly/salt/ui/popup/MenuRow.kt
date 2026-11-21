@@ -21,6 +21,8 @@ import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
@@ -39,22 +41,32 @@ import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import com.moriafly.salt.ui.CardDefaults
+import com.moriafly.salt.ui.Icon
 import com.moriafly.salt.ui.SaltTheme
 import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.moriafly.salt.ui.enabledAlpha
+import com.moriafly.salt.ui.icons.ChevronRight
+import com.moriafly.salt.ui.icons.SaltIcons
 import com.moriafly.salt.ui.internal.SmoothRoundedRectangleShape
 import com.moriafly.salt.ui.thenIf
+import kotlinx.coroutines.delay
 
 internal sealed interface MenuSelection {
     val marked: Boolean
@@ -75,12 +87,24 @@ internal fun MenuRow(
     desktop: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    highlighted: Boolean = false,
     revealForKeyboard: Boolean = false,
     useMenuFocus: Boolean = false,
     selection: MenuSelection? = null,
     reserveSelectionSpace: Boolean = false,
+    onHover: () -> Unit = {},
     content: @Composable RowScope.() -> Unit
 ) {
+    val source = remember { MutableInteractionSource() }
+    val hovered by source.collectIsHoveredAsState()
+    val currentOnHover by rememberUpdatedState(onHover)
+    LaunchedEffect(desktop, hovered, enabled) {
+        if (desktop && hovered && enabled) {
+            delay(145)
+            currentOnHover()
+        }
+    }
+
     val bringIntoView = remember { BringIntoViewRequester() }
     LaunchedEffect(revealForKeyboard) {
         if (revealForKeyboard) {
@@ -95,7 +119,7 @@ internal fun MenuRow(
     val activation = when (selection) {
         is MenuSelection.Radio -> Modifier.selectable(
             selected = selection.marked,
-            interactionSource = null,
+            interactionSource = source,
             indication = indication,
             enabled = enabled,
             role = Role.RadioButton,
@@ -104,7 +128,7 @@ internal fun MenuRow(
 
         is MenuSelection.Toggle -> Modifier.toggleable(
             value = selection.marked,
-            interactionSource = null,
+            interactionSource = source,
             indication = indication,
             enabled = enabled,
             role = Role.Checkbox,
@@ -112,7 +136,7 @@ internal fun MenuRow(
         )
 
         null -> Modifier.clickable(
-            interactionSource = null,
+            interactionSource = source,
             indication = indication,
             enabled = enabled,
             role = Role.Button,
@@ -125,9 +149,11 @@ internal fun MenuRow(
             .heightIn(min = if (desktop) 32.dp else 44.dp)
             .bringIntoViewRequester(bringIntoView)
             .clip(shape)
-            .thenIf(enabled && revealForKeyboard) {
+            .thenIf(enabled && highlighted) {
                 background(colors.text.copy(alpha = if (dark) 0.10f else 0.07f))
-                    .border(Dp.Hairline, colors.text.copy(alpha = 0.32f), shape)
+            }
+            .thenIf(enabled && revealForKeyboard) {
+                border(Dp.Hairline, colors.text.copy(alpha = 0.32f), shape)
             }
             .thenIf(useMenuFocus) {
                 focusProperties { canFocus = false }
@@ -189,6 +215,19 @@ internal fun MenuDivider() {
             .padding(horizontal = 8.dp, vertical = 3.dp)
             .height(1.dp)
             .background(color)
+    )
+}
+
+@Composable
+internal fun MenuSubmenuChevron() {
+    val rtl = LocalLayoutDirection.current == LayoutDirection.Rtl
+    Icon(
+        painter = rememberVectorPainter(SaltIcons.ChevronRight),
+        contentDescription = null,
+        modifier = Modifier
+            .size(16.dp)
+            .graphicsLayer { scaleX = if (rtl) -1f else 1f },
+        tint = SaltTheme.colors.subText
     )
 }
 

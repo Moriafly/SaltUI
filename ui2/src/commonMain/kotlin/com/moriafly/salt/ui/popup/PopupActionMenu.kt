@@ -17,13 +17,24 @@
 
 package com.moriafly.salt.ui.popup
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.SizeTransform
+import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.MutableTransitionState
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.runtime.Composable
@@ -31,7 +42,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
@@ -47,25 +57,39 @@ import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onKeyEvent
 import androidx.compose.ui.input.key.type
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.semantics.onClick
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.DpOffset
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.PopupPositionProvider
 import androidx.compose.ui.window.PopupProperties
 import com.moriafly.salt.core.os.OS
+import com.moriafly.salt.ui.Icon
+import com.moriafly.salt.ui.SaltTheme
 import com.moriafly.salt.ui.UnstableSaltUiApi
+import com.moriafly.salt.ui.generated.resources.Res
+import com.moriafly.salt.ui.generated.resources.back
+import com.moriafly.salt.ui.icons.ArrowBack
+import com.moriafly.salt.ui.icons.SaltIcons
 import com.moriafly.salt.ui.rememberScrollState
 import com.moriafly.salt.ui.thenIf
 import com.moriafly.salt.ui.verticalScroll
+import org.jetbrains.compose.resources.stringResource
 
 /**
- * A menu of actions and choices declared in [items].
+ * An action menu with platform-adapted layout, selection and submenus.
  *
  * The caller controls [expanded] and should set it to false in [onDismissRequest]. Keep the menu
- * in composition while closed so the exit transition can finish.
+ * in composition while closed to allow the touch exit transition to finish.
  *
- * [header] can contain interactive content such as a filter field. [anchor] supplies the pointer
- * position for automatic placement. [popupPositionProvider] overrides placement and receives
- * the trigger bounds and panel size in pixels.
+ * [header] can contain interactive content, such as a filter field. [anchor] captures the
+ * opening pointer position for automatic placement. [popupPositionProvider] overrides automatic
+ * placement and receives the trigger bounds and menu panel size in pixels. [style] is shared
+ * by the root menu and its submenus.
  */
 @UnstableSaltUiApi
 @Composable
@@ -82,18 +106,27 @@ fun PopupActionMenu(
     items: PopupMenuScope.() -> Unit
 ) {
     val desktop = OS.isDesktop()
-    val visible = remember { MutableTransitionState(false) }
+    val direction = LocalLayoutDirection.current
     val navigation = remember { MenuNavigation() }
+    val visible = remember { MutableTransitionState(false) }
     val currentItems by rememberUpdatedState(items)
-    val openEntries by remember { derivedStateOf { buildMenuEntries(currentItems) } }
-    val entries = if (expanded) openEntries else navigation.lastEntries
+    val openPages by remember(navigation) {
+        derivedStateOf { menuPages(currentItems, navigation.path) }
+    }
+    val pages = if (expanded) openPages else navigation.lastPages
+    val currentPage = pages.lastOrNull()
+    val root = pages.firstOrNull()
+    val settledClosed = !expanded && (desktop || (visible.isIdle && !visible.currentState))
     SideEffect {
         if (expanded) {
-            navigation.lastEntries = entries
+            navigation.lastPages = pages
+            if (currentPage != null && currentPage.path != navigation.path) {
+                navigation.path = currentPage.path
+            }
         } else {
-            navigation.cursor = -1
-            if (desktop || (visible.isIdle && !visible.currentState)) {
-                navigation.lastEntries = emptyList()
+            navigation.reset()
+            if (settledClosed) {
+                navigation.lastPages = emptyList()
             }
         }
     }
@@ -101,139 +134,410 @@ fun PopupActionMenu(
     MenuPopup(
         expanded = expanded,
         onDismissRequest = onDismissRequest,
+        modifier = modifier,
         offset = offset,
         properties = properties,
         style = style,
         anchor = anchor,
         popupPositionProvider = popupPositionProvider,
         scrollable = false,
-        modifier = modifier,
         useIntrinsicWidth = desktop,
         visible = visible
     ) {
-        val focus = remember { FocusRequester() }
-        var hasFocus by remember { mutableStateOf(false) }
-        val focusable = expanded && properties.focusable
-        LaunchedEffect(focusable) {
-            if (focusable && !hasFocus) {
-                focus.requestFocus()
+        if (root != null && currentPage != null) {
+            val focus = remember { FocusRequester() }
+            var hasFocus by remember { mutableStateOf(false) }
+            LaunchedEffect(expanded, properties.focusable) {
+                if (expanded && properties.focusable && !hasFocus) {
+                    focus.requestFocus()
+                }
+            }
+            Column(
+                modifier = Modifier
+                    .thenIf(desktop) { widthIn(min = 176.dp, max = 420.dp) }
+                    .onKeyEvent { event ->
+                        if (!expanded || !properties.focusable) {
+                            false
+                        } else {
+                            navigation.handleKey(
+                                event = event,
+                                page = currentPage,
+                                direction = direction,
+                                onDismissRequest = onDismissRequest
+                            )
+                        }
+                    }
+                    .focusRequester(focus)
+                    .onFocusChanged { hasFocus = it.hasFocus }
+                    .focusable(enabled = expanded && properties.focusable)
+            ) {
+                if (desktop) {
+                    MenuPageContent(
+                        page = root,
+                        pages = pages,
+                        navigation = navigation,
+                        desktop = true,
+                        active = expanded,
+                        style = style,
+                        header = header,
+                        onDismissRequest = onDismissRequest
+                    )
+                } else {
+                    AnimatedContent(
+                        targetState = currentPage,
+                        contentKey = { it.path },
+                        transitionSpec = {
+                            val forward = targetState.path.size > initialState.path.size
+                            val towardEnd = (if (forward) 1 else -1) *
+                                (if (direction == LayoutDirection.Ltr) 1 else -1)
+                            val exitDuration = 60
+                            val enterSlideDuration = 145
+                            val enter = fadeIn(tween(105, delayMillis = exitDuration)) +
+                                slideInHorizontally(
+                                    tween(enterSlideDuration, delayMillis = exitDuration)
+                                ) {
+                                    towardEnd * it / 20
+                                }
+                            (enter togetherWith fadeOut(tween(exitDuration))) using
+                                SizeTransform { _, _ ->
+                                    tween(
+                                        exitDuration + enterSlideDuration,
+                                        easing = FastOutSlowInEasing
+                                    )
+                                }
+                        },
+                        label = "Menu page"
+                    ) { page ->
+                        MenuPageContent(
+                            page = page,
+                            pages = pages,
+                            navigation = navigation,
+                            desktop = false,
+                            active = expanded && currentPage.path == page.path,
+                            style = style,
+                            header = if (page.path.isEmpty()) header else null,
+                            onDismissRequest = onDismissRequest,
+                            modifier = Modifier.widthIn(min = 196.dp, max = 340.dp)
+                                .width(IntrinsicSize.Max)
+                        )
+                    }
+                }
             }
         }
+    }
+}
+
+@OptIn(UnstableSaltUiApi::class)
+@Composable
+private fun MenuPageContent(
+    page: MenuPage,
+    pages: List<MenuPage>,
+    navigation: MenuNavigation,
+    desktop: Boolean,
+    active: Boolean,
+    style: PopupMenuStyle,
+    header: (@Composable () -> Unit)?,
+    onDismissRequest: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val scroll = rememberScrollState()
+    val child = if (desktop) pages.getOrNull(page.path.size + 1) else null
+    val openIndex = child?.path?.lastOrNull()
+    val reserveSelectionSpace = desktop && page.entries.any { entry ->
+        entry is MenuEntry.Action && entry.selection != null
+    }
+    val reserveIconSpace = page.entries.any { entry ->
+        entry is MenuEntry.Item && entry.leadingIcon != null
+    }
+
+    Column(modifier = modifier) {
+        val parent = page.parent
+        if (!desktop && parent != null) {
+            val back = stringResource(Res.string.back)
+            MenuRow(
+                modifier = Modifier.semantics { onClick(label = back, action = null) },
+                enabled = active,
+                desktop = false,
+                highlighted = false,
+                onClick = { navigation.back(page, keepFocus = false) },
+                useMenuFocus = true
+            ) {
+                Icon(
+                    imageVector = SaltIcons.ArrowBack,
+                    contentDescription = null,
+                    modifier = Modifier.size(16.dp),
+                    tint = SaltTheme.colors.subText
+                )
+                Spacer(Modifier.width(8.dp))
+                parent.text()
+            }
+            MenuDivider()
+        }
+
+        if (header != null) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 4.dp)
+                    .clip(menuRowShape(desktop))
+            ) {
+                header()
+            }
+        }
+
         Column(
             modifier = Modifier
-                .thenIf(desktop) { widthIn(min = 176.dp, max = 420.dp) }
-                .thenIf(!desktop) { widthIn(min = 196.dp, max = 340.dp).width(IntrinsicSize.Max) }
-                .onKeyEvent { event ->
-                    focusable && navigation.handleKey(event, entries, onDismissRequest)
-                }
-                .focusRequester(focus)
-                .onFocusChanged { hasFocus = it.hasFocus }
-                .focusable(enabled = focusable)
+                .verticalScroll(scroll, enabled = active && scroll.maxValue > 0)
         ) {
-            if (header != null) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 4.dp)
-                        .clip(menuRowShape(desktop))
-                ) {
-                    header()
+            page.entries.forEachIndexed { index, entry ->
+                when (entry) {
+                    is MenuEntry.Item -> {
+                        val keyboardSelected = navigation.cursor == MenuCursor(page.path, index)
+                        val highlighted = keyboardSelected || openIndex == index
+                        Box {
+                            MenuRow(
+                                modifier = entry.rowModifier,
+                                enabled = active && entry.enabled,
+                                desktop = desktop,
+                                highlighted = highlighted,
+                                revealForKeyboard = keyboardSelected,
+                                useMenuFocus = true,
+                                selection = (entry as? MenuEntry.Action)?.selection,
+                                reserveSelectionSpace = reserveSelectionSpace,
+                                onHover = { navigation.hover(page, index) },
+                                onClick = {
+                                    navigation.activate(
+                                        page = page,
+                                        index = index,
+                                        keyboard = false,
+                                        onDismissRequest = onDismissRequest
+                                    )
+                                }
+                            ) {
+                                MenuEntryContent(entry, reserveIconSpace)
+                            }
+
+                            if (child != null && openIndex == index) {
+                                MenuPopup(
+                                    expanded = active,
+                                    onDismissRequest = null,
+                                    modifier = Modifier.widthIn(min = 176.dp, max = 420.dp),
+                                    offset = DpOffset.Zero,
+                                    properties = MenuSubmenuProperties,
+                                    style = style,
+                                    anchor = null,
+                                    popupPositionProvider = rememberSubmenuPositionProvider(),
+                                    scrollable = false
+                                ) {
+                                    MenuPageContent(
+                                        page = child,
+                                        pages = pages,
+                                        navigation = navigation,
+                                        desktop = true,
+                                        active = active,
+                                        style = style,
+                                        header = null,
+                                        onDismissRequest = onDismissRequest
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    MenuEntry.Divider -> MenuDivider()
                 }
             }
-
-            MenuActions(
-                entries = entries,
-                cursor = navigation.cursor,
-                active = expanded,
-                desktop = desktop,
-                onDismissRequest = onDismissRequest
-            )
         }
     }
 }
 
 @Composable
-private fun MenuActions(
-    entries: List<MenuEntry>,
-    cursor: Int,
-    active: Boolean,
-    desktop: Boolean,
-    onDismissRequest: () -> Unit
+private fun RowScope.MenuEntryContent(
+    entry: MenuEntry.Item,
+    reserveIconSpace: Boolean
 ) {
-    val scroll = rememberScrollState()
-    val reserveSelectionSpace = desktop && entries.any { entry ->
-        entry is MenuEntry.Action && entry.selection != null
+    val trailingContent: (@Composable () -> Unit)? = when (entry) {
+        is MenuEntry.Action -> entry.trailingContent
+        is MenuEntry.Submenu -> {
+            { MenuSubmenuChevron() }
+        }
     }
-    val reserveIconSpace = entries.any { it is MenuEntry.Action && it.leadingIcon != null }
-    Column(modifier = Modifier.verticalScroll(scroll, enabled = active && scroll.maxValue > 0)) {
-        entries.forEachIndexed { index, entry ->
-            when (entry) {
-                is MenuEntry.Action -> {
-                    MenuRow(
-                        enabled = active && entry.enabled,
-                        desktop = desktop,
-                        onClick = { entry.activate(onDismissRequest) },
-                        modifier = entry.rowModifier,
-                        revealForKeyboard = cursor == index,
-                        useMenuFocus = true,
-                        selection = entry.selection,
-                        reserveSelectionSpace = reserveSelectionSpace
-                    ) {
-                        MenuItemContent(
-                            text = entry.text,
-                            leadingIcon = entry.leadingIcon,
-                            trailingContent = entry.trailingContent,
-                            reserveIconSpace = reserveIconSpace
-                        )
-                    }
-                }
+    MenuItemContent(
+        text = entry.text,
+        leadingIcon = entry.leadingIcon,
+        trailingContent = trailingContent,
+        reserveIconSpace = reserveIconSpace
+    )
+}
 
-                MenuEntry.Divider -> MenuDivider()
+private val MenuSubmenuProperties = PopupProperties(
+    focusable = false,
+    dismissOnBackPress = false,
+    dismissOnClickOutside = false
+)
+
+@Composable
+private fun rememberSubmenuPositionProvider(): PopupPositionProvider {
+    val density = LocalDensity.current
+    return remember(density) {
+        val margin = with(density) { 8.dp.roundToPx() }
+        val padding = with(density) { DesktopMenuContentPadding.roundToPx() }
+        val overlap = with(density) { 4.dp.roundToPx() }
+        createMenuPositionProvider { anchor, window, direction, size ->
+            val right = anchor.right - overlap
+            val left = anchor.left + overlap - size.width
+            val maxX = (window.width - size.width - margin).coerceAtLeast(margin)
+            val maxY = (window.height - size.height - margin).coerceAtLeast(margin)
+            val preferred = if (direction == LayoutDirection.Ltr) right else left
+            val alternate = if (direction == LayoutDirection.Ltr) left else right
+            val x = when {
+                preferred in margin..maxX -> preferred
+                alternate in margin..maxX -> alternate
+                window.width - anchor.right >= anchor.left -> maxX
+                else -> margin
             }
+            IntOffset(x, (anchor.top - padding).coerceIn(margin, maxY))
         }
     }
 }
 
-private fun MenuEntry.Action.activate(onDismissRequest: () -> Unit) {
-    if (closeOnClick) {
-        onDismissRequest()
+private class MenuPage(
+    val path: List<Int>,
+    val parent: MenuEntry.Submenu?,
+    val entries: List<MenuEntry>
+)
+
+private data class MenuCursor(
+    val path: List<Int>,
+    val index: Int
+)
+
+@OptIn(UnstableSaltUiApi::class)
+private fun menuPages(
+    items: PopupMenuScope.() -> Unit,
+    path: List<Int>
+): List<MenuPage> = buildList {
+    var page = MenuPage(emptyList(), null, buildMenuEntries(items))
+    add(page)
+    for (index in path) {
+        val submenu = page.entries.getOrNull(index) as? MenuEntry.Submenu
+        if (submenu == null || !submenu.enabled) {
+            break
+        }
+        page = MenuPage(page.path + index, submenu, buildMenuEntries(submenu.items))
+        add(page)
     }
-    onClick()
 }
 
+@OptIn(UnstableSaltUiApi::class)
 private class MenuNavigation {
-    var cursor by mutableIntStateOf(-1)
-    var lastEntries: List<MenuEntry> = emptyList()
+    var path by mutableStateOf(emptyList<Int>())
+    var cursor by mutableStateOf<MenuCursor?>(null)
+        private set
+    var lastPages: List<MenuPage> = emptyList()
+
+    fun reset() {
+        path = emptyList()
+        cursor = null
+    }
+
+    fun activate(page: MenuPage, index: Int, keyboard: Boolean, onDismissRequest: () -> Unit) {
+        when (val entry = page.entries.getOrNull(index)?.takeIf { it.enabled }) {
+            is MenuEntry.Action -> {
+                if (entry.closeOnClick) onDismissRequest()
+                entry.onClick()
+            }
+
+            is MenuEntry.Submenu -> {
+                path = page.path + index
+                val first = if (keyboard) {
+                    buildMenuEntries(entry.items).indexOfFirst {
+                        it.enabled
+                    }
+                } else {
+                    -1
+                }
+                cursor = if (first >= 0) MenuCursor(path, first) else null
+            }
+
+            else -> Unit
+        }
+    }
+
+    fun hover(page: MenuPage, index: Int) {
+        val entry = page.entries[index]
+        if (entry is MenuEntry.Submenu) {
+            val next = page.path + index
+            if (path.size < next.size || path.take(next.size) != next) {
+                path = next
+            }
+        } else {
+            path = page.path
+        }
+        cursor = null
+    }
+
+    fun back(page: MenuPage, keepFocus: Boolean) {
+        val parentIndex = page.path.lastOrNull() ?: return
+        path = page.path.dropLast(1)
+        cursor = if (keepFocus) MenuCursor(path, parentIndex) else null
+    }
 
     fun handleKey(
         event: KeyEvent,
-        entries: List<MenuEntry>,
+        page: MenuPage,
+        direction: LayoutDirection,
         onDismissRequest: () -> Unit
     ): Boolean {
         if (event.type != KeyEventType.KeyDown) {
             return false
         }
+        val forward = if (direction ==
+            LayoutDirection.Ltr
+        ) {
+            Key.DirectionRight
+        } else {
+            Key.DirectionLeft
+        }
+        val backward = if (direction ==
+            LayoutDirection.Ltr
+        ) {
+            Key.DirectionLeft
+        } else {
+            Key.DirectionRight
+        }
+        val index = cursor?.takeIf { it.path == page.path }?.index ?: -1
         return when (event.key) {
             Key.DirectionDown, Key.DirectionUp, Key.MoveHome, Key.MoveEnd -> {
-                val enabled = entries.indices.filter { entries[it].enabled }
+                val enabled = page.entries.indices.filter { page.entries[it].enabled }
                 if (enabled.isNotEmpty()) {
-                    val selected = enabled.indexOf(cursor)
-                    cursor = when (event.key) {
+                    val selected = enabled.indexOf(index)
+                    val next = when (event.key) {
                         Key.MoveHome -> enabled.first()
                         Key.MoveEnd -> enabled.last()
                         Key.DirectionDown -> enabled[(selected + 1) % enabled.size]
                         else -> enabled[if (selected <= 0) enabled.lastIndex else selected - 1]
                     }
+                    cursor = MenuCursor(page.path, next)
                 }
                 true
             }
 
             Key.Enter, Key.NumPadEnter, Key.Spacebar -> {
-                val action = entries.getOrNull(cursor) as? MenuEntry.Action
-                if (action == null || !action.enabled) {
-                    return false
-                }
-                action.activate(onDismissRequest)
+                if (index < 0) return false
+                activate(page, index, keyboard = true, onDismissRequest = onDismissRequest)
+                true
+            }
+
+            forward -> {
+                if (page.entries.getOrNull(index) !is MenuEntry.Submenu) return false
+                activate(page, index, keyboard = true, onDismissRequest = onDismissRequest)
+                true
+            }
+
+            backward, Key.Escape -> {
+                if (page.path.isEmpty()) return false
+                back(page, keepFocus = true)
                 true
             }
 

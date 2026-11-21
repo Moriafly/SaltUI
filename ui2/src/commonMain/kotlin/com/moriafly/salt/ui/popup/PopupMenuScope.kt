@@ -23,7 +23,7 @@ import androidx.compose.ui.Modifier
 import com.moriafly.salt.ui.UnstableSaltUiApi
 
 /**
- * Declares the entries shown by [PopupActionMenu].
+ * Declares the entries shown by [PopupActionMenu] for keyboard and pointer navigation.
  */
 @LayoutScopeMarker
 @UnstableSaltUiApi
@@ -70,22 +70,48 @@ sealed interface PopupMenuScope {
     )
 
     fun divider()
+
+    /**
+     * Opens a child menu when activated or hovered on desktop. On touch devices, [text] is
+     * also displayed as the title of the child page.
+     */
+    fun submenu(
+        text: @Composable () -> Unit,
+        modifier: Modifier = Modifier,
+        leadingIcon: (@Composable () -> Unit)? = null,
+        enabled: Boolean = true,
+        items: PopupMenuScope.() -> Unit
+    )
 }
 
 @OptIn(UnstableSaltUiApi::class)
 internal sealed interface MenuEntry {
     val enabled: Boolean
 
+    sealed interface Item : MenuEntry {
+        val rowModifier: Modifier
+        val text: @Composable () -> Unit
+        val leadingIcon: (@Composable () -> Unit)?
+    }
+
     class Action(
         val onClick: () -> Unit,
-        val rowModifier: Modifier,
-        val text: @Composable () -> Unit,
-        val leadingIcon: (@Composable () -> Unit)?,
+        override val rowModifier: Modifier,
+        override val text: @Composable () -> Unit,
+        override val leadingIcon: (@Composable () -> Unit)?,
         val trailingContent: (@Composable () -> Unit)?,
         override val enabled: Boolean,
         val closeOnClick: Boolean,
         val selection: MenuSelection? = null
-    ) : MenuEntry
+    ) : Item
+
+    class Submenu(
+        val items: PopupMenuScope.() -> Unit,
+        override val rowModifier: Modifier,
+        override val text: @Composable () -> Unit,
+        override val leadingIcon: (@Composable () -> Unit)?,
+        override val enabled: Boolean
+    ) : Item
 
     data object Divider : MenuEntry {
         override val enabled: Boolean = false
@@ -167,5 +193,21 @@ private class MenuEntryBuilder(
 
     override fun divider() {
         entries += MenuEntry.Divider
+    }
+
+    override fun submenu(
+        text: @Composable () -> Unit,
+        modifier: Modifier,
+        leadingIcon: (@Composable () -> Unit)?,
+        enabled: Boolean,
+        items: PopupMenuScope.() -> Unit
+    ) {
+        entries += MenuEntry.Submenu(
+            items = items,
+            rowModifier = modifier,
+            text = text,
+            leadingIcon = leadingIcon,
+            enabled = enabled
+        )
     }
 }
