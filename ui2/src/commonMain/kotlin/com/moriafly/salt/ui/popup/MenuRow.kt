@@ -18,25 +18,32 @@
 package com.moriafly.salt.ui.popup
 
 import androidx.compose.foundation.LocalIndication
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.relocation.BringIntoViewRequester
+import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.Role
@@ -47,6 +54,7 @@ import com.moriafly.salt.ui.SaltTheme
 import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.moriafly.salt.ui.enabledAlpha
 import com.moriafly.salt.ui.internal.SmoothRoundedRectangleShape
+import com.moriafly.salt.ui.thenIf
 
 internal sealed interface MenuSelection {
     val marked: Boolean
@@ -67,9 +75,21 @@ internal fun MenuRow(
     desktop: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    revealForKeyboard: Boolean = false,
+    useMenuFocus: Boolean = false,
     selection: MenuSelection? = null,
+    reserveSelectionSpace: Boolean = false,
     content: @Composable RowScope.() -> Unit
 ) {
+    val bringIntoView = remember { BringIntoViewRequester() }
+    LaunchedEffect(revealForKeyboard) {
+        if (revealForKeyboard) {
+            bringIntoView.bringIntoView()
+        }
+    }
+
+    val colors = SaltTheme.colors
+    val dark = SaltTheme.configs.isDarkTheme
     val shape = menuRowShape(desktop)
     val indication = LocalIndication.current
     val activation = when (selection) {
@@ -103,14 +123,22 @@ internal fun MenuRow(
         modifier = modifier
             .fillMaxWidth()
             .heightIn(min = if (desktop) 32.dp else 44.dp)
+            .bringIntoViewRequester(bringIntoView)
             .clip(shape)
+            .thenIf(enabled && revealForKeyboard) {
+                background(colors.text.copy(alpha = if (dark) 0.10f else 0.07f))
+                    .border(Dp.Hairline, colors.text.copy(alpha = 0.32f), shape)
+            }
+            .thenIf(useMenuFocus) {
+                focusProperties { canFocus = false }
+            }
             .then(activation)
             .padding(horizontal = if (desktop) 6.dp else 12.dp, vertical = 4.dp)
             .enabledAlpha(enabled),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        if (desktop && selection != null) {
-            MenuSelectionMark(selection.marked, size = 16.dp)
+        if (desktop && (selection != null || reserveSelectionSpace)) {
+            MenuSelectionMark(selection?.marked == true, size = 16.dp)
             Spacer(Modifier.width(8.dp))
         }
         content()
@@ -149,6 +177,19 @@ internal fun RowScope.MenuItemContent(
 internal fun menuRowShape(desktop: Boolean): SmoothRoundedRectangleShape {
     val radius = if (desktop) 6.dp else mobileMenuCornerRadius() - MobileMenuContentPadding
     return remember(radius) { SmoothRoundedRectangleShape(radius) }
+}
+
+@Composable
+internal fun MenuDivider() {
+    val dark = SaltTheme.configs.isDarkTheme
+    val color = SaltTheme.colors.text.copy(alpha = if (dark) 0.18f else 0.13f)
+    Spacer(
+        Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 8.dp, vertical = 3.dp)
+            .height(1.dp)
+            .background(color)
+    )
 }
 
 internal val MobileMenuContentPadding = 6.dp

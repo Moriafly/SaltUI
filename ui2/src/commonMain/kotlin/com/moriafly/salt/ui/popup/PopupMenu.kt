@@ -33,6 +33,7 @@ import com.moriafly.salt.ui.UnstableSaltUiApi
 /**
  * An anchored popup for custom menu content.
  * Wrap the content behind the menu in [PopupMenuBackdrop] to sample the page.
+ * For keyboard-navigable actions and selection, use [PopupActionMenu].
  */
 @UnstableSaltUiApi
 @Composable
