@@ -19,5 +19,24 @@
 
 package com.moriafly.salt.ui.popup
 
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.ExperimentalComposeUiApi
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.window.PopupProperties
+
 internal actual val popupSharesHostCanvas: Boolean
     get() = false
+
+@Composable
+internal actual fun PopupProperties.menuPositionOrigin(): IntOffset = IntOffset.Zero
+
+@OptIn(ExperimentalComposeUiApi::class)
+internal actual fun PopupProperties.forMenuExit(): PopupProperties = PopupProperties(
+    focusable = false,
+    dismissOnBackPress = false,
+    dismissOnClickOutside = false,
+    clippingEnabled = clippingEnabled,
+    usePlatformDefaultWidth = usePlatformDefaultWidth,
+    usePlatformInsets = usePlatformInsets,
+    consumePointerInputOutside = false
+)

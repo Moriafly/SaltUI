@@ -19,5 +19,15 @@
 
 package com.moriafly.salt.ui.popup
 
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.window.PopupProperties
+
 internal actual val popupSharesHostCanvas: Boolean
     get() = false
+
+@Composable
+internal actual fun PopupProperties.menuPositionOrigin(): IntOffset = IntOffset.Zero
+
+// Keep custom Android window flags and secure policy on the same native window during exit.
+internal actual fun PopupProperties.forMenuExit(): PopupProperties = this
