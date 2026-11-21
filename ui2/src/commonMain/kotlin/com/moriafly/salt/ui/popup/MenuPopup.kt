@@ -24,6 +24,8 @@ import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.rememberTransition
 import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
@@ -38,16 +40,21 @@ import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.PathHitTester
 import androidx.compose.ui.graphics.TransformOrigin
+import androidx.compose.ui.graphics.addOutline
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalGraphicsContext
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.hideFromAccessibility
@@ -58,6 +65,7 @@ import androidx.compose.ui.unit.IntRect
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.toSize
 import androidx.compose.ui.window.Popup
 import androidx.compose.ui.window.PopupPositionProvider
 import androidx.compose.ui.window.PopupProperties
@@ -169,6 +177,9 @@ internal fun MenuPopup(
                 style = style,
                 scrollable = scrollable,
                 useIntrinsicWidth = useIntrinsicWidth,
+                onDismissOutside = onDismissRequest.takeIf {
+                    expanded && properties.dismissOnClickOutside
+                },
                 modifier = modifier,
                 content = content
             )
@@ -185,6 +196,7 @@ private fun MenuSurface(
     style: PopupMenuStyle,
     scrollable: Boolean,
     useIntrinsicWidth: Boolean,
+    onDismissOutside: (() -> Unit)?,
     modifier: Modifier = Modifier,
     content: @Composable ColumnScope.() -> Unit
 ) {
@@ -227,12 +239,30 @@ private fun MenuSurface(
     val maxWidth = (windowSize.width - 24.dp).coerceAtLeast(1.dp)
     val maxHeight = (windowSize.height - 24.dp).coerceAtLeast(1.dp)
     val scrollState = rememberScrollState()
+    val direction = LocalLayoutDirection.current
+    val currentDismiss by rememberUpdatedState(onDismissOutside)
     Box(
         modifier = modifier
             .widthIn(max = if (windowSize.width > 0.dp) maxWidth else Dp.Unspecified)
             .heightIn(max = if (windowSize.height > 0.dp) maxHeight else Dp.Unspecified)
             .thenIf(useIntrinsicWidth) { width(IntrinsicSize.Max) }
             .thenIf(reveal) { revealPopupWindowBackdrop(shape) }
+            .thenIf(desktop) {
+                pointerInput(shape, direction) {
+                    awaitEachGesture {
+                        val down = awaitFirstDown(
+                            requireUnconsumed = false,
+                            pass = PointerEventPass.Initial
+                        )
+                        val outline = shape.createOutline(size.toSize(), direction, this)
+                        val path = Path().apply { addOutline(outline) }
+                        if (down.position !in PathHitTester(path)) {
+                            down.consume()
+                            currentDismiss?.invoke()
+                        }
+                    }
+                }
+            }
             .thenIf(!visible.targetState) {
                 clearAndSetSemantics { hideFromAccessibility() }
                     .pointerInput(Unit) {
