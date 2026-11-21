@@ -30,6 +30,7 @@ import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -55,6 +56,7 @@ import com.moriafly.salt.ui.SaltTheme
 import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.moriafly.salt.ui.rememberScrollState
 import com.moriafly.salt.ui.verticalScroll
+import kotlin.math.roundToInt
 
 /**
  * Build on Google Jetpack Compose Popup.
@@ -72,16 +74,55 @@ fun PopupMenu(
     backgroundColor: Color = SaltTheme.colors.popup,
     content: @Composable ColumnScope.() -> Unit
 ) {
+    PopupMenu(
+        expanded = expanded,
+        onDismissRequest = onDismissRequest,
+        anchor = null,
+        modifier = modifier,
+        offset = offset,
+        properties = properties,
+        backgroundColor = backgroundColor,
+        content = content
+    )
+}
+
+@OptIn(UnstableSaltUiApi::class)
+@Composable
+internal fun PopupMenu(
+    expanded: Boolean,
+    onDismissRequest: () -> Unit,
+    anchor: PopupMenuAnchor?,
+    modifier: Modifier = Modifier,
+    offset: DpOffset = DpOffset(16.dp, 0.dp),
+    properties: PopupProperties = PopupProperties(focusable = true),
+    backgroundColor: Color = SaltTheme.colors.popup,
+    content: @Composable ColumnScope.() -> Unit
+) {
     val animate = !OS.isDesktop()
+    val pointerPosition = if (expanded && anchor != null) {
+        val position = remember(anchor) { anchor.pendingPositionInWindow }
+        DisposableEffect(anchor) {
+            anchor.onMenuOpened()
+            onDispose { anchor.onMenuClosed() }
+        }
+        position
+    } else {
+        null
+    }
     val expandedStates = remember { MutableTransitionState(false) }
     expandedStates.targetState = expanded
 
     if (expanded || (animate && expandedStates.currentState)) {
         val transformOriginState = remember { mutableStateOf(TransformOrigin.Center) }
         val density = LocalDensity.current
+        val pointerAnchorBounds = pointerPosition?.let {
+            val point = IntOffset(it.x.roundToInt(), it.y.roundToInt())
+            IntRect(point, IntSize.Zero)
+        }
         val popupPositionProvider = DropdownMenuPositionProvider(
-            offset,
-            density
+            contentOffset = offset,
+            density = density,
+            pointerAnchorBounds = pointerAnchorBounds
         ) { parentBounds, menuBounds ->
             if (animate) {
                 transformOriginState.value = calculateTransformOrigin(parentBounds, menuBounds)
@@ -232,6 +273,7 @@ internal fun calculateTransformOrigin(
 internal data class DropdownMenuPositionProvider(
     val contentOffset: DpOffset,
     val density: Density,
+    val pointerAnchorBounds: IntRect?,
     val onPositionCalculated: (IntRect, IntRect) -> Unit = { _, _ -> }
 ) : PopupPositionProvider {
     override fun calculatePosition(
@@ -240,6 +282,7 @@ internal data class DropdownMenuPositionProvider(
         layoutDirection: LayoutDirection,
         popupContentSize: IntSize
     ): IntOffset {
+        val placementBounds = pointerAnchorBounds ?: anchorBounds
         // The min margin above and below the menu, relative to the screen.
         val verticalMargin = with(density) { MenuVerticalMargin.roundToPx() }
         // The content offset specified using the dropdown offset parameter.
@@ -247,8 +290,8 @@ internal data class DropdownMenuPositionProvider(
         val contentOffsetY = with(density) { contentOffset.y.roundToPx() }
 
         // Compute horizontal position.
-        val toRight = anchorBounds.left + contentOffsetX
-        val toLeft = anchorBounds.right - contentOffsetX - popupContentSize.width
+        val toRight = placementBounds.left + contentOffsetX
+        val toLeft = placementBounds.right - contentOffsetX - popupContentSize.width
         val toDisplayRight = windowSize.width - popupContentSize.width
         val toDisplayLeft = 0
         val x = if (layoutDirection == LayoutDirection.Ltr) {
@@ -257,7 +300,7 @@ internal data class DropdownMenuPositionProvider(
                 toLeft,
                 // If the anchor gets outside of the window on the left, we want to position
                 // toDisplayLeft for proximity to the anchor. Otherwise, toDisplayRight.
-                if (anchorBounds.left >= 0) toDisplayRight else toDisplayLeft
+                if (placementBounds.left >= 0) toDisplayRight else toDisplayLeft
             )
         } else {
             sequenceOf(
@@ -265,16 +308,16 @@ internal data class DropdownMenuPositionProvider(
                 toRight,
                 // If the anchor gets outside of the window on the right, we want to position
                 // toDisplayRight for proximity to the anchor. Otherwise, toDisplayLeft.
-                if (anchorBounds.right <= windowSize.width) toDisplayLeft else toDisplayRight
+                if (placementBounds.right <= windowSize.width) toDisplayLeft else toDisplayRight
             )
         }.firstOrNull {
             it >= 0 && it + popupContentSize.width <= windowSize.width
         } ?: toLeft
 
         // Compute vertical position.
-        val toBottom = maxOf(anchorBounds.bottom + contentOffsetY, verticalMargin)
-        val toTop = anchorBounds.top - contentOffsetY - popupContentSize.height
-        val toCenter = anchorBounds.top - popupContentSize.height / 2
+        val toBottom = maxOf(placementBounds.bottom + contentOffsetY, verticalMargin)
+        val toTop = placementBounds.top - contentOffsetY - popupContentSize.height
+        val toCenter = placementBounds.top - popupContentSize.height / 2
         val toDisplayBottom = windowSize.height - popupContentSize.height - verticalMargin
         val y = sequenceOf(toBottom, toTop, toCenter, toDisplayBottom).firstOrNull {
             it >= verticalMargin &&
@@ -282,7 +325,7 @@ internal data class DropdownMenuPositionProvider(
         } ?: toTop
 
         onPositionCalculated(
-            anchorBounds,
+            placementBounds,
             IntRect(x, y, x + popupContentSize.width, y + popupContentSize.height)
         )
         return IntOffset(x, y)

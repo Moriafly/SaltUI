@@ -41,9 +41,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
+import com.moriafly.salt.core.os.OS
 import com.moriafly.salt.ui.popup.PopupMenu
 import com.moriafly.salt.ui.popup.PopupState
+import com.moriafly.salt.ui.popup.popupMenuAnchor
+import com.moriafly.salt.ui.popup.rememberPopupMenuAnchor
 import com.moriafly.salt.ui.popup.rememberPopupState
 
 /**
@@ -102,6 +106,9 @@ fun ItemDropdown(
     sub: String? = null,
     content: @Composable ItemDropdownScope.() -> Unit
 ) {
+    val anchor = if (OS.isDesktop()) rememberPopupMenuAnchor() else null
+    val anchorModifier = if (anchor == null) Modifier else Modifier.popupMenuAnchor(anchor)
+
     Box(
         modifier = modifier
     ) {
@@ -110,8 +117,13 @@ fun ItemDropdown(
                 .fillMaxWidth()
                 .heightIn(SaltTheme.dimens.item)
                 .enabledAlpha(enabled)
+                .then(anchorModifier)
                 .clickable(enabled = enabled) {
-                    state.expend()
+                    if (anchor == null) {
+                        state.expend()
+                    } else {
+                        anchor.open(state::expend)
+                    }
                 }
                 .innerPadding(vertical = false),
             verticalAlignment = Alignment.CenterVertically
@@ -165,9 +177,9 @@ fun ItemDropdown(
 
         PopupMenu(
             expanded = state.expend,
-            onDismissRequest = {
-                state.dismiss()
-            }
+            onDismissRequest = state::dismiss,
+            anchor = anchor,
+            offset = if (anchor == null) DpOffset(16.dp, 0.dp) else DpOffset.Zero
         ) {
             val scope = ItemDropdownScopeImpl(state, this)
             scope.content()
