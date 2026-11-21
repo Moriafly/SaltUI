@@ -151,6 +151,10 @@ fun MainScreen() {
                 onClick = { navigator.navigate(ScreenRoute.Glass) },
                 text = "Glass"
             )
+            Item(
+                onClick = { navigator.navigate(ScreenRoute.PopupMenus) },
+                text = "Popup menus"
+            )
         }
 
         ScreenCard(header = "Navigation") {

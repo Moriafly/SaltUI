@@ -20,15 +20,19 @@
 package com.moriafly.salt.ui.popup
 
 import androidx.compose.foundation.gestures.awaitEachGesture
-import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.isFinite
+import androidx.compose.ui.input.pointer.AwaitPointerEventScope
 import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.PointerEventType
+import androidx.compose.ui.input.pointer.PointerInputChange
 import androidx.compose.ui.input.pointer.PointerType
+import androidx.compose.ui.input.pointer.changedToDownIgnoreConsumed
+import androidx.compose.ui.input.pointer.isSecondaryPressed
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.onPlaced
@@ -89,10 +93,7 @@ fun Modifier.popupMenuAnchor(
     .pointerInput(anchor) {
         try {
             awaitEachGesture {
-                val down = awaitFirstDown(
-                    requireUnconsumed = false,
-                    pass = PointerEventPass.Initial
-                )
+                val down = awaitMenuAnchorPress()
                 if (down.type == PointerType.Touch || down.type == PointerType.Mouse) {
                     anchor.pointerPosition = down.position
                     var pressed: Boolean
@@ -108,3 +109,17 @@ fun Modifier.popupMenuAnchor(
             anchor.coordinates = null
         }
     }
+
+private suspend fun AwaitPointerEventScope.awaitMenuAnchorPress(): PointerInputChange {
+    while (true) {
+        val event = awaitPointerEvent(PointerEventPass.Initial)
+        val secondaryPress =
+            event.type == PointerEventType.Press && event.buttons.isSecondaryPressed
+        val down = event.changes.firstOrNull {
+            it.changedToDownIgnoreConsumed() || (secondaryPress && it.type == PointerType.Mouse)
+        }
+        if (down != null) {
+            return down
+        }
+    }
+}

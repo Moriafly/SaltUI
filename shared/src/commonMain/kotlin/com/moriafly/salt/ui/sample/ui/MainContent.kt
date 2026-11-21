@@ -63,6 +63,7 @@ private val sidebarDestinations: List<Pair<String, ScreenRoute>> = listOf(
     "Sheets" to ScreenRoute.Sheet,
     "Theme and material" to ScreenRoute.Material,
     "Glass" to ScreenRoute.Glass,
+    "Popup menus" to ScreenRoute.PopupMenus,
     "About" to ScreenRoute.About
 )
 
@@ -84,6 +85,7 @@ private val navigatorConfig = SavedStateConfiguration {
             subclass(ScreenRoute.Sheet::class, ScreenRoute.Sheet.serializer())
             subclass(ScreenRoute.Material::class, ScreenRoute.Material.serializer())
             subclass(ScreenRoute.Glass::class, ScreenRoute.Glass.serializer())
+            subclass(ScreenRoute.PopupMenus::class, ScreenRoute.PopupMenus.serializer())
         }
     }
 }

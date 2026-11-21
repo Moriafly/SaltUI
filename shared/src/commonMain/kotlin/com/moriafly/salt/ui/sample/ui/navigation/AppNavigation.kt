@@ -33,19 +33,20 @@ import androidx.navigationevent.NavigationEvent.SwipeEdge
 import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.moriafly.salt.ui.navigation.SaltNavigator
 import com.moriafly.salt.ui.sample.ui.screen.AboutScreen
+import com.moriafly.salt.ui.sample.ui.screen.BottomSheetScreen
 import com.moriafly.salt.ui.sample.ui.screen.ButtonScreen
+import com.moriafly.salt.ui.sample.ui.screen.CollapsingHeaderScreen
 import com.moriafly.salt.ui.sample.ui.screen.ComponentScreen
 import com.moriafly.salt.ui.sample.ui.screen.DialogScreen
 import com.moriafly.salt.ui.sample.ui.screen.GlassScreen
-import com.moriafly.salt.ui.sample.ui.screen.LicenseScreen
 import com.moriafly.salt.ui.sample.ui.screen.ItemsScreen
 import com.moriafly.salt.ui.sample.ui.screen.LayoutsScreen
-import com.moriafly.salt.ui.sample.ui.screen.BottomSheetScreen
-import com.moriafly.salt.ui.sample.ui.screen.CollapsingHeaderScreen
-import com.moriafly.salt.ui.sample.ui.screen.NestedCollapsedScreen
+import com.moriafly.salt.ui.sample.ui.screen.LicenseScreen
 import com.moriafly.salt.ui.sample.ui.screen.ListScreen
 import com.moriafly.salt.ui.sample.ui.screen.MainScreen
 import com.moriafly.salt.ui.sample.ui.screen.MaterialScreen
+import com.moriafly.salt.ui.sample.ui.screen.NestedCollapsedScreen
+import com.moriafly.salt.ui.sample.ui.screen.PopupMenuScreen
 import com.moriafly.salt.ui.sample.ui.screen.SheetScreen
 
 @OptIn(UnstableSaltUiApi::class)
@@ -144,6 +145,7 @@ fun AppNavigation(
             entry<ScreenRoute.Sheet> { SheetScreen() }
             entry<ScreenRoute.Material> { MaterialScreen() }
             entry<ScreenRoute.Glass> { GlassScreen() }
+            entry<ScreenRoute.PopupMenus> { PopupMenuScreen() }
         }
     )
 }
