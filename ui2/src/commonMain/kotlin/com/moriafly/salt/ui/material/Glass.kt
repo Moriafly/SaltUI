@@ -87,11 +87,17 @@ sealed interface GlassEffect {
     data object Blur : GlassEffect
 
     /**
-     * Draws glass with a background color selected for the current theme.
+     * Draws glass with a background and tint selected for the current theme.
+     *
+     * [lightColor] and [darkColor] fill behind the captured content.
+     * [lightTint] and [darkTint] color the refracted content, including opaque pixels.
+     * Use [Color.Transparent] as a tint to disable that theme's coloring.
      */
     data class Regular(
-        val lightColor: Color = Color(0x99FFFFFF),
-        val darkColor: Color = Color(0x99181818)
+        val lightColor: Color = Color.White,
+        val darkColor: Color = Color(0xFF181818),
+        val lightTint: Color = Color(0x99FFFFFF),
+        val darkTint: Color = Color(0x99181818)
     ) : GlassEffect
 
     /**
@@ -409,12 +415,6 @@ fun Modifier.glass(
     interactionState: GlassInteractionState = rememberGlassInteractionState()
 ): Modifier {
     val isDarkTheme = SaltTheme.configs.isDarkTheme
-    val background = when (effect) {
-        is GlassEffect.Solid -> if (isDarkTheme) effect.darkColor else effect.lightColor
-        GlassEffect.Blur -> SaltTheme.colors.subBackground
-        is GlassEffect.Regular -> if (isDarkTheme) effect.darkColor else effect.lightColor
-        GlassEffect.Transparent -> Color.Transparent
-    }
     return this
         .glassPointerInput(interactionState)
         // Move the material and its automatically tracked source cutout together.
@@ -428,11 +428,20 @@ fun Modifier.glass(
         // The glass cutout, when needed, observes the material's transform here.
         .then(
             when (effect) {
-                is GlassEffect.Solid -> Modifier.background(background, shape)
+                is GlassEffect.Solid -> {
+                    val backgroundColor = if (isDarkTheme) effect.darkColor else effect.lightColor
+                    Modifier.background(
+                        color = backgroundColor,
+                        shape = shape
+                    )
+                }
                 GlassEffect.Blur -> {
-                    val android = OS.current as? OS.Android
-                    if (android != null && android.versionSdk < OS.Android.ANDROID_12) {
-                        Modifier.background(background, shape)
+                    val os = OS.current
+                    if (os is OS.Android && os.versionSdk < OS.Android.ANDROID_12) {
+                        Modifier.background(
+                            color = SaltTheme.colors.subBackground,
+                            shape = shape
+                        )
                     } else {
                         val style = remember(isDarkTheme) { GlassStyles.blur(isDarkTheme) }
                         Modifier
@@ -448,24 +457,37 @@ fun Modifier.glass(
                             .hazeBlur(input = source.hazeInput, style = style)
                     }
                 }
-                is GlassEffect.Regular, GlassEffect.Transparent -> {
-                    val isTransparent = effect == GlassEffect.Transparent
-                    val style = remember(shape, background, isDarkTheme, isTransparent) {
-                        val style = if (isTransparent) {
-                            GlassStyles.transparent(isDarkTheme)
-                        } else {
-                            GlassStyles.regular(isDarkTheme)
-                        }
-                        style.then {
+                is GlassEffect.Regular -> {
+                    val backgroundColor = if (isDarkTheme) effect.darkColor else effect.lightColor
+                    val tintColor = if (isDarkTheme) effect.darkTint else effect.lightTint
+                    val glassStyle = remember(shape, backgroundColor, tintColor, isDarkTheme) {
+                        GlassStyles.regular(isDarkTheme).then {
                             shape(shape)
-                            backgroundColor(background)
+                            backgroundColor(backgroundColor)
+                            tint(tintColor)
                         }
                     }
                     Modifier.refractiveGlass(
                         source = source,
                         shape = shape,
-                        glassStyle = style,
-                        isBackgroundFullyTransparent = background.alpha == 0f,
+                        glassStyle = glassStyle,
+                        isBackgroundFullyTransparent = backgroundColor.alpha == 0f,
+                        interactionState = interactionState,
+                        isDarkTheme = isDarkTheme
+                    )
+                }
+                GlassEffect.Transparent -> {
+                    val glassStyle = remember(shape, isDarkTheme) {
+                        GlassStyles.transparent(isDarkTheme).then {
+                            shape(shape)
+                            backgroundColor(Color.Transparent)
+                        }
+                    }
+                    Modifier.refractiveGlass(
+                        source = source,
+                        shape = shape,
+                        glassStyle = glassStyle,
+                        isBackgroundFullyTransparent = true,
                         interactionState = interactionState,
                         isDarkTheme = isDarkTheme
                     )
