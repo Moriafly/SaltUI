@@ -118,7 +118,7 @@ internal fun PopupMenuPanel(
     val desktop = OS.isDesktop()
     val pointerPosition = rememberMenuOpeningPosition(anchor, expanded)
     visible.targetState = expanded
-    if (expanded || (!desktop && (!visible.isIdle || visible.currentState))) {
+    if (expanded || visible.isRetainingMobileWindow(desktop)) {
         val shadowGutter = if (OS.isAndroid()) MenuShadowGutter else 0.dp
         val inset = with(LocalDensity.current) { shadowGutter.roundToPx() }
         var placement by remember { mutableStateOf<MenuPlacement?>(null) }
@@ -132,47 +132,72 @@ internal fun PopupMenuPanel(
             onPlacement = { placement = it }
         )
 
-        var lastOpenPosition by remember { mutableStateOf<PopupPositionProvider?>(null) }
-        SideEffect {
-            if (!desktop && expanded) {
-                lastOpenPosition = positionProvider
-            }
-        }
+        val windowPosition = rememberMenuWindowPosition(
+            positionProvider = positionProvider,
+            expanded = expanded,
+            desktop = desktop
+        )
+        val activeDismiss = onDismissRequest.takeIf { expanded }
+        val dismissOutside = activeDismiss.takeIf { properties.dismissOnClickOutside }
 
         Popup(
-            onDismissRequest = if (expanded) onDismissRequest else null,
-            popupPositionProvider = if (expanded) {
-                positionProvider
-            } else {
-                lastOpenPosition
-                    ?: positionProvider
-            },
+            onDismissRequest = activeDismiss,
+            popupPositionProvider = windowPosition,
             properties = if (expanded) properties else properties.forMenuExit()
         ) {
-            val dismissOutside = onDismissRequest.takeIf {
-                expanded && properties.dismissOnClickOutside
+            MenuWindowContent(
+                shadowGutter = shadowGutter,
+                dismissFromGutter = dismissOutside.takeIf { inset > 0 }
+            ) {
+                MenuSurface(
+                    modifier = modifier,
+                    visible = visible,
+                    placement = { placement },
+                    desktop = desktop,
+                    style = style,
+                    scrollable = scrollable,
+                    useIntrinsicWidth = useIntrinsicWidth,
+                    dropdownSlideSelection = dropdownSlideSelection,
+                    isSlideSelecting = isSlideSelecting,
+                    onDismissOutside = dismissOutside,
+                    content = content
+                )
             }
-            Box {
-                if (inset > 0 && dismissOutside != null) {
-                    MenuShadowDismissRegion(dismissOutside)
-                }
+        }
+    }
+}
 
-                Box(Modifier.padding(shadowGutter)) {
-                    MenuSurface(
-                        modifier = modifier,
-                        visible = visible,
-                        placement = { placement },
-                        desktop = desktop,
-                        style = style,
-                        scrollable = scrollable,
-                        useIntrinsicWidth = useIntrinsicWidth,
-                        dropdownSlideSelection = dropdownSlideSelection,
-                        isSlideSelecting = isSlideSelecting,
-                        onDismissOutside = dismissOutside,
-                        content = content
-                    )
-                }
-            }
+private fun MutableTransitionState<Boolean>.isRetainingMobileWindow(desktop: Boolean): Boolean =
+    !desktop && (!isIdle || currentState)
+
+@Composable
+private fun rememberMenuWindowPosition(
+    positionProvider: PopupPositionProvider,
+    expanded: Boolean,
+    desktop: Boolean
+): PopupPositionProvider {
+    var lastOpenPosition by remember { mutableStateOf<PopupPositionProvider?>(null) }
+    SideEffect {
+        if (!desktop && expanded) {
+            lastOpenPosition = positionProvider
+        }
+    }
+    return if (expanded) positionProvider else lastOpenPosition ?: positionProvider
+}
+
+@Composable
+private fun MenuWindowContent(
+    shadowGutter: Dp,
+    dismissFromGutter: (() -> Unit)?,
+    content: @Composable () -> Unit
+) {
+    Box {
+        if (dismissFromGutter != null) {
+            MenuShadowDismissRegion(dismissFromGutter)
+        }
+
+        Box(modifier = Modifier.padding(shadowGutter)) {
+            content()
         }
     }
 }

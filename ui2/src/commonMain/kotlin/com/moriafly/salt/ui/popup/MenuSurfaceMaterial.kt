@@ -85,16 +85,49 @@ internal fun menuMaterial(
     revealWindowBackdrop: Boolean,
     dark: Boolean
 ): Modifier {
-    val edge = Modifier.thenIf(style.borderColor.isSpecified) {
-        border(Dp.Hairline, style.borderColor, shape)
-    }
-    val android = OS.current as? OS.Android
-    if (backdrop == null || (android != null && android.versionSdk < OS.Android.ANDROID_12)) {
+    val material = style.material.withAndroidFallback()
+    if (backdrop == null || material == PopupMenuMaterial.Solid) {
         return Modifier
             .thenIf(style.containerColor.isSpecified) { background(style.containerColor) }
-            .then(edge)
+            .menuEdge(shape = shape, color = style.borderColor)
     }
+    return menuSampledMaterial(
+        shape = shape,
+        cornerRadius = cornerRadius,
+        style = style,
+        input = backdrop.input,
+        revealWindowBackdrop = revealWindowBackdrop,
+        blur = material == PopupMenuMaterial.Blur,
+        dark = dark
+    )
+}
 
+@OptIn(UnstableSaltUiApi::class)
+private fun PopupMenuMaterial.withAndroidFallback(): PopupMenuMaterial {
+    val android = OS.current as? OS.Android ?: return this
+    return when {
+        android.versionSdk < OS.Android.ANDROID_12 -> PopupMenuMaterial.Solid
+        this == PopupMenuMaterial.Glass && android.versionSdk < OS.Android.ANDROID_13 ->
+            PopupMenuMaterial.Blur
+        else -> this
+    }
+}
+
+private fun Modifier.menuEdge(shape: Shape, color: Color): Modifier = thenIf(color.isSpecified) {
+    border(Dp.Hairline, color, shape)
+}
+
+@OptIn(UnstableSaltUiApi::class)
+@Composable
+private fun menuSampledMaterial(
+    shape: Shape,
+    cornerRadius: Dp,
+    style: PopupMenuStyle,
+    input: HazeInput.Sources,
+    revealWindowBackdrop: Boolean,
+    blur: Boolean,
+    dark: Boolean
+): Modifier {
     val baseFill = if (revealWindowBackdrop) {
         style.windowBackdropColor
     } else {
@@ -104,25 +137,23 @@ internal fun menuMaterial(
         .thenIf(baseFill.isSpecified && (revealWindowBackdrop || baseFill.alpha == 1f)) {
             background(baseFill)
         }
-        .then(edge)
+        .menuEdge(shape = shape, color = style.borderColor)
     val effectBackground = if (revealWindowBackdrop || !style.containerColor.isSpecified) {
         Color.Transparent
     } else {
         style.containerColor
     }
     val effectOpacity = if (revealWindowBackdrop) style.windowBackdropOpacity else 1f
-    val blur = style.material == PopupMenuMaterial.Blur ||
-        (android != null && android.versionSdk < OS.Android.ANDROID_13)
     return if (blur) {
         base.menuBlur(
-            input = backdrop.input,
+            input = input,
             background = effectBackground,
             opacity = effectOpacity,
             tintColor = style.tintColor
         )
     } else {
         base.menuGlass(
-            input = backdrop.input,
+            input = input,
             background = effectBackground,
             opacity = effectOpacity,
             tintColor = style.tintColor,

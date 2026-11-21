@@ -50,6 +50,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.platform.LocalDensity
@@ -113,8 +114,6 @@ internal fun MenuRow(
         }
     }
 
-    val colors = SaltTheme.colors
-    val dark = SaltTheme.configs.isDarkTheme
     val shape = menuRowShape(desktop)
     Row(
         modifier = modifier
@@ -122,12 +121,12 @@ internal fun MenuRow(
             .heightIn(min = if (desktop) 32.dp else 44.dp)
             .bringIntoViewRequester(bringIntoView)
             .clip(shape)
-            .thenIf(enabled && highlighted) {
-                background(colors.text.copy(alpha = if (dark) 0.10f else 0.07f))
-            }
-            .thenIf(enabled && revealForKeyboard) {
-                border(Dp.Hairline, colors.text.copy(alpha = 0.32f), shape)
-            }
+            .menuRowFeedback(
+                shape = shape,
+                enabled = enabled,
+                highlighted = highlighted,
+                revealForKeyboard = revealForKeyboard
+            )
             .thenIf(useMenuFocus) {
                 focusProperties { canFocus = false }
             }
@@ -151,6 +150,22 @@ internal fun MenuRow(
             Spacer(Modifier.width(8.dp))
             MenuSelectionMark(selection.marked, size = 20.dp)
         }
+    }
+}
+
+@Composable
+private fun Modifier.menuRowFeedback(
+    shape: Shape,
+    enabled: Boolean,
+    highlighted: Boolean,
+    revealForKeyboard: Boolean
+): Modifier {
+    val textColor = SaltTheme.colors.text
+    val dark = SaltTheme.configs.isDarkTheme
+    return thenIf(enabled && highlighted) {
+        background(textColor.copy(alpha = if (dark) 0.10f else 0.07f))
+    }.thenIf(enabled && revealForKeyboard) {
+        border(Dp.Hairline, textColor.copy(alpha = 0.32f), shape)
     }
 }
 
