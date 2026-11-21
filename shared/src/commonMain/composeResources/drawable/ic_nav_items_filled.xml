@@ -1,0 +1,35 @@
+<!--
+Fluent UI System Icons 1.1.347 · apps_list_24_filled.svg
+https://github.com/microsoft/fluentui-system-icons
+
+MIT License
+
+Copyright (c) 2020 Microsoft Corporation
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:fillColor="#FF000000"
+        android:pathData="M6.25 16C7.2 16 8 16.8 8 17.75v2.5C8 21.22 7.2 22 6.25 22h-2.5C2.78 22 2 21.22 2 20.25v-2.5C2 16.8 2.78 16 3.75 16zm3.5 2h11.5a.75.75 0 0 1 .1 1.5H9.75a.75.75 0 0 1-.1-1.5zh11.5zm-3.5-9C7.2 9 8 9.78 8 10.75v2.5C8 14.22 7.2 15 6.25 15h-2.5C2.78 15 2 14.22 2 13.25v-2.5C2 9.78 2.78 9 3.75 9zm3.5 2h11.5a.75.75 0 0 1 .1 1.5H9.75a.75.75 0 0 1-.1-1.5zh11.5zm-3.5-9C7.2 2 8 2.78 8 3.75v2.5C8 7.2 7.2 8 6.25 8h-2.5C2.78 8 2 7.2 2 6.25v-2.5C2 2.78 2.78 2 3.75 2zm3.5 2h11.5a.75.75 0 0 1 .1 1.5H9.75a.75.75 0 0 1-.1-1.5zh11.5z" />
+</vector>

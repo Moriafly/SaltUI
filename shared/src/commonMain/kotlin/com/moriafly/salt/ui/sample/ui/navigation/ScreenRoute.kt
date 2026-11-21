@@ -65,4 +65,7 @@ sealed class ScreenRoute : NavKey {
 
     @Serializable
     data object Glass : ScreenRoute()
+
+    @Serializable
+    data object PopupMenus : ScreenRoute()
 }

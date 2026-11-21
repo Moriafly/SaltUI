@@ -1,6 +1,6 @@
 /*
  * SaltUI
- * Copyright (C) 2024 Moriafly
+ * Copyright (C) 2023 Moriafly
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,14 +15,19 @@
  * limitations under the License.
  */
 
+@file:Suppress("unused")
+
 package com.moriafly.salt.ui.popup
 
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.Composable
-import com.moriafly.salt.ui.SaltTheme
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.window.PopupProperties
 
-internal actual val popupMenuItemPadding: PaddingValues
-    @Composable get() = PaddingValues(
-        horizontal = SaltTheme.dimens.padding,
-        vertical = SaltTheme.dimens.subPadding
-    )
+internal actual val popupSharesHostCanvas: Boolean
+    get() = false
+
+@Composable
+internal actual fun PopupProperties.menuPositionOrigin(): IntOffset = IntOffset.Zero
+
+// Keep custom Android window flags and secure policy on the same native window during exit.
+internal actual fun PopupProperties.forMenuExit(): PopupProperties = this
