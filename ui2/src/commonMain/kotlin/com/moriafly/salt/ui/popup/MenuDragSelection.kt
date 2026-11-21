@@ -26,8 +26,12 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.hapticfeedback.HapticFeedback
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.input.pointer.AwaitPointerEventScope
 import androidx.compose.ui.input.pointer.PointerEventPass
+import androidx.compose.ui.input.pointer.PointerId
+import androidx.compose.ui.input.pointer.PointerInputChange
 import androidx.compose.ui.input.pointer.PointerType
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.LayoutCoordinates
@@ -79,59 +83,82 @@ internal fun <T : Any> Modifier.menuDragSelection(
                 val firstItem =
                     selection.itemAt(down.position, currentEntryEnabled) ?: return@awaitEachGesture
 
-                var lastHapticItem = firstItem
-                try {
-                    while (true) {
-                        val event = awaitPointerEvent(PointerEventPass.Initial)
-                        val change = event.changes.firstOrNull { it.id == down.id }
-                        if (change == null || change.isConsumed ||
-                            event.changes.any { it.id != down.id && it.pressed }
-                        ) {
-                            break
-                        }
-                        if (!change.pressed) {
-                            if (selection.isSlideSelecting) {
-                                change.consume()
-                                selection.itemAt(
-                                    change.position,
-                                    currentEntryEnabled
-                                )?.let(activate)
-                            }
-                            break
-                        }
-
-                        if (!selection.isSlideSelecting &&
-                            (change.position - down.position).getDistance() <
-                            viewConfiguration.touchSlop
-                        ) {
-                            continue
-                        }
-                        if (!currentCanSlide()) {
-                            break
-                        }
-
-                        if (!selection.isSlideSelecting) {
-                            selection.isSlideSelecting = true
-                            slideSelectingChange(true)
-                        }
-                        change.consume()
-                        val item = selection.itemAt(change.position, currentEntryEnabled)
-                        selection.highlightedItem = item
-                        if (item != null && item != lastHapticItem) {
-                            haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
-                            lastHapticItem = item
-                        }
-                    }
-                } finally {
-                    if (selection.isSlideSelecting) {
-                        selection.isSlideSelecting = false
-                        slideSelectingChange(false)
-                    }
-                    selection.highlightedItem = null
-                }
+                trackMenuSlide(
+                    down = down,
+                    firstItem = firstItem,
+                    selection = selection,
+                    haptic = haptic,
+                    canSlide = { currentCanSlide() },
+                    entryEnabled = { currentEntryEnabled(it) },
+                    onSlideSelectingChange = { slideSelectingChange(it) },
+                    onActivate = { activate(it) }
+                )
             }
         } finally {
             selection.highlightedItem = null
         }
     }
+}
+
+private suspend fun <T : Any> AwaitPointerEventScope.trackMenuSlide(
+    down: PointerInputChange,
+    firstItem: T,
+    selection: MenuDragSelection<T>,
+    haptic: HapticFeedback,
+    canSlide: () -> Boolean,
+    entryEnabled: (T) -> Boolean,
+    onSlideSelectingChange: (Boolean) -> Unit,
+    onActivate: (T) -> Unit
+) {
+    var lastHapticItem = firstItem
+    try {
+        while (true) {
+            val change = awaitSlideChange(down.id) ?: break
+            if (!change.pressed) {
+                if (selection.isSlideSelecting) {
+                    change.consume()
+                    selection.itemAt(change.position, entryEnabled)?.let(onActivate)
+                }
+                break
+            }
+
+            val distance = (change.position - down.position).getDistance()
+            if (!selection.isSlideSelecting && distance < viewConfiguration.touchSlop) {
+                continue
+            }
+            if (!canSlide()) {
+                break
+            }
+
+            if (!selection.isSlideSelecting) {
+                selection.isSlideSelecting = true
+                onSlideSelectingChange(true)
+            }
+            change.consume()
+            val item = selection.itemAt(change.position, entryEnabled)
+            selection.highlightedItem = item
+            if (item != null && item != lastHapticItem) {
+                haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                lastHapticItem = item
+            }
+        }
+    } finally {
+        if (selection.isSlideSelecting) {
+            selection.isSlideSelecting = false
+            onSlideSelectingChange(false)
+        }
+        selection.highlightedItem = null
+    }
+}
+
+private suspend fun AwaitPointerEventScope.awaitSlideChange(
+    pointerId: PointerId
+): PointerInputChange? {
+    val event = awaitPointerEvent(PointerEventPass.Initial)
+    if (event.changes.any { it.id != pointerId && it.pressed }) {
+        return null
+    }
+    return event.changes
+        .firstOrNull { it.id == pointerId }
+        ?.takeUnless { it.isConsumed }
 }

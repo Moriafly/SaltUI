@@ -18,6 +18,8 @@
 package com.moriafly.salt.ui.popup
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.ContentTransform
 import androidx.compose.animation.SizeTransform
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.MutableTransitionState
@@ -107,30 +109,15 @@ fun PopupActionMenu(
     items: PopupMenuScope.() -> Unit
 ) {
     val desktop = OS.isDesktop()
-    val direction = LocalLayoutDirection.current
     val navigation = remember { MenuNavigation() }
     val visible = remember { MutableTransitionState(false) }
-    val currentItems by rememberUpdatedState(items)
-    val openPages by remember(navigation) {
-        derivedStateOf { menuPages(currentItems, navigation.path) }
-    }
-    val pages = if (expanded) openPages else navigation.lastPages
-    val currentPage = pages.lastOrNull()
-    val root = pages.firstOrNull()
-    val settledClosed = !expanded && (desktop || (visible.isIdle && !visible.currentState))
-    SideEffect {
-        if (expanded) {
-            navigation.lastPages = pages
-            if (currentPage != null && currentPage.path != navigation.path) {
-                navigation.path = currentPage.path
-            }
-        } else {
-            navigation.reset()
-            if (settledClosed) {
-                navigation.lastPages = emptyList()
-            }
-        }
-    }
+    val pages = rememberMenuPages(
+        expanded = expanded,
+        desktop = desktop,
+        visible = visible,
+        navigation = navigation,
+        items = items
+    )
 
     PopupMenuPanel(
         expanded = expanded,
@@ -146,87 +133,141 @@ fun PopupActionMenu(
         isSlideSelecting = { navigation.isSlideSelecting },
         visible = visible
     ) {
-        if (root != null && currentPage != null) {
-            val focus = remember { FocusRequester() }
-            var hasFocus by remember { mutableStateOf(false) }
-            LaunchedEffect(expanded, properties.focusable) {
-                if (expanded && properties.focusable && !hasFocus) {
-                    focus.requestFocus()
-                }
+        if (pages.isNotEmpty()) {
+            ActionMenuPages(
+                pages = pages,
+                navigation = navigation,
+                desktop = desktop,
+                expanded = expanded,
+                focusable = properties.focusable,
+                style = style,
+                header = header,
+                onDismissRequest = onDismissRequest
+            )
+        }
+    }
+}
+
+@OptIn(UnstableSaltUiApi::class)
+@Composable
+private fun rememberMenuPages(
+    expanded: Boolean,
+    desktop: Boolean,
+    visible: MutableTransitionState<Boolean>,
+    navigation: MenuNavigation,
+    items: PopupMenuScope.() -> Unit
+): List<MenuPage> {
+    val currentItems by rememberUpdatedState(items)
+    val openPages by remember(navigation) {
+        derivedStateOf { menuPages(currentItems, navigation.path) }
+    }
+    val pages = if (expanded) openPages else navigation.lastPages
+    val settledClosed = !expanded && (desktop || (visible.isIdle && !visible.currentState))
+    SideEffect {
+        if (expanded) {
+            navigation.lastPages = pages
+            val currentPage = pages.lastOrNull()
+            if (currentPage != null && currentPage.path != navigation.path) {
+                navigation.path = currentPage.path
             }
-            Column(
-                modifier = Modifier
-                    .thenIf(desktop) { widthIn(min = 176.dp, max = 420.dp) }
-                    .onKeyEvent { event ->
-                        if (!expanded || !properties.focusable) {
-                            false
-                        } else {
-                            navigation.handleKey(
-                                event = event,
-                                page = currentPage,
-                                direction = direction,
-                                onDismissRequest = onDismissRequest
-                            )
-                        }
-                    }
-                    .focusRequester(focus)
-                    .onFocusChanged { hasFocus = it.hasFocus }
-                    .focusable(enabled = expanded && properties.focusable)
-            ) {
-                if (desktop) {
-                    MenuPageContent(
-                        page = root,
-                        pages = pages,
-                        navigation = navigation,
-                        desktop = true,
-                        active = expanded,
-                        style = style,
-                        header = header,
-                        onDismissRequest = onDismissRequest
-                    )
-                } else {
-                    AnimatedContent(
-                        targetState = currentPage,
-                        contentKey = { it.path },
-                        transitionSpec = {
-                            val forward = targetState.path.size > initialState.path.size
-                            val towardEnd = (if (forward) 1 else -1) *
-                                (if (direction == LayoutDirection.Ltr) 1 else -1)
-                            val exitDuration = 60
-                            val enterSlideDuration = 145
-                            val enter = fadeIn(tween(105, delayMillis = exitDuration)) +
-                                slideInHorizontally(
-                                    tween(enterSlideDuration, delayMillis = exitDuration)
-                                ) {
-                                    towardEnd * it / 20
-                                }
-                            (enter togetherWith fadeOut(tween(exitDuration))) using
-                                SizeTransform { _, _ ->
-                                    tween(
-                                        exitDuration + enterSlideDuration,
-                                        easing = FastOutSlowInEasing
-                                    )
-                                }
-                        },
-                        label = "Menu page"
-                    ) { page ->
-                        MenuPageContent(
-                            page = page,
-                            pages = pages,
-                            navigation = navigation,
-                            desktop = false,
-                            active = expanded && currentPage.path == page.path,
-                            style = style,
-                            header = if (page.path.isEmpty()) header else null,
-                            onDismissRequest = onDismissRequest,
-                            modifier = Modifier.widthIn(min = 196.dp, max = 340.dp)
-                                .width(IntrinsicSize.Max)
-                        )
-                    }
-                }
+        } else {
+            navigation.reset()
+            if (settledClosed) {
+                navigation.lastPages = emptyList()
             }
         }
     }
+    return pages
+}
+
+@OptIn(UnstableSaltUiApi::class)
+@Composable
+private fun ActionMenuPages(
+    pages: List<MenuPage>,
+    navigation: MenuNavigation,
+    desktop: Boolean,
+    expanded: Boolean,
+    focusable: Boolean,
+    style: PopupMenuStyle,
+    header: (@Composable () -> Unit)?,
+    onDismissRequest: () -> Unit
+) {
+    val currentPage = pages.last()
+    val direction = LocalLayoutDirection.current
+    val focus = remember { FocusRequester() }
+    var hasFocus by remember { mutableStateOf(false) }
+    LaunchedEffect(expanded, focusable) {
+        if (expanded && focusable && !hasFocus) {
+            focus.requestFocus()
+        }
+    }
+    Column(
+        modifier = Modifier
+            .thenIf(desktop) { widthIn(min = 176.dp, max = 420.dp) }
+            .onKeyEvent { event ->
+                expanded && focusable && navigation.handleKey(
+                    event = event,
+                    page = currentPage,
+                    direction = direction,
+                    onDismissRequest = onDismissRequest
+                )
+            }
+            .focusRequester(focus)
+            .onFocusChanged { hasFocus = it.hasFocus }
+            .focusable(enabled = expanded && focusable)
+    ) {
+        if (desktop) {
+            MenuPageContent(
+                page = pages.first(),
+                pages = pages,
+                navigation = navigation,
+                desktop = true,
+                active = expanded,
+                style = style,
+                header = header,
+                onDismissRequest = onDismissRequest
+            )
+        } else {
+            AnimatedContent(
+                targetState = currentPage,
+                contentKey = { it.path },
+                transitionSpec = { menuPageTransition(direction) },
+                label = "Menu page"
+            ) { page ->
+                MenuPageContent(
+                    page = page,
+                    pages = pages,
+                    navigation = navigation,
+                    desktop = false,
+                    active = expanded && currentPage.path == page.path,
+                    style = style,
+                    header = if (page.path.isEmpty()) header else null,
+                    onDismissRequest = onDismissRequest,
+                    modifier = Modifier
+                        .widthIn(min = 196.dp, max = 340.dp)
+                        .width(IntrinsicSize.Max)
+                )
+            }
+        }
+    }
+}
+
+private fun AnimatedContentTransitionScope<MenuPage>.menuPageTransition(
+    direction: LayoutDirection
+): ContentTransform {
+    val depthDirection = if (targetState.path.size > initialState.path.size) 1 else -1
+    val layoutDirection = if (direction == LayoutDirection.Ltr) 1 else -1
+    val towardEnd = depthDirection * layoutDirection
+    val exitDuration = 60
+    val enterSlideDuration = 145
+    val enter = fadeIn(tween(105, delayMillis = exitDuration)) +
+        slideInHorizontally(tween(enterSlideDuration, delayMillis = exitDuration)) {
+            towardEnd * it / 20
+        }
+    return (enter togetherWith fadeOut(tween(exitDuration))) using
+        SizeTransform { _, _ ->
+            tween(exitDuration + enterSlideDuration, easing = FastOutSlowInEasing)
+        }
 }
 
 @OptIn(UnstableSaltUiApi::class)
@@ -277,24 +318,11 @@ private fun MenuPageContent(
     Column(modifier = modifier) {
         val parent = page.parent
         if (!desktop && parent != null) {
-            val back = stringResource(Res.string.back)
-            MenuRow(
-                modifier = Modifier.semantics { onClick(label = back, action = null) },
+            MenuPageBack(
+                title = parent.text,
                 enabled = active,
-                desktop = false,
-                highlighted = false,
                 onClick = { navigation.back(page, keepFocus = false) }
-            ) {
-                Icon(
-                    imageVector = SaltIcons.ArrowBack,
-                    contentDescription = null,
-                    modifier = Modifier.size(16.dp),
-                    tint = SaltTheme.colors.subText
-                )
-                Spacer(Modifier.width(8.dp))
-                parent.text()
-            }
-            MenuDivider()
+            )
         }
 
         if (header != null) {
@@ -316,63 +344,123 @@ private fun MenuPageContent(
             page.entries.forEachIndexed { index, entry ->
                 when (entry) {
                     is MenuEntry.Item -> {
-                        val keyboardSelected = navigation.cursor == MenuCursor(page.path, index)
-                        val highlighted = keyboardSelected || openIndex == index ||
-                            drag?.highlightedItem == index
-                        val rowModifier = entry.rowModifier.thenIf(drag != null) {
-                            onGloballyPositioned { drag?.rows?.set(index, it) }
-                        }
-                        Box {
-                            MenuRow(
-                                modifier = rowModifier,
-                                enabled = active && entry.enabled,
-                                desktop = desktop,
-                                highlighted = highlighted,
-                                revealForKeyboard = keyboardSelected,
-                                selection = (entry as? MenuEntry.Action)?.selection,
-                                reserveSelectionSpace = reserveSelectionSpace,
-                                onHover = { navigation.hover(page, index) },
-                                onClick = {
-                                    navigation.activate(
-                                        page = page,
-                                        index = index,
-                                        keyboard = false,
-                                        onDismissRequest = onDismissRequest
-                                    )
-                                }
-                            ) {
-                                MenuEntryContent(entry, reserveIconSpace)
-                            }
-
-                            if (child != null && openIndex == index) {
-                                PopupMenuPanel(
-                                    expanded = active,
-                                    onDismissRequest = null,
-                                    modifier = Modifier.widthIn(min = 176.dp, max = 420.dp),
-                                    offset = DpOffset.Zero,
-                                    properties = MenuSubmenuProperties,
-                                    style = style,
-                                    anchor = null,
-                                    popupPositionProvider = rememberSubmenuPositionProvider(),
-                                    scrollable = false
-                                ) {
-                                    MenuPageContent(
-                                        page = child,
-                                        pages = pages,
-                                        navigation = navigation,
-                                        desktop = true,
-                                        active = active,
-                                        style = style,
-                                        header = null,
-                                        onDismissRequest = onDismissRequest
-                                    )
-                                }
-                            }
-                        }
+                        MenuPageItem(
+                            entry = entry,
+                            index = index,
+                            page = page,
+                            child = child?.takeIf { openIndex == index },
+                            pages = pages,
+                            navigation = navigation,
+                            desktop = desktop,
+                            active = active,
+                            reserveSelectionSpace = reserveSelectionSpace,
+                            reserveIconSpace = reserveIconSpace,
+                            drag = drag,
+                            style = style,
+                            onDismissRequest = onDismissRequest
+                        )
                     }
 
                     MenuEntry.Divider -> MenuDivider()
                 }
+            }
+        }
+    }
+}
+
+@OptIn(UnstableSaltUiApi::class)
+@Composable
+private fun MenuPageBack(
+    title: @Composable () -> Unit,
+    enabled: Boolean,
+    onClick: () -> Unit
+) {
+    val back = stringResource(Res.string.back)
+    MenuRow(
+        modifier = Modifier.semantics { onClick(label = back, action = null) },
+        enabled = enabled,
+        desktop = false,
+        highlighted = false,
+        onClick = onClick
+    ) {
+        Icon(
+            imageVector = SaltIcons.ArrowBack,
+            contentDescription = null,
+            modifier = Modifier.size(16.dp),
+            tint = SaltTheme.colors.subText
+        )
+        Spacer(Modifier.width(8.dp))
+        title()
+    }
+    MenuDivider()
+}
+
+@OptIn(UnstableSaltUiApi::class)
+@Composable
+private fun MenuPageItem(
+    entry: MenuEntry.Item,
+    index: Int,
+    page: MenuPage,
+    child: MenuPage?,
+    pages: List<MenuPage>,
+    navigation: MenuNavigation,
+    desktop: Boolean,
+    active: Boolean,
+    reserveSelectionSpace: Boolean,
+    reserveIconSpace: Boolean,
+    drag: MenuDragSelection<Int>?,
+    style: PopupMenuStyle,
+    onDismissRequest: () -> Unit
+) {
+    val keyboardSelected = navigation.cursor == MenuCursor(page.path, index)
+    val highlighted = keyboardSelected || child != null || drag?.highlightedItem == index
+    val rowModifier = entry.rowModifier.thenIf(drag != null) {
+        onGloballyPositioned { drag?.rows?.set(index, it) }
+    }
+    Box {
+        MenuRow(
+            modifier = rowModifier,
+            enabled = active && entry.enabled,
+            desktop = desktop,
+            highlighted = highlighted,
+            revealForKeyboard = keyboardSelected,
+            selection = (entry as? MenuEntry.Action)?.selection,
+            reserveSelectionSpace = reserveSelectionSpace,
+            onHover = { navigation.hover(page, index) },
+            onClick = {
+                navigation.activate(
+                    page = page,
+                    index = index,
+                    keyboard = false,
+                    onDismissRequest = onDismissRequest
+                )
+            }
+        ) {
+            MenuEntryContent(entry, reserveIconSpace)
+        }
+
+        if (child != null) {
+            PopupMenuPanel(
+                expanded = active,
+                onDismissRequest = null,
+                modifier = Modifier.widthIn(min = 176.dp, max = 420.dp),
+                offset = DpOffset.Zero,
+                properties = MenuSubmenuProperties,
+                style = style,
+                anchor = null,
+                popupPositionProvider = rememberSubmenuPositionProvider(),
+                scrollable = false
+            ) {
+                MenuPageContent(
+                    page = child,
+                    pages = pages,
+                    navigation = navigation,
+                    desktop = true,
+                    active = active,
+                    style = style,
+                    header = null,
+                    onDismissRequest = onDismissRequest
+                )
             }
         }
     }

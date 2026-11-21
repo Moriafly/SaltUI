@@ -17,6 +17,7 @@
 
 package com.moriafly.salt.ui.popup
 
+import androidx.compose.foundation.Indication
 import androidx.compose.foundation.LocalIndication
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -115,34 +116,6 @@ internal fun MenuRow(
     val colors = SaltTheme.colors
     val dark = SaltTheme.configs.isDarkTheme
     val shape = menuRowShape(desktop)
-    val indication = LocalIndication.current
-    val activation = when (selection) {
-        is MenuSelection.Radio -> Modifier.selectable(
-            selected = selection.marked,
-            interactionSource = source,
-            indication = indication,
-            enabled = enabled,
-            role = Role.RadioButton,
-            onClick = onClick
-        )
-
-        is MenuSelection.Toggle -> Modifier.toggleable(
-            value = selection.marked,
-            interactionSource = source,
-            indication = indication,
-            enabled = enabled,
-            role = Role.Checkbox,
-            onValueChange = { onClick() }
-        )
-
-        null -> Modifier.clickable(
-            interactionSource = source,
-            indication = indication,
-            enabled = enabled,
-            role = Role.Button,
-            onClick = onClick
-        )
-    }
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -158,7 +131,13 @@ internal fun MenuRow(
             .thenIf(useMenuFocus) {
                 focusProperties { canFocus = false }
             }
-            .then(activation)
+            .menuRowActivation(
+                selection = selection,
+                interactionSource = source,
+                indication = LocalIndication.current,
+                enabled = enabled,
+                onClick = onClick
+            )
             .padding(horizontal = if (desktop) 6.dp else 12.dp, vertical = 4.dp)
             .enabledAlpha(enabled),
         verticalAlignment = Alignment.CenterVertically
@@ -173,6 +152,40 @@ internal fun MenuRow(
             MenuSelectionMark(selection.marked, size = 20.dp)
         }
     }
+}
+
+private fun Modifier.menuRowActivation(
+    selection: MenuSelection?,
+    interactionSource: MutableInteractionSource,
+    indication: Indication,
+    enabled: Boolean,
+    onClick: () -> Unit
+): Modifier = when (selection) {
+    is MenuSelection.Radio -> selectable(
+        selected = selection.marked,
+        interactionSource = interactionSource,
+        indication = indication,
+        enabled = enabled,
+        role = Role.RadioButton,
+        onClick = onClick
+    )
+
+    is MenuSelection.Toggle -> toggleable(
+        value = selection.marked,
+        interactionSource = interactionSource,
+        indication = indication,
+        enabled = enabled,
+        role = Role.Checkbox,
+        onValueChange = { onClick() }
+    )
+
+    null -> clickable(
+        interactionSource = interactionSource,
+        indication = indication,
+        enabled = enabled,
+        role = Role.Button,
+        onClick = onClick
+    )
 }
 
 @Composable

@@ -40,6 +40,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.State
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -48,8 +49,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.GraphicsLayerScope
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathHitTester
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.addOutline
 import androidx.compose.ui.graphics.graphicsLayer
@@ -77,6 +81,7 @@ import com.moriafly.salt.core.os.OS
 import com.moriafly.salt.ui.SaltTheme
 import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.moriafly.salt.ui.internal.SmoothRoundedRectangleShape
+import com.moriafly.salt.ui.material.GlassInteractionState
 import com.moriafly.salt.ui.material.drawGlassInteraction
 import com.moriafly.salt.ui.material.glassInteractionLight
 import com.moriafly.salt.ui.material.glassPointerInput
@@ -111,82 +116,21 @@ internal fun PopupMenuPanel(
     content: @Composable ColumnScope.() -> Unit
 ) {
     val desktop = OS.isDesktop()
-    val pointerPosition = if (expanded && anchor != null) {
-        val position = remember(anchor) { anchor.pendingPositionInWindow }
-        DisposableEffect(anchor) {
-            anchor.onMenuOpened()
-            onDispose { anchor.onMenuClosed() }
-        }
-        position
-    } else {
-        null
-    }
+    val pointerPosition = rememberMenuOpeningPosition(anchor, expanded)
     visible.targetState = expanded
     if (expanded || (!desktop && (!visible.isIdle || visible.currentState))) {
-        val density = LocalDensity.current
-        val offsetPx = with(density) { IntOffset(offset.x.roundToPx(), offset.y.roundToPx()) }
         val shadowGutter = if (OS.isAndroid()) MenuShadowGutter else 0.dp
-        val inset = with(density) { shadowGutter.roundToPx() }
+        val inset = with(LocalDensity.current) { shadowGutter.roundToPx() }
         var placement by remember { mutableStateOf<MenuPlacement?>(null) }
-        val clippingEnabled = properties.clippingEnabled
-        val positionOrigin = properties.menuPositionOrigin()
-        val positionProvider = remember(
-            pointerPosition,
-            offsetPx,
-            popupPositionProvider,
-            density,
-            desktop,
-            clippingEnabled,
-            positionOrigin
-        ) {
-            val pointerGap = if (desktop) 0 else with(density) { 12.dp.roundToPx() }
-            val margin = maxOf(inset, with(density) { (if (desktop) 8.dp else 12.dp).roundToPx() })
-            createMenuPositionProvider { bounds, windowSize, direction, popupSize ->
-                // The provider places the painted panel; Compose positions the larger window.
-                val panelSize = IntSize(
-                    width = (popupSize.width - 2 * inset).coerceAtLeast(0),
-                    height = (popupSize.height - 2 * inset).coerceAtLeast(0)
-                )
-                val placementAnchor = if (pointerPosition != null) {
-                    val position = IntOffset(
-                        x = pointerPosition.x.roundToInt(),
-                        y = pointerPosition.y.roundToInt()
-                    ) - positionOrigin
-                    IntRect(position, IntSize.Zero)
-                } else {
-                    bounds
-                }
-                val requestedPosition = popupPositionProvider?.calculatePosition(
-                    bounds,
-                    windowSize,
-                    direction,
-                    panelSize
-                ) ?: menuPosition(
-                    anchor = placementAnchor,
-                    windowSize = windowSize,
-                    direction = direction,
-                    popupSize = panelSize,
-                    offset = offsetPx,
-                    gap = if (pointerPosition != null) pointerGap else 0,
-                    margin = margin
-                )
-                val position = if (inset > 0 && clippingEnabled) {
-                    val maxX = (windowSize.width - panelSize.width - inset).coerceAtLeast(inset)
-                    val maxY = (windowSize.height - panelSize.height - inset).coerceAtLeast(inset)
-                    IntOffset(
-                        requestedPosition.x.coerceIn(inset, maxX),
-                        requestedPosition.y.coerceIn(inset, maxY)
-                    )
-                } else {
-                    requestedPosition
-                }
-                if (!desktop) {
-                    placement =
-                        MenuPlacement.resolve(placementAnchor, IntRect(position, panelSize))
-                }
-                position - IntOffset(inset, inset)
-            }
-        }
+        val positionProvider = rememberMenuPositionProvider(
+            pointerPosition = pointerPosition,
+            offset = offset,
+            popupPositionProvider = popupPositionProvider,
+            properties = properties,
+            inset = inset,
+            desktop = desktop,
+            onPlacement = { placement = it }
+        )
 
         var lastOpenPosition by remember { mutableStateOf<PopupPositionProvider?>(null) }
         SideEffect {
@@ -235,6 +179,103 @@ internal fun PopupMenuPanel(
 
 @OptIn(UnstableSaltUiApi::class)
 @Composable
+private fun rememberMenuOpeningPosition(anchor: PopupMenuAnchor?, expanded: Boolean): Offset? {
+    if (!expanded || anchor == null) {
+        return null
+    }
+
+    val position = remember(anchor) { anchor.pendingPositionInWindow }
+    DisposableEffect(anchor) {
+        anchor.onMenuOpened()
+        onDispose { anchor.onMenuClosed() }
+    }
+    return position
+}
+
+@Composable
+private fun rememberMenuPositionProvider(
+    pointerPosition: Offset?,
+    offset: DpOffset,
+    popupPositionProvider: PopupPositionProvider?,
+    properties: PopupProperties,
+    inset: Int,
+    desktop: Boolean,
+    onPlacement: (MenuPlacement) -> Unit
+): PopupPositionProvider {
+    val density = LocalDensity.current
+    val offsetPx = with(density) { IntOffset(offset.x.roundToPx(), offset.y.roundToPx()) }
+    val clippingEnabled = properties.clippingEnabled
+    val positionOrigin = properties.menuPositionOrigin()
+    val updatePlacement by rememberUpdatedState(onPlacement)
+    return remember(
+        pointerPosition,
+        offsetPx,
+        popupPositionProvider,
+        density,
+        desktop,
+        clippingEnabled,
+        positionOrigin,
+        inset
+    ) {
+        val pointerAnchor = pointerPosition?.let { position ->
+            val point = IntOffset(position.x.roundToInt(), position.y.roundToInt()) - positionOrigin
+            IntRect(point, IntSize.Zero)
+        }
+        val gap = if (desktop || pointerAnchor == null) 0 else with(density) { 12.dp.roundToPx() }
+        val margin = maxOf(inset, with(density) { (if (desktop) 8.dp else 12.dp).roundToPx() })
+        createMenuPositionProvider { bounds, windowSize, direction, popupSize ->
+            // The provider places the painted panel; Compose positions the larger window.
+            val panelSize = IntSize(
+                width = (popupSize.width - 2 * inset).coerceAtLeast(0),
+                height = (popupSize.height - 2 * inset).coerceAtLeast(0)
+            )
+            val placementAnchor = pointerAnchor ?: bounds
+            val requestedPosition = popupPositionProvider?.calculatePosition(
+                bounds,
+                windowSize,
+                direction,
+                panelSize
+            ) ?: menuPosition(
+                anchor = placementAnchor,
+                windowSize = windowSize,
+                direction = direction,
+                popupSize = panelSize,
+                offset = offsetPx,
+                gap = gap,
+                margin = margin
+            )
+            val position = if (inset > 0 && clippingEnabled) {
+                clampMenuPositionToGutter(
+                    position = requestedPosition,
+                    windowSize = windowSize,
+                    panelSize = panelSize,
+                    inset = inset
+                )
+            } else {
+                requestedPosition
+            }
+            if (!desktop) {
+                val panelBounds = IntRect(position, panelSize)
+                updatePlacement(MenuPlacement.resolve(anchor = placementAnchor, menu = panelBounds))
+            }
+            position - IntOffset(inset, inset)
+        }
+    }
+}
+
+private fun clampMenuPositionToGutter(
+    position: IntOffset,
+    windowSize: IntSize,
+    panelSize: IntSize,
+    inset: Int
+): IntOffset {
+    val maxX = (windowSize.width - panelSize.width - inset).coerceAtLeast(inset)
+    val maxY = (windowSize.height - panelSize.height - inset).coerceAtLeast(inset)
+    return IntOffset(position.x.coerceIn(inset, maxX), position.y.coerceIn(inset, maxY))
+}
+
+@OptIn(UnstableSaltUiApi::class)
+@Composable
 private fun MenuSurface(
     visible: MutableTransitionState<Boolean>,
     placement: () -> MenuPlacement?,
@@ -248,28 +289,7 @@ private fun MenuSurface(
     modifier: Modifier = Modifier,
     content: @Composable ColumnScope.() -> Unit
 ) {
-    val transition = if (desktop) null else rememberTransition(visible, label = "Popup menu")
-    val progress = transition?.animateFloat(
-        transitionSpec = {
-            if (targetState) {
-                spring(dampingRatio = 0.72f, stiffness = 700f, visibilityThreshold = 0.008f)
-            } else {
-                tween(105, easing = FastOutLinearInEasing)
-            }
-        },
-        label = "Panel motion"
-    ) { if (it) 1f else 0f }
-    val opacity = transition?.animateFloat(
-        transitionSpec = {
-            if (targetState) {
-                tween(120, easing = LinearOutSlowInEasing)
-            } else {
-                tween(90, easing = FastOutLinearInEasing)
-            }
-        },
-        label = "Panel opacity"
-    ) { if (it) 1f else 0f }
-
+    val motion = if (desktop) null else rememberMenuPanelMotion(visible, placement)
     val backdrop = if (style.material == PopupMenuMaterial.Solid) {
         null
     } else {
@@ -279,7 +299,6 @@ private fun MenuSurface(
     val dark = SaltTheme.configs.isDarkTheme
     val menuRadius = if (desktop) 10.dp else mobileMenuCornerRadius()
     val shape = remember(menuRadius) { SmoothRoundedRectangleShape(menuRadius) }
-    val direction = LocalLayoutDirection.current
     val material = menuMaterial(
         shape = shape,
         cornerRadius = menuRadius,
@@ -289,110 +308,34 @@ private fun MenuSurface(
         dark = dark
     )
     val glassInteraction = if (backdrop != null) rememberGlassInteractionState() else null
-    val currentDismiss by rememberUpdatedState(onDismissOutside)
-    val windowSize = LocalWindowInfo.current.containerDpSize
-    val maxWidth = (windowSize.width - 24.dp).coerceAtLeast(1.dp)
-    val maxHeight = (windowSize.height - 24.dp).coerceAtLeast(1.dp)
-    val scrollState = rememberScrollState()
     val dropdownDrag = if (dropdownSlideSelection && !desktop) {
         remember { MenuDragSelection<DropdownMenuItem>() }
     } else {
         null
     }
-    val currentSlideSelecting by rememberUpdatedState(isSlideSelecting)
-    val followsConsumedMovement = remember(dropdownDrag) {
-        {
-            dropdownDrag?.isSlideSelecting == true || currentSlideSelecting?.invoke() == true
-        }
-    }
     Box(
         modifier = modifier
-            .widthIn(max = if (windowSize.width > 0.dp) maxWidth else Dp.Unspecified)
-            .heightIn(max = if (windowSize.height > 0.dp) maxHeight else Dp.Unspecified)
-            .thenIf(useIntrinsicWidth) { width(IntrinsicSize.Max) }
+            .menuSurfaceSize(useIntrinsicWidth)
             .thenIf(reveal) { revealPopupWindowBackdrop(shape) }
-            .pointerInput(shape, direction, desktop) {
-                awaitEachGesture {
-                    val down =
-                        awaitFirstDown(requireUnconsumed = false, pass = PointerEventPass.Initial)
-                    val panelSize = size.toSize()
-                    val position = placement()
-                    val point = when {
-                        desktop -> down.position
-                        position != null && (opacity?.value ?: 0f) > 0f -> {
-                            // Match the panel's entrance layer before testing the outline.
-                            val fraction = progress?.value ?: 1f
-                            val pivot = Offset(
-                                panelSize.width * position.pivot.x,
-                                panelSize.height * position.pivot.y
-                            )
-                            val shift = position.shift(fraction, MobileMenuTravel.toPx())
-                            pivot + (down.position - shift - pivot) / menuScale(fraction)
-                        }
-                        else -> null
-                    }
-                    val inside = if (point != null) {
-                        val outline = shape.createOutline(panelSize, direction, this)
-                        val path = Path().apply { addOutline(outline) }
-                        point in PathHitTester(path)
-                    } else {
-                        false
-                    }
-                    if (!inside) {
-                        down.consume()
-                        currentDismiss?.invoke()
-                    }
-                }
-            }
-            .thenIf(visible.targetState && glassInteraction != null) {
-                glassPointerInput(requireNotNull(glassInteraction), followsConsumedMovement)
-            }
-            .thenIf(!visible.targetState) {
-                clearAndSetSemantics { hideFromAccessibility() }
-                    .pointerInput(Unit) {
-                        awaitPointerEventScope {
-                            while (true) {
-                                awaitPointerEvent(PointerEventPass.Initial).changes.forEach {
-                                    it.consume()
-                                }
-                            }
-                        }
-                    }
-            },
+            .menuSurfaceInput(
+                expanded = visible.targetState,
+                shape = shape,
+                motion = motion,
+                glassInteraction = glassInteraction,
+                dropdownDrag = dropdownDrag,
+                isSlideSelecting = isSlideSelecting,
+                onDismissOutside = onDismissOutside
+            ),
         propagateMinConstraints = true
     ) {
         Box(
-            modifier = Modifier
-                .thenIf(!desktop) {
-                    graphicsLayer {
-                        val position = placement()
-                        if (position == null) {
-                            alpha = 0f
-                        } else {
-                            val fraction = progress?.value ?: 1f
-                            val scale = menuScale(fraction)
-                            val shift = position.shift(fraction, MobileMenuTravel.toPx())
-                            transformOrigin = TransformOrigin(position.pivot.x, position.pivot.y)
-                            scaleX = scale
-                            scaleY = scale
-                            translationX = shift.x
-                            translationY = shift.y
-                            alpha = opacity?.value ?: 1f
-                        }
-                    }
-                }
-                .thenIf(!desktop && glassInteraction != null) {
-                    drawGlassInteraction(requireNotNull(glassInteraction), maxTranslation = 3.dp)
-                }
-                .thenIf(desktop || OS.isAndroid()) {
-                    menuShadow(
-                        shape = shape,
-                        dark = dark,
-                        desktop = desktop,
-                        shadowContext = LocalGraphicsContext.current.shadowContext
-                    )
-                }
-                .clip(shape),
+            modifier = Modifier.menuSurfaceFrame(
+                desktop = desktop,
+                dark = dark,
+                shape = shape,
+                motion = motion,
+                glassInteraction = glassInteraction
+            ),
             propagateMinConstraints = true
         ) {
             Box(Modifier.matchParentSize().graphicsLayer().then(material))
@@ -404,36 +347,205 @@ private fun MenuSurface(
                         .glassInteractionLight(glassInteraction, shape, dark)
                 )
             }
-            val padding = if (desktop) DesktopMenuContentPadding else MobileMenuContentPadding
-            val dragModifier = if (dropdownDrag != null) {
-                Modifier
-                    .onGloballyPositioned { dropdownDrag.coordinates = it }
-                    .menuDragSelection(
-                        selection = dropdownDrag,
-                        enabled = visible.targetState,
-                        canSlide = { scrollState.maxValue == 0 },
-                        entryEnabled = { true },
-                        onActivate = { it.onClick() }
-                    )
+            MenuSurfaceContent(
+                desktop = desktop,
+                expanded = visible.targetState,
+                scrollable = scrollable,
+                dropdownDrag = dropdownDrag,
+                content = content
+            )
+        }
+    }
+}
+
+@Composable
+private fun Modifier.menuSurfaceSize(useIntrinsicWidth: Boolean): Modifier {
+    val windowSize = LocalWindowInfo.current.containerDpSize
+    val maxWidth = (windowSize.width - 24.dp).coerceAtLeast(1.dp)
+    val maxHeight = (windowSize.height - 24.dp).coerceAtLeast(1.dp)
+    return widthIn(max = if (windowSize.width > 0.dp) maxWidth else Dp.Unspecified)
+        .heightIn(max = if (windowSize.height > 0.dp) maxHeight else Dp.Unspecified)
+        .thenIf(useIntrinsicWidth) { width(IntrinsicSize.Max) }
+}
+
+@OptIn(UnstableSaltUiApi::class)
+@Composable
+private fun Modifier.menuSurfaceInput(
+    expanded: Boolean,
+    shape: Shape,
+    motion: MenuPanelMotion?,
+    glassInteraction: GlassInteractionState?,
+    dropdownDrag: MenuDragSelection<DropdownMenuItem>?,
+    isSlideSelecting: (() -> Boolean)?,
+    onDismissOutside: (() -> Unit)?
+): Modifier {
+    val direction = LocalLayoutDirection.current
+    val currentDismiss by rememberUpdatedState(onDismissOutside)
+    val currentSlideSelecting by rememberUpdatedState(isSlideSelecting)
+    val followsConsumedMovement = remember(dropdownDrag) {
+        {
+            dropdownDrag?.isSlideSelecting == true || currentSlideSelecting?.invoke() == true
+        }
+    }
+    return pointerInput(shape, direction, motion) {
+        awaitEachGesture {
+            val down = awaitFirstDown(requireUnconsumed = false, pass = PointerEventPass.Initial)
+            val panelSize = size.toSize()
+            val point = if (motion == null) {
+                down.position
             } else {
-                Modifier
+                motion.hitPoint(down.position, panelSize, MobileMenuTravel.toPx())
             }
-            Column(
-                modifier = Modifier
-                    .padding(padding)
-                    .thenIf(scrollable) {
-                        verticalScroll(
-                            scrollState,
-                            enabled =
-                                visible.targetState && scrollState.maxValue > 0
-                        )
+            val inside = point?.let {
+                val outline = shape.createOutline(panelSize, direction, this)
+                val path = Path().apply { addOutline(outline) }
+                it in PathHitTester(path)
+            } == true
+            if (!inside) {
+                down.consume()
+                currentDismiss?.invoke()
+            }
+        }
+    }
+        .thenIf(expanded && glassInteraction != null) {
+            glassPointerInput(requireNotNull(glassInteraction), followsConsumedMovement)
+        }
+        .thenIf(!expanded) {
+            clearAndSetSemantics { hideFromAccessibility() }
+                .pointerInput(Unit) {
+                    awaitPointerEventScope {
+                        while (true) {
+                            awaitPointerEvent(PointerEventPass.Initial).changes.forEach {
+                                it.consume()
+                            }
+                        }
                     }
-                    .then(dragModifier)
-            ) {
-                CompositionLocalProvider(LocalDropdownDragSelection provides dropdownDrag) {
-                    content()
                 }
+        }
+}
+
+@OptIn(UnstableSaltUiApi::class)
+@Composable
+private fun Modifier.menuSurfaceFrame(
+    desktop: Boolean,
+    dark: Boolean,
+    shape: Shape,
+    motion: MenuPanelMotion?,
+    glassInteraction: GlassInteractionState?
+): Modifier = this
+    .thenIf(motion != null) { graphicsLayer { requireNotNull(motion).applyLayer(this) } }
+    .thenIf(!desktop && glassInteraction != null) {
+        drawGlassInteraction(requireNotNull(glassInteraction), maxTranslation = 3.dp)
+    }
+    .thenIf(desktop || OS.isAndroid()) {
+        menuShadow(
+            shape = shape,
+            dark = dark,
+            desktop = desktop,
+            shadowContext = LocalGraphicsContext.current.shadowContext
+        )
+    }
+    .clip(shape)
+
+@Composable
+private fun MenuSurfaceContent(
+    desktop: Boolean,
+    expanded: Boolean,
+    scrollable: Boolean,
+    dropdownDrag: MenuDragSelection<DropdownMenuItem>?,
+    content: @Composable ColumnScope.() -> Unit
+) {
+    val scrollState = rememberScrollState()
+    val padding = if (desktop) DesktopMenuContentPadding else MobileMenuContentPadding
+    val dragModifier = if (dropdownDrag != null) {
+        Modifier
+            .onGloballyPositioned { dropdownDrag.coordinates = it }
+            .menuDragSelection(
+                selection = dropdownDrag,
+                enabled = expanded,
+                canSlide = { scrollState.maxValue == 0 },
+                entryEnabled = { true },
+                onActivate = { it.onClick() }
+            )
+    } else {
+        Modifier
+    }
+    Column(
+        modifier = Modifier
+            .padding(padding)
+            .thenIf(scrollable) {
+                verticalScroll(scrollState, enabled = expanded && scrollState.maxValue > 0)
             }
+            .then(dragModifier)
+    ) {
+        CompositionLocalProvider(LocalDropdownDragSelection provides dropdownDrag) {
+            content()
+        }
+    }
+}
+
+@Composable
+private fun rememberMenuPanelMotion(
+    visible: MutableTransitionState<Boolean>,
+    placement: () -> MenuPlacement?
+): MenuPanelMotion {
+    val transition = rememberTransition(visible, label = "Popup menu")
+    val progress = transition.animateFloat(
+        transitionSpec = {
+            if (targetState) {
+                spring(dampingRatio = 0.72f, stiffness = 700f, visibilityThreshold = 0.008f)
+            } else {
+                tween(105, easing = FastOutLinearInEasing)
+            }
+        },
+        label = "Panel motion"
+    ) { if (it) 1f else 0f }
+    val opacity = transition.animateFloat(
+        transitionSpec = {
+            if (targetState) {
+                tween(120, easing = LinearOutSlowInEasing)
+            } else {
+                tween(90, easing = FastOutLinearInEasing)
+            }
+        },
+        label = "Panel opacity"
+    ) { if (it) 1f else 0f }
+    val currentPlacement by rememberUpdatedState(placement)
+    return remember(progress, opacity) {
+        MenuPanelMotion(progress, opacity) { currentPlacement() }
+    }
+}
+
+private class MenuPanelMotion(
+    private val progress: State<Float>,
+    private val opacity: State<Float>,
+    private val placement: () -> MenuPlacement?
+) {
+    fun hitPoint(point: Offset, panelSize: Size, travel: Float): Offset? {
+        val position = placement() ?: return null
+        if (opacity.value <= 0f) {
+            return null
+        }
+        val fraction = progress.value
+        val pivot = Offset(panelSize.width * position.pivot.x, panelSize.height * position.pivot.y)
+        val shift = position.shift(fraction, travel)
+        return pivot + (point - shift - pivot) / menuScale(fraction)
+    }
+
+    fun applyLayer(layer: GraphicsLayerScope) = with(layer) {
+        val position = placement()
+        if (position == null) {
+            alpha = 0f
+        } else {
+            val fraction = progress.value
+            val scale = menuScale(fraction)
+            val shift = position.shift(fraction, MobileMenuTravel.toPx())
+            transformOrigin = TransformOrigin(position.pivot.x, position.pivot.y)
+            scaleX = scale
+            scaleY = scale
+            translationX = shift.x
+            translationY = shift.y
+            alpha = opacity.value
         }
     }
 }

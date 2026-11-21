@@ -40,6 +40,7 @@ import com.moriafly.salt.core.os.OS
 import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.moriafly.salt.ui.material.GlassStyles
 import com.moriafly.salt.ui.thenIf
+import dev.chrisbanes.haze.HazeInput
 import dev.chrisbanes.haze.blur.HazeBlurStyle
 import dev.chrisbanes.haze.blur.HazeColorEffect
 import dev.chrisbanes.haze.blur.hazeBlur
@@ -113,37 +114,66 @@ internal fun menuMaterial(
     val blur = style.material == PopupMenuMaterial.Blur ||
         (android != null && android.versionSdk < OS.Android.ANDROID_13)
     return if (blur) {
-        val blurStyle = remember(effectBackground, effectOpacity, style.tintColor) {
-            HazeBlurStyle {
-                backgroundColor(effectBackground)
-                colorEffects(listOf(HazeColorEffect.tint(style.tintColor)))
-                fallbackColorEffect(HazeColorEffect.tint(effectBackground))
-                blurRadius(12.dp)
-                noiseFactor(0f)
-                alpha(effectOpacity)
-            }
-        }
-        base.hazeBlur(input = backdrop.input, style = blurStyle)
+        base.menuBlur(
+            input = backdrop.input,
+            background = effectBackground,
+            opacity = effectOpacity,
+            tintColor = style.tintColor
+        )
     } else {
-        val glassStyle = remember(
-            cornerRadius,
-            dark,
-            effectBackground,
-            effectOpacity,
-            style.tintColor
-        ) {
-            GlassStyles.regular(dark).then {
-                // The optical mask is round-rect; the popup still clips to its smooth outline.
-                shape(RoundedCornerShape(cornerRadius))
-                tint(style.tintColor)
-                if (dark) {
-                    // Preserve the theme's elevated color when sampling a dark page.
-                    whitePoint(0f)
-                }
-                backgroundColor(effectBackground)
-                alpha(effectOpacity)
-            }
-        }
-        base.hazeGlass(input = backdrop.input, style = glassStyle)
+        base.menuGlass(
+            input = backdrop.input,
+            background = effectBackground,
+            opacity = effectOpacity,
+            tintColor = style.tintColor,
+            cornerRadius = cornerRadius,
+            dark = dark
+        )
     }
+}
+
+@Composable
+private fun Modifier.menuBlur(
+    input: HazeInput.Sources,
+    background: Color,
+    opacity: Float,
+    tintColor: Color
+): Modifier {
+    val style = remember(background, opacity, tintColor) {
+        HazeBlurStyle {
+            backgroundColor(background)
+            colorEffects(listOf(HazeColorEffect.tint(tintColor)))
+            fallbackColorEffect(HazeColorEffect.tint(background))
+            blurRadius(12.dp)
+            noiseFactor(0f)
+            alpha(opacity)
+        }
+    }
+    return hazeBlur(input = input, style = style)
+}
+
+@OptIn(UnstableSaltUiApi::class)
+@Composable
+private fun Modifier.menuGlass(
+    input: HazeInput.Sources,
+    background: Color,
+    opacity: Float,
+    tintColor: Color,
+    cornerRadius: Dp,
+    dark: Boolean
+): Modifier {
+    val style = remember(cornerRadius, dark, background, opacity, tintColor) {
+        GlassStyles.regular(dark).then {
+            // The optical mask is round-rect; the popup still clips to its smooth outline.
+            shape(RoundedCornerShape(cornerRadius))
+            tint(tintColor)
+            if (dark) {
+                // Preserve the theme's elevated color when sampling a dark page.
+                whitePoint(0f)
+            }
+            backgroundColor(background)
+            alpha(opacity)
+        }
+    }
+    return hazeGlass(input = input, style = style)
 }
