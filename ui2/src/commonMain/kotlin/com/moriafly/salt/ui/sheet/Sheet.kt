@@ -67,6 +67,7 @@ import com.moriafly.salt.ui.sheet.internal.rememberSheetLease
  * [modifier] applies to the surface, not to the full-window scrim.
  * [SheetDisplayMode.Auto] selects a mode from the owning window's width and height.
  * [SheetDisplayMode.Bottom] supports height detents.
+ * Glass and blur menus in [content] and [actions] sample the Sheet panel automatically.
  *
  * Only one Sheet in the same owning window may have [visible] set to true.
  * To replace a Sheet, hide the current one and show the next in the same state update.

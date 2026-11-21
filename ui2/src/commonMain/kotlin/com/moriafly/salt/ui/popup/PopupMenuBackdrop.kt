@@ -52,15 +52,37 @@ fun PopupMenuBackdrop(
     revealWindowBackdrop: Boolean = false,
     content: @Composable BoxScope.() -> Unit
 ) {
-    val hazeState = remember { HazeState() }
-    val backdrop = remember(hazeState, enabled, revealWindowBackdrop) {
-        if (enabled) PopupBackdrop(HazeInput.Sources(hazeState), revealWindowBackdrop) else null
-    }
-    CompositionLocalProvider(LocalPopupBackdrop provides backdrop) {
+    ProvidePopupBackdrop(
+        enabled = enabled,
+        revealWindowBackdrop = revealWindowBackdrop
+    ) { backdropSource ->
         Box(
-            modifier = if (enabled) modifier.hazeSource(hazeState) else modifier,
+            modifier = modifier.then(backdropSource),
             content = content
         )
+    }
+}
+
+@Composable
+internal fun ProvidePopupBackdrop(
+    enabled: Boolean = true,
+    revealWindowBackdrop: Boolean = false,
+    content: @Composable (backdropSource: Modifier) -> Unit
+) {
+    val hazeState = remember { HazeState() }
+    val backdrop = remember(hazeState, enabled, revealWindowBackdrop) {
+        if (enabled) {
+            PopupBackdrop(
+                input = HazeInput.Sources(hazeState),
+                revealWindowBackdrop = revealWindowBackdrop
+            )
+        } else {
+            null
+        }
+    }
+    val backdropSource = if (backdrop != null) Modifier.hazeSource(hazeState) else Modifier
+    CompositionLocalProvider(LocalPopupBackdrop provides backdrop) {
+        content(backdropSource)
     }
 }
 

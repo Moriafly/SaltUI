@@ -53,6 +53,7 @@ import com.moriafly.salt.ui.ProvideContentColorTextStyle
 import com.moriafly.salt.ui.SaltTheme
 import com.moriafly.salt.ui.button.PillButtonDefaults
 import com.moriafly.salt.ui.internal.SmoothRoundedRectangleShape
+import com.moriafly.salt.ui.popup.ProvidePopupBackdrop
 import com.moriafly.salt.ui.sheet.SheetProperties
 import com.moriafly.salt.ui.sheet.SheetScope
 import com.moriafly.salt.ui.thenIf
@@ -89,70 +90,74 @@ internal fun SheetPanel(
         contentColor = SaltTheme.colors.text,
         textStyle = SaltTheme.textStyles.main
     ) {
-        val panelModifier = Modifier
-            .graphicsLayer {
-                alpha = 1f
-                scaleX = 1f
-                scaleY = 1f
-                if (bottom) {
-                    translationY = state.surfaceHeight - state.visibleHeight
-                } else {
-                    translationY = (floatingHiddenBase(this) + size.height / 2) *
-                        (1f - state.presentationProgress)
+        ProvidePopupBackdrop { backdropSource ->
+            val panelModifier = Modifier
+                .graphicsLayer {
+                    alpha = 1f
+                    scaleX = 1f
+                    scaleY = 1f
+                    if (bottom) {
+                        translationY = state.surfaceHeight - state.visibleHeight
+                    } else {
+                        translationY = (floatingHiddenBase(this) + size.height / 2) *
+                            (1f - state.presentationProgress)
+                    }
                 }
-            }
-            .clip(shape = shape)
-            .drawWithContent {
-                drawContent()
-                drawSheetScrim(dimAlpha())
-            }
-            .background(color = SaltTheme.colors.background)
-            .border(
-                width = 0.5.dp,
-                color = SaltTheme.colors.stroke,
-                shape = shape
-            )
-            .semantics {
-                dialog()
-                isTraversalGroup = true
-                paneTitle = title ?: "Sheet"
-            }
-            .sheetHeightActions(
-                state = state,
-                enabled = bottom && visible
-            )
-            // Blank interior space stays in the panel's hit path rather than the scrim's.
-            .pointerInput(Unit) { }
-            .then(modifier)
-
-        SheetLayout(
-            state = state,
-            properties = properties,
-            bottom = bottom,
-            bottomInsets = bottomInsets,
-            imeInsets = imeInsets,
-            availableHeight = availableHeight,
-            modifier = panelModifier,
-            header = { compactChrome ->
-                SheetHeader(
+                .clip(shape = shape)
+                .drawWithContent {
+                    drawContent()
+                    drawSheetScrim(dimAlpha())
+                }
+                // Sample the panel before the replacement dim is drawn.
+                .then(backdropSource)
+                .background(color = SaltTheme.colors.background)
+                .border(
+                    width = 0.5.dp,
+                    color = SaltTheme.colors.stroke,
+                    shape = shape
+                )
+                .semantics {
+                    dialog()
+                    isTraversalGroup = true
+                    paneTitle = title ?: "Sheet"
+                }
+                .sheetHeightActions(
                     state = state,
-                    title = title,
-                    visible = visible,
-                    properties = properties,
-                    showHandle = canDrag,
-                    dragEnabled = canDrag && visible && state.ready,
-                    compactChrome = compactChrome,
-                    onDismissRequest = onDismissRequest
+                    enabled = bottom && visible
                 )
-            },
-            actions = { compactChrome ->
-                SheetActions(
-                    compactChrome = compactChrome,
-                    content = actions
-                )
-            },
-            content = content
-        )
+                // Blank interior space stays in the panel's hit path rather than the scrim's.
+                .pointerInput(Unit) { }
+                .then(modifier)
+
+            SheetLayout(
+                state = state,
+                properties = properties,
+                bottom = bottom,
+                bottomInsets = bottomInsets,
+                imeInsets = imeInsets,
+                availableHeight = availableHeight,
+                modifier = panelModifier,
+                header = { compactChrome ->
+                    SheetHeader(
+                        state = state,
+                        title = title,
+                        visible = visible,
+                        properties = properties,
+                        showHandle = canDrag,
+                        dragEnabled = canDrag && visible && state.ready,
+                        compactChrome = compactChrome,
+                        onDismissRequest = onDismissRequest
+                    )
+                },
+                actions = { compactChrome ->
+                    SheetActions(
+                        compactChrome = compactChrome,
+                        content = actions
+                    )
+                },
+                content = content
+            )
+        }
     }
 }
 

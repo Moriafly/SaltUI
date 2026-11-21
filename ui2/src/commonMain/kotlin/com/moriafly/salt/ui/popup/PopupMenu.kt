@@ -61,8 +61,10 @@ fun PopupMenu(
  *
  * [popupPositionProvider] overrides automatic placement and receives the trigger bounds
  * and menu panel size in pixels. [anchor] supplies a pointer position for automatic placement.
- * [style] controls the surface appearance. Glass and blur sample the area wrapped in
- * [PopupMenuBackdrop]. The menu uses the style's container color when sampling is unavailable.
+ * [style] controls the surface appearance. Glass and blur use the nearest backdrop source.
+ * [com.moriafly.salt.ui.sheet.Sheet] provides its panel automatically. Use [PopupMenuBackdrop]
+ * to specify a sampling area.
+ * The menu uses the style's container color when sampling is unavailable.
  * Set [scrollable] to false when [content] manages its own scrolling.
  */
 @UnstableSaltUiApi
