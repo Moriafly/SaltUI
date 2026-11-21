@@ -40,7 +40,7 @@ import com.moriafly.salt.ui.UnstableSaltUiApi
  */
 @Stable
 @UnstableSaltUiApi
-internal class PopupMenuAnchor {
+class PopupMenuAnchor internal constructor() {
     internal var coordinates: LayoutCoordinates? = null
     internal var pointerPosition: Offset? = null
     internal var pendingPositionInWindow: Offset? = null
@@ -77,13 +77,13 @@ internal class PopupMenuAnchor {
 
 @UnstableSaltUiApi
 @Composable
-internal fun rememberPopupMenuAnchor(): PopupMenuAnchor = remember { PopupMenuAnchor() }
+fun rememberPopupMenuAnchor(): PopupMenuAnchor = remember { PopupMenuAnchor() }
 
 /**
  * Observes pointer input on the trigger without consuming it. Call [PopupMenuAnchor.open] from its click.
  */
 @UnstableSaltUiApi
-internal fun Modifier.popupMenuAnchor(
+fun Modifier.popupMenuAnchor(
     anchor: PopupMenuAnchor
 ): Modifier = onPlaced { anchor.coordinates = it }
     .pointerInput(anchor) {

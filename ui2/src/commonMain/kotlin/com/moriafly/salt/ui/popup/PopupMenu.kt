@@ -78,25 +78,34 @@ fun PopupMenu(
     PopupMenu(
         expanded = expanded,
         onDismissRequest = onDismissRequest,
-        anchor = null,
         modifier = modifier,
         offset = offset,
         properties = properties,
-        backgroundColor = backgroundColor,
+        style = PopupMenuDefaults.style(containerColor = backgroundColor),
         content = content
     )
 }
 
-@OptIn(UnstableSaltUiApi::class)
+/**
+ * An anchored popup for custom menu content. The caller controls [expanded].
+ *
+ * [popupPositionProvider] overrides automatic placement and receives the trigger bounds
+ * and menu panel size in pixels. [anchor] supplies a pointer position for automatic placement.
+ * [style] controls the surface appearance. Set [scrollable] to false when [content] manages
+ * its own scrolling.
+ */
+@UnstableSaltUiApi
 @Composable
-internal fun PopupMenu(
+fun PopupMenu(
     expanded: Boolean,
     onDismissRequest: () -> Unit,
-    anchor: PopupMenuAnchor?,
     modifier: Modifier = Modifier,
     offset: DpOffset = DpOffset(16.dp, 0.dp),
     properties: PopupProperties = PopupProperties(focusable = true),
-    backgroundColor: Color = SaltTheme.colors.popup,
+    style: PopupMenuStyle = PopupMenuDefaults.style(),
+    anchor: PopupMenuAnchor? = null,
+    popupPositionProvider: PopupPositionProvider? = null,
+    scrollable: Boolean = true,
     content: @Composable ColumnScope.() -> Unit
 ) {
     val animate = !OS.isDesktop()
@@ -123,7 +132,8 @@ internal fun PopupMenu(
         val popupPositionProvider = DropdownMenuPositionProvider(
             contentOffset = offset,
             density = density,
-            pointerAnchorBounds = pointerAnchorBounds
+            pointerAnchorBounds = pointerAnchorBounds,
+            customPositionProvider = popupPositionProvider
         ) { parentBounds, menuBounds ->
             if (animate) {
                 transformOriginState.value = calculateTransformOrigin(parentBounds, menuBounds)
@@ -138,8 +148,9 @@ internal fun PopupMenu(
             DropdownMenuContent(
                 expandedStates = expandedStates,
                 transformOrigin = { transformOriginState.value },
-                backgroundColor = backgroundColor,
+                style = style,
                 animate = animate,
+                scrollable = scrollable,
                 modifier = modifier,
                 content = content
             )
@@ -152,8 +163,9 @@ internal fun PopupMenu(
 internal fun DropdownMenuContent(
     expandedStates: MutableTransitionState<Boolean>,
     transformOrigin: () -> TransformOrigin,
-    backgroundColor: Color,
+    style: PopupMenuStyle,
     animate: Boolean,
+    scrollable: Boolean,
     modifier: Modifier = Modifier,
     content: @Composable ColumnScope.() -> Unit
 ) {
@@ -166,19 +178,19 @@ internal fun DropdownMenuContent(
         modifier
     }
     val shape = SaltTheme.shapes.medium
-    val backdrop = LocalPopupBackdrop.current
+    val backdrop = LocalPopupBackdrop.current.takeIf { style.material != PopupMenuMaterial.Solid }
     val reveal = backdrop?.revealWindowBackdrop == true && popupSharesHostCanvas
     val material = menuMaterial(
         shape = shape,
         cornerRadius = if (animate) mobileMenuCornerRadius() else 10.dp,
-        style = PopupMenuDefaults.style(containerColor = backgroundColor),
+        style = style,
         backdrop = backdrop,
         revealWindowBackdrop = reveal,
         dark = SaltTheme.configs.isDarkTheme
     )
     Column(
         modifier = contentModifier
-            .width(IntrinsicSize.Max)
+            .thenIf(scrollable) { width(IntrinsicSize.Max) }
             .thenIf(reveal) { revealPopupWindowBackdrop(shape) }
             .thenIf(!animate) {
                 menuShadow(
@@ -190,7 +202,7 @@ internal fun DropdownMenuContent(
             }
             .clip(shape)
             .then(material)
-            .verticalScroll(rememberScrollState()),
+            .thenIf(scrollable) { verticalScroll(rememberScrollState()) },
         content = content
     )
 }
@@ -294,6 +306,7 @@ internal data class DropdownMenuPositionProvider(
     val contentOffset: DpOffset,
     val density: Density,
     val pointerAnchorBounds: IntRect?,
+    val customPositionProvider: PopupPositionProvider?,
     val onPositionCalculated: (IntRect, IntRect) -> Unit = { _, _ -> }
 ) : PopupPositionProvider {
     override fun calculatePosition(
@@ -302,6 +315,17 @@ internal data class DropdownMenuPositionProvider(
         layoutDirection: LayoutDirection,
         popupContentSize: IntSize
     ): IntOffset {
+        if (customPositionProvider != null) {
+            val position = customPositionProvider.calculatePosition(
+                anchorBounds = anchorBounds,
+                windowSize = windowSize,
+                layoutDirection = layoutDirection,
+                popupContentSize = popupContentSize
+            )
+            onPositionCalculated(anchorBounds, IntRect(position, popupContentSize))
+            return position
+        }
+
         val placementBounds = pointerAnchorBounds ?: anchorBounds
         // The min margin above and below the menu, relative to the screen.
         val verticalMargin = with(density) { MenuVerticalMargin.roundToPx() }

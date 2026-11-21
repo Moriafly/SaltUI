@@ -29,7 +29,7 @@ import com.moriafly.salt.ui.UnstableSaltUiApi
  * Chooses how the menu surface uses its backdrop.
  */
 @UnstableSaltUiApi
-internal enum class PopupMenuMaterial {
+enum class PopupMenuMaterial {
     Glass,
     Blur,
     Solid
@@ -46,7 +46,7 @@ internal enum class PopupMenuMaterial {
  */
 @Immutable
 @UnstableSaltUiApi
-internal data class PopupMenuStyle(
+data class PopupMenuStyle(
     val material: PopupMenuMaterial,
     val containerColor: Color,
     val tintColor: Color,
@@ -60,7 +60,7 @@ internal data class PopupMenuStyle(
 }
 
 @UnstableSaltUiApi
-internal object PopupMenuDefaults {
+object PopupMenuDefaults {
     /**
      * Resolves a menu style from the current theme. The container defaults to the theme's popup
      * color. The tint uses the container color at up to 60% opacity in light mode and 78% in dark.
