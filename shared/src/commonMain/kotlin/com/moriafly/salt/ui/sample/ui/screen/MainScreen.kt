@@ -34,7 +34,6 @@ import com.moriafly.salt.ui.Button
 import com.moriafly.salt.ui.ButtonAppearance
 import com.moriafly.salt.ui.Icon
 import com.moriafly.salt.ui.Item
-import com.moriafly.salt.ui.ItemButton
 import com.moriafly.salt.ui.ItemOuterLargeTitle
 import com.moriafly.salt.ui.ItemSwitcher
 import com.moriafly.salt.ui.UnstableSaltUiApi
@@ -56,7 +55,6 @@ fun MainScreen() {
     BasicScreenColumn(
         actionButton = null,
         title = "Main",
-        subtitle = "SaltUI 3",
         toolButtons = {
             TitleBarButton(
                 onClick = { welcomeSheetVisible = true }
@@ -154,14 +152,6 @@ fun MainScreen() {
             Item(
                 onClick = { navigator.navigate(ScreenRoute.PopupMenus) },
                 text = "Popup menus"
-            )
-        }
-
-        ScreenCard(header = "Navigation") {
-            ItemButton(
-                onClick = { navigator.forward() },
-                text = "Go forward",
-                enabled = navigator.navForwardStack.isNotEmpty()
             )
         }
 
