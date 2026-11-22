@@ -50,6 +50,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.GraphicsLayerScope
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathHitTester
@@ -321,6 +322,11 @@ private fun MenuSurface(
         LocalPopupBackdrop.current
     }
     val dark = SaltTheme.configs.isDarkTheme
+    val maxGlassLuminance = if (dark && backdrop != null) {
+        style.darkGlassLuminanceLimit(SaltTheme.colors.text)
+    } else {
+        null
+    }
     val menuRadius = if (desktop) 10.dp else mobileMenuCornerRadius()
     val shape = remember(menuRadius) { SmoothRoundedRectangleShape(menuRadius) }
     val glassInteraction = if (backdrop != null) rememberGlassInteractionState() else null
@@ -353,32 +359,59 @@ private fun MenuSurface(
             ),
             propagateMinConstraints = true
         ) {
-            Box(
-                modifier = Modifier
-                    .matchParentSize()
-                    .menuMaterial(
-                        shape = shape,
-                        style = style,
-                        backdrop = backdrop,
-                        isDarkTheme = dark
-                    )
+            MenuSurfaceBackdrop(
+                shape = shape,
+                style = style,
+                backdrop = backdrop,
+                dark = dark,
+                glassInteraction = glassInteraction,
+                maxGlassLuminance = maxGlassLuminance
             )
-            if (glassInteraction != null) {
-                Box(
-                    Modifier
-                        .matchParentSize()
-                        .graphicsLayer()
-                        .glassInteractionLight(glassInteraction, shape, dark)
-                )
-            }
             MenuSurfaceContent(
                 desktop = desktop,
                 expanded = visible.targetState,
                 scrollable = scrollable,
                 dropdownDrag = dropdownDrag,
+                maxGlassLuminance = maxGlassLuminance,
                 content = content
             )
         }
+    }
+}
+
+@OptIn(UnstableSaltUiApi::class)
+@Composable
+private fun BoxScope.MenuSurfaceBackdrop(
+    shape: SmoothRoundedRectangleShape,
+    style: PopupMenuStyle,
+    backdrop: PopupBackdrop?,
+    dark: Boolean,
+    glassInteraction: GlassInteractionState?,
+    maxGlassLuminance: Float?
+) {
+    Box(
+        modifier = Modifier
+            .matchParentSize()
+            .menuMaterial(
+                shape = shape,
+                style = style,
+                backdrop = backdrop,
+                isDarkTheme = dark,
+                maxGlassLuminance = maxGlassLuminance
+            )
+    )
+    if (glassInteraction != null) {
+        Box(
+            Modifier
+                .matchParentSize()
+                .graphicsLayer()
+                .glassInteractionLight(
+                    interaction = glassInteraction,
+                    shape = shape,
+                    isDarkTheme = dark,
+                    rimWidth = if (maxGlassLuminance != null) 1.5.dp else Dp.Unspecified
+                )
+        )
     }
 }
 
@@ -477,8 +510,12 @@ private fun MenuSurfaceContent(
     expanded: Boolean,
     scrollable: Boolean,
     dropdownDrag: MenuDragSelection<DropdownMenuItem>?,
+    maxGlassLuminance: Float?,
     content: @Composable ColumnScope.() -> Unit
 ) {
+    val glassFeedbackColor = remember(maxGlassLuminance) {
+        maxGlassLuminance?.let(::menuGlassFeedbackColor) ?: Color.Unspecified
+    }
     val scrollState = rememberScrollState()
     val padding = if (desktop) DesktopMenuContentPadding else MobileMenuContentPadding
     val dragModifier = if (dropdownDrag != null) {
@@ -502,7 +539,10 @@ private fun MenuSurfaceContent(
             }
             .then(dragModifier)
     ) {
-        CompositionLocalProvider(LocalDropdownDragSelection provides dropdownDrag) {
+        CompositionLocalProvider(
+            LocalDropdownDragSelection provides dropdownDrag,
+            LocalMenuGlassFeedbackColor provides glassFeedbackColor
+        ) {
             content()
         }
     }

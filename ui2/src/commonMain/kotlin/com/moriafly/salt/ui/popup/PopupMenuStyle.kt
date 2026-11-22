@@ -24,6 +24,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.graphics.isSpecified
 import androidx.compose.ui.graphics.takeOrElse
+import com.moriafly.salt.core.os.OS
 import com.moriafly.salt.ui.SaltTheme
 import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.moriafly.salt.ui.material.GlassStyles
@@ -61,7 +62,8 @@ data class PopupMenuStyle(
 object PopupMenuDefaults {
     /**
      * Resolves a menu style from the current theme. The container defaults to the theme's popup
-     * color. Dark Glass uses a more translucent tint calibrated to the theme background.
+     * color. Desktop light Glass uses a weaker default white tint to let more backdrop show through.
+     * Dark Glass uses a more translucent tint calibrated to the theme background.
      * The outline uses the theme stroke in light mode and white at 16% in dark mode.
      * The fill behind Glass combines the tint with the light theme's white-point adjustment.
      * The fill behind Blur uses up to 26% opacity in light mode and 34% in dark mode.
@@ -100,7 +102,14 @@ object PopupMenuDefaults {
         containerColor: Color
     ): Color {
         val isDarkTheme = SaltTheme.configs.isDarkTheme
-        val tint = containerColor.withMaxAlpha(if (isDarkTheme) 0.78f else 0.60f)
+        val maxTintAlpha = when {
+            isDarkTheme -> 0.78f
+            material == PopupMenuMaterial.Glass &&
+                OS.isDesktop() &&
+                containerColor == Color.White -> 0.10f
+            else -> 0.60f
+        }
+        val tint = containerColor.withMaxAlpha(maxTintAlpha)
         val preferredAlpha = 0.10f
         if (!isDarkTheme || material != PopupMenuMaterial.Glass || tint.alpha <= preferredAlpha) {
             return tint

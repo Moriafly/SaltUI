@@ -22,6 +22,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.graphics.ClipOp
@@ -29,9 +30,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.addOutline
+import androidx.compose.ui.graphics.colorspace.ColorSpaces
 import androidx.compose.ui.graphics.drawscope.clipPath
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.isSpecified
+import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.shadow.Shadow
 import androidx.compose.ui.graphics.shadow.ShadowContext
 import androidx.compose.ui.graphics.takeOrElse
@@ -47,7 +50,30 @@ import dev.chrisbanes.haze.HazeInput
 import dev.chrisbanes.haze.blur.HazeBlurStyle
 import dev.chrisbanes.haze.blur.HazeColorEffect
 import dev.chrisbanes.haze.blur.hazeBlur
+import dev.chrisbanes.haze.glass.OpticalSizeValue
 import dev.chrisbanes.haze.glass.hazeGlass
+
+internal val LocalMenuGlassFeedbackColor = staticCompositionLocalOf { Color.Unspecified }
+
+@OptIn(UnstableSaltUiApi::class)
+internal fun PopupMenuStyle.darkGlassLuminanceLimit(textColor: Color): Float? {
+    if (material.withAndroidFallback() != PopupMenuMaterial.Glass ||
+        !tintColor.isSpecified || tintColor.alpha == 0f || !textColor.isSpecified
+    ) {
+        return null
+    }
+    // Leave room for 8-bit rounding and dither around the final 4.5:1 contrast target.
+    val maxBackgroundLuminance = (textColor.luminance() + 0.05f) / 4.65f - 0.05f
+    return maxBackgroundLuminance.takeIf { it > 0f }
+}
+
+internal fun menuGlassFeedbackColor(maxLuminance: Float): Color {
+    val gray = Color(maxLuminance, maxLuminance, maxLuminance, colorSpace = ColorSpaces.LinearSrgb)
+        .convert(ColorSpaces.Srgb)
+        .red
+    // Keep the explicit row highlight below the backdrop luminance limit.
+    return Color(red = gray * 0.76f, green = gray * 0.84f, blue = gray * 0.93f)
+}
 
 internal fun Modifier.menuShadow(
     shape: Shape,
@@ -84,7 +110,8 @@ internal fun Modifier.menuMaterial(
     shape: SmoothRoundedRectangleShape,
     style: PopupMenuStyle,
     backdrop: PopupBackdrop?,
-    isDarkTheme: Boolean
+    isDarkTheme: Boolean,
+    maxGlassLuminance: Float?
 ): Modifier {
     val surface = menuEdge(shape = shape, color = style.borderColor)
     val material = style.material.withAndroidFallback()
@@ -94,8 +121,11 @@ internal fun Modifier.menuMaterial(
 
     val backdropColor = style.backdropColor.takeOrElse { Color.Transparent }
     val tintColor = style.tintColor.takeOrElse { Color.Transparent }
+    val toneEffect = remember(maxGlassLuminance) {
+        maxGlassLuminance?.let(::createMenuBackdropToneEffect)
+    }
     val sampledSurface = surface
-        .graphicsLayer()
+        .graphicsLayer { renderEffect = toneEffect }
         .then(backdrop.cutout(shape))
         .thenIf(backdropColor.alpha == 1f) { background(backdropColor) }
 
@@ -111,7 +141,8 @@ internal fun Modifier.menuMaterial(
             backdropColor = backdropColor,
             tintColor = tintColor,
             cornerRadius = shape.radius,
-            isDarkTheme = isDarkTheme
+            isDarkTheme = isDarkTheme,
+            diffuseBackdrop = maxGlassLuminance != null
         )
     }
 }
@@ -157,22 +188,28 @@ private fun Modifier.menuGlass(
     backdropColor: Color,
     tintColor: Color,
     cornerRadius: Dp,
-    isDarkTheme: Boolean
+    isDarkTheme: Boolean,
+    diffuseBackdrop: Boolean
 ): Modifier {
-    val style = remember(cornerRadius, isDarkTheme, backdropColor, tintColor) {
-        GlassStyles.regular(isDarkTheme).then {
-            // The optical mask is round-rect; the popup still clips to its smooth outline.
-            shape(RoundedCornerShape(cornerRadius))
-            tint(tintColor)
-            if (isDarkTheme) {
-                // Match the source-over tint used where the background shows through.
-                contrast(0f)
-                whitePoint(0f)
-                chromaMultiplier(1f)
+    val style = remember(cornerRadius, isDarkTheme, backdropColor, tintColor, diffuseBackdrop) {
+        GlassStyles
+            .regular(isDarkTheme)
+            .then {
+                // The optical mask is round-rect; the popup still clips to its smooth outline.
+                shape(RoundedCornerShape(cornerRadius))
+                tint(tintColor)
+                if (diffuseBackdrop) {
+                    optics { copy(blurRadius = OpticalSizeValue.Fixed(8.dp)) }
+                }
+                if (isDarkTheme) {
+                    // Match the source-over tint used where the background shows through.
+                    contrast(0f)
+                    whitePoint(0f)
+                    chromaMultiplier(1f)
+                }
+                backgroundColor(backdropColor)
+                alpha(1f)
             }
-            backgroundColor(backdropColor)
-            alpha(1f)
-        }
     }
     return hazeGlass(input = input, style = style)
 }

@@ -42,6 +42,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.graphics.drawOutline
+import androidx.compose.ui.graphics.drawscope.Fill
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.withTransform
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.PointerEventType
@@ -407,9 +409,11 @@ internal fun Modifier.drawGlassInteraction(
 internal fun Modifier.glassInteractionLight(
     interaction: GlassInteractionState,
     shape: Shape,
-    isDarkTheme: Boolean
+    isDarkTheme: Boolean,
+    rimWidth: Dp = Dp.Unspecified
 ): Modifier = drawWithCache {
     val outline = shape.createOutline(size, layoutDirection, this)
+    val lightStyle = if (rimWidth.isSpecified) Stroke(width = 2f * rimWidth.toPx()) else Fill
     // Base the light's reach on the short side so it stays local on wide bars.
     val hoverLightRadius = size.minDimension * 0.9f
     val pressedLightRadius = size.minDimension * 1.4f
@@ -439,7 +443,8 @@ internal fun Modifier.glassInteractionLight(
                     center = lightCenter,
                     radius = lightRadius
                 ),
-                alpha = lightAlpha
+                alpha = lightAlpha,
+                style = lightStyle
             )
         }
         drawContent()
