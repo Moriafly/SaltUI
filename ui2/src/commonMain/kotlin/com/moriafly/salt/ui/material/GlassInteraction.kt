@@ -50,6 +50,7 @@ import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.PointerId
 import androidx.compose.ui.input.pointer.PointerType
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.isSpecified
@@ -384,13 +385,7 @@ internal fun Modifier.drawGlassInteraction(
     maxTranslation: Dp = Dp.Unspecified
 ): Modifier = drawWithContent {
     val scale = interaction.scale
-    val offset = interaction.translation
-    val translation = if (maxTranslation.isSpecified) {
-        val limit = maxTranslation.toPx()
-        Offset(offset.x.coerceIn(-limit, limit), offset.y.coerceIn(-limit, limit))
-    } else {
-        offset
-    }
+    val translation = interactionTranslation(interaction, maxTranslation)
     if (scale == 1f && translation == Offset.Zero) {
         drawContent()
     } else {
@@ -403,6 +398,17 @@ internal fun Modifier.drawGlassInteraction(
             this@drawWithContent.drawContent()
         }
     }
+}
+
+@OptIn(UnstableSaltUiApi::class)
+internal fun Density.interactionTranslation(
+    interaction: GlassInteractionState,
+    maxTranslation: Dp
+): Offset {
+    val offset = interaction.translation
+    if (!maxTranslation.isSpecified) return offset
+    val limit = maxTranslation.toPx()
+    return Offset(offset.x.coerceIn(-limit, limit), offset.y.coerceIn(-limit, limit))
 }
 
 @OptIn(UnstableSaltUiApi::class)

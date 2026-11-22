@@ -60,6 +60,7 @@ import androidx.compose.ui.graphics.addOutline
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalGraphicsContext
@@ -67,6 +68,7 @@ import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.hideFromAccessibility
+import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.IntOffset
@@ -86,6 +88,7 @@ import com.moriafly.salt.ui.material.GlassInteractionState
 import com.moriafly.salt.ui.material.drawGlassInteraction
 import com.moriafly.salt.ui.material.glassInteractionLight
 import com.moriafly.salt.ui.material.glassPointerInput
+import com.moriafly.salt.ui.material.interactionTranslation
 import com.moriafly.salt.ui.material.rememberGlassInteractionState
 import com.moriafly.salt.ui.rememberScrollState
 import com.moriafly.salt.ui.thenIf
@@ -330,6 +333,11 @@ private fun MenuSurface(
     val menuRadius = if (desktop) 10.dp else mobileMenuCornerRadius()
     val shape = remember(menuRadius) { SmoothRoundedRectangleShape(menuRadius) }
     val glassInteraction = if (backdrop != null) rememberGlassInteractionState() else null
+    val sampledMotion = motion?.takeIf {
+        glassInteraction != null &&
+            OS.isAndroid() &&
+            style.material.withAndroidFallback() != PopupMenuMaterial.Solid
+    }
     val dropdownDrag = if (dropdownSlideSelection && !desktop) {
         remember { MenuDragSelection<DropdownMenuItem>() }
     } else {
@@ -349,25 +357,60 @@ private fun MenuSurface(
             ),
         propagateMinConstraints = true
     ) {
-        Box(
-            modifier = Modifier.menuSurfaceFrame(
+        val frame = if (sampledMotion != null) {
+            Modifier.graphicsLayer { alpha = sampledMotion.alpha }
+        } else {
+            Modifier.menuSurfaceFrame(
                 desktop = desktop,
                 dark = dark,
                 shape = shape,
                 motion = motion,
                 glassInteraction = glassInteraction
-            ),
+            )
+        }
+        Box(
+            modifier = frame,
             propagateMinConstraints = true
         ) {
+            val foregroundMotion = if (sampledMotion != null) {
+                Modifier
+                    .graphicsLayer { sampledMotion.applyLayer(this, includeOpacity = false) }
+                    .drawGlassInteraction(requireNotNull(glassInteraction), MenuDragLimit)
+            } else {
+                Modifier
+            }
+            val foreground = foregroundMotion.thenIf(sampledMotion != null) { clip(shape) }
+            if (sampledMotion != null) {
+                // The shadow follows the visual transform independently of sampling.
+                Spacer(
+                    Modifier
+                        .matchParentSize()
+                        .then(foregroundMotion)
+                        .menuShadow(
+                            shape = shape,
+                            dark = dark,
+                            desktop = false,
+                            shadowContext = LocalGraphicsContext.current.shadowContext
+                        )
+                )
+            }
             MenuSurfaceBackdrop(
+                modifier = Modifier.thenIf(sampledMotion != null) {
+                    layoutMenuBackdrop(
+                        motion = requireNotNull(sampledMotion),
+                        interaction = requireNotNull(glassInteraction)
+                    ).clip(shape)
+                },
                 shape = shape,
                 style = style,
                 backdrop = backdrop,
                 dark = dark,
                 glassInteraction = glassInteraction,
-                maxGlassLuminance = maxGlassLuminance
+                maxGlassLuminance = maxGlassLuminance,
+                lightModifier = foreground
             )
             MenuSurfaceContent(
+                modifier = foreground,
                 desktop = desktop,
                 expanded = visible.targetState,
                 scrollable = scrollable,
@@ -387,10 +430,12 @@ private fun BoxScope.MenuSurfaceBackdrop(
     backdrop: PopupBackdrop?,
     dark: Boolean,
     glassInteraction: GlassInteractionState?,
-    maxGlassLuminance: Float?
+    maxGlassLuminance: Float?,
+    modifier: Modifier = Modifier,
+    lightModifier: Modifier = Modifier
 ) {
     Box(
-        modifier = Modifier
+        modifier = modifier
             .matchParentSize()
             .menuMaterial(
                 shape = shape,
@@ -404,6 +449,7 @@ private fun BoxScope.MenuSurfaceBackdrop(
         Box(
             Modifier
                 .matchParentSize()
+                .then(lightModifier)
                 .graphicsLayer()
                 .glassInteractionLight(
                     interaction = glassInteraction,
@@ -414,6 +460,46 @@ private fun BoxScope.MenuSurfaceBackdrop(
         )
     }
 }
+
+// Android's cross-window transform can scale the window origin along with the glass.
+// Lay out only the sampled material at its visual size and pass translation to the layer.
+@OptIn(UnstableSaltUiApi::class)
+private fun Modifier.layoutMenuBackdrop(
+    motion: MenuPanelMotion,
+    interaction: GlassInteractionState
+): Modifier = layout { measurable, constraints ->
+    if (!constraints.hasFixedWidth || !constraints.hasFixedHeight) {
+        // The match-parent backdrop has no size of its own during intrinsic measurement.
+        val surface = measurable.measure(constraints)
+        return@layout layout(surface.width, surface.height) { surface.place(0, 0) }
+    }
+
+    val panel = IntSize(constraints.maxWidth, constraints.maxHeight)
+    val openingScale = motion.scale
+    val pressScale = interaction.scale
+    val visualScale = openingScale * pressScale
+    val surface = measurable.measure(
+        Constraints.fixed(
+            width = (panel.width * visualScale).roundToInt(),
+            height = (panel.height * visualScale).roundToInt()
+        )
+    )
+    layout(panel.width, panel.height) {
+        surface.placeWithLayer(0, 0) {
+            val panelSize = panel.toSize()
+            val openingOffset = motion.scaleOffset(panelSize, openingScale, MobileMenuTravel.toPx())
+            val pressOrigin = interaction.transformOrigin(panelSize)
+            val pressOffset = scaleDisplacement(pressOrigin, panelSize, pressScale) +
+                interactionTranslation(interaction, MenuDragLimit)
+            val offset = openingOffset + pressOffset * openingScale
+            translationX = offset.x
+            translationY = offset.y
+        }
+    }
+}
+
+private fun scaleDisplacement(origin: TransformOrigin, size: Size, scale: Float): Offset =
+    Offset(size.width * origin.pivotFractionX, size.height * origin.pivotFractionY) * (1f - scale)
 
 @Composable
 private fun Modifier.menuSurfaceSize(useIntrinsicWidth: Boolean): Modifier {
@@ -492,7 +578,7 @@ private fun Modifier.menuSurfaceFrame(
 ): Modifier = this
     .thenIf(motion != null) { graphicsLayer { requireNotNull(motion).applyLayer(this) } }
     .thenIf(!desktop && glassInteraction != null) {
-        drawGlassInteraction(requireNotNull(glassInteraction), maxTranslation = 3.dp)
+        drawGlassInteraction(requireNotNull(glassInteraction), maxTranslation = MenuDragLimit)
     }
     .thenIf(desktop || OS.isAndroid()) {
         menuShadow(
@@ -511,6 +597,7 @@ private fun MenuSurfaceContent(
     scrollable: Boolean,
     dropdownDrag: MenuDragSelection<DropdownMenuItem>?,
     maxGlassLuminance: Float?,
+    modifier: Modifier = Modifier,
     content: @Composable ColumnScope.() -> Unit
 ) {
     val glassFeedbackColor = remember(maxGlassLuminance) {
@@ -532,7 +619,7 @@ private fun MenuSurfaceContent(
         Modifier
     }
     Column(
-        modifier = Modifier
+        modifier = modifier
             .padding(padding)
             .thenIf(scrollable) {
                 verticalScroll(scrollState, enabled = expanded && scrollState.maxValue > 0)
@@ -585,6 +672,9 @@ private class MenuPanelMotion(
     private val opacity: State<Float>,
     private val placement: () -> MenuPlacement?
 ) {
+    val scale: Float get() = menuScale(progress.value)
+    val alpha: Float get() = if (placement() != null) opacity.value else 0f
+
     fun hitPoint(point: Offset, panelSize: Size, travel: Float): Offset? {
         val position = placement() ?: return null
         if (opacity.value <= 0f) {
@@ -596,10 +686,16 @@ private class MenuPanelMotion(
         return pivot + (point - shift - pivot) / menuScale(fraction)
     }
 
-    fun applyLayer(layer: GraphicsLayerScope) = with(layer) {
+    fun scaleOffset(size: Size, scale: Float, travel: Float): Offset {
+        val position = placement() ?: return Offset.Zero
+        val origin = TransformOrigin(position.pivot.x, position.pivot.y)
+        return scaleDisplacement(origin, size, scale) + position.shift(progress.value, travel)
+    }
+
+    fun applyLayer(layer: GraphicsLayerScope, includeOpacity: Boolean = true) = with(layer) {
         val position = placement()
         if (position == null) {
-            alpha = 0f
+            if (includeOpacity) alpha = 0f
         } else {
             val fraction = progress.value
             val scale = menuScale(fraction)
@@ -609,7 +705,7 @@ private class MenuPanelMotion(
             scaleY = scale
             translationX = shift.x
             translationY = shift.y
-            alpha = opacity.value
+            if (includeOpacity) alpha = opacity.value
         }
     }
 }
@@ -617,6 +713,7 @@ private class MenuPanelMotion(
 internal val DesktopMenuContentPadding = 4.dp
 private val MobileMenuTravel = 4.dp
 private val MenuShadowGutter = 12.dp
+private val MenuDragLimit = 3.dp
 
 @Composable
 private fun BoxScope.MenuShadowDismissRegion(onDismissRequest: () -> Unit) {

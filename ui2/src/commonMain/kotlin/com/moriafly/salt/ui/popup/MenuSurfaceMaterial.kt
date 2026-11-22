@@ -148,7 +148,7 @@ internal fun Modifier.menuMaterial(
 }
 
 @OptIn(UnstableSaltUiApi::class)
-private fun PopupMenuMaterial.withAndroidFallback(): PopupMenuMaterial {
+internal fun PopupMenuMaterial.withAndroidFallback(): PopupMenuMaterial {
     val android = OS.current as? OS.Android ?: return this
     return when {
         android.versionSdk < OS.Android.ANDROID_12 -> PopupMenuMaterial.Solid
