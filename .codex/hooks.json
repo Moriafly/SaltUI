@@ -1,0 +1,44 @@
+{
+  "description": "Check SaltUI edits with ktlint and review applicable skills before finishing a coding turn.",
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$(git rev-parse --show-toplevel)/.codex/hooks/quality.mjs\"",
+            "commandWindows": "pwsh -NoProfile -NonInteractive -Command \"node ((git rev-parse --show-toplevel) + '/.codex/hooks/quality.mjs')\"",
+            "timeout": 15
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "^(apply_patch|Bash)$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$(git rev-parse --show-toplevel)/.codex/hooks/quality.mjs\"",
+            "commandWindows": "pwsh -NoProfile -NonInteractive -Command \"node ((git rev-parse --show-toplevel) + '/.codex/hooks/quality.mjs')\"",
+            "statusMessage": "Checking edited Kotlin files",
+            "timeout": 180
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$(git rev-parse --show-toplevel)/.codex/hooks/quality.mjs\"",
+            "commandWindows": "pwsh -NoProfile -NonInteractive -Command \"node ((git rev-parse --show-toplevel) + '/.codex/hooks/quality.mjs')\"",
+            "statusMessage": "Verifying the turn's code changes",
+            "timeout": 180
+          }
+        ]
+      }
+    ]
+  }
+}
