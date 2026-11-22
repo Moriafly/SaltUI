@@ -151,14 +151,19 @@ class PopupMenuBackdropRenderingTest {
     }
 
     @Test
-    fun darkGlassRetainsTheLightnessOfABrighterBackground() {
-        val background = Color(0xFF4A4E46)
-        val menu = renderMenu(dark = true) {}[239, 132].compositeOver(background)
+    fun darkGlassLiftsGrayAndBlueWindowBackgrounds() {
+        val glass = renderMenu(dark = true) {}[239, 132]
+        val blue = Color(0xFF274EE2)
+        for (background in listOf(Color(0xFF4A4E46), Color(0xFF2A51B9), blue)) {
+            val menu = glass.compositeOver(background)
+            assertTrue(
+                menu.luminance() > background.luminance() + 0.003f,
+                "Expected a visible elevation over $background: $menu"
+            )
+        }
 
-        assertTrue(
-            menu.luminance() >= background.luminance() - 0.014f,
-            "The menu should stay close to the brightness of its background: $menu"
-        )
+        val blueMenu = glass.compositeOver(blue)
+        assertTrue(blueMenu.blue - blueMenu.red > 0.5f, "Expected blue to show through")
     }
 
     @Test

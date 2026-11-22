@@ -165,8 +165,10 @@ private fun Modifier.menuGlass(
             shape(RoundedCornerShape(cornerRadius))
             tint(tintColor)
             if (isDarkTheme) {
-                // Preserve the theme's elevated color when sampling a dark page.
+                // Match the source-over tint used where the background shows through.
+                contrast(0f)
                 whitePoint(0f)
+                chromaMultiplier(1f)
             }
             backgroundColor(backdropColor)
             alpha(1f)

@@ -101,8 +101,8 @@ object PopupMenuDefaults {
     ): Color {
         val isDarkTheme = SaltTheme.configs.isDarkTheme
         val tint = containerColor.withMaxAlpha(if (isDarkTheme) 0.78f else 0.60f)
-        val glassTintAlpha = 0.44f
-        if (!isDarkTheme || material != PopupMenuMaterial.Glass || tint.alpha <= glassTintAlpha) {
+        val preferredAlpha = 0.10f
+        if (!isDarkTheme || material != PopupMenuMaterial.Glass || tint.alpha <= preferredAlpha) {
             return tint
         }
 
@@ -111,21 +111,44 @@ object PopupMenuDefaults {
             return tint
         }
 
-        val background = backgroundColor.convert(tint.colorSpace)
-        val opacityRatio = tint.alpha / glassTintAlpha
+        val page = backgroundColor.convert(tint.colorSpace)
         val contrast = 1f + GlassStyles.DARK_CONTRAST
 
-        // Match the composite over the theme background at the lower tint opacity.
-        fun channel(tintChannel: Float, backgroundChannel: Float): Float {
-            val sampled = ((backgroundChannel - 0.5f) * contrast + 0.5f).coerceIn(0f, 1f)
-            return (sampled + (tintChannel - sampled) * opacityRatio).coerceIn(0f, 1f)
+        fun shaded(channel: Float): Float =
+            ((channel - 0.5f) * contrast + 0.5f).coerceIn(0f, 1f)
+
+        // Use the previous composite on the theme page as the reference tone.
+        val target = tint.compositeOver(
+            page.copy(
+                red = shaded(page.red),
+                green = shaded(page.green),
+                blue = shaded(page.blue),
+                alpha = 1f
+            )
+        )
+
+        // Use enough opacity to represent the target with an in-gamut tint.
+        fun minimumAlpha(pageChannel: Float, targetChannel: Float): Float = when {
+            targetChannel > pageChannel -> (targetChannel - pageChannel) / (1f - pageChannel)
+            targetChannel < pageChannel -> (pageChannel - targetChannel) / pageChannel
+            else -> 0f
         }
 
-        return tint.copy(
-            red = channel(tint.red, background.red),
-            green = channel(tint.green, background.green),
-            blue = channel(tint.blue, background.blue),
-            alpha = glassTintAlpha
+        val alpha = maxOf(
+            preferredAlpha,
+            minimumAlpha(page.red, target.red),
+            minimumAlpha(page.green, target.green),
+            minimumAlpha(page.blue, target.blue)
+        ).coerceAtMost(1f)
+
+        fun tintChannel(pageChannel: Float, targetChannel: Float): Float =
+            (pageChannel + (targetChannel - pageChannel) / alpha).coerceIn(0f, 1f)
+
+        return page.copy(
+            red = tintChannel(page.red, target.red),
+            green = tintChannel(page.green, target.green),
+            blue = tintChannel(page.blue, target.blue),
+            alpha = alpha
         )
     }
 

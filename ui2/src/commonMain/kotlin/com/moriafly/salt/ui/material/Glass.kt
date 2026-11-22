@@ -94,16 +94,31 @@ sealed interface GlassEffect {
     /**
      * Draws glass with a background and tint selected for the current theme.
      *
-     * [lightColor] and [darkColor] fill behind the captured content.
+     * [lightColor] and [darkColor] fill behind the captured content with their own alpha.
+     * The default fills give the underlying background a similar tone whether it is captured
+     * or shows through a translucent part of the source.
      * [lightTint] and [darkTint] color the refracted content, including opaque pixels.
      * Use [Color.Transparent] as a tint to disable that theme's coloring.
      */
     data class Regular(
-        val lightColor: Color = Color.White,
-        val darkColor: Color = Color(0xFF181818),
-        val lightTint: Color = Color(0x99FFFFFF),
-        val darkTint: Color = Color(0x99181818)
-    ) : GlassEffect
+        val lightColor: Color = DefaultLightColor,
+        val darkColor: Color = DefaultDarkColor,
+        val lightTint: Color = DefaultLightTint,
+        val darkTint: Color = DefaultDarkTint
+    ) : GlassEffect {
+        private companion object {
+            val DefaultLightTint = Color(0x4DFFFFFF)
+            val DefaultDarkTint = Color(0x3D666666)
+            val DefaultLightColor = GlassStyles.regularBackdropColor(
+                tint = DefaultLightTint,
+                isDarkTheme = false
+            )
+            val DefaultDarkColor = GlassStyles.regularBackdropColor(
+                tint = DefaultDarkTint,
+                isDarkTheme = true
+            )
+        }
+    }
 
     /**
      * Draws glass without an added background color, tint, or color grading. Refraction, blur, and
@@ -493,7 +508,7 @@ fun Modifier.glass(
                     val backgroundColor = if (isDarkTheme) effect.darkColor else effect.lightColor
                     val tintColor = if (isDarkTheme) effect.darkTint else effect.lightTint
                     val glassStyle = remember(shape, backgroundColor, tintColor, isDarkTheme) {
-                        GlassStyles.regular(isDarkTheme).then {
+                        GlassStyles.regularSurface(isDarkTheme).then {
                             shape(shape)
                             backgroundColor(backgroundColor)
                             tint(tintColor)
