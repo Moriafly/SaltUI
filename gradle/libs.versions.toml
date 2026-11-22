@@ -1,6 +1,6 @@
 [versions]
-version = "3.0.0"
-mavenLocalVersion = "3.0.0-SNAPSHOT"
+version = "3.1.0-alpha01"
+mavenLocalVersion = "3.1.0-SNAPSHOT"
 agp = "9.1.1"
 kotlin = "2.4.20"
 core-ktx = "1.17.0"

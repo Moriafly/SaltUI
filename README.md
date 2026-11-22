@@ -24,6 +24,14 @@ It ships the pieces Compose Multiplatform leaves to you: a themed component set,
 
 This README gets you to a running screen; the site is the reference for everything else.
 
+## What's new in 3.1.0-alpha01
+
+- **Glass effects** for buttons, custom surfaces, and the new `FloatingBottomBar`, with configurable tint and press feedback.
+- **Cross-platform popup menus** with action and choice items, submenus, and configurable materials. Menus opened inside a `Sheet` can use the sheet content as their backdrop.
+- **Ripple feedback** is now the default indication in `SaltTheme`.
+
+When upgrading desktop code, pass `onVisibleChange` and `onResizeEdgeChange` directly to `SaltWindow` or `SaltDialogWindow`. Remove the type argument from `SaltWindowProperties` and `SaltWindowProperties.default()`.
+
 ## What's new in 3.0.0
 
 - **`salt-adaptive-window`** — a new module. `LocalSaltAdaptiveWindow` reports the device form factor (Phone / Tablet / Foldable / Desktop / Car) and the Material 3 width size class, stays reactive on resize, rotation, and moving between displays, and needs no provider at the window root.
@@ -184,6 +192,7 @@ SaltUI performs operations related to internal ART APIs. Please refer to the fol
 
 | SaltUI | Compose Multiplatform | Jetpack Compose |
 | --- | --- | --- |
+| 3.1.0-alpha01 | 1.12.2 | 1.12.2 |
 | 3.0.0+ | 1.12.2 | 1.12.2 |
 | 3.0.0-beta03+ | 1.12.2 | 1.12.2 |
 | 3.0.0-beta02+ | 1.12.1 | 1.12.1 |
