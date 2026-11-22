@@ -50,6 +50,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.GraphicsLayerScope
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.PathHitTester
@@ -321,6 +322,14 @@ private fun MenuSurface(
         LocalPopupBackdrop.current
     }
     val dark = SaltTheme.configs.isDarkTheme
+    val maxGlassLuminance = if (dark && backdrop != null) {
+        style.darkGlassLuminanceLimit(SaltTheme.colors.text)
+    } else {
+        null
+    }
+    val glassFeedbackColor = remember(maxGlassLuminance) {
+        maxGlassLuminance?.let(::menuGlassFeedbackColor) ?: Color.Unspecified
+    }
     val menuRadius = if (desktop) 10.dp else mobileMenuCornerRadius()
     val shape = remember(menuRadius) { SmoothRoundedRectangleShape(menuRadius) }
     val glassInteraction = if (backdrop != null) rememberGlassInteractionState() else null
@@ -360,7 +369,8 @@ private fun MenuSurface(
                         shape = shape,
                         style = style,
                         backdrop = backdrop,
-                        isDarkTheme = dark
+                        isDarkTheme = dark,
+                        maxGlassLuminance = maxGlassLuminance
                     )
             )
             if (glassInteraction != null) {
@@ -368,16 +378,23 @@ private fun MenuSurface(
                     Modifier
                         .matchParentSize()
                         .graphicsLayer()
-                        .glassInteractionLight(glassInteraction, shape, dark)
+                        .glassInteractionLight(
+                            interaction = glassInteraction,
+                            shape = shape,
+                            isDarkTheme = dark,
+                            rimWidth = if (maxGlassLuminance != null) 1.5.dp else Dp.Unspecified
+                        )
                 )
             }
-            MenuSurfaceContent(
-                desktop = desktop,
-                expanded = visible.targetState,
-                scrollable = scrollable,
-                dropdownDrag = dropdownDrag,
-                content = content
-            )
+            CompositionLocalProvider(LocalMenuGlassFeedbackColor provides glassFeedbackColor) {
+                MenuSurfaceContent(
+                    desktop = desktop,
+                    expanded = visible.targetState,
+                    scrollable = scrollable,
+                    dropdownDrag = dropdownDrag,
+                    content = content
+                )
+            }
         }
     }
 }

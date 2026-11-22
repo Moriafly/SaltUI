@@ -23,12 +23,14 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.ImageComposeScene
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.graphics.LinearGradientShader
@@ -44,6 +46,7 @@ import androidx.compose.ui.use
 import com.moriafly.salt.ui.SaltColors
 import com.moriafly.salt.ui.SaltConfigs
 import com.moriafly.salt.ui.SaltTheme
+import com.moriafly.salt.ui.Text
 import com.moriafly.salt.ui.UnstableSaltUiApi
 import kotlinx.coroutines.Dispatchers
 import org.jetbrains.skia.Bitmap
@@ -66,6 +69,29 @@ class PopupMenuBackdropRenderingTest {
 
     @Test
     fun blurMenuReplacesSharpBackdropDetails() = verifyBackdropReplacement(PopupMenuMaterial.Blur)
+
+    @Test
+    fun lightGlassRetainsBackdropColorAndKeepsTextReadable() {
+        val pixels = renderMenu {
+            Canvas(Modifier.fillMaxSize()) {
+                drawRect(Color.Black)
+                drawRect(
+                    color = Color(0xFF85A5E8),
+                    size = Size(size.width / 2f, size.height)
+                )
+            }
+        }
+        val blueUnderMenu = pixels[120, 132]
+        assertTrue(
+            blueUnderMenu.blue - blueUnderMenu.red > 0.12f,
+            "Expected the blue backdrop to show through the menu: $blueUnderMenu"
+        )
+
+        val blackUnderMenu = pixels[239, 132]
+        val textLuminance = SaltColors.defaultLight().text.luminance()
+        val contrast = (blackUnderMenu.luminance() + 0.05f) / (textLuminance + 0.05f)
+        assertTrue(contrast >= 4.5f, "Expected readable text over black artwork, got $contrast")
+    }
 
     @Test
     fun unspecifiedTintLeavesTheBackdropUntinted() {
@@ -164,6 +190,154 @@ class PopupMenuBackdropRenderingTest {
 
         val blueMenu = glass.compositeOver(blue)
         assertTrue(blueMenu.blue - blueMenu.red > 0.5f, "Expected blue to show through")
+    }
+
+    @Test
+    fun darkGlassControlsWhiteArtworkWhileLiftingTheAdjacentGraySurface() {
+        val gray = Color(0xFF4A4E46)
+        val pixels = renderMenu(dark = true) {
+            Canvas(Modifier.fillMaxSize()) {
+                drawRect(Color.White)
+                drawRect(gray, size = Size(size.width / 2f, size.height))
+            }
+        }
+        val grayUnderMenu = pixels[120, 132]
+        val whiteUnderMenu = pixels[239, 132]
+        val textLuminance = SaltColors.defaultDark().text.luminance()
+        val whiteContrast = (textLuminance + 0.05f) / (whiteUnderMenu.luminance() + 0.05f)
+
+        assertTrue(
+            grayUnderMenu.luminance() > gray.luminance() + 0.003f,
+            "Expected the menu to lift the adjacent gray: $grayUnderMenu"
+        )
+        assertTrue(
+            whiteUnderMenu.luminance() > grayUnderMenu.luminance(),
+            "Expected the white artwork to remain distinguishable through the glass"
+        )
+        assertTrue(
+            whiteContrast >= 4.5f,
+            "Expected readable text over white artwork, got $whiteContrast"
+        )
+        assertEquals(Color.White, pixels[320, 132])
+    }
+
+    @Test
+    fun darkGlassKeepsBrightGradientsAndArtworkColor() {
+        val pixels = renderMenu(dark = true) {
+            Canvas(Modifier.fillMaxSize()) {
+                drawRect(
+                    Brush.horizontalGradient(
+                        colors = listOf(Color(0xFF808080), Color.White),
+                        startX = 100f,
+                        endX = 255f
+                    )
+                )
+                val split = 143f
+                drawRect(
+                    color = Color(0xFFFFE450),
+                    topLeft = Offset(0f, split),
+                    size = Size(size.width, size.height - split)
+                )
+            }
+        }
+        val tones = assertSmoothToneRamp(pixels, 170..247)
+        assertTrue(
+            tones.last() - tones.first() > 0.015,
+            "Expected near-white shades to stay distinct"
+        )
+
+        val yellow = pixels[160, 155]
+        assertTrue(yellow.red > yellow.green && yellow.green - yellow.blue > 0.18f)
+        val text = SaltColors.defaultDark().text
+        val contrast = (text.luminance() + 0.05f) / (yellow.luminance() + 0.05f)
+        assertTrue(contrast >= 4.5f, "Expected readable text over bright yellow, got $contrast")
+    }
+
+    @Test
+    fun darkGlassBlendsTranslucentArtworkIntoTheWindowTone() {
+        val pixels = renderMenu(dark = true, backgroundColor = Color(0xFF4A4E46)) {
+            Canvas(Modifier.fillMaxSize()) {
+                drawRect(
+                    Brush.horizontalGradient(
+                        colors = listOf(Color.White.copy(alpha = 0f), Color.White),
+                        startX = 116f,
+                        endX = 244f
+                    )
+                )
+            }
+        }
+        assertSmoothToneRamp(pixels, 106..254)
+        val textLuminance = SaltColors.defaultDark().text.luminance()
+        for (x in 106..254) {
+            val contrast = (textLuminance + 0.05f) / (pixels[x, 124].luminance() + 0.05f)
+            assertTrue(
+                contrast >= 4.5f,
+                "Expected readable text on the alpha ramp at x=$x, got $contrast"
+            )
+        }
+    }
+
+    private fun assertSmoothToneRamp(pixels: PixelMap, columns: IntRange): List<Double> {
+        val tones = columns.map { x ->
+            (122..126)
+                .map { y -> pixels[x, y].red }
+                .average()
+        }
+        val steps = tones.zipWithNext { left, right -> right - left }
+        assertTrue(
+            steps.all { it >= -1.0 / 255.0 && it <= 2.5 / 255.0 },
+            "Expected a smooth tone ramp, got adjacent steps ${steps.min()} to ${steps.max()}"
+        )
+        return tones
+    }
+
+    @Test
+    fun darkGlassKeepsTheHighlightedRowReadableOverWhiteArtwork() {
+        val pixels = renderMenu(
+            dark = true,
+            content = {
+                MenuRow(
+                    enabled = true,
+                    desktop = true,
+                    highlighted = true,
+                    onClick = {},
+                    modifier = Modifier.width(200.dp)
+                ) {
+                    Text("Action")
+                }
+            },
+            backdrop = {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.White)
+                )
+            }
+        )
+        val rowBackgroundLuminance = pixels[239, 122].luminance()
+        val textLuminance = SaltColors.defaultDark().text.luminance()
+        val contrast = (textLuminance + 0.05f) / (rowBackgroundLuminance + 0.05f)
+        assertTrue(contrast >= 4.5f, "Expected readable text in a highlighted row, got $contrast")
+    }
+
+    @Test
+    fun menuItemFitsAnOversizedLeadingIconIntoTheIconColumn() {
+        val pixels = renderMenu(
+            content = {
+                PopupMenuItem(
+                    text = { Text("Action") },
+                    onClick = {},
+                    leadingIcon = {
+                        Canvas(Modifier.size(52.dp)) { drawRect(Color.Magenta) }
+                    }
+                )
+            },
+            backdrop = {}
+        )
+        val iconPixels = (0 until SCENE_WIDTH).sumOf { x ->
+            (0 until SCENE_HEIGHT).count { y -> pixels[x, y] == Color.Magenta }
+        }
+        assertEquals(18 * 18, iconPixels)
     }
 
     @Test
@@ -296,6 +470,7 @@ class PopupMenuBackdropRenderingTest {
         style: PopupMenuStyle? = null,
         dark: Boolean = false,
         backgroundColor: Color = Color.Transparent,
+        content: @Composable () -> Unit = { Box(Modifier.size(200.dp, 64.dp)) },
         backdrop: @Composable () -> Unit
     ): PixelMap =
         ImageComposeScene(
@@ -322,19 +497,22 @@ class PopupMenuBackdropRenderingTest {
                             },
                             style = style ?: PopupMenuDefaults.style()
                         ) {
-                            Box(Modifier.size(200.dp, 64.dp))
+                            content()
                         }
                     }
                 }
             }
-        }.use { scene ->
-            repeat(4) { frame -> scene.render((frame + 1) * 16_666_667L).close() }
-            scene.render(100_000_000L).use { image ->
-                Bitmap.makeFromImage(image).use { bitmap ->
-                    bitmap.asComposeImageBitmap().toPixelMap()
-                }
-            }
         }
+            .use { scene ->
+                repeat(4) { frame -> scene.render((frame + 1) * 16_666_667L).close() }
+                scene
+                    .render(100_000_000L)
+                    .use { image ->
+                        Bitmap
+                            .makeFromImage(image)
+                            .use { bitmap -> bitmap.asComposeImageBitmap().toPixelMap() }
+                    }
+            }
 
     private companion object {
         const val SCENE_WIDTH = 360

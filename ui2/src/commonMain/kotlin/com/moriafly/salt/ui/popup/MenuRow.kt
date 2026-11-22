@@ -34,7 +34,6 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.relocation.BringIntoViewRequester
 import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.selection.selectable
@@ -52,6 +51,7 @@ import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.graphics.isSpecified
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -115,6 +115,7 @@ internal fun MenuRow(
     }
 
     val shape = menuRowShape(desktop)
+
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -162,11 +163,20 @@ private fun Modifier.menuRowFeedback(
 ): Modifier {
     val textColor = SaltTheme.colors.text
     val dark = SaltTheme.configs.isDarkTheme
-    return thenIf(enabled && highlighted) {
-        background(textColor.copy(alpha = if (dark) 0.10f else 0.07f))
-    }.thenIf(enabled && revealForKeyboard) {
-        border(Dp.Hairline, textColor.copy(alpha = 0.32f), shape)
-    }
+    val glassFeedbackColor = LocalMenuGlassFeedbackColor.current
+
+    return this
+        .thenIf(enabled && highlighted) {
+            val highlightColor = if (glassFeedbackColor.isSpecified) {
+                glassFeedbackColor.copy(alpha = 0.32f)
+            } else {
+                textColor.copy(alpha = if (dark) 0.10f else 0.07f)
+            }
+            background(highlightColor)
+        }
+        .thenIf(enabled && revealForKeyboard) {
+            border(Dp.Hairline, textColor.copy(alpha = 0.32f), shape)
+        }
 }
 
 private fun Modifier.menuRowActivation(
@@ -212,8 +222,9 @@ internal fun RowScope.MenuItemContent(
 ) {
     if (reserveIconSpace) {
         Box(
-            modifier = Modifier.widthIn(min = 18.dp),
-            contentAlignment = Alignment.Center
+            modifier = Modifier.size(18.dp),
+            contentAlignment = Alignment.Center,
+            propagateMinConstraints = true
         ) {
             leadingIcon?.invoke()
         }
