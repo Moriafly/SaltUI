@@ -29,6 +29,8 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.focusable
+import androidx.compose.foundation.interaction.HoverInteraction
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
@@ -40,6 +42,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.derivedStateOf
@@ -81,6 +84,9 @@ import com.moriafly.salt.ui.icons.SaltIcons
 import com.moriafly.salt.ui.rememberScrollState
 import com.moriafly.salt.ui.thenIf
 import com.moriafly.salt.ui.verticalScroll
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.filter
 import org.jetbrains.compose.resources.stringResource
 
 /**
@@ -413,20 +419,61 @@ private fun MenuPageItem(
     onDismissRequest: () -> Unit
 ) {
     val keyboardSelected = navigation.cursor == MenuCursor(page.path, index)
-    val highlighted = keyboardSelected || child != null || drag?.highlightedItem == index
+    val highlighted = keyboardSelected || drag?.highlightedItem == index
+    val enabled = active && entry.enabled
+    val interactionSource = if (desktop && enabled) {
+        remember { MutableInteractionSource() }
+    } else {
+        null
+    }
+    if (interactionSource != null) {
+        val openChildHover = if (entry is MenuEntry.Submenu) {
+            remember { HoverInteraction.Enter() }
+        } else {
+            null
+        }
+        val currentPage by rememberUpdatedState(page)
+        LaunchedEffect(interactionSource, navigation, index, openChildHover) {
+            interactionSource.interactions
+                .filter { interaction ->
+                    when (interaction) {
+                        is HoverInteraction.Enter -> interaction !== openChildHover
+                        is HoverInteraction.Exit -> interaction.enter !== openChildHover
+                        else -> false
+                    }
+                }
+                .collectLatest { interaction ->
+                    if (interaction is HoverInteraction.Enter) {
+                        // Give the pointer time to reach an already open child.
+                        if (navigation.hasOtherOpenChild(currentPage, index)) {
+                            delay(SUBMENU_SWITCH_DELAY_MILLIS)
+                        }
+                        navigation.hover(currentPage, index)
+                    }
+                }
+        }
+        if (child != null && openChildHover != null) {
+            DisposableEffect(interactionSource, openChildHover) {
+                // Keep the same indication active after the pointer leaves the parent row.
+                interactionSource.tryEmit(openChildHover)
+                onDispose { interactionSource.tryEmit(HoverInteraction.Exit(openChildHover)) }
+            }
+        }
+    }
+
     val rowModifier = entry.rowModifier.thenIf(drag != null) {
         onGloballyPositioned { drag?.rows?.set(index, it) }
     }
     Box {
         MenuRow(
             modifier = rowModifier,
-            enabled = active && entry.enabled,
+            enabled = enabled,
             desktop = desktop,
             highlighted = highlighted,
             revealForKeyboard = keyboardSelected,
             selection = (entry as? MenuEntry.Action)?.selection,
             reserveSelectionSpace = reserveSelectionSpace,
-            onHover = { navigation.hover(page, index) },
+            interactionSource = interactionSource,
             onClick = {
                 navigation.activate(
                     page = page,
@@ -484,6 +531,8 @@ private fun RowScope.MenuEntryContent(
         reserveIconSpace = reserveIconSpace
     )
 }
+
+private const val SUBMENU_SWITCH_DELAY_MILLIS = 80L
 
 private val MenuSubmenuProperties = PopupProperties(
     focusable = false,
@@ -581,8 +630,13 @@ private class MenuNavigation {
         }
     }
 
+    fun hasOtherOpenChild(page: MenuPage, index: Int): Boolean {
+        val openChildIndex = path.getOrNull(page.path.size)
+        return openChildIndex != null && openChildIndex != index
+    }
+
     fun hover(page: MenuPage, index: Int) {
-        val entry = page.entries[index]
+        val entry = page.entries.getOrNull(index)?.takeIf { it.enabled } ?: return
         if (entry is MenuEntry.Submenu) {
             val next = page.path + index
             if (path.size < next.size || path.take(next.size) != next) {

@@ -23,7 +23,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
@@ -41,9 +40,7 @@ import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -68,7 +65,6 @@ import com.moriafly.salt.ui.icons.ChevronRight
 import com.moriafly.salt.ui.icons.SaltIcons
 import com.moriafly.salt.ui.internal.SmoothRoundedRectangleShape
 import com.moriafly.salt.ui.thenIf
-import kotlinx.coroutines.delay
 
 internal sealed interface MenuSelection {
     val marked: Boolean
@@ -94,19 +90,9 @@ internal fun MenuRow(
     useMenuFocus: Boolean = true,
     selection: MenuSelection? = null,
     reserveSelectionSpace: Boolean = false,
-    onHover: () -> Unit = {},
+    interactionSource: MutableInteractionSource? = null,
     content: @Composable RowScope.() -> Unit
 ) {
-    val source = remember { MutableInteractionSource() }
-    val hovered by source.collectIsHoveredAsState()
-    val currentOnHover by rememberUpdatedState(onHover)
-    LaunchedEffect(desktop, hovered, enabled) {
-        if (desktop && hovered && enabled) {
-            delay(145)
-            currentOnHover()
-        }
-    }
-
     val bringIntoView = remember { BringIntoViewRequester() }
     LaunchedEffect(revealForKeyboard) {
         if (revealForKeyboard) {
@@ -133,7 +119,7 @@ internal fun MenuRow(
             }
             .menuRowActivation(
                 selection = selection,
-                interactionSource = source,
+                interactionSource = interactionSource,
                 indication = LocalIndication.current,
                 enabled = enabled,
                 onClick = onClick
@@ -181,7 +167,7 @@ private fun Modifier.menuRowFeedback(
 
 private fun Modifier.menuRowActivation(
     selection: MenuSelection?,
-    interactionSource: MutableInteractionSource,
+    interactionSource: MutableInteractionSource?,
     indication: Indication,
     enabled: Boolean,
     onClick: () -> Unit

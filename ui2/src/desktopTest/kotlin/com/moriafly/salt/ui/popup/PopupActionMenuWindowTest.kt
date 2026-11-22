@@ -32,6 +32,7 @@ import androidx.compose.ui.awt.ComposeWindow
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.input.key.KeyEventType
 import androidx.compose.ui.input.key.key
@@ -39,11 +40,13 @@ import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInWindow
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsOff
 import androidx.compose.ui.test.assertIsOn
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.v2.runDesktopComposeUiTest
 import androidx.compose.ui.unit.DpSize
@@ -51,9 +54,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.rememberWindowState
+import com.moriafly.salt.ui.SaltConfigs
 import com.moriafly.salt.ui.SaltTheme
 import com.moriafly.salt.ui.Text
 import com.moriafly.salt.ui.UnstableSaltUiApi
+import com.moriafly.salt.ui.ripple
 import java.awt.Robot
 import java.awt.event.InputEvent
 import java.awt.event.KeyEvent
@@ -62,6 +67,8 @@ import java.util.concurrent.atomic.AtomicReference
 import kotlin.math.roundToInt
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNotEquals
+import kotlin.test.assertTrue
 
 @OptIn(ExperimentalTestApi::class, UnstableSaltUiApi::class)
 class PopupActionMenuWindowTest {
@@ -92,7 +99,8 @@ class PopupActionMenuWindowTest {
                 )
             ) {
                 SideEffect { window = this.window }
-                SaltTheme {
+                val configs = SaltConfigs.default(indication = ripple(color = Color.Magenta))
+                SaltTheme(configs = configs) {
                     PopupMenuBackdrop(
                         modifier = Modifier.fillMaxSize()
                     ) {
@@ -125,10 +133,19 @@ class PopupActionMenuWindowTest {
                                 modifier = Modifier.onGloballyPositioned {
                                     popupOrigin.set(it.positionInWindow())
                                 },
+                                style = if (verifyPointerAnchor) {
+                                    PopupMenuDefaults.style()
+                                } else {
+                                    PopupMenuDefaults.style(
+                                        material = PopupMenuMaterial.Solid,
+                                        containerColor = Color.White
+                                    )
+                                },
                                 onDismissRequest = { expanded = false }
                             ) {
                                 item(
                                     text = { Text("Main action") },
+                                    modifier = Modifier.testTag("ordinary menu row"),
                                     onClick = { ordinaryActions.incrementAndGet() }
                                 )
                                 item(
@@ -137,7 +154,10 @@ class PopupActionMenuWindowTest {
                                     enabled = false
                                 )
                                 divider()
-                                submenu(text = { Text("More actions") }) {
+                                submenu(
+                                    text = { Text("More actions") },
+                                    modifier = Modifier.testTag("submenu row")
+                                ) {
                                     item(
                                         text = { Text("Child action") },
                                         onClick = { childActions.incrementAndGet() }
@@ -182,6 +202,15 @@ class PopupActionMenuWindowTest {
 
         fun moveToText(text: String) {
             moveTo(onNodeWithText(text).fetchSemanticsNode().boundsInWindow.center)
+        }
+
+        fun rowColor(tag: String): java.awt.Color {
+            val row = onNodeWithTag(tag).fetchSemanticsNode().boundsInWindow
+            val x = row.center.x + row.width / 4f
+            return robot.getPixelColor(
+                window.x + (x / transform.scaleX).roundToInt(),
+                window.y + (row.center.y / transform.scaleY).roundToInt()
+            )
         }
 
         fun click() {
@@ -250,15 +279,70 @@ class PopupActionMenuWindowTest {
         assertEquals(0, disabledActions.get())
         waitForMenuItem("Main action")
 
-        moveToText("More actions")
+        val idleRowColor = rowColor("ordinary menu row")
+        val idleSubmenuColor = rowColor("submenu row")
+        moveToText("Main action")
         waitForIdle()
-        mainClock.advanceTimeBy(180)
+        mainClock.advanceTimeBy(64)
+        waitForIdle()
+        val ordinaryHoverColor = rowColor("ordinary menu row")
+        assertNotEquals(
+            idleRowColor,
+            ordinaryHoverColor,
+            "The configured ripple should draw hover."
+        )
+
+        mainClock.autoAdvance = false
+        try {
+            moveToText("More actions")
+            mainClock.advanceTimeBy(96)
+            assertTrue(
+                onAllNodesWithText("Child action").fetchSemanticsNodes().isNotEmpty(),
+                "The first submenu should open without a hover timer."
+            )
+        } finally {
+            mainClock.autoAdvance = true
+        }
         waitForMenuItem("Child action")
+        mainClock.advanceTimeBy(64)
+        waitForIdle()
+        assertEquals(
+            ordinaryHoverColor,
+            rowColor("submenu row"),
+            "An open submenu should use the same configured hover as an ordinary row."
+        )
         val triggerRow = onNodeWithText("More actions").fetchSemanticsNode().boundsInWindow
         val childRow = onNodeWithText("Child action").fetchSemanticsNode().boundsInWindow
         assertEquals(triggerRow.top, childRow.top, absoluteTolerance = 2f)
         // The panels overlap at their padded edges while the action rows meet.
         assertEquals(triggerRow.right, childRow.left, absoluteTolerance = 2f)
+
+        mainClock.autoAdvance = false
+        try {
+            moveToText("Radio choice")
+            mainClock.advanceTimeByFrame()
+            moveTo(childRow.center)
+            mainClock.advanceTimeBy(128)
+            assertTrue(
+                onAllNodesWithText("Child action").fetchSemanticsNodes().isNotEmpty(),
+                "Crossing a neighboring row briefly should keep the child menu open."
+            )
+        } finally {
+            mainClock.autoAdvance = true
+        }
+
+        waitForIdle()
+        assertEquals(
+            ordinaryHoverColor,
+            rowColor("submenu row"),
+            "The parent should keep its configured hover while the pointer is in the child menu."
+        )
+        moveToText("Main action")
+        waitForMenuItem("Child action", visible = false)
+        waitUntil(timeoutMillis = 1_000) { rowColor("submenu row") == idleSubmenuColor }
+
+        moveToText("More actions")
+        waitForMenuItem("Child action")
         moveToText("Child action")
         click()
         waitUntil(timeoutMillis = 5_000) { childActions.get() == 1 }
