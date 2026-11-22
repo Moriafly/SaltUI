@@ -41,9 +41,16 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
-import com.moriafly.salt.ui.popup.PopupMenu
+import androidx.compose.ui.window.PopupProperties
+import com.moriafly.salt.core.os.OS
+import com.moriafly.salt.ui.popup.PopupMenuDefaults
+import com.moriafly.salt.ui.popup.PopupMenuPanel
+import com.moriafly.salt.ui.popup.PopupMenuStyle
 import com.moriafly.salt.ui.popup.PopupState
+import com.moriafly.salt.ui.popup.popupMenuAnchor
+import com.moriafly.salt.ui.popup.rememberPopupMenuAnchor
 import com.moriafly.salt.ui.popup.rememberPopupState
 
 /**
@@ -102,6 +109,40 @@ fun ItemDropdown(
     sub: String? = null,
     content: @Composable ItemDropdownScope.() -> Unit
 ) {
+    ItemDropdown(
+        text = text,
+        value = value,
+        style = PopupMenuDefaults.style(),
+        modifier = modifier,
+        state = state,
+        enabled = enabled,
+        iconPainter = iconPainter,
+        iconPaddingValues = iconPaddingValues,
+        iconColor = iconColor,
+        sub = sub,
+        content = content
+    )
+}
+
+/**
+ * A setting row with a current value and a dropdown using the given [style].
+ */
+@UnstableSaltUiApi
+@Composable
+fun ItemDropdown(
+    text: String,
+    value: String,
+    style: PopupMenuStyle,
+    modifier: Modifier = Modifier,
+    state: PopupState = rememberPopupState(),
+    enabled: Boolean = true,
+    iconPainter: Painter? = null,
+    iconPaddingValues: PaddingValues = PaddingValues(0.dp),
+    iconColor: Color? = SaltTheme.colors.text,
+    sub: String? = null,
+    content: @Composable ItemDropdownScope.() -> Unit
+) {
+    val anchor = rememberPopupMenuAnchor()
     Box(
         modifier = modifier
     ) {
@@ -110,8 +151,9 @@ fun ItemDropdown(
                 .fillMaxWidth()
                 .heightIn(SaltTheme.dimens.item)
                 .enabledAlpha(enabled)
+                .popupMenuAnchor(anchor)
                 .clickable(enabled = enabled) {
-                    state.expend()
+                    anchor.open(state::expend)
                 }
                 .innerPadding(vertical = false),
             verticalAlignment = Alignment.CenterVertically
@@ -163,11 +205,17 @@ fun ItemDropdown(
             ItemPopupArrow()
         }
 
-        PopupMenu(
+        PopupMenuPanel(
             expanded = state.expend,
-            onDismissRequest = {
-                state.dismiss()
-            }
+            onDismissRequest = state::dismiss,
+            modifier = Modifier,
+            offset = if (OS.isDesktop()) DpOffset.Zero else DpOffset(16.dp, 0.dp),
+            properties = PopupProperties(focusable = true),
+            style = style,
+            anchor = anchor,
+            popupPositionProvider = null,
+            scrollable = true,
+            dropdownSlideSelection = true
         ) {
             val scope = ItemDropdownScopeImpl(state, this)
             scope.content()

@@ -18,6 +18,7 @@
 package com.moriafly.salt.ui.sample.ui.screen
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
@@ -34,7 +35,6 @@ import com.moriafly.salt.ui.Button
 import com.moriafly.salt.ui.ButtonAppearance
 import com.moriafly.salt.ui.Icon
 import com.moriafly.salt.ui.Item
-import com.moriafly.salt.ui.ItemButton
 import com.moriafly.salt.ui.ItemOuterLargeTitle
 import com.moriafly.salt.ui.ItemSwitcher
 import com.moriafly.salt.ui.UnstableSaltUiApi
@@ -51,12 +51,12 @@ import com.moriafly.salt.ui.sheet.Sheet
 @Suppress("ktlint:compose:modifier-missing-check")
 @OptIn(UnstableSaltUiApi::class)
 @Composable
-fun MainScreen() {
+fun MainScreen(contentPadding: PaddingValues) {
     var welcomeSheetVisible by rememberSaveable { mutableStateOf(false) }
     BasicScreenColumn(
         actionButton = null,
         title = "Main",
-        subtitle = "SaltUI 3",
+        contentPadding = contentPadding,
         toolButtons = {
             TitleBarButton(
                 onClick = { welcomeSheetVisible = true }
@@ -151,13 +151,9 @@ fun MainScreen() {
                 onClick = { navigator.navigate(ScreenRoute.Glass) },
                 text = "Glass"
             )
-        }
-
-        ScreenCard(header = "Navigation") {
-            ItemButton(
-                onClick = { navigator.forward() },
-                text = "Go forward",
-                enabled = navigator.navForwardStack.isNotEmpty()
+            Item(
+                onClick = { navigator.navigate(ScreenRoute.PopupMenus) },
+                text = "Popup menus"
             )
         }
 

@@ -134,11 +134,12 @@ class SaltColors(
         }
 
         private val DarkBackground = when (OS.current) {
-            is OS.IOS -> Color(0xFF000000)
+            is OS.Android, is OS.IOS -> Color(0xFF000000)
             else -> Color(0xFF202020)
         }
 
         private val DarkSubBackground = when (OS.current) {
+            is OS.Android -> Color(0x18FFFFFF)
             is OS.IOS -> Color(0xFF1C1C1E)
             else -> Color(0x08FFFFFF)
         }

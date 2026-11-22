@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="back">返回</string>
     <string name="sheet_close">关闭面板</string>
     <string name="sheet_resize">调整面板高度</string>
     <string name="sheet_drag">拖动面板</string>

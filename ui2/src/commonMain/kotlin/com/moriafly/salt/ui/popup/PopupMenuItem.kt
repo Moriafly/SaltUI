@@ -15,16 +15,15 @@
  * limitations under the License.
  */
 
-@file:Suppress("unused")
+// The compatibility overload keeps its published parameter order.
+@file:Suppress("unused", "ktlint:compose:param-order-check")
 
 package com.moriafly.salt.ui.popup
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -33,24 +32,57 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.painter.Painter
-import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.semantics.role
-import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.semantics.toggleableState
-import androidx.compose.ui.state.ToggleableState
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.unit.dp
+import com.moriafly.salt.core.os.OS
 import com.moriafly.salt.ui.SaltTheme
 import com.moriafly.salt.ui.Text
 import com.moriafly.salt.ui.UnstableSaltUiApi
 
-@get:Composable
-internal expect val popupMenuItemPadding: PaddingValues
+internal class DropdownMenuItem(
+    val onClick: () -> Unit
+)
 
+internal val LocalDropdownDragSelection =
+    staticCompositionLocalOf<MenuDragSelection<DropdownMenuItem>?> { null }
+
+/**
+ * Displays an action in a [PopupMenu] or [com.moriafly.salt.ui.ItemDropdown].
+ */
+@UnstableSaltUiApi
+@Composable
+fun PopupMenuItem(
+    text: @Composable () -> Unit,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    leadingIcon: (@Composable () -> Unit)? = null,
+    trailingContent: (@Composable () -> Unit)? = null,
+    enabled: Boolean = true
+) {
+    DropdownMenuItemRow(
+        onClick = onClick,
+        enabled = enabled,
+        modifier = modifier
+    ) {
+        MenuItemContent(
+            text = text,
+            leadingIcon = leadingIcon,
+            trailingContent = trailingContent
+        )
+    }
+}
+
+// This overload keeps the original source and JVM signature for existing callers.
+@Suppress("ktlint:compose:modifier-missing-check")
 @UnstableSaltUiApi
 @Composable
 fun PopupMenuItem(
@@ -62,54 +94,22 @@ fun PopupMenuItem(
     iconPaddingValues: PaddingValues = PaddingValues(0.dp),
     iconColor: Color? = SaltTheme.colors.text
 ) {
-    Row(
-        modifier = Modifier
-            .semantics {
-                this.role = Role.RadioButton
-
-                if (selected != null) {
-                    this.toggleableState = when (selected) {
-                        true -> ToggleableState.On
-                        false -> ToggleableState.Off
-                    }
-                }
-            }
-            .fillMaxWidth()
-            .sizeIn(
-                minWidth = DropdownMenuItemDefaultMinWidth,
-                maxWidth = DropdownMenuItemDefaultMaxWidth
-            )
-            .background(
-                if (selected == true) {
-                    SaltTheme.colors.highlight.copy(alpha = 0.1f)
-                } else {
-                    Color.Unspecified
-                }
-            )
-            .clickable {
-                onClick()
-            }
-            .padding(popupMenuItemPadding),
-        verticalAlignment = Alignment.CenterVertically
+    DropdownMenuItemRow(
+        onClick = onClick,
+        enabled = true,
+        selection = selected?.let { MenuSelection.Radio(it) }
     ) {
         Column(
             modifier = Modifier
                 .weight(1f)
                 .fillMaxWidth()
         ) {
-            Text(
-                text = text,
-                color = if (selected == true) SaltTheme.colors.highlight else SaltTheme.colors.text
-            )
+            Text(text = text)
             sub?.let {
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(
                     text = sub,
-                    color = if (selected == true) {
-                        SaltTheme.colors.highlight
-                    } else {
-                        SaltTheme.colors.subText
-                    },
+                    color = SaltTheme.colors.subText,
                     style = SaltTheme.textStyles.sub
                 )
             }
@@ -128,6 +128,38 @@ fun PopupMenuItem(
     }
 }
 
-private val DropdownMenuItemDefaultMinWidth = 180.dp
-private val DropdownMenuItemDefaultMaxWidth = 280.dp
-private val DropdownMenuItemDefaultMinHeight = 48.dp
+@OptIn(UnstableSaltUiApi::class)
+@Composable
+private fun DropdownMenuItemRow(
+    onClick: () -> Unit,
+    enabled: Boolean,
+    modifier: Modifier = Modifier,
+    selection: MenuSelection? = null,
+    content: @Composable RowScope.() -> Unit
+) {
+    val desktop = OS.isDesktop()
+    val drag = LocalDropdownDragSelection.current
+    var dragModifier: Modifier = Modifier
+    var highlighted = false
+    if (drag != null && enabled) {
+        val click by rememberUpdatedState(onClick)
+        val dragItem = remember { DropdownMenuItem { click() } }
+        DisposableEffect(drag, dragItem) {
+            onDispose { drag.rows.remove(dragItem) }
+        }
+        dragModifier = Modifier.onGloballyPositioned { drag.rows[dragItem] = it }
+        highlighted = drag.highlightedItem == dragItem
+    }
+    MenuRow(
+        modifier = modifier
+            .sizeIn(minWidth = 180.dp, maxWidth = 340.dp)
+            .then(dragModifier),
+        enabled = enabled,
+        desktop = desktop,
+        highlighted = highlighted,
+        useMenuFocus = false,
+        selection = selection,
+        onClick = onClick,
+        content = content
+    )
+}

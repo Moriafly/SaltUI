@@ -53,6 +53,7 @@ import com.moriafly.salt.ui.ProvideContentColorTextStyle
 import com.moriafly.salt.ui.SaltTheme
 import com.moriafly.salt.ui.button.PillButtonDefaults
 import com.moriafly.salt.ui.internal.SmoothRoundedRectangleShape
+import com.moriafly.salt.ui.popup.ProvidePopupBackdrop
 import com.moriafly.salt.ui.sheet.SheetProperties
 import com.moriafly.salt.ui.sheet.SheetScope
 import com.moriafly.salt.ui.thenIf
@@ -70,8 +71,8 @@ internal fun SheetPanel(
     imeInsets: WindowInsets,
     availableHeight: Int,
     floatingHiddenBase: Density.() -> Float,
-    modifier: Modifier,
     actions: @Composable RowScope.() -> Unit,
+    modifier: Modifier = Modifier,
     content: @Composable SheetScope.() -> Unit
 ) {
     val canResize = if (state.ready) {
@@ -89,14 +90,8 @@ internal fun SheetPanel(
         contentColor = SaltTheme.colors.text,
         textStyle = SaltTheme.textStyles.main
     ) {
-        SheetLayout(
-            state = state,
-            properties = properties,
-            bottom = bottom,
-            bottomInsets = bottomInsets,
-            imeInsets = imeInsets,
-            availableHeight = availableHeight,
-            modifier = Modifier
+        ProvidePopupBackdrop { backdropSource ->
+            val panelModifier = Modifier
                 .graphicsLayer {
                     alpha = 1f
                     scaleX = 1f
@@ -113,6 +108,8 @@ internal fun SheetPanel(
                     drawContent()
                     drawSheetScrim(dimAlpha())
                 }
+                // Sample the panel before the replacement dim is drawn.
+                .then(backdropSource)
                 .background(color = SaltTheme.colors.background)
                 .border(
                     width = 0.5.dp,
@@ -130,27 +127,37 @@ internal fun SheetPanel(
                 )
                 // Blank interior space stays in the panel's hit path rather than the scrim's.
                 .pointerInput(Unit) { }
-                .then(modifier),
-            header = { compactChrome ->
-                SheetHeader(
-                    state = state,
-                    title = title,
-                    visible = visible,
-                    properties = properties,
-                    showHandle = canDrag,
-                    dragEnabled = canDrag && visible && state.ready,
-                    compactChrome = compactChrome,
-                    onDismissRequest = onDismissRequest
-                )
-            },
-            actions = { compactChrome ->
-                SheetActions(
-                    compactChrome = compactChrome,
-                    content = actions
-                )
-            },
-            content = content
-        )
+                .then(modifier)
+
+            SheetLayout(
+                state = state,
+                properties = properties,
+                bottom = bottom,
+                bottomInsets = bottomInsets,
+                imeInsets = imeInsets,
+                availableHeight = availableHeight,
+                modifier = panelModifier,
+                header = { compactChrome ->
+                    SheetHeader(
+                        state = state,
+                        title = title,
+                        visible = visible,
+                        properties = properties,
+                        showHandle = canDrag,
+                        dragEnabled = canDrag && visible && state.ready,
+                        compactChrome = compactChrome,
+                        onDismissRequest = onDismissRequest
+                    )
+                },
+                actions = { compactChrome ->
+                    SheetActions(
+                        compactChrome = compactChrome,
+                        content = actions
+                    )
+                },
+                content = content
+            )
+        }
     }
 }
 

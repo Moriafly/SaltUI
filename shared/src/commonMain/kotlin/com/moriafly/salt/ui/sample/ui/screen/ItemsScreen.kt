@@ -17,6 +17,7 @@
 
 package com.moriafly.salt.ui.sample.ui.screen
 
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -43,7 +44,7 @@ import com.moriafly.salt.ui.screen.ScreenCard
 
 @OptIn(UnstableSaltUiApi::class)
 @Composable
-fun ItemsScreen() {
+fun ItemsScreen(contentPadding: PaddingValues) {
     var name by rememberSaveable { mutableStateOf("") }
     var password by rememberSaveable { mutableStateOf("") }
     var checked by rememberSaveable { mutableStateOf(false) }
@@ -51,7 +52,11 @@ fun ItemsScreen() {
     var volume by rememberSaveable { mutableFloatStateOf(0.5f) }
     var actionCount by rememberSaveable { mutableIntStateOf(0) }
 
-    BasicScreenColumn(title = "Items") {
+    BasicScreenColumn(
+        actionButton = null,
+        title = "Items",
+        contentPadding = contentPadding
+    ) {
         ScreenCard(header = "Edit") {
             ItemEdit(
                 text = name,

@@ -2,6 +2,7 @@ package com.moriafly.salt.ui.sample.ui.screen
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.size
@@ -14,6 +15,7 @@ import com.moriafly.salt.adaptive.window.LocalSaltAdaptiveWindow
 import com.moriafly.salt.adaptive.window.UnstableSaltAdaptiveWindowApi
 import com.moriafly.salt.ui.ItemCheck
 import com.moriafly.salt.ui.ItemContainer
+import com.moriafly.salt.ui.ItemDropdown
 import com.moriafly.salt.ui.ItemOuterTitle
 import com.moriafly.salt.ui.ItemSwitcher
 import com.moriafly.salt.ui.ItemValue
@@ -21,15 +23,19 @@ import com.moriafly.salt.ui.RoundedColumn
 import com.moriafly.salt.ui.SaltTheme
 import com.moriafly.salt.ui.Text
 import com.moriafly.salt.ui.UnstableSaltUiApi
+import com.moriafly.salt.ui.popup.PopupMenuItem
 import com.moriafly.salt.ui.sample.ui.screen.basic.BasicScreenColumn
 import com.moriafly.salt.ui.sample.util.AppConfig
 import com.moriafly.salt.ui.screen.BasicScreenStyle
 
+@Suppress("ktlint:compose:modifier-missing-check")
 @OptIn(UnstableSaltUiApi::class, UnstableSaltAdaptiveWindowApi::class)
 @Composable
-fun MaterialScreen() {
+fun MaterialScreen(contentPadding: PaddingValues) {
     BasicScreenColumn(
-        title = "Theme and material"
+        actionButton = null,
+        title = "Theme and material",
+        contentPadding = contentPadding
     ) {
         ItemOuterTitle("Appearance")
         RoundedColumn {
@@ -38,6 +44,27 @@ fun MaterialScreen() {
                 onChange = { AppConfig.isDarkTheme = it },
                 text = "Dark theme"
             )
+
+            val supportedWindowBackgrounds = AppConfig.supportedWindowBackgrounds
+            if (supportedWindowBackgrounds.isNotEmpty()) {
+                val windowBackground = AppConfig.windowBackground
+                ItemDropdown(
+                    text = "Window background",
+                    value = windowBackground.label,
+                    enabled = supportedWindowBackgrounds.size > 1
+                ) {
+                    supportedWindowBackgrounds.forEach { background ->
+                        PopupMenuItem(
+                            onClick = {
+                                AppConfig.windowBackground = background
+                                state.dismiss()
+                            },
+                            selected = windowBackground == background,
+                            text = background.label
+                        )
+                    }
+                }
+            }
         }
 
         ItemOuterTitle("Title Bar Backdrop Type")

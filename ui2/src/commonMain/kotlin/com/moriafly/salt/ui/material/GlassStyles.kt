@@ -19,6 +19,7 @@ package com.moriafly.salt.ui.material
 
 import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.unit.dp
 import dev.chrisbanes.haze.blur.HazeBlurStyle
 import dev.chrisbanes.haze.blur.HazeColorEffect
@@ -27,6 +28,8 @@ import dev.chrisbanes.haze.glass.GlassStyle
 import dev.chrisbanes.haze.glass.OpticalSizeValue
 
 internal object GlassStyles {
+    const val DARK_CONTRAST = 0.08f
+
     fun regular(isDarkTheme: Boolean): GlassStyle = GlassStyle.regular.then {
         optics {
             copy(
@@ -39,7 +42,7 @@ internal object GlassStyles {
         if (isDarkTheme) {
             edgeShadow(Color(0x33000000))
             ambientResponse(0.08f)
-            contrast(0.08f)
+            contrast(DARK_CONTRAST)
             whitePoint(-0.22f)
             chromaMultiplier(1.1f)
         } else {
@@ -50,6 +53,23 @@ internal object GlassStyles {
             chromaMultiplier(GlassDefaults.chromaMultiplier)
         }
     }
+
+    fun regularSurface(isDarkTheme: Boolean): GlassStyle = regular(isDarkTheme).then {
+        contrast(0f)
+        whitePoint(regularWhitePoint(isDarkTheme))
+        if (isDarkTheme) {
+            chromaMultiplier(1f)
+        }
+        specularIntensity(0.32f)
+    }
+
+    // Apply the same lift and tint where the underlying color shows through.
+    fun regularBackdropColor(
+        tint: Color,
+        isDarkTheme: Boolean
+    ): Color = tint.compositeOver(Color.White.copy(alpha = regularWhitePoint(isDarkTheme)))
+
+    private fun regularWhitePoint(isDarkTheme: Boolean): Float = if (isDarkTheme) 0.05f else 0.20f
 
     fun transparent(isDarkTheme: Boolean): GlassStyle = regular(isDarkTheme).then {
         tint(Color.Transparent)

@@ -19,6 +19,8 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.assertCountEquals
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
@@ -90,6 +92,8 @@ class MainContentTest {
 
         onNodeWithTag("backButton").performClick()
         waitForIdle()
-        onNodeWithText("Version").assertExists()
+        onNodeWithText("Explore").assertExists()
+        onAllNodesWithText("SaltUI 3").assertCountEquals(1)
+        onNodeWithText("Go forward").assertDoesNotExist()
     }
 }
