@@ -209,7 +209,6 @@ private fun ActionMenuPages(
     }
     Column(
         modifier = Modifier
-            .thenIf(desktop) { widthIn(min = 176.dp, max = 420.dp) }
             .onKeyEvent { event ->
                 expanded && focusable && navigation.handleKey(
                     event = event,
@@ -490,7 +489,6 @@ private fun MenuPageItem(
             PopupMenuPanel(
                 expanded = active,
                 onDismissRequest = null,
-                modifier = Modifier.widthIn(min = 176.dp, max = 420.dp),
                 offset = DpOffset.Zero,
                 properties = MenuSubmenuProperties,
                 style = style,

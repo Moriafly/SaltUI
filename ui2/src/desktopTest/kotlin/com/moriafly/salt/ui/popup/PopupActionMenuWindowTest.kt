@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -87,6 +88,7 @@ class PopupActionMenuWindowTest {
         val disabledActions = AtomicInteger()
         val popupOrigin = AtomicReference(Offset.Zero)
         val triggerFocus = FocusRequester()
+        var wideRows by mutableStateOf(false)
         setContent {
             Window(
                 onCloseRequest = {},
@@ -109,6 +111,7 @@ class PopupActionMenuWindowTest {
                             var radioSelected by remember { mutableStateOf(false) }
                             var checked by remember { mutableStateOf(false) }
                             val anchor = rememberPopupMenuAnchor()
+                            val labelModifier = if (wideRows) Modifier.width(800.dp) else Modifier
                             Text(
                                 text = "Open actions",
                                 modifier = Modifier
@@ -144,7 +147,7 @@ class PopupActionMenuWindowTest {
                                 onDismissRequest = { expanded = false }
                             ) {
                                 item(
-                                    text = { Text("Main action") },
+                                    text = { Text("Main action", modifier = labelModifier) },
                                     modifier = Modifier.testTag("ordinary menu row"),
                                     onClick = { ordinaryActions.incrementAndGet() }
                                 )
@@ -159,7 +162,7 @@ class PopupActionMenuWindowTest {
                                     modifier = Modifier.testTag("submenu row")
                                 ) {
                                     item(
-                                        text = { Text("Child action") },
+                                        text = { Text("Child action", modifier = labelModifier) },
                                         onClick = { childActions.incrementAndGet() }
                                     )
                                 }
@@ -313,6 +316,9 @@ class PopupActionMenuWindowTest {
         )
         val triggerRow = onNodeWithText("More actions").fetchSemanticsNode().boundsInWindow
         val childRow = onNodeWithText("Child action").fetchSemanticsNode().boundsInWindow
+        val compactWidth = 160 * transform.scaleX
+        assertTrue(triggerRow.width < compactWidth, "A short root menu should fit its items.")
+        assertTrue(childRow.width < compactWidth, "A short submenu should fit its items.")
         assertEquals(triggerRow.top, childRow.top, absoluteTolerance = 2f)
         // The panels overlap at their padded edges while the action rows meet.
         assertEquals(triggerRow.right, childRow.left, absoluteTolerance = 2f)
@@ -380,5 +386,22 @@ class PopupActionMenuWindowTest {
         assertEquals(0, ordinaryActions.get())
         assertEquals(0, disabledActions.get())
         assertEquals(2, childActions.get())
+
+        runOnUiThread { wideRows = true }
+        openMenu()
+        val wideRoot = onNodeWithText("Main action").fetchSemanticsNode().boundsInWindow
+        moveToText("More actions")
+        waitForMenuItem("Child action")
+        val wideChild = onNodeWithText("Child action").fetchSemanticsNode().boundsInWindow
+        val windowWidth = window.width * transform.scaleX
+        val wideMenuWidth = 500 * transform.scaleX
+        for (row in listOf(wideRoot, wideChild)) {
+            assertTrue(row.width > wideMenuWidth, "A wide menu should use the available space.")
+            assertTrue(row.left >= 0 && row.right <= windowWidth, "A menu should fit the window.")
+        }
+        moveTo(wideChild.center)
+        click()
+        waitForMenuItem("Main action", visible = false)
+        assertEquals(3, childActions.get())
     }
 }
