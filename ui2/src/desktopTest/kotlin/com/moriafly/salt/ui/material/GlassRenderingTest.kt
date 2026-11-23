@@ -41,6 +41,9 @@ import androidx.compose.ui.graphics.asComposeImageBitmap
 import androidx.compose.ui.graphics.compositeOver
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.toPixelMap
+import androidx.compose.ui.unit.Density
+import androidx.compose.ui.unit.DpSize
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.use
 import com.moriafly.salt.ui.Card
@@ -105,6 +108,57 @@ class GlassRenderingTest {
     }
 
     @Test
+    fun restingGlassCapsuleHasThinEvenHighlightsOnBothStraightEdges() {
+        for (isDarkTheme in listOf(false, true)) {
+            val pixels = renderGlass(isDarkTheme, surfaceSize = DpSize(192.dp, 52.dp)) {
+                Box(Modifier.fillMaxSize().background(Color(0xFF1C212D)))
+            }
+
+            val side = maxOf(pixels[54, 90].red, pixels[245, 90].red)
+            for ((edgeY, insideY) in listOf(64 to 67, 115 to 112)) {
+                val midpoint = pixels[150, edgeY].red
+                assertTrue(
+                    midpoint > pixels[150, insideY].red + 0.025f && midpoint > side + 0.025f,
+                    "Expected a thin highlight on the edge at y=$edgeY, dark=$isDarkTheme"
+                )
+                for (x in listOf(95, 205)) {
+                    assertEquals(midpoint, pixels[x, edgeY].red, absoluteTolerance = 0.02f)
+                }
+            }
+        }
+    }
+
+    @Test
+    fun wideGlassCapsuleKeepsTheRimSubtleAtScaledDensity() {
+        // A 960 by 96 px bar on a display scaled to 150 percent.
+        val sceneSize = IntSize(1042, 180)
+        val centerX = sceneSize.width / 2
+        for (isDarkTheme in listOf(false, true)) {
+            val pixels = renderGlass(
+                isDarkTheme = isDarkTheme,
+                surfaceSize = DpSize(640.dp, 64.dp),
+                sceneSize = sceneSize,
+                density = Density(1.5f)
+            ) {
+                Box(Modifier.fillMaxSize().background(Color(0xFF1E2334)))
+            }
+
+            val body = pixels[centerX, sceneSize.height / 2].red
+            for ((edgeY, insideY) in listOf(42 to 43, 137 to 136)) {
+                val lift = pixels[centerX, edgeY].red - body
+                assertTrue(
+                    lift in 0.025f..0.16f,
+                    "Expected a subtle visible rim at y=$edgeY, dark=$isDarkTheme, lift=$lift"
+                )
+                assertTrue(
+                    pixels[centerX, insideY].red <= body + 0.025f,
+                    "Expected the rim to recede toward the interior, dark=$isDarkTheme"
+                )
+            }
+        }
+    }
+
+    @Test
     fun darkGlassLiftsAnUncapturedWindowBackground() {
         val glass = renderGlass(isDarkTheme = true) {}[150, 90]
         val windowBackgrounds = listOf(Color(0xFF444547), Color(0xFF2A51B9), Color(0xFF274EE2))
@@ -163,11 +217,15 @@ class GlassRenderingTest {
 
     private fun renderGlass(
         isDarkTheme: Boolean,
+        surfaceSize: DpSize = DpSize(240.dp, 100.dp),
+        sceneSize: IntSize = IntSize(SCENE_WIDTH, SCENE_HEIGHT),
+        density: Density = Density(1f),
         backdrop: @Composable () -> Unit
     ): PixelMap =
         ImageComposeScene(
-            width = SCENE_WIDTH,
-            height = SCENE_HEIGHT,
+            width = sceneSize.width,
+            height = sceneSize.height,
+            density = density,
             coroutineContext = Dispatchers.Unconfined
         ) {
             SaltTheme(configs = SaltConfigs.default(isDarkTheme = isDarkTheme)) {
@@ -184,7 +242,7 @@ class GlassRenderingTest {
                     Box(
                         modifier = Modifier
                             .align(Alignment.Center)
-                            .size(width = 240.dp, height = 100.dp)
+                            .size(surfaceSize)
                             .glass(source)
                     )
                 }

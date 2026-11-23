@@ -60,7 +60,6 @@ internal object GlassStyles {
         if (isDarkTheme) {
             chromaMultiplier(1f)
         }
-        specularIntensity(0.32f)
     }
 
     // Apply the same lift and tint where the underlying color shows through.

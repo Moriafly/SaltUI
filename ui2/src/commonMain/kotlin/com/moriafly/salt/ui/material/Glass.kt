@@ -31,6 +31,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
@@ -59,6 +60,7 @@ import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.LayoutDirection
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.toSize
 import com.moriafly.salt.core.os.OS
 import com.moriafly.salt.ui.SaltTheme
@@ -514,14 +516,16 @@ fun Modifier.glass(
                             tint(tintColor)
                         }
                     }
-                    Modifier.refractiveGlass(
-                        source = source,
-                        shape = shape,
-                        glassStyle = glassStyle,
-                        isBackgroundFullyTransparent = backgroundColor.alpha == 0f,
-                        interactionState = interactionState,
-                        isDarkTheme = isDarkTheme
-                    )
+                    Modifier
+                        .refractiveGlass(
+                            source = source,
+                            shape = shape,
+                            glassStyle = glassStyle,
+                            isBackgroundFullyTransparent = backgroundColor.alpha == 0f,
+                            interactionState = interactionState,
+                            isDarkTheme = isDarkTheme
+                        )
+                        .glassRimHighlight(shape, isDarkTheme)
                 }
                 GlassEffect.Transparent -> {
                     val glassStyle = remember(shape, isDarkTheme) {
@@ -552,6 +556,34 @@ fun Modifier.glass(
         }
         // Reapply the transform to content drawing without changing its hit region.
         .drawGlassInteraction(interactionState)
+}
+
+// Top and bottom rim bands from Haze's Apache-2.0 fallback renderer.
+// Copyright 2025, Christopher Banes and the Haze project contributors.
+// https://github.com/chrisbanes/haze/pull/1746
+private fun Modifier.glassRimHighlight(
+    shape: RoundedCornerShape,
+    isDarkTheme: Boolean
+): Modifier = drawWithCache {
+    val widthPx = 1.dp.toPx()
+    // Haze fades over the last two physical pixels. Use the equivalent solid width while
+    // retaining one visible pixel when the band is wide enough.
+    val bandWidthPx = (widthPx - 1f).coerceAtLeast(minOf(widthPx, 1f))
+    val outline = shape.createOutline(size, layoutDirection, this)
+    val silhouette = Path().apply { addOutline(outline) }
+
+    fun edge(dy: Float): Path {
+        val translated = Path().apply { addPath(silhouette, Offset(0f, dy)) }
+        return Path.combine(PathOperation.Difference, silhouette, translated)
+    }
+
+    val rim = Path.combine(PathOperation.Union, edge(bandWidthPx), edge(-bandWidthPx))
+    // Calibrated against the rendered Haze Regular rim at 100–200% display scale.
+    // https://github.com/chrisbanes/haze/pull/1822
+    val intensity = if (isDarkTheme) 0.25f else 0.7f
+    onDrawBehind {
+        drawPath(rim, Color.White, alpha = intensity * 0.8f)
+    }
 }
 
 @OptIn(UnstableSaltUiApi::class)
