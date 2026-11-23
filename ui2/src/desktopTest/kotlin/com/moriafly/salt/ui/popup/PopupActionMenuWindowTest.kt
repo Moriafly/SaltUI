@@ -23,6 +23,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -111,7 +112,6 @@ class PopupActionMenuWindowTest {
                             var radioSelected by remember { mutableStateOf(false) }
                             var checked by remember { mutableStateOf(false) }
                             val anchor = rememberPopupMenuAnchor()
-                            val labelModifier = if (wideRows) Modifier.width(800.dp) else Modifier
                             Text(
                                 text = "Open actions",
                                 modifier = Modifier
@@ -147,33 +147,33 @@ class PopupActionMenuWindowTest {
                                 onDismissRequest = { expanded = false }
                             ) {
                                 item(
-                                    text = { Text("Main action", modifier = labelModifier) },
+                                    text = { MenuTestLabel("Main action", wide = wideRows) },
                                     modifier = Modifier.testTag("ordinary menu row"),
                                     onClick = { ordinaryActions.incrementAndGet() }
                                 )
                                 item(
-                                    text = { Text("Disabled action") },
+                                    text = { MenuTestLabel("Disabled") },
                                     onClick = { disabledActions.incrementAndGet() },
                                     enabled = false
                                 )
                                 divider()
                                 submenu(
-                                    text = { Text("More actions") },
+                                    text = { MenuTestLabel("More actions") },
                                     modifier = Modifier.testTag("submenu row")
                                 ) {
                                     item(
-                                        text = { Text("Child action", modifier = labelModifier) },
+                                        text = { MenuTestLabel("Child action", wide = wideRows) },
                                         onClick = { childActions.incrementAndGet() }
                                     )
                                 }
                                 radioItem(
-                                    text = { Text("Radio choice") },
+                                    text = { MenuTestLabel("Radio choice") },
                                     selected = radioSelected,
                                     onClick = { radioSelected = true },
                                     closeOnClick = false
                                 )
                                 toggleItem(
-                                    text = { Text("Independent toggle") },
+                                    text = { MenuTestLabel("Toggle") },
                                     checked = checked,
                                     onCheckedChange = { checked = it },
                                     closeOnClick = false
@@ -277,7 +277,7 @@ class PopupActionMenuWindowTest {
         }
 
         openMenu()
-        moveToText("Disabled action")
+        moveToText("Disabled")
         click()
         assertEquals(0, disabledActions.get())
         waitForMenuItem("Main action")
@@ -372,9 +372,9 @@ class PopupActionMenuWindowTest {
         click()
         onNodeWithText("Radio choice").assertIsSelected()
 
-        val toggle = onNodeWithText("Independent toggle")
+        val toggle = onNodeWithText("Toggle")
         toggle.assertIsOff()
-        moveToText("Independent toggle")
+        moveToText("Toggle")
         click()
         toggle.assertIsOn()
         click()
@@ -404,4 +404,10 @@ class PopupActionMenuWindowTest {
         waitForMenuItem("Main action", visible = false)
         assertEquals(3, childActions.get())
     }
+}
+
+@Composable
+private fun MenuTestLabel(text: String, wide: Boolean = false) {
+    // Use the same label widths with every platform's default fonts.
+    Text(text, modifier = Modifier.width(if (wide) 800.dp else 96.dp), maxLines = 1)
 }
