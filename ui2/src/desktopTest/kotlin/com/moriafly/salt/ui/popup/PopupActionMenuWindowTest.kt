@@ -42,13 +42,11 @@ import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.layout.positionInWindow
-import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsOff
 import androidx.compose.ui.test.assertIsOn
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.onAllNodesWithText
-import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.v2.runDesktopComposeUiTest
 import androidx.compose.ui.unit.DpSize
@@ -148,7 +146,6 @@ class PopupActionMenuWindowTest {
                             ) {
                                 item(
                                     text = { MenuTestLabel("Main action", wide = wideRows) },
-                                    modifier = Modifier.testTag("ordinary menu row"),
                                     onClick = { ordinaryActions.incrementAndGet() }
                                 )
                                 item(
@@ -158,8 +155,7 @@ class PopupActionMenuWindowTest {
                                 )
                                 divider()
                                 submenu(
-                                    text = { MenuTestLabel("More actions") },
-                                    modifier = Modifier.testTag("submenu row")
+                                    text = { MenuTestLabel("More actions") }
                                 ) {
                                     item(
                                         text = { MenuTestLabel("Child action", wide = wideRows) },
@@ -207,9 +203,12 @@ class PopupActionMenuWindowTest {
             moveTo(onNodeWithText(text).fetchSemanticsNode().boundsInWindow.center)
         }
 
-        fun rowColor(tag: String): java.awt.Color {
-            val row = onNodeWithTag(tag).fetchSemanticsNode().boundsInWindow
-            val x = row.center.x + row.width / 4f
+        fun rowBackgroundColor(label: String): java.awt.Color {
+            val row = onNodeWithText(label).fetchSemanticsNode().boundsInWindow
+            val text = onNodeWithText(label, useUnmergedTree = true)
+                .fetchSemanticsNode().boundsInWindow
+            // Both rows have an empty leading selection slot. Sample before the text glyphs.
+            val x = (row.left + text.left) / 2f
             return robot.getPixelColor(
                 window.x + (x / transform.scaleX).roundToInt(),
                 window.y + (row.center.y / transform.scaleY).roundToInt()
@@ -282,13 +281,13 @@ class PopupActionMenuWindowTest {
         assertEquals(0, disabledActions.get())
         waitForMenuItem("Main action")
 
-        val idleRowColor = rowColor("ordinary menu row")
-        val idleSubmenuColor = rowColor("submenu row")
+        val idleRowColor = rowBackgroundColor("Main action")
+        val idleSubmenuColor = rowBackgroundColor("More actions")
         moveToText("Main action")
         waitForIdle()
         mainClock.advanceTimeBy(64)
         waitForIdle()
-        val ordinaryHoverColor = rowColor("ordinary menu row")
+        val ordinaryHoverColor = rowBackgroundColor("Main action")
         assertNotEquals(
             idleRowColor,
             ordinaryHoverColor,
@@ -311,7 +310,7 @@ class PopupActionMenuWindowTest {
         waitForIdle()
         assertEquals(
             ordinaryHoverColor,
-            rowColor("submenu row"),
+            rowBackgroundColor("More actions"),
             "An open submenu should use the same configured hover as an ordinary row."
         )
         val triggerRow = onNodeWithText("More actions").fetchSemanticsNode().boundsInWindow
@@ -340,12 +339,14 @@ class PopupActionMenuWindowTest {
         waitForIdle()
         assertEquals(
             ordinaryHoverColor,
-            rowColor("submenu row"),
+            rowBackgroundColor("More actions"),
             "The parent should keep its configured hover while the pointer is in the child menu."
         )
         moveToText("Main action")
         waitForMenuItem("Child action", visible = false)
-        waitUntil(timeoutMillis = 1_000) { rowColor("submenu row") == idleSubmenuColor }
+        waitUntil(timeoutMillis = 1_000) {
+            rowBackgroundColor("More actions") == idleSubmenuColor
+        }
 
         moveToText("More actions")
         waitForMenuItem("Child action")
