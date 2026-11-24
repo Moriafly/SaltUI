@@ -530,7 +530,7 @@ private fun RowScope.MenuEntryContent(
     )
 }
 
-private const val SUBMENU_SWITCH_DELAY_MILLIS = 80L
+private const val SUBMENU_SWITCH_DELAY_MILLIS = 200L
 
 private val MenuSubmenuProperties = PopupProperties(
     focusable = false,
