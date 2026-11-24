@@ -59,10 +59,11 @@ import org.junit.Assert.assertTrue
 import org.junit.Assume.assumeTrue
 import org.junit.Test
 import org.junit.runner.RunWith
-import java.io.File
+import java.util.UUID
 
 /**
  * Records the native popup window's frame timings while exercising real open/select cycles.
+ * Each test writes to a separate directory under the requested frame label.
  * Compare artifacts from the same device and build type; timing thresholds are device dependent.
  */
 @OptIn(UnstableSaltUiApi::class)
@@ -79,13 +80,14 @@ class PopupMenuFrameTest {
         val instrumentation = InstrumentationRegistry.getInstrumentation()
         val device = UiDevice.getInstance(instrumentation)
         val context = instrumentation.targetContext
-        val label = InstrumentationRegistry.getArguments().getString("frameLabel") ?: "current"
-        val iterations = InstrumentationRegistry.getArguments()
-            .getString("frameIterations")
+        val arguments = InstrumentationRegistry.getArguments()
+        val label = arguments.getString("frameLabel") ?: "current"
+        val iterations = arguments.getString("frameIterations")
             ?.toInt()
             ?.coerceAtLeast(4) ?: 15
-        val directory = File(context.getExternalFilesDir(null), "popup-frames/$label")
-            .apply { mkdirs() }
+        val directory = requireNotNull(context.getExternalFilesDir(null))
+            .resolve("popup-frames/$label/${material.name}-${UUID.randomUUID()}")
+        check(directory.mkdirs()) { "Could not create popup frame output directory: $directory" }
 
         // Bring the sample forward before ActivityScenario starts its managed activity. Some
         // devices otherwise block that launch when instrumentation begins behind another app.
@@ -93,43 +95,84 @@ class PopupMenuFrameTest {
             "am start -W -n ${context.packageName}/${MainActivity::class.java.name}"
         )
         ActivityScenario.launch(MainActivity::class.java).use { scenario ->
-            for (dark in listOf(false, true)) {
+            val darkThemeModes = listOf(
+                false,
+                true
+            )
+            for (dark in darkThemeModes) {
                 scenario.onActivity {
-                    it.setContent { key(dark) { FrameMenu(material, dark) } }
+                    it.setContent {
+                        key(dark) {
+                            FrameMenu(
+                                material = material,
+                                dark = dark
+                            )
+                        }
+                    }
                 }
                 val name = "${material.name}-${if (dark) "dark" else "light"}"
                 repeat(iterations) { iteration ->
-                    val opener = device.wait(Until.findObject(By.text("Open $name menu")), 5_000)
-                        ?: throw AssertionError("Menu opener did not appear")
+                    val opener = device.wait(
+                        Until.findObject(By.text("Open $name menu")),
+                        5_000
+                    ) ?: throw AssertionError("Menu opener did not appear")
                     val openerBounds = opener.visibleBounds
                     device.executeShellCommand("dumpsys gfxinfo ${context.packageName} reset")
-                    device.click(openerBounds.centerX(), openerBounds.centerY())
-                    assertTrue(device.wait(Until.hasObject(By.text("Action 4")), 5_000))
+                    device.click(
+                        openerBounds.centerX(),
+                        openerBounds.centerY()
+                    )
+                    val menuOpened = device.wait(
+                        Until.hasObject(By.text("Action 4")),
+                        5_000
+                    )
+                    assertTrue(
+                        "The menu should open",
+                        menuOpened
+                    )
                     SystemClock.sleep(500)
                     // Warm up three openings before collecting comparable frame data.
                     if (iteration >= 3) {
                         val frames = device.executeShellCommand(
                             "dumpsys gfxinfo ${context.packageName} framestats"
                         )
-                        File(directory, "$name-${iteration - 3}.txt").writeText(frames)
+                        directory.resolve("$name-${iteration - 3}.txt").writeText(frames)
                     }
                     if (iteration == iterations - 1) {
                         val screenshot = instrumentation.uiAutomation.takeScreenshot()
                         try {
-                            File(directory, "$name.png").outputStream().use {
-                                screenshot.compress(Bitmap.CompressFormat.PNG, 100, it)
+                            directory.resolve("$name.png").outputStream().use {
+                                screenshot.compress(
+                                    Bitmap.CompressFormat.PNG,
+                                    100,
+                                    it
+                                )
                             }
                         } finally {
                             screenshot.recycle()
                         }
                     }
                     val action = device.findObject(By.text("Action 4")).visibleBounds
-                    device.click(action.centerX(), action.centerY())
+                    device.click(
+                        action.centerX(),
+                        action.centerY()
+                    )
+                    val selectionChanged = device.wait(
+                        Until.hasObject(By.text("Selected ${iteration + 1}")),
+                        5_000
+                    )
                     assertTrue(
                         "Opening $iteration must leave Action 4 selectable",
-                        device.wait(Until.hasObject(By.text("Selected ${iteration + 1}")), 5_000)
+                        selectionChanged
                     )
-                    assertTrue(device.wait(Until.gone(By.text("Action 4")), 5_000))
+                    val menuClosed = device.wait(
+                        Until.gone(By.text("Action 4")),
+                        5_000
+                    )
+                    assertTrue(
+                        "Selecting an item should close the menu",
+                        menuClosed
+                    )
                     SystemClock.sleep(150)
                 }
             }
@@ -137,7 +180,10 @@ class PopupMenuFrameTest {
     }
 
     @Composable
-    private fun FrameMenu(material: PopupMenuMaterial, dark: Boolean) {
+    private fun FrameMenu(
+        material: PopupMenuMaterial,
+        dark: Boolean
+    ) {
         SaltTheme(configs = SaltConfigs.default(isDarkTheme = dark)) {
             PopupMenuBackdrop(Modifier.fillMaxSize()) {
                 Canvas(Modifier.fillMaxSize()) {
@@ -145,8 +191,14 @@ class PopupMenuFrameTest {
                     repeat(12) { stripe ->
                         drawRect(
                             color = if (stripe % 2 == 0) Color(0xFF567ACD) else Color(0xFFDB9B75),
-                            topLeft = Offset(stripe * stripeWidth, 0f),
-                            size = Size(stripeWidth, size.height)
+                            topLeft = Offset(
+                                x = stripe * stripeWidth,
+                                y = 0f
+                            ),
+                            size = Size(
+                                width = stripeWidth,
+                                height = size.height
+                            )
                         )
                     }
                 }
