@@ -10,6 +10,7 @@ ktlint_standard_trailing-comma-on-declaration-site = disabled
 ktlint_standard_multiline-expression-wrapping = disabled
 ktlint_standard_chain-method-continuation = disabled
 ktlint_compose_compositionlocal-allowlist = disabled
+ktlint_saltui_composable-modifier-parameter = enabled
 ktlint_standard_function-signature = disabled
 ktlint_standard_when-entry-bracing = disabled
 ktlint_standard_blank-line-between-when-conditions = disabled

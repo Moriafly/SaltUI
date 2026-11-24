@@ -68,6 +68,7 @@ import com.moriafly.salt.ui.popup.PopupMenuItem
 import com.moriafly.salt.ui.popup.PopupMenuMaterial
 import org.junit.Assert.assertTrue
 import org.junit.Assume.assumeTrue
+import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import kotlin.math.abs
@@ -76,6 +77,14 @@ import android.graphics.Color as AndroidColor
 @OptIn(UnstableSaltUiApi::class)
 @RunWith(AndroidJUnit4::class)
 class PopupMenuGlassInteractionTest {
+    @Before
+    fun bringSampleToForeground() {
+        val instrumentation = InstrumentationRegistry.getInstrumentation()
+        UiDevice.getInstance(instrumentation).executeShellCommand(
+            "am start -W -n ${instrumentation.targetContext.packageName}/${MainActivity::class.java.name}"
+        )
+    }
+
     @Test
     fun qualityDropdownKeepsTheVolumeTrackAlignedWhileDragging() {
         assumeTrue(Build.VERSION.SDK_INT >= 33)

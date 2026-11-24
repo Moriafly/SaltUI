@@ -395,20 +395,25 @@ private fun MenuSurface(
                 )
             }
             MenuSurfaceBackdrop(
-                modifier = Modifier.thenIf(sampledMotion != null) {
-                    layoutMenuBackdrop(
-                        motion = requireNotNull(sampledMotion),
-                        interaction = requireNotNull(glassInteraction)
-                    ).clip(shape)
-                },
                 shape = shape,
                 style = style,
                 backdrop = backdrop,
                 dark = dark,
+                sampledMotion = sampledMotion,
                 glassInteraction = glassInteraction,
-                maxGlassLuminance = maxGlassLuminance,
-                lightModifier = foreground
+                maxGlassLuminance = maxGlassLuminance
             )
+            if (glassInteraction != null) {
+                MenuSurfaceLight(
+                    modifier = Modifier
+                        .matchParentSize()
+                        .then(foreground),
+                    interaction = glassInteraction,
+                    shape = shape,
+                    dark = dark,
+                    rimWidth = if (maxGlassLuminance != null) 1.5.dp else Dp.Unspecified
+                )
+            }
             MenuSurfaceContent(
                 modifier = foreground,
                 desktop = desktop,
@@ -429,36 +434,53 @@ private fun BoxScope.MenuSurfaceBackdrop(
     style: PopupMenuStyle,
     backdrop: PopupBackdrop?,
     dark: Boolean,
+    sampledMotion: MenuPanelMotion?,
     glassInteraction: GlassInteractionState?,
-    maxGlassLuminance: Float?,
-    modifier: Modifier = Modifier,
-    lightModifier: Modifier = Modifier
+    maxGlassLuminance: Float?
 ) {
+    val materialLayout = if (sampledMotion != null && glassInteraction != null) {
+        Modifier
+            .layoutMenuBackdrop(motion = sampledMotion, interaction = glassInteraction)
+            .clip(shape)
+    } else {
+        Modifier
+    }
+    // Keep the backdrop's layout boundary at the final panel size while the material animates.
     Box(
-        modifier = modifier
-            .matchParentSize()
-            .menuMaterial(
+        modifier = Modifier.matchParentSize(),
+        propagateMinConstraints = true
+    ) {
+        Box(
+            modifier = materialLayout.menuMaterial(
                 shape = shape,
                 style = style,
                 backdrop = backdrop,
                 isDarkTheme = dark,
                 maxGlassLuminance = maxGlassLuminance
             )
-    )
-    if (glassInteraction != null) {
-        Box(
-            Modifier
-                .matchParentSize()
-                .then(lightModifier)
-                .graphicsLayer()
-                .glassInteractionLight(
-                    interaction = glassInteraction,
-                    shape = shape,
-                    isDarkTheme = dark,
-                    rimWidth = if (maxGlassLuminance != null) 1.5.dp else Dp.Unspecified
-                )
         )
     }
+}
+
+@OptIn(UnstableSaltUiApi::class)
+@Composable
+private fun MenuSurfaceLight(
+    interaction: GlassInteractionState,
+    shape: Shape,
+    dark: Boolean,
+    rimWidth: Dp,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier
+            .graphicsLayer()
+            .glassInteractionLight(
+                interaction = interaction,
+                shape = shape,
+                isDarkTheme = dark,
+                rimWidth = rimWidth
+            )
+    )
 }
 
 // Android's cross-window transform can scale the window origin along with the glass.
@@ -469,25 +491,26 @@ private fun Modifier.layoutMenuBackdrop(
     interaction: GlassInteractionState
 ): Modifier = layout { measurable, constraints ->
     if (!constraints.hasFixedWidth || !constraints.hasFixedHeight) {
-        // The match-parent backdrop has no size of its own during intrinsic measurement.
         val surface = measurable.measure(constraints)
         return@layout layout(surface.width, surface.height) { surface.place(0, 0) }
     }
 
     val panel = IntSize(constraints.maxWidth, constraints.maxHeight)
-    val openingScale = motion.scale
-    val pressScale = interaction.scale
-    val visualScale = openingScale * pressScale
-    val surface = measurable.measure(
-        Constraints.fixed(
-            width = (panel.width * visualScale).roundToInt(),
-            height = (panel.height * visualScale).roundToInt()
-        )
-    )
     layout(panel.width, panel.height) {
+        // Read motion during placement to avoid requesting a new native window measure per frame.
+        val openingScale = motion.scale
+        val pressScale = interaction.scale
+        val visualScale = openingScale * pressScale
+        val surface = measurable.measure(
+            Constraints.fixed(
+                width = (panel.width * visualScale).roundToInt(),
+                height = (panel.height * visualScale).roundToInt()
+            )
+        )
         surface.placeWithLayer(0, 0) {
             val panelSize = panel.toSize()
-            val openingOffset = motion.scaleOffset(panelSize, openingScale, MobileMenuTravel.toPx())
+            val travel = MobileMenuTravel.toPx()
+            val openingOffset = motion.scaleOffset(panelSize, openingScale, travel)
             val pressOrigin = interaction.transformOrigin(panelSize)
             val pressOffset = scaleDisplacement(pressOrigin, panelSize, pressScale) +
                 interactionTranslation(interaction, MenuDragLimit)

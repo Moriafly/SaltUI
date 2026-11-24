@@ -1,7 +1,8 @@
 import { spawnSync } from "node:child_process";
 import { createHash } from "node:crypto";
 import {
-  existsSync, lstatSync, mkdirSync, readFileSync, renameSync, rmSync, writeFileSync,
+  copyFileSync, existsSync, lstatSync, mkdirSync, mkdtempSync, readFileSync, renameSync, rmSync,
+  writeFileSync,
 } from "node:fs";
 import { homedir, tmpdir } from "node:os";
 import { isAbsolute, join, relative, resolve, sep } from "node:path";
@@ -86,11 +87,52 @@ function toolPath({ name, url, sha256 }) {
   }
 }
 
+function combinedRuleset(ktlint, composeRules) {
+  const source = join(root, ".codex", "hooks", "ktlint", "ComposableModifierRuleSet.java");
+  const sourceHash = digest(readFileSync(source));
+  const version = digest([...tools.map(tool => tool.sha256), sourceHash].join(":"));
+  const jar = join(toolCache, `saltui-compose-rules-${version}.jar`);
+  if (existsSync(jar)) return jar;
+
+  const build = mkdtempSync(join(toolCache, "saltui-ktlint-build-"));
+  try {
+    const classes = join(build, "classes");
+    const services = join(classes, "META-INF", "services");
+    mkdirSync(services, { recursive: true });
+    const compile = run("javac", ["--release", "17", "-proc:none", "-classpath", ktlint,
+      "-d", classes, source]);
+    if (compile.status !== 0) {
+      throw new Error(compile.stderr.trim() || "Could not compile SaltUI rules.");
+    }
+    // The ktlint CLI accepts one ruleset JAR. Register both providers in that JAR.
+    const service = "com.pinterest.ktlint.cli.ruleset.core.api.RuleSetProviderV3";
+    writeFileSync(join(services, service), [
+      "io.nlopez.compose.rules.ktlint.ComposeRuleSetProvider",
+      "saltui.ktlint.ComposableModifierRuleSet",
+      "",
+    ].join("\n"));
+
+    const temporaryJar = join(build, "rules.jar");
+    copyFileSync(composeRules, temporaryJar);
+    const pack = run("jar", ["--update", "--file", temporaryJar, "-C", classes, "."]);
+    if (pack.status !== 0) throw new Error(pack.stderr.trim() || "Could not package SaltUI rules.");
+    try {
+      renameSync(temporaryJar, jar);
+    } catch (error) {
+      if (!existsSync(jar)) throw error;
+    }
+    return jar;
+  } finally {
+    rmSync(build, { recursive: true, force: true });
+  }
+}
+
 function checkKotlin(files) {
   if (files.length === 0) return { ok: true, message: "" };
   try {
     const [ktlint, composeRules] = tools.map(toolPath);
-    const result = run("java", ["-jar", ktlint, "--relative", "--ruleset=" + composeRules,
+    const ruleset = combinedRuleset(ktlint, composeRules);
+    const result = run("java", ["-jar", ktlint, "--relative", "--ruleset=" + ruleset,
       ...files.map(file => "./" + file)]);
     if (result.status !== 0) {
       const diagnostics = [result.stdout, result.stderr].filter(Boolean).join("\n").trim();
@@ -98,7 +140,7 @@ function checkKotlin(files) {
     }
     return {
       ok: true,
-      message: `ktlint and Compose Rules passed for ${files.length} Kotlin file(s) using .editorconfig.`,
+      message: `ktlint, Compose Rules and SaltUI rules passed for ${files.length} Kotlin file(s) using .editorconfig.`,
     };
   } catch (error) {
     return { ok: false, message: `Kotlin checks could not run. ${error.message}` };
