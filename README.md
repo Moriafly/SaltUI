@@ -24,6 +24,12 @@ It ships the pieces Compose Multiplatform leaves to you: a themed component set,
 
 This README gets you to a running screen; the site is the reference for everything else.
 
+## What's new in 3.1.0-alpha02
+
+- **Glass rendering** improves menu text contrast over bright backdrops in dark mode, lets more of the backdrop show through light desktop menus, and gives Regular Glass a subtler rim highlight.
+- **Desktop menus** fit their content within the available width and keep parent rows highlighted while their submenus are open. A short delay when switching rows gives the pointer time to reach the open submenu.
+- **Android menus** keep Glass and Blur backdrops aligned during opening and dragging, with less layout work during animations.
+
 ## What's new in 3.1.0-alpha01
 
 - **Glass effects** for buttons, custom surfaces, and the new `FloatingBottomBar`, with configurable tint and press feedback.
@@ -83,6 +89,8 @@ commonMain.dependencies {
 ```
 
 `salt-ui` already exposes `salt-core` and `salt-adaptive-window` through `api`, so do not add them separately unless you want one of them without the component library. Version list: [Maven Central](https://central.sonatype.com/artifact/io.github.moriafly/salt-ui), [releases](https://github.com/Moriafly/SaltUI/releases).
+
+To try the 3.1 preview, use `3.1.0-alpha02` for every SaltUI dependency.
 
 Wrap your content in `SaltTheme`:
 
@@ -192,6 +200,7 @@ SaltUI performs operations related to internal ART APIs. Please refer to the fol
 
 | SaltUI | Compose Multiplatform | Jetpack Compose |
 | --- | --- | --- |
+| 3.1.0-alpha02 | 1.12.2 | 1.12.2 |
 | 3.1.0-alpha01 | 1.12.2 | 1.12.2 |
 | 3.0.0+ | 1.12.2 | 1.12.2 |
 | 3.0.0-beta03+ | 1.12.2 | 1.12.2 |
