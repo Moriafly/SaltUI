@@ -46,6 +46,7 @@ import androidx.test.uiautomator.By
 import androidx.test.uiautomator.UiDevice
 import androidx.test.uiautomator.Until
 import com.moriafly.salt.ui.Button
+import com.moriafly.salt.ui.ItemDropdown
 import com.moriafly.salt.ui.SaltConfigs
 import com.moriafly.salt.ui.SaltTheme
 import com.moriafly.salt.ui.Text
@@ -75,7 +76,11 @@ class PopupMenuFrameTest {
     @Test
     fun repeatedOpeningKeepsBlurMenusSelectable() = recordOpeningFrames(PopupMenuMaterial.Blur)
 
-    private fun recordOpeningFrames(material: PopupMenuMaterial) {
+    @Test
+    fun repeatedOpeningKeepsLongGlassDropdownsSelectable() =
+        recordOpeningFrames(PopupMenuMaterial.Glass, longDropdown = true)
+
+    private fun recordOpeningFrames(material: PopupMenuMaterial, longDropdown: Boolean = false) {
         assumeTrue(Build.VERSION.SDK_INT >= 33)
         val instrumentation = InstrumentationRegistry.getInstrumentation()
         val device = UiDevice.getInstance(instrumentation)
@@ -85,8 +90,9 @@ class PopupMenuFrameTest {
         val iterations = arguments.getString("frameIterations")
             ?.toInt()
             ?.coerceAtLeast(4) ?: 15
+        val fixture = if (longDropdown) "${material.name}-Dropdown" else material.name
         val directory = requireNotNull(context.getExternalFilesDir(null))
-            .resolve("popup-frames/$label/${material.name}-${UUID.randomUUID()}")
+            .resolve("popup-frames/$label/$fixture-${UUID.randomUUID()}")
         check(directory.mkdirs()) { "Could not create popup frame output directory: $directory" }
 
         // Bring the sample forward before ActivityScenario starts its managed activity. Some
@@ -100,17 +106,19 @@ class PopupMenuFrameTest {
                 true
             )
             for (dark in darkThemeModes) {
+                val name = "$fixture-${if (dark) "dark" else "light"}"
                 scenario.onActivity {
                     it.setContent {
                         key(dark) {
                             FrameMenu(
                                 material = material,
-                                dark = dark
+                                dark = dark,
+                                name = name,
+                                longDropdown = longDropdown
                             )
                         }
                     }
                 }
-                val name = "${material.name}-${if (dark) "dark" else "light"}"
                 repeat(iterations) { iteration ->
                     val opener = device.wait(
                         Until.findObject(By.text("Open $name menu")),
@@ -182,7 +190,9 @@ class PopupMenuFrameTest {
     @Composable
     private fun FrameMenu(
         material: PopupMenuMaterial,
-        dark: Boolean
+        dark: Boolean,
+        name: String,
+        longDropdown: Boolean
     ) {
         SaltTheme(configs = SaltConfigs.default(isDarkTheme = dark)) {
             PopupMenuBackdrop(Modifier.fillMaxSize()) {
@@ -210,26 +220,49 @@ class PopupMenuFrameTest {
                         .padding(top = 64.dp)
                 )
                 Box(Modifier.align(Alignment.Center)) {
-                    var expanded by remember { mutableStateOf(false) }
-                    val name = "${material.name}-${if (dark) "dark" else "light"}"
-                    Button(
-                        text = "Open $name menu",
-                        onClick = { expanded = true }
-                    )
-                    PopupMenu(
-                        expanded = expanded,
-                        onDismissRequest = { expanded = false },
-                        modifier = Modifier.width(240.dp),
-                        style = PopupMenuDefaults.style(material = material)
-                    ) {
-                        repeat(8) { index ->
-                            PopupMenuItem(
-                                text = { Text("Action $index") },
-                                onClick = {
-                                    selected++
-                                    expanded = false
-                                }
-                            )
+                    val style = PopupMenuDefaults.style(material = material)
+                    if (longDropdown) {
+                        var format by remember { mutableIntStateOf(0) }
+                        ItemDropdown(
+                            text = "Open $name menu",
+                            value = "Format $format",
+                            style = style,
+                            modifier = Modifier.width(320.dp)
+                        ) {
+                            repeat(14) { index ->
+                                PopupMenuItem(
+                                    text = "Action $index",
+                                    sub = "Description for format $index",
+                                    selected = format == index,
+                                    onClick = {
+                                        format = index
+                                        selected++
+                                        state.dismiss()
+                                    }
+                                )
+                            }
+                        }
+                    } else {
+                        var expanded by remember { mutableStateOf(false) }
+                        Button(
+                            text = "Open $name menu",
+                            onClick = { expanded = true }
+                        )
+                        PopupMenu(
+                            expanded = expanded,
+                            onDismissRequest = { expanded = false },
+                            modifier = Modifier.width(240.dp),
+                            style = style
+                        ) {
+                            repeat(8) { index ->
+                                PopupMenuItem(
+                                    text = { Text("Action $index") },
+                                    onClick = {
+                                        selected++
+                                        expanded = false
+                                    }
+                                )
+                            }
                         }
                     }
                 }
