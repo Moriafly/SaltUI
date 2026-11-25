@@ -125,7 +125,7 @@ internal fun Modifier.menuMaterial(
         maxGlassLuminance?.let(::createMenuBackdropToneEffect)
     }
     val sampledSurface = surface
-        .graphicsLayer { renderEffect = toneEffect }
+        .thenIf(toneEffect != null) { graphicsLayer { renderEffect = toneEffect } }
         .then(backdrop.cutout(shape))
         .thenIf(backdropColor.alpha == 1f) { background(backdropColor) }
 

@@ -21,12 +21,12 @@
 package com.moriafly.salt.ui.popup
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
@@ -54,6 +54,8 @@ internal class DropdownMenuItem(
 
 internal val LocalDropdownDragSelection =
     staticCompositionLocalOf<MenuDragSelection<DropdownMenuItem>?> { null }
+
+private val MenuLabelArrangement = Arrangement.spacedBy(2.dp)
 
 /**
  * Displays an action in a [PopupMenu] or [com.moriafly.salt.ui.ItemDropdown].
@@ -102,11 +104,11 @@ fun PopupMenuItem(
         Column(
             modifier = Modifier
                 .weight(1f)
-                .fillMaxWidth()
+                .fillMaxWidth(),
+            verticalArrangement = MenuLabelArrangement
         ) {
             Text(text = text)
             sub?.let {
-                Spacer(modifier = Modifier.height(2.dp))
                 Text(
                     text = sub,
                     color = SaltTheme.colors.subText,

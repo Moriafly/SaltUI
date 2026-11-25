@@ -345,7 +345,7 @@ private fun MenuSurface(
     }
     Box(
         modifier = modifier
-            .menuSurfaceSize(useIntrinsicWidth)
+            .menuSurfaceSize()
             .menuSurfaceInput(
                 expanded = visible.targetState,
                 shape = shape,
@@ -419,6 +419,7 @@ private fun MenuSurface(
                 desktop = desktop,
                 expanded = visible.targetState,
                 scrollable = scrollable,
+                useIntrinsicWidth = useIntrinsicWidth,
                 dropdownDrag = dropdownDrag,
                 maxGlassLuminance = maxGlassLuminance,
                 content = content
@@ -438,30 +439,23 @@ private fun BoxScope.MenuSurfaceBackdrop(
     glassInteraction: GlassInteractionState?,
     maxGlassLuminance: Float?
 ) {
-    // Keep the backdrop's layout boundary at the final panel size while the material animates.
-    Box(
-        modifier = Modifier.matchParentSize(),
-        propagateMinConstraints = true
-    ) {
-        Box(
-            modifier = Modifier
-                .thenIf(sampledMotion != null && glassInteraction != null) {
-                    this
-                        .layoutMenuBackdrop(
-                            motion = sampledMotion,
-                            interaction = glassInteraction
-                        )
-                        .clip(shape)
-                }
-                .menuMaterial(
-                    shape = shape,
-                    style = style,
-                    backdrop = backdrop,
-                    isDarkTheme = dark,
-                    maxGlassLuminance = maxGlassLuminance
-                )
-        )
-    }
+    Spacer(
+        modifier = Modifier
+            .matchParentSize()
+            .thenIf(sampledMotion != null && glassInteraction != null) {
+                layoutMenuBackdrop(
+                    motion = sampledMotion,
+                    interaction = glassInteraction
+                ).clip(shape)
+            }
+            .menuMaterial(
+                shape = shape,
+                style = style,
+                backdrop = backdrop,
+                isDarkTheme = dark,
+                maxGlassLuminance = maxGlassLuminance
+            )
+    )
 }
 
 @OptIn(UnstableSaltUiApi::class)
@@ -554,13 +548,12 @@ private fun scaleDisplacement(origin: TransformOrigin, size: Size, scale: Float)
     Offset(size.width * origin.pivotFractionX, size.height * origin.pivotFractionY) * (1f - scale)
 
 @Composable
-private fun Modifier.menuSurfaceSize(useIntrinsicWidth: Boolean): Modifier {
+private fun Modifier.menuSurfaceSize(): Modifier {
     val windowSize = LocalWindowInfo.current.containerDpSize
     val maxWidth = (windowSize.width - 24.dp).coerceAtLeast(1.dp)
     val maxHeight = (windowSize.height - 24.dp).coerceAtLeast(1.dp)
     return widthIn(max = if (windowSize.width > 0.dp) maxWidth else Dp.Unspecified)
         .heightIn(max = if (windowSize.height > 0.dp) maxHeight else Dp.Unspecified)
-        .thenIf(useIntrinsicWidth) { width(IntrinsicSize.Max) }
 }
 
 @OptIn(UnstableSaltUiApi::class)
@@ -647,6 +640,7 @@ private fun MenuSurfaceContent(
     desktop: Boolean,
     expanded: Boolean,
     scrollable: Boolean,
+    useIntrinsicWidth: Boolean,
     dropdownDrag: MenuDragSelection<DropdownMenuItem>?,
     maxGlassLuminance: Float?,
     modifier: Modifier = Modifier,
@@ -672,6 +666,7 @@ private fun MenuSurfaceContent(
     }
     Column(
         modifier = modifier
+            .thenIf(useIntrinsicWidth) { width(IntrinsicSize.Max) }
             .padding(padding)
             .thenIf(scrollable) {
                 verticalScroll(scrollState, enabled = expanded && scrollState.maxValue > 0)
