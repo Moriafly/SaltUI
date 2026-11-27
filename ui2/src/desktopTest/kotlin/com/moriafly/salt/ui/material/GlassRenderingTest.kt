@@ -28,6 +28,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.ImageComposeScene
@@ -41,6 +43,7 @@ import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.PixelMap
 import androidx.compose.ui.graphics.asComposeImageBitmap
 import androidx.compose.ui.graphics.compositeOver
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.toPixelMap
 import androidx.compose.ui.unit.Density
@@ -305,6 +308,88 @@ class GlassRenderingTest {
         )
     }
 
+    @Test
+    fun glassCutoutFollowsOpacityRelativeToItsSource() {
+        val showGlass = mutableStateOf(false)
+        val glassOpacity = mutableFloatStateOf(1f)
+        val groupOpacity = mutableFloatStateOf(1f)
+        ImageComposeScene(
+            width = SCENE_WIDTH,
+            height = SCENE_HEIGHT,
+            density = Density(1f),
+            coroutineContext = Dispatchers.Unconfined
+        ) {
+            SaltTheme(configs = SaltConfigs.default(isDarkTheme = true)) {
+                val source = rememberGlassSource()
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .graphicsLayer { alpha = groupOpacity.floatValue }
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .matchParentSize()
+                            .glassSource(source)
+                    ) {
+                        StripedBackdrop()
+                    }
+
+                    if (showGlass.value) {
+                        Box(
+                            modifier = Modifier
+                                .align(Alignment.Center)
+                                .graphicsLayer { alpha = glassOpacity.floatValue }
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(240.dp, 100.dp)
+                                    .glass(source)
+                            )
+                        }
+                    }
+                }
+            }
+        }.use { scene ->
+            var time = 0L
+
+            fun frame(): PixelMap {
+                time += 16_666_667L
+                return scene.pixelsAt(time)
+            }
+
+            val uncovered = frame()
+            showGlass.value = true
+            repeat(4) { frame() }
+            val opaque = frame()
+            assertTrue(opaque[150, 90].alpha > uncovered[150, 90].alpha)
+
+            glassOpacity.floatValue = 0.999f
+            val nearOpaque = frame()
+            assertEquals(
+                opaque[150, 90].alpha,
+                nearOpaque[150, 90].alpha,
+                absoluteTolerance = 3f / 255f
+            )
+
+            glassOpacity.floatValue = 0.5f
+            assertEquals(1f, frame()[65, 90].alpha, absoluteTolerance = 0.01f)
+
+            glassOpacity.floatValue = 0f
+            val hidden = frame()
+            for (x in listOf(65, 150, 235)) {
+                assertEquals(uncovered[x, 90], hidden[x, 90], "Glass at zero opacity at $x")
+            }
+
+            glassOpacity.floatValue = 1f
+            groupOpacity.floatValue = 0.5f
+            assertEquals(
+                opaque[150, 90].alpha * 0.5f,
+                frame()[150, 90].alpha,
+                absoluteTolerance = 0.01f
+            )
+        }
+    }
+
     private fun renderGlass(
         isDarkTheme: Boolean,
         surfaceSize: DpSize = DpSize(240.dp, 100.dp),
@@ -341,10 +426,12 @@ class GlassRenderingTest {
 
     private fun ImageComposeScene.renderPixels(): PixelMap = use { scene ->
         repeat(4) { frame -> scene.render((frame + 1) * 16_666_667L).close() }
-        scene.render(100_000_000L).use { image ->
-            Bitmap.makeFromImage(image).use { bitmap ->
-                bitmap.asComposeImageBitmap().toPixelMap()
-            }
+        scene.pixelsAt(100_000_000L)
+    }
+
+    private fun ImageComposeScene.pixelsAt(time: Long): PixelMap = render(time).use { image ->
+        Bitmap.makeFromImage(image).use { bitmap ->
+            bitmap.asComposeImageBitmap().toPixelMap()
         }
     }
 
