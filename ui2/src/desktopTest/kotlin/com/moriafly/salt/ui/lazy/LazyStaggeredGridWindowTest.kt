@@ -32,6 +32,7 @@ import androidx.compose.ui.awt.ComposeWindow
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.isDisplayed
+import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.v2.runDesktopComposeUiTest
 import androidx.compose.ui.unit.DpSize
@@ -59,6 +60,7 @@ class LazyStaggeredGridWindowTest {
             Window(
                 onCloseRequest = {},
                 undecorated = true,
+                alwaysOnTop = true,
                 state = rememberWindowState(size = DpSize(420.dp, 320.dp))
             ) {
                 composeWindow = window
@@ -106,8 +108,18 @@ class LazyStaggeredGridWindowTest {
         }
         val robot = Robot().apply { autoDelay = 35 }
 
+        fun node(tag: String) = onNodeWithTag(tag, useUnmergedTree = true)
+
+        fun waitUntilDisplayed(tag: String) {
+            val target = node(tag)
+            val matches = onAllNodesWithTag(tag, useUnmergedTree = true)
+            waitUntil(timeoutMillis = 5_000) {
+                matches.fetchSemanticsNodes().isNotEmpty() && target.isDisplayed()
+            }
+        }
+
         fun moveTo(tag: String) {
-            val center = onNodeWithTag(tag).fetchSemanticsNode().boundsInRoot.center
+            val center = node(tag).fetchSemanticsNode().boundsInRoot.center
             val transform = composeWindow.graphicsConfiguration.defaultTransform
             robot.mouseMove(
                 composeWindow.x + (center.x / transform.scaleX).roundToInt(),
@@ -121,10 +133,10 @@ class LazyStaggeredGridWindowTest {
             robot.mouseRelease(InputEvent.BUTTON1_DOWN_MASK)
         }
 
-        waitUntil { onNodeWithTag("start").isDisplayed() }
+        waitUntilDisplayed("start")
         moveTo("grid")
         robot.mouseWheel(200)
-        waitUntil(timeoutMillis = 5_000) { onNodeWithTag("end").isDisplayed() }
+        waitUntilDisplayed("end")
 
         click("toggle-cache")
         waitUntil { cacheWhileIdle }
@@ -133,6 +145,6 @@ class LazyStaggeredGridWindowTest {
 
         moveTo("grid")
         robot.mouseWheel(-200)
-        waitUntil(timeoutMillis = 5_000) { onNodeWithTag("start").isDisplayed() }
+        waitUntilDisplayed("start")
     }
 }
