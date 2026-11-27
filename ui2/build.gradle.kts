@@ -175,9 +175,11 @@ kotlin {
         commonMain.dependencies {
             api(project(":core"))
             api(project(":salt-adaptive-window"))
+            implementation(libs.atomicfu)
             implementation(libs.compose.runtime)
             implementation(libs.compose.foundation)
             implementation(libs.compose.ui)
+            implementation(libs.bundles.compose.support)
             implementation(libs.compose.ui.tooling.preview)
             implementation(libs.compose.components.resources)
             implementation(libs.haze)
@@ -190,9 +192,13 @@ kotlin {
 
         val desktopMain by getting
         desktopMain.dependencies {
-            implementation(compose.desktop.currentOs)
             implementation(libs.jna)
             implementation(libs.jna.platform)
+        }
+
+        val skikoMain by creating {
+            dependsOn(commonMain)
+            desktopMain.dependsOn(this)
         }
 
         if (configureAppleTargets) {
@@ -201,7 +207,7 @@ kotlin {
 
             @Suppress("unused")
             val iosMain by creating {
-                dependsOn(commonMain)
+                dependsOn(skikoMain)
                 iosArm64Main.dependsOn(this)
                 iosSimulatorArm64Main.dependsOn(this)
             }

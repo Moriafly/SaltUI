@@ -5,10 +5,9 @@ agp = "9.1.1"
 kotlin = "2.4.20"
 core-ktx = "1.17.0"
 material = "1.13.0"
-material3 = "1.4.0"
-compose-multiplatform = "1.12.2"
+compose-multiplatform = "1.13.0-rc01"
 activity-compose = "1.12.2"
-window = "1.5.0"
+window = "1.5.1"
 hiddenapibypass = "6.1"
 jna = "5.18.1"
 maven-publish = "0.36.0"
@@ -16,23 +15,27 @@ kotlinx-atomicfu = "0.29.0"
 haze = "2.1.0"
 collection = "1.5.0"
 graphics-shapes = "1.0.1"
-navigation3="1.2.0-rc01"
+lifecycle = "2.11.0"
+navigation3 = "1.2.0"
 navigationevent = "1.1.0"
+savedstate = "1.4.0"
 kotlinx-serialization = "1.10.0"
 kover = "0.9.8"
 
 [libraries]
+atomicfu = { module = "org.jetbrains.kotlinx:atomicfu", version.ref = "kotlinx-atomicfu" }
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
 core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "core-ktx" }
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 compose-runtime = { group = "org.jetbrains.compose.runtime", name = "runtime", version.ref = "compose-multiplatform" }
 compose-foundation = { group = "org.jetbrains.compose.foundation", name = "foundation", version.ref = "compose-multiplatform" }
+compose-material = { group = "org.jetbrains.compose.material", name = "material", version.ref = "compose-multiplatform" }
 compose-ui = { group = "org.jetbrains.compose.ui", name = "ui", version.ref = "compose-multiplatform" }
 compose-ui-tooling = { group = "org.jetbrains.compose.ui", name = "ui-tooling", version.ref = "compose-multiplatform" }
 compose-ui-tooling-preview = { group = "org.jetbrains.compose.ui", name = "ui-tooling-preview", version.ref = "compose-multiplatform" }
 compose-components-resources = { group = "org.jetbrains.compose.components", name = "components-resources", version.ref = "compose-multiplatform" }
 compose-ui-test = { group = "org.jetbrains.compose.ui", name = "ui-test", version.ref = "compose-multiplatform" }
-compose-material3 = { group = "androidx.compose.material3", name = "material3", version.ref = "material3" }
+compose-material3 = { group = "org.jetbrains.compose.material3", name = "material3", version.ref = "compose-multiplatform" }
 activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activity-compose" }
 window = { group = "androidx.window", name = "window", version.ref = "window" }
 hiddenapibypass = { group = "org.lsposed.hiddenapibypass", name = "hiddenapibypass", version.ref = "hiddenapibypass" }
@@ -44,8 +47,11 @@ haze-blur-materials = { group = "dev.chrisbanes.haze", name = "haze-blur-materia
 haze-glass = { group = "dev.chrisbanes.haze", name = "haze-glass", version.ref = "haze"}
 collection = { group = "androidx.collection", name = "collection", version.ref = "collection" }
 graphics-shapes = { group = "androidx.graphics", name = "graphics-shapes", version.ref = "graphics-shapes" }
+androidx-lifecycle-runtime-compose = { module = "org.jetbrains.androidx.lifecycle:lifecycle-runtime-compose", version.ref = "lifecycle" }
+androidx-navigation3-runtime = { module = "androidx.navigation3:navigation3-runtime", version.ref = "navigation3" }
 androidx-navigation3-ui = { module = "org.jetbrains.androidx.navigation3:navigation3-ui", version.ref = "navigation3" }
 androidx-navigationevent-compose = { module = "org.jetbrains.androidx.navigationevent:navigationevent-compose", version.ref = "navigationevent" }
+androidx-savedstate-compose = { module = "org.jetbrains.androidx.savedstate:savedstate-compose", version.ref = "savedstate" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
 
 [plugins]
@@ -62,3 +68,4 @@ kotlinx-atomicfu = { id  = "org.jetbrains.kotlinx.atomicfu", version.ref = "kotl
 kover = { id = "org.jetbrains.kotlinx.kover", version.ref = "kover" }
 
 [bundles]
+compose-support = ["androidx-lifecycle-runtime-compose", "androidx-savedstate-compose"]

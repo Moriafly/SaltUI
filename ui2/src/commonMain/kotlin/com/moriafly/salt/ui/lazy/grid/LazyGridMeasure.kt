@@ -17,6 +17,7 @@
 package com.moriafly.salt.ui.lazy.grid
 
 import androidx.collection.IntList
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.ui.graphics.GraphicsContext
@@ -37,19 +38,21 @@ import com.moriafly.salt.ui.internal.checkPrecondition
 import com.moriafly.salt.ui.internal.requirePrecondition
 import com.moriafly.salt.ui.internal.requirePreconditionNotNull
 import com.moriafly.salt.ui.lazy.layout.LazyLayoutItemAnimator
+import com.moriafly.salt.ui.lazy.layout.LazyLayoutPrefetchState
 import com.moriafly.salt.ui.lazy.layout.ObservableScopeInvalidator
 import com.moriafly.salt.ui.lazy.layout.StickyItemsPlacement
 import com.moriafly.salt.ui.lazy.layout.applyStickyItems
 import com.moriafly.salt.ui.lazy.layout.updatedVisibleItems
-import kotlinx.coroutines.CoroutineScope
 import kotlin.math.abs
 import kotlin.math.min
 import kotlin.math.sign
+import kotlinx.coroutines.CoroutineScope
 
 /**
  * Measures and calculates the positions for the currently visible items. The result is produced as
  * a [LazyGridMeasureResult] which contains all the calculations.
  */
+@OptIn(ExperimentalFoundationApi::class)
 internal fun measureLazyGrid(
     itemsCount: Int,
     measuredLineProvider: LazyGridMeasuredLineProvider,
@@ -80,6 +83,8 @@ internal fun measureLazyGrid(
     lineIndexProvider: (itemIndex: Int) -> Int,
     stickyItemsScrollBehavior: StickyItemsPlacement?,
     layout: (Int, Int, Placeable.PlacementScope.() -> Unit) -> MeasureResult,
+    prefetchState: LazyLayoutPrefetchState?,
+    @Suppress("DEPRECATION") prefetchStrategy: LazyGridPrefetchStrategy?,
 ): LazyGridMeasureResult {
     requirePrecondition(beforeContentPadding >= 0) { "negative beforeContentPadding" }
     requirePrecondition(afterContentPadding >= 0) { "negative afterContentPadding" }
@@ -102,6 +107,7 @@ internal fun measureLazyGrid(
             layoutMaxOffset = 0,
             coroutineScope = coroutineScope,
             graphicsContext = graphicsContext,
+            shouldRunItemAnimation = true,
         )
         if (!isLookingAhead) {
             val disappearingItemsSize = itemAnimator.minSizeToFitDisappearingItems
@@ -132,6 +138,8 @@ internal fun measureLazyGrid(
             prefetchInfoRetriever = prefetchInfoRetriever,
             lineIndexProvider = lineIndexProvider,
             stickingItemsCombinedSize = 0,
+            prefetchState = prefetchState,
+            prefetchStrategy = prefetchStrategy,
         )
     } else {
         var currentFirstLineIndex = firstVisibleLineIndex
@@ -212,11 +220,9 @@ internal fun measureLazyGrid(
         // offscreen, this can happen if the content padding is larger than the available size.
         while (
             index < itemsCount &&
-            (
-                currentMainAxisOffset < maxMainAxis ||
+                (currentMainAxisOffset < maxMainAxis ||
                     currentMainAxisOffset <= 0 || // filling beforeContentPadding area
-                    visibleLines.isEmpty()
-            )
+                    visibleLines.isEmpty())
         ) {
             val measuredLine = measuredLineProvider.getAndMeasure(index)
             if (measuredLine.isEmpty()) {
@@ -226,7 +232,7 @@ internal fun measureLazyGrid(
             currentMainAxisOffset += measuredLine.mainAxisSizeWithSpacings
             if (
                 currentMainAxisOffset <= minOffset &&
-                measuredLine.items.last().index != itemsCount - 1
+                    measuredLine.items.last().index != itemsCount - 1
             ) {
                 // this line is offscreen and will not be visible. advance firstVisibleLineIndex
                 currentFirstLineIndex = index + 1
@@ -269,7 +275,7 @@ internal fun measureLazyGrid(
         val consumedScroll =
             if (
                 scrollToBeConsumed.fastRoundToInt().sign == scrollDelta.sign &&
-                abs(scrollToBeConsumed.fastRoundToInt()) >= abs(scrollDelta)
+                    abs(scrollToBeConsumed.fastRoundToInt()) >= abs(scrollDelta)
             ) {
                 scrollDelta.toFloat()
             } else {
@@ -283,9 +289,7 @@ internal fun measureLazyGrid(
         val scrollBackAmount: Float =
             if (isLookingAhead && scrollDelta > preScrollBackScrollDelta && unconsumedScroll <= 0) {
                 scrollDelta - preScrollBackScrollDelta + unconsumedScroll
-            } else {
-                0f
-            }
+            } else 0f
 
         // the initial offset for lines from visibleLines list
         requirePrecondition(currentFirstLineScrollOffset >= 0) { "negative initial offset" }
@@ -319,12 +323,10 @@ internal fun measureLazyGrid(
                 measuredLineProvider = measuredLineProvider,
                 filter = {
                     it in (lastItemIndex + 1) until itemsCount &&
-                        (
-                            !isLookingAhead ||
-                                !linesRetainedForLookahead.fastAny { line ->
-                                    line.items.any { item -> item.index == it }
-                                }
-                        )
+                        (!isLookingAhead ||
+                            !linesRetainedForLookahead.fastAny { line ->
+                                line.items.any { item -> item.index == it }
+                            })
                 },
             )
 
@@ -335,8 +337,8 @@ internal fun measureLazyGrid(
                 val size = visibleLines[i].mainAxisSizeWithSpacings
                 if (
                     currentFirstLineScrollOffset != 0 &&
-                    size <= currentFirstLineScrollOffset &&
-                    i != visibleLines.lastIndex
+                        size <= currentFirstLineScrollOffset &&
+                        i != visibleLines.lastIndex
                 ) {
                     currentFirstLineScrollOffset -= size
                     firstLine = visibleLines[i + 1]
@@ -362,11 +364,8 @@ internal fun measureLazyGrid(
         val positionedItems =
             calculateItemsOffsets(
                 lines =
-                    if (linesRetainedForLookahead.isEmpty()) {
-                        visibleLines
-                    } else {
-                        visibleLines + linesRetainedForLookahead
-                    },
+                    if (linesRetainedForLookahead.isEmpty()) visibleLines
+                    else visibleLines + linesRetainedForLookahead,
                 itemsBefore = extraItemsBefore,
                 itemsAfter = extraItemsAfter,
                 layoutWidth = layoutWidth,
@@ -396,6 +395,7 @@ internal fun measureLazyGrid(
             layoutMaxOffset = currentMainAxisOffset,
             coroutineScope = coroutineScope,
             graphicsContext = graphicsContext,
+            shouldRunItemAnimation = true,
         )
 
         if (!isLookingAhead) {
@@ -472,6 +472,8 @@ internal fun measureLazyGrid(
             prefetchInfoRetriever = prefetchInfoRetriever,
             lineIndexProvider = lineIndexProvider,
             stickingItemsCombinedSize = stickingItems.fastSumBy { it.mainAxisSize },
+            prefetchState = prefetchState,
+            prefetchStrategy = prefetchStrategy,
         )
     }
 }
@@ -533,7 +535,7 @@ private fun linesRetainedForLookahead(
                     for (i in size - 1 downTo 0) {
                         if (
                             this[i].index > lastVisibleItemIndex &&
-                            (i == 0 || this[i - 1].index <= lastVisibleItemIndex)
+                                (i == 0 || this[i - 1].index <= lastVisibleItemIndex)
                         ) {
                             found = this[i]
                             break
@@ -545,7 +547,7 @@ private fun linesRetainedForLookahead(
             var lineIndex = visibleLines.lastOrNull()?.let { it.index + 1 } ?: 0
             if (firstItem != null) {
                 for (i in firstItem.index..min(lastVisibleItem.index, itemsCount - 1)) {
-                    if (list?.fastAny { it.items.any { item -> item.index == i } } != true) {
+                    if (list?.fastAny { it.items.any { it.index == i } } != true) {
                         if (list == null) list = mutableListOf()
                         val measuredLine = measuredLineProvider.getAndMeasure(lineIndex = lineIndex)
                         lineIndex++
@@ -585,7 +587,6 @@ private fun calculateItemsOffsets(
     if (hasSpareSpace) {
         requirePrecondition(itemsBefore.isEmpty() && itemsAfter.isEmpty()) { "no items" }
         val linesCount = lines.size
-
         fun Int.reverseAware() = if (!reverseLayout) this else linesCount - this - 1
 
         val sizes = IntArray(linesCount) { index -> lines[index.reverseAware()].mainAxisSize }

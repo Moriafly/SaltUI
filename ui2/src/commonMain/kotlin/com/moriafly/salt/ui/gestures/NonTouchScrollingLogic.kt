@@ -56,17 +56,43 @@ internal abstract class NonTouchScrollingLogic(
     internal suspend fun userScroll(block: suspend NestedScrollScope.() -> Unit) {
         isScrolling = true
         // Run it in supervisorScope to ignore cancellations from scrolls with higher MutatePriority
-        supervisorScope { scrollingLogic.scroll(MutatePriority.UserInput, block) }
-        isScrolling = false
+        try {
+            supervisorScope { scrollingLogic.scroll(MutatePriority.UserInput, block) }
+        } finally {
+            isScrolling = false
+        }
     }
 
     internal val velocityTracker = DifferentialVelocityTracker()
 
-    /** Forwards the given [pointerEvent] for processing by this scroll logic. */
-    abstract fun onPointerEvent(pointerEvent: PointerEvent, pass: PointerEventPass, bounds: IntSize)
+    protected abstract fun isScrollingEvent(pointerEvent: PointerEvent): Boolean
+
+    protected abstract fun onScrollingEvent(pointerEvent: PointerEvent, bounds: IntSize): Boolean
+
+    fun onPointerEvent(pointerEvent: PointerEvent, pass: PointerEventPass, bounds: IntSize) {
+        if (pointerEvent.isConsumed || !isScrollingEvent(pointerEvent)) return
+
+        // An active scroll keeps priority before the event reaches descendants.
+        if (pass == PointerEventPass.Initial && isScrolling) {
+            onScrollingEvent(pointerEvent, bounds)
+            pointerEvent.consume()
+        }
+        if (pass == PointerEventPass.Main && !isScrolling && onScrollingEvent(pointerEvent, bounds)) {
+            pointerEvent.consume()
+        }
+    }
 
     /** Begins processing of events sent to [onPointerEvent] using the given [coroutineScope]. */
     abstract fun startReceivingEvents(coroutineScope: CoroutineScope)
+}
+
+internal fun ScrollingLogic.canConsumeDelta(delta: Float): Boolean {
+    val directionalDelta = delta.reverseIfNeeded()
+    return when {
+        directionalDelta < 0f -> scrollableState.canScrollBackward
+        directionalDelta > 0f -> scrollableState.canScrollForward
+        else -> false
+    }
 }
 
 /**

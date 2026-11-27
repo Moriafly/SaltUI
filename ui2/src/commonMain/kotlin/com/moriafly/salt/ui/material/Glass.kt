@@ -23,37 +23,46 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.Stable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.runtime.structuralEqualityPolicy
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.composed
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.geometry.isFinite
+import androidx.compose.ui.graphics.BlendMode
 import androidx.compose.ui.graphics.ClipOp
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Matrix
+import androidx.compose.ui.graphics.Paint
 import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.PathFillType
 import androidx.compose.ui.graphics.PathOperation
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.addOutline
 import androidx.compose.ui.graphics.drawscope.ContentDrawScope
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.withSave
+import androidx.compose.ui.graphics.withSaveLayer
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.findRootCoordinates
 import androidx.compose.ui.node.DrawModifierNode
 import androidx.compose.ui.node.GlobalPositionAwareModifierNode
 import androidx.compose.ui.node.LayoutAwareModifierNode
 import androidx.compose.ui.node.ModifierNodeElement
+import androidx.compose.ui.node.TraversableNode
 import androidx.compose.ui.node.UnplacedAwareModifierNode
 import androidx.compose.ui.node.invalidateDraw
+import androidx.compose.ui.node.traverseAncestors
 import androidx.compose.ui.platform.InspectorInfo
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -67,12 +76,16 @@ import com.moriafly.salt.ui.SaltTheme
 import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.moriafly.salt.ui.thenIf
 import dev.chrisbanes.haze.HazeInput
+import dev.chrisbanes.haze.HazeSourceRetention.ClearWhenUnavailable
+import dev.chrisbanes.haze.HazeSourceSelection.All
 import dev.chrisbanes.haze.HazeState
 import dev.chrisbanes.haze.blur.hazeBlur
 import dev.chrisbanes.haze.glass.GlassStyle
 import dev.chrisbanes.haze.glass.hazeGlass
 import dev.chrisbanes.haze.hazeSource
 import kotlin.jvm.JvmSynthetic
+import kotlin.math.ceil
+import kotlin.math.floor
 
 /**
  * Appearance used by [glass].
@@ -148,25 +161,138 @@ class GlassSource internal constructor() {
     @get:JvmSynthetic
     internal val hazeInput = HazeInput.Sources(hazeState)
     private val surfaces = mutableStateListOf<GlassSurface>()
+    private val fadingLayers by derivedStateOf(structuralEqualityPolicy()) {
+        if (surfaces.none { it.bounds != null && !it.properties.useWindowCoordinates }) {
+            return@derivedStateOf emptyMap()
+        }
+
+        GlassLayerOpacity.revision
+        var layersBySurface: MutableMap<GlassSurface, List<FadingGlassLayer>>? = null
+        for (surface in surfaces) {
+            val bounds = surface.bounds ?: continue
+            if (surface.properties.useWindowCoordinates) continue
+
+            val layers = GlassLayerOpacity.findFadingLayers(bounds.coordinates)
+            if (layers.isNotEmpty()) {
+                if (layersBySurface == null) {
+                    layersBySurface = mutableMapOf()
+                }
+                layersBySurface[surface] = layers
+            }
+        }
+        layersBySurface.orEmpty()
+    }
 
     @Composable
     internal fun cutout(
         shape: Shape,
         useWindowCoordinates: Boolean = false
+    ): Modifier = cutout(
+        shape = shape,
+        useWindowCoordinates = useWindowCoordinates,
+        selection = null
+    )
+
+    @Composable
+    private fun cutout(
+        shape: Shape,
+        useWindowCoordinates: Boolean,
+        selection: Selection?
     ): Modifier = SurfaceElement(
         source = this,
         shape = shape,
         density = LocalDensity.current,
         layoutDirection = LocalLayoutDirection.current,
-        useWindowCoordinates = useWindowCoordinates
+        useWindowCoordinates = useWindowCoordinates,
+        selection = selection
     )
+
+    internal class Selection(
+        private val source: GlassSource,
+        private val sourceKeys: Set<Any>?
+    ) {
+        private var ancestors by mutableStateOf(emptyList<SourceNode>())
+
+        val input = if (sourceKeys != null) {
+            source.hazeInput.copy(
+                selection = All.where { includes(it.key) },
+                retention = ClearWhenUnavailable
+            )
+        } else {
+            source.hazeInput
+        }
+
+        @Composable
+        fun cutout(shape: Shape): Modifier {
+            if (sourceKeys?.isEmpty() == true) {
+                return Modifier
+            }
+            return source.cutout(
+                shape = shape,
+                useWindowCoordinates = false,
+                selection = takeIf { sourceKeys != null }
+            )
+        }
+
+        fun trackAncestors(): Modifier =
+            if (sourceKeys.isNullOrEmpty()) Modifier else SelectionElement(this)
+
+        private fun updateAncestors(node: Modifier.Node) {
+            ancestors = buildList {
+                node.traverseAncestors(SourceNodeKey) { ancestor ->
+                    add(ancestor as SourceNode)
+                    true
+                }
+            }
+        }
+
+        fun includes(key: Any?): Boolean = key != null && sourceKeys?.contains(key) == true &&
+            ancestors.none {
+                it.registration.source === source && it.registration.key == key
+            }
+
+        private data class SelectionElement(
+            val selection: Selection
+        ) : ModifierNodeElement<SelectionNode>() {
+            override fun create() = SelectionNode(selection)
+
+            override fun update(node: SelectionNode) = node.update(selection)
+        }
+
+        private class SelectionNode(
+            private var selection: Selection
+        ) : Modifier.Node(),
+            LayoutAwareModifierNode {
+            override fun onAttach() = selection.updateAncestors(this)
+
+            override fun onPlaced(coordinates: LayoutCoordinates) = selection.updateAncestors(this)
+
+            override fun onDetach() {
+                selection.ancestors = emptyList()
+            }
+
+            fun update(selection: Selection) {
+                this.selection = selection
+                if (isAttached) selection.updateAncestors(this)
+            }
+        }
+    }
+
+    private object SourceNodeKey
 
     private class GlassSurface(
         properties: SurfaceElement
     ) {
         var properties by mutableStateOf(properties)
         var bounds by mutableStateOf<SurfaceBounds?>(null)
+
+        val opaqueCutout = Cutout(this, 1f)
     }
+
+    private data class Cutout(
+        val surface: GlassSurface,
+        val coverage: Float
+    )
 
     private data class SurfaceBounds(
         val coordinates: LayoutCoordinates,
@@ -196,12 +322,13 @@ class GlassSource internal constructor() {
     }
 
     internal data class SourceElement(
-        val source: GlassSource
+        val source: GlassSource,
+        val key: Any?
     ) : ModifierNodeElement<SourceNode>() {
-        override fun create() = SourceNode(source)
+        override fun create() = SourceNode(this)
 
         override fun update(node: SourceNode) {
-            node.source = source
+            node.registration = this
         }
 
         override fun InspectorInfo.inspectableProperties() {
@@ -210,17 +337,43 @@ class GlassSource internal constructor() {
     }
 
     internal class SourceNode(
-        var source: GlassSource
+        registration: SourceElement
     ) : Modifier.Node(),
         DrawModifierNode,
         LayoutAwareModifierNode,
         GlobalPositionAwareModifierNode,
+        TraversableNode,
         UnplacedAwareModifierNode {
-        private var coordinates: LayoutCoordinates? = null
+        override val traverseKey: Any = SourceNodeKey
+        var registration by mutableStateOf(registration)
+        private var coordinates by mutableStateOf<LayoutCoordinates?>(null)
+        private val cutouts by derivedStateOf(structuralEqualityPolicy()) {
+            val sourceCoordinates = coordinates ?: return@derivedStateOf emptyList()
+            val sourceKey = registration.key
+            val source = registration.source
+            val fadingLayers = source.fadingLayers
+            source.surfaces.mapNotNull { surface ->
+                val selection = surface.properties.selection
+                if (surface.bounds == null || selection?.includes(sourceKey) == false) {
+                    return@mapNotNull null
+                }
+
+                val coverage = fadingLayers[surface]?.cutoutCoverageOver(sourceCoordinates) ?: 1f
+                when (coverage) {
+                    1f -> surface.opaqueCutout
+                    0f -> null
+                    else -> Cutout(surface, coverage)
+                }
+            }
+        }
         private val transform = Matrix()
         private val shapePath = Path()
         private val visiblePath = Path()
-        private val clippedPath = Path()
+        private val fadingCutouts = mutableListOf<FadingCutout>()
+        private val sourcePaint = Paint()
+        private val cutoutPaint = Paint().apply {
+            blendMode = BlendMode.DstOut
+        }
 
         override fun onPlaced(coordinates: LayoutCoordinates) {
             this.coordinates = coordinates
@@ -242,8 +395,9 @@ class GlassSource internal constructor() {
 
         override fun ContentDrawScope.draw() {
             val sourceCoordinates = coordinates
+            val activeCutouts = cutouts
             if (sourceCoordinates == null || !sourceCoordinates.isAttached ||
-                source.surfaces.isEmpty()
+                activeCutouts.isEmpty()
             ) {
                 drawContent()
                 return
@@ -252,25 +406,87 @@ class GlassSource internal constructor() {
             val root = sourceCoordinates.findRootCoordinates()
             val canvas = drawContext.canvas
             canvas.withSave {
-                for (surface in source.surfaces) {
-                    val cutout = cutoutPath(
-                        surface = surface,
+                var fadingCount = 0
+                var fadingBounds = Rect.Zero
+                for (cutout in activeCutouts) {
+                    val fadingCutout = if (cutout.coverage < 1f) {
+                        fadingCutouts.getOrNull(fadingCount)
+                            ?: FadingCutout().also(fadingCutouts::add)
+                    } else {
+                        null
+                    }
+                    val path = fadingCutout?.path ?: shapePath
+                    val bounds = buildCutoutPath(
+                        surface = cutout.surface,
                         sourceCoordinates = sourceCoordinates,
                         sourceRoot = root,
-                        sourceSize = size
+                        sourceSize = size,
+                        path = path
                     ) ?: continue
-                    canvas.clipPath(cutout, ClipOp.Difference)
+
+                    if (fadingCutout == null) {
+                        canvas.clipPath(path, ClipOp.Difference)
+                        continue
+                    }
+
+                    fadingCutout.coverage = cutout.coverage
+                    fadingCount++
+                    fadingBounds = if (fadingBounds.isEmpty) {
+                        bounds
+                    } else {
+                        Rect(
+                            left = minOf(fadingBounds.left, bounds.left),
+                            top = minOf(fadingBounds.top, bounds.top),
+                            right = maxOf(fadingBounds.right, bounds.right),
+                            bottom = maxOf(fadingBounds.bottom, bounds.bottom)
+                        )
+                    }
                 }
-                drawContent()
+
+                if (fadingBounds.isEmpty) {
+                    drawContent()
+                } else {
+                    drawFadingCutouts(bounds = fadingBounds, count = fadingCount)
+                }
             }
         }
 
-        private fun cutoutPath(
+        private fun ContentDrawScope.drawFadingCutouts(
+            bounds: Rect,
+            count: Int
+        ) {
+            val canvas = drawContext.canvas
+            // Align the two draws at integer bounds to keep the split clear of the cutout.
+            val layerBounds = Rect(
+                left = floor(bounds.left),
+                top = floor(bounds.top),
+                right = ceil(bounds.right),
+                bottom = ceil(bounds.bottom)
+            )
+            canvas.withSave {
+                canvas.clipRect(layerBounds, ClipOp.Difference)
+                drawContent()
+            }
+            canvas.withSaveLayer(layerBounds, sourcePaint) {
+                canvas.clipRect(layerBounds)
+                drawContent()
+                for (index in 0 until count) {
+                    val cutout = fadingCutouts[index]
+                    cutoutPaint.alpha = cutout.coverage
+                    canvas.drawPath(cutout.path, cutoutPaint)
+                }
+            }
+        }
+
+        private fun buildCutoutPath(
             surface: GlassSurface,
             sourceCoordinates: LayoutCoordinates,
             sourceRoot: LayoutCoordinates,
-            sourceSize: Size
-        ): Path? {
+            sourceSize: Size,
+            path: Path
+        ): Rect? {
+            val properties = surface.properties
+
             val bounds = surface.bounds ?: return null
             val surfaceCoordinates = bounds.coordinates
             val surfaceSize = bounds.size
@@ -280,7 +496,6 @@ class GlassSource internal constructor() {
                 return null
             }
 
-            val properties = surface.properties
             val sameRoot = bounds.root === sourceRoot
             val visibleBounds = when {
                 sameRoot -> sourceCoordinates.localBoundingBoxOf(
@@ -318,24 +533,27 @@ class GlassSource internal constructor() {
                 layoutDirection = properties.layoutDirection,
                 density = properties.density
             )
-            shapePath.reset()
-            shapePath.addOutline(outline)
-            shapePath.transform(transform)
+            path.reset()
+            path.fillType = PathFillType.NonZero
+            path.addOutline(outline)
+            path.transform(transform)
 
-            val shapeBounds = shapePath.getBounds()
+            val shapeBounds = path.getBounds()
             if (shapeBounds.left >= visibleBounds.left &&
                 shapeBounds.top >= visibleBounds.top &&
                 shapeBounds.right <= visibleBounds.right &&
                 shapeBounds.bottom <= visibleBounds.bottom
             ) {
-                return shapePath
+                return shapeBounds
             }
 
             visiblePath.reset()
             visiblePath.addRect(visibleBounds)
-            clippedPath.reset()
-            clippedPath.op(shapePath, visiblePath, PathOperation.Intersect)
-            return clippedPath
+            return if (path.op(path, visiblePath, PathOperation.Intersect)) {
+                path.getBounds()
+            } else {
+                null
+            }
         }
 
         // Same-canvas popups have their own layout roots but use the same window coordinates.
@@ -356,6 +574,11 @@ class GlassSource internal constructor() {
             return true
         }
 
+        private class FadingCutout {
+            val path = Path()
+            var coverage = 0f
+        }
+
         private companion object {
             // Keep source pixels under the antialiased edge, measured in root pixels.
             @Suppress("ConstPropertyName")
@@ -368,7 +591,8 @@ class GlassSource internal constructor() {
         val shape: Shape,
         val density: Density,
         val layoutDirection: LayoutDirection,
-        val useWindowCoordinates: Boolean = false
+        val useWindowCoordinates: Boolean,
+        val selection: Selection?
     ) : ModifierNodeElement<SurfaceNode>() {
         override fun create() = SurfaceNode(this)
 
@@ -388,13 +612,20 @@ class GlassSource internal constructor() {
         GlobalPositionAwareModifierNode,
         UnplacedAwareModifierNode {
         private val surface = GlassSurface(properties)
+        private var layerObserver: AutoCloseable? = null
 
         override fun onAttach() {
             surface.properties.source.surfaces.add(surface)
         }
 
         override fun onPlaced(coordinates: LayoutCoordinates) {
-            surface.bounds = SurfaceBounds(coordinates)
+            if (layerObserver == null && !surface.properties.useWindowCoordinates) {
+                layerObserver = GlassLayerOpacity.observe()
+            }
+            // Global positioning refreshes the transformed bounds after placement.
+            if (surface.bounds?.coordinates !== coordinates) {
+                surface.bounds = SurfaceBounds(coordinates)
+            }
         }
 
         override fun onGloballyPositioned(coordinates: LayoutCoordinates) {
@@ -402,11 +633,13 @@ class GlassSource internal constructor() {
         }
 
         override fun onUnplaced() {
+            layerObserver?.close()
+            layerObserver = null
             surface.bounds = null
         }
 
         override fun onDetach() {
-            surface.bounds = null
+            onUnplaced()
             surface.properties.source.surfaces.remove(surface)
         }
 
@@ -431,19 +664,37 @@ fun rememberGlassSource(): GlassSource = remember { GlassSource() }
 /**
  * Marks this content as input for glass surfaces using the same [source].
  *
- * One [source] can mark multiple composables, each captured separately. A [glass] surface outside
- * those source nodes selects all of them. When nested within a source, it selects only sources
- * with a lower source z-index; this API currently uses the same default z-index for every source.
- * Place the source content behind its glass surfaces so automatic clipping matches the intended
- * stacking order.
+ * One [source] can mark multiple composables, each captured separately. Place the source content
+ * behind its glass surfaces so automatic clipping matches the intended stacking order.
+ *
+ * @param key An optional layer identifier for explicit selection by [glass]. Non-null keys must be
+ * stable and unique among active layers of this [source]. A null key leaves the layer unnamed.
  */
 @UnstableSaltUiApi
-fun Modifier.glassSource(source: GlassSource): Modifier = this
+fun Modifier.glassSource(
+    source: GlassSource,
+    key: Any? = null
+): Modifier = this
     // Keep the clip outside hazeSource so Haze records the complete content.
-    .then(GlassSource.SourceElement(source))
+    .then(
+        GlassSource.SourceElement(
+            source = source,
+            key = key
+        )
+    )
     // Isolate clip-only redraws from unchanged source content.
     .graphicsLayer()
-    .hazeSource(source.hazeState)
+    .hazeSource(
+        state = source.hazeState,
+        key = key
+    )
+
+@Deprecated("Binary compatibility with the unkeyed overload", level = DeprecationLevel.HIDDEN)
+@UnstableSaltUiApi
+fun Modifier.glassSource(source: GlassSource): Modifier = glassSource(
+    source = source,
+    key = null
+)
 
 /**
  * Draws glass using content explicitly marked with [glassSource] and the same [source].
@@ -457,10 +708,14 @@ fun Modifier.glassSource(source: GlassSource): Modifier = this
  * available as input to the effect. Solid surfaces do not capture or clip source content.
  * Sources should be drawn before their glass surfaces.
  * On Android below 13, transparent glass leaves the original source visible during fallback.
- * The cutout does not follow transparency or non-rectangular clipping applied by an ancestor.
+ * The cutout fades with graphics layer opacity driven by Compose state.
+ * Ancestor clipping is tracked using rectangular layout bounds.
  * The content and source cutout follow the pressed material as it scales and moves, while the
  * content's hit region remains at its original layout position. The press ends when another
  * gesture, such as scrolling, claims the pointer movement.
+ *
+ * @param sourceKeys Keys of the layers to sample and clip. Selection ignores key order and skips
+ * layers that contain this surface. An empty set selects no layers. Null uses automatic selection.
  */
 @UnstableSaltUiApi
 @Composable
@@ -468,94 +723,136 @@ fun Modifier.glass(
     source: GlassSource,
     shape: RoundedCornerShape = CircleShape,
     effect: GlassEffect = SaltTheme.glassEffect,
+    interactionState: GlassInteractionState = rememberGlassInteractionState(),
+    sourceKeys: Set<Any>? = null
+): Modifier = this
+    .glassPointerInput(interactionState)
+    // Move the material and its automatically tracked source cutout together.
+    .graphicsLayer {
+        scaleX = interactionState.scale
+        scaleY = interactionState.scale
+        transformOrigin = interactionState.transformOrigin(size)
+        translationX = interactionState.translation.x
+        translationY = interactionState.translation.y
+    }
+    // The glass cutout, when needed, observes the material's transform here.
+    .glassMaterial(
+        source = source,
+        sourceKeys = sourceKeys,
+        shape = shape,
+        effect = effect,
+        interactionState = interactionState
+    )
+    // Undo the material transform for the content's hit testing.
+    .graphicsLayer {
+        val inverseScale = 1f / interactionState.scale
+        scaleX = inverseScale
+        scaleY = inverseScale
+        transformOrigin = interactionState.transformOrigin(size)
+        translationX = -interactionState.translation.x * inverseScale
+        translationY = -interactionState.translation.y * inverseScale
+    }
+    // Reapply the transform to content drawing without changing its hit region.
+    .drawGlassInteraction(interactionState)
+
+@Deprecated("Binary compatibility with the unkeyed overload", level = DeprecationLevel.HIDDEN)
+@UnstableSaltUiApi
+@Composable
+fun Modifier.glass(
+    source: GlassSource,
+    shape: RoundedCornerShape = CircleShape,
+    effect: GlassEffect = SaltTheme.glassEffect,
     interactionState: GlassInteractionState = rememberGlassInteractionState()
+): Modifier = glass(
+    source = source,
+    shape = shape,
+    effect = effect,
+    interactionState = interactionState,
+    sourceKeys = null
+)
+
+@OptIn(UnstableSaltUiApi::class)
+@Composable
+private fun Modifier.glassMaterial(
+    source: GlassSource,
+    sourceKeys: Set<Any>?,
+    shape: RoundedCornerShape,
+    effect: GlassEffect,
+    interactionState: GlassInteractionState
 ): Modifier {
     val isDarkTheme = SaltTheme.configs.isDarkTheme
-    return this
-        .glassPointerInput(interactionState)
-        // Move the material and its automatically tracked source cutout together.
-        .graphicsLayer {
-            scaleX = interactionState.scale
-            scaleY = interactionState.scale
-            transformOrigin = interactionState.transformOrigin(size)
-            translationX = interactionState.translation.x
-            translationY = interactionState.translation.y
+    val keys = sourceKeys?.toSet()
+    return composed {
+        val selection = remember(source, keys) {
+            GlassSource.Selection(
+                source = source,
+                sourceKeys = keys
+            )
         }
-        // The glass cutout, when needed, observes the material's transform here.
-        .then(
-            when (effect) {
-                is GlassEffect.Solid -> {
-                    val backgroundColor = if (isDarkTheme) effect.darkColor else effect.lightColor
-                    Modifier.background(
-                        color = backgroundColor,
+        when (effect) {
+            is GlassEffect.Solid -> background(
+                color = if (isDarkTheme) effect.darkColor else effect.lightColor,
+                shape = shape
+            )
+            GlassEffect.Blur -> {
+                val os = OS.current
+                if (os is OS.Android && os.versionSdk < OS.Android.ANDROID_12) {
+                    background(
+                        color = SaltTheme.colors.subBackground,
                         shape = shape
                     )
-                }
-                GlassEffect.Blur -> {
-                    val os = OS.current
-                    if (os is OS.Android && os.versionSdk < OS.Android.ANDROID_12) {
-                        Modifier.background(
-                            color = SaltTheme.colors.subBackground,
-                            shape = shape
+                } else {
+                    val style = remember(isDarkTheme) { GlassStyles.blur(isDarkTheme) }
+                    then(selection.trackAncestors())
+                        .then(selection.cutout(shape))
+                        .clip(shape)
+                        .hazeBlur(
+                            input = selection.input,
+                            style = style
                         )
-                    } else {
-                        val style = remember(isDarkTheme) { GlassStyles.blur(isDarkTheme) }
-                        Modifier
-                            .then(source.cutout(shape))
-                            .clip(shape)
-                            .hazeBlur(input = source.hazeInput, style = style)
-                    }
-                }
-                is GlassEffect.Regular -> {
-                    val backgroundColor = if (isDarkTheme) effect.darkColor else effect.lightColor
-                    val tintColor = if (isDarkTheme) effect.darkTint else effect.lightTint
-                    val glassStyle = remember(shape, backgroundColor, tintColor, isDarkTheme) {
-                        GlassStyles.regularSurface(isDarkTheme).then {
-                            shape(shape)
-                            backgroundColor(backgroundColor)
-                            tint(tintColor)
-                        }
-                    }
-                    Modifier
-                        .refractiveGlass(
-                            source = source,
-                            shape = shape,
-                            glassStyle = glassStyle,
-                            isBackgroundFullyTransparent = backgroundColor.alpha == 0f,
-                            interactionState = interactionState,
-                            isDarkTheme = isDarkTheme
-                        )
-                        .glassRimHighlight(shape, isDarkTheme)
-                }
-                GlassEffect.Transparent -> {
-                    val glassStyle = remember(shape, isDarkTheme) {
-                        GlassStyles.transparent(isDarkTheme).then {
-                            shape(shape)
-                            backgroundColor(Color.Transparent)
-                        }
-                    }
-                    Modifier.refractiveGlass(
-                        source = source,
-                        shape = shape,
-                        glassStyle = glassStyle,
-                        isBackgroundFullyTransparent = true,
-                        interactionState = interactionState,
-                        isDarkTheme = isDarkTheme
-                    )
                 }
             }
-        )
-        // Undo the material transform for the content's hit testing.
-        .graphicsLayer {
-            val inverseScale = 1f / interactionState.scale
-            scaleX = inverseScale
-            scaleY = inverseScale
-            transformOrigin = interactionState.transformOrigin(size)
-            translationX = -interactionState.translation.x * inverseScale
-            translationY = -interactionState.translation.y * inverseScale
+            is GlassEffect.Regular -> {
+                val backgroundColor = if (isDarkTheme) effect.darkColor else effect.lightColor
+                val tintColor = if (isDarkTheme) effect.darkTint else effect.lightTint
+                val glassStyle = remember(shape, backgroundColor, tintColor, isDarkTheme) {
+                    GlassStyles.regularSurface(isDarkTheme).then {
+                        shape(shape)
+                        backgroundColor(backgroundColor)
+                        tint(tintColor)
+                    }
+                }
+                refractiveGlass(
+                    selection = selection,
+                    shape = shape,
+                    glassStyle = glassStyle,
+                    isBackgroundFullyTransparent = backgroundColor.alpha == 0f,
+                    interactionState = interactionState,
+                    isDarkTheme = isDarkTheme
+                )
+                    .glassRimHighlight(
+                        shape = shape,
+                        isDarkTheme = isDarkTheme
+                    )
+            }
+            GlassEffect.Transparent -> {
+                val glassStyle = remember(shape, isDarkTheme) {
+                    GlassStyles.transparent(isDarkTheme).then {
+                        shape(shape)
+                        backgroundColor(Color.Transparent)
+                    }
+                }
+                refractiveGlass(
+                    selection = selection,
+                    shape = shape,
+                    glassStyle = glassStyle,
+                    isBackgroundFullyTransparent = true,
+                    interactionState = interactionState,
+                    isDarkTheme = isDarkTheme
+                )
+            }
         }
-        // Reapply the transform to content drawing without changing its hit region.
-        .drawGlassInteraction(interactionState)
+    }
 }
 
 // Top and bottom rim bands from Haze's Apache-2.0 fallback renderer.
@@ -589,7 +886,7 @@ private fun Modifier.glassRimHighlight(
 @OptIn(UnstableSaltUiApi::class)
 @Composable
 private fun Modifier.refractiveGlass(
-    source: GlassSource,
+    selection: GlassSource.Selection,
     shape: RoundedCornerShape,
     glassStyle: GlassStyle,
     isBackgroundFullyTransparent: Boolean,
@@ -602,11 +899,12 @@ private fun Modifier.refractiveGlass(
         os is OS.Android &&
         os.versionSdk < OS.Android.ANDROID_13
     return this
+        .then(selection.trackAncestors())
         .thenIf(!keepSourceVisible) {
-            then(source.cutout(shape))
+            then(selection.cutout(shape))
         }
         // Inherit Haze's performance mode; full resolution can cost more to render.
-        .hazeGlass(input = source.hazeInput, style = glassStyle)
+        .hazeGlass(input = selection.input, style = glassStyle)
         .glassInteractionLight(
             interaction = interactionState,
             shape = shape,

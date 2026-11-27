@@ -37,9 +37,17 @@ import com.moriafly.salt.ui.lazy.layout.UnspecifiedNestedPrefetchCount
  * from the [onScroll] and [onVisibleItemsUpdated] callbacks. If any of the returned PrefetchHandles
  * no longer need to be prefetched, use [LazyLayoutPrefetchState.PrefetchHandle.cancel] to cancel
  * the request.
+ *
+ * @sample androidx.compose.foundation.samples.LazyGridPrefetchStrategyMigrationSample
  */
+@Deprecated(
+    "LazyGridPrefetchStrategy is deprecated in favor of LazyLayoutCacheWindow. " +
+        "LazyLayoutCacheWindow provides a declarative, viewport-based prefetching window passed " +
+        "directly to LazyVerticalGrid or LazyHorizontalGrid."
+)
 @ExperimentalFoundationApi
 interface LazyGridPrefetchStrategy {
+
     /**
      * A [PrefetchScheduler] implementation which will be used to execute prefetch requests for this
      * strategy implementation. If null, the default [PrefetchScheduler] for the platform will be
@@ -92,8 +100,13 @@ interface LazyGridPrefetchStrategy {
 }
 
 /** Scope for callbacks in [LazyGridPrefetchStrategy] which allows prefetches to be requested. */
+@Deprecated(
+    "LazyGridPrefetchScope is deprecated alongside LazyGridPrefetchStrategy. Prefetching " +
+        "behavior should be configured using LazyLayoutCacheWindow."
+)
 @ExperimentalFoundationApi
 interface LazyGridPrefetchScope {
+
     /**
      * Schedules a prefetch for the given line index. Requests are executed in the order they're
      * requested. If a requested prefetch is no longer necessary (for example, due to changing
@@ -139,6 +152,10 @@ interface LazyGridPrefetchScope {
  *   is enabled, this value will be used as the initial count and the strategy will adapt the count
  *   automatically.
  */
+@Deprecated(
+    "LazyGridPrefetchStrategy is deprecated. Prefetching behavior should be configured using " +
+        "LazyLayoutCacheWindow on LazyVerticalGrid or LazyHorizontalGrid."
+)
 @ExperimentalFoundationApi
 fun LazyGridPrefetchStrategy(nestedPrefetchItemCount: Int = 2): LazyGridPrefetchStrategy =
     DefaultLazyGridPrefetchStrategy(nestedPrefetchItemCount)
@@ -149,9 +166,10 @@ fun LazyGridPrefetchStrategy(nestedPrefetchItemCount: Int = 2): LazyGridPrefetch
  */
 @OptIn(ExperimentalFoundationApi::class)
 @Stable
-private class DefaultLazyGridPrefetchStrategy(
+internal class DefaultLazyGridPrefetchStrategy(
     private val initialNestedPrefetchItemCount: Int = 2
 ) : LazyGridPrefetchStrategy {
+
     /**
      * The index scheduled to be prefetched (or the last prefetched index if the prefetch is done).
      */
@@ -180,7 +198,7 @@ private class DefaultLazyGridPrefetchStrategy(
             if (closestNextItemToPrefetch in 0 until layoutInfo.totalItemsCount) {
                 if (
                     lineToPrefetch != this@DefaultLazyGridPrefetchStrategy.lineToPrefetch &&
-                    lineToPrefetch >= 0
+                        lineToPrefetch >= 0
                 ) {
                     if (wasScrollingForward != scrollingForward) {
                         // the scrolling direction has been changed which means the last prefetched
@@ -227,9 +245,9 @@ private class DefaultLazyGridPrefetchStrategy(
         // total item count changed, re-trigger prefetch.
         if (
             previousPassItemCount != UnsetItemCount && // we already have info about the item count
-            previousPassDelta != 0.0f && // and scroll direction
-            previousPassItemCount != currentPassItemCount && // and the item count changed
-            layoutInfo.visibleItemsInfo.isNotEmpty()
+                previousPassDelta != 0.0f && // and scroll direction
+                previousPassItemCount != currentPassItemCount && // and the item count changed
+                layoutInfo.visibleItemsInfo.isNotEmpty()
         ) {
             val lineToPrefetch = layoutInfo.calculateLineIndexToPrefetch(previousPassDelta < 0)
             val closestNextItemToPrefetch: Int =
@@ -237,7 +255,7 @@ private class DefaultLazyGridPrefetchStrategy(
             if (closestNextItemToPrefetch in 0 until layoutInfo.totalItemsCount) {
                 if (
                     lineToPrefetch != this@DefaultLazyGridPrefetchStrategy.lineToPrefetch &&
-                    lineToPrefetch >= 0
+                        lineToPrefetch >= 0
                 ) {
                     this@DefaultLazyGridPrefetchStrategy.lineToPrefetch = lineToPrefetch
                     currentLinePrefetchHandles.clear()
@@ -274,8 +292,8 @@ private class DefaultLazyGridPrefetchStrategy(
         }
     }
 
-    private fun LazyGridLayoutInfo.calculateLineIndexToPrefetch(scrollingForward: Boolean): Int =
-        if (scrollingForward) {
+    private fun LazyGridLayoutInfo.calculateLineIndexToPrefetch(scrollingForward: Boolean): Int {
+        return if (scrollingForward) {
             visibleItemsInfo.last().let {
                 if (orientation == Orientation.Vertical) it.row else it.column
             } + 1
@@ -284,13 +302,16 @@ private class DefaultLazyGridPrefetchStrategy(
                 if (orientation == Orientation.Vertical) it.row else it.column
             } - 1
         }
+    }
 
     private fun LazyGridLayoutInfo.calculateClosestNextItemToPrefetch(
         scrollingForward: Boolean
-    ): Int = if (scrollingForward) {
-        visibleItemsInfo.last().index + 1
-    } else {
-        visibleItemsInfo.first().index - 1
+    ): Int {
+        return if (scrollingForward) {
+            visibleItemsInfo.last().index + 1
+        } else {
+            visibleItemsInfo.first().index - 1
+        }
     }
 
     private fun resetPrefetchState() {
@@ -304,8 +325,13 @@ private class DefaultLazyGridPrefetchStrategy(
  * A scope for [LazyGridPrefetchScope.scheduleLinePrefetch] callbacks. The scope provides additional
  * information about a prefetched item.
  */
+@Deprecated(
+    "LazyGridPrefetchResultScope is deprecated alongside LazyGridPrefetchStrategy. " +
+        "Prefetching behavior should be configured using LazyLayoutCacheWindow."
+)
 @ExperimentalFoundationApi
 sealed interface LazyGridPrefetchResultScope {
+
     /** The number of items in this prefetched line. */
     val lineItemCount: Int
 
@@ -331,5 +357,4 @@ internal class LazyGridPrefetchResultScopeImpl(
     override fun getMainAxisSize(itemIndexInLine: Int): Int = mainAxisSizes[itemIndexInLine]
 }
 
-@Suppress("ktlint:standard:property-naming")
 private const val UnsetItemCount = -1

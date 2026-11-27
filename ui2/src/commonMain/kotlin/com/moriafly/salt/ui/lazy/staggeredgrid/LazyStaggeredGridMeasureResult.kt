@@ -25,8 +25,8 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.util.fastSumBy
 import com.moriafly.salt.ui.lazy.layout.MutableIntervalList
-import kotlinx.coroutines.CoroutineScope
 import kotlin.coroutines.EmptyCoroutineContext
+import kotlinx.coroutines.CoroutineScope
 
 /**
  * Information about layout state of individual item in lazy staggered grid.
@@ -64,7 +64,6 @@ sealed interface LazyStaggeredGridItemInfo {
  * [LazyStaggeredGridState.layoutInfo].
  */
 // todo(b/182882362): expose more information about layout state
-@Suppress("ktlint:standard:no-consecutive-comments")
 sealed interface LazyStaggeredGridLayoutInfo {
     /** Orientation of the staggered grid. */
     val orientation: Orientation
@@ -105,8 +104,7 @@ sealed interface LazyStaggeredGridLayoutInfo {
     val mainAxisItemSpacing: Int
 
     /** Whether the direction of scrolling and layout is reversed. */
-    @get:Suppress("GetterSetterNames")
-    val reverseLayout: Boolean
+    @get:Suppress("GetterSetterNames") public val reverseLayout: Boolean
 }
 
 internal fun LazyStaggeredGridLayoutInfo.findVisibleItem(
@@ -138,6 +136,7 @@ internal class LazyStaggeredGridMeasureResult(
     val slots: LazyStaggeredGridSlots,
     val spanProvider: LazyStaggeredGridSpanProvider,
     val density: Density,
+    val cacheWindowLogic: LazyStaggeredGridCacheWindowLogic?,
     override val totalItemsCount: Int,
     override val visibleItemsInfo: List<LazyStaggeredGridMeasuredItem>,
     override val viewportSize: IntSize,
@@ -148,8 +147,11 @@ internal class LazyStaggeredGridMeasureResult(
     override val mainAxisItemSpacing: Int,
     val coroutineScope: CoroutineScope,
     override val reverseLayout: Boolean,
-) : LazyStaggeredGridLayoutInfo,
-    MeasureResult by measureResult {
+) : LazyStaggeredGridLayoutInfo, MeasureResult by measureResult {
+
+    val laneCount: Int
+        get() = slots.sizes.size
+
     val canScrollBackward
         // only scroll backward if the first item is not on screen or fully visible
         get() = !(firstVisibleItemIndices[0] == 0 && firstVisibleItemScrollOffsets[0] <= 0)
@@ -165,8 +167,8 @@ internal class LazyStaggeredGridMeasureResult(
      * [delta] and return null.
      *
      * @return new layout info if we can safely apply a passed scroll [delta] to this layout info.
-     *   If If new layout info is returned, only the placement phase is needed to apply new offsets.
-     *   If null is returned, it means we have to rerun the full measure phase to apply the [delta].
+     *   If new layout info is returned, only the placement phase is needed to apply new offsets. If
+     *   null is returned, it means we have to rerun the full measure phase to apply the [delta].
      */
     fun copyWithScrollDeltaWithoutRemeasure(
         delta: Int,
@@ -174,20 +176,20 @@ internal class LazyStaggeredGridMeasureResult(
     ): LazyStaggeredGridMeasureResult? {
         if (
             remeasureNeeded ||
-            visibleItemsInfo.isEmpty() ||
-            firstVisibleItemIndices.isEmpty() ||
-            firstVisibleItemScrollOffsets.isEmpty()
+                visibleItemsInfo.isEmpty() ||
+                firstVisibleItemIndices.isEmpty() ||
+                firstVisibleItemScrollOffsets.isEmpty()
         ) {
             return null
         }
         val mainAxisMax = viewportEndOffset - afterContentPadding
         visibleItemsInfo.fastForEach {
-            // non scrollable items require special handling.
+            // non-scrollable items require special handling.
             if (
                 it.nonScrollableItem ||
-                // applying delta will make this item to cross the 0th pixel, this means
-                // that firstVisibleItemIndices will change. we require a remeasure for it.
-                it.mainAxisOffset <= 0 != it.mainAxisOffset + delta <= 0
+                    // applying delta will make this item to cross the 0th pixel, this means
+                    // that firstVisibleItemIndices will change. we require a remeasure for it.
+                    it.mainAxisOffset <= 0 != it.mainAxisOffset + delta <= 0
             ) {
                 return null
             }
@@ -242,6 +244,7 @@ internal class LazyStaggeredGridMeasureResult(
             mainAxisItemSpacing = mainAxisItemSpacing,
             coroutineScope = coroutineScope,
             reverseLayout = reverseLayout,
+            cacheWindowLogic = cacheWindowLogic,
         )
     }
 }
@@ -257,7 +260,6 @@ internal val EmptyLazyStaggeredGridLayoutInfo =
             object : MeasureResult {
                 override val width: Int = 0
                 override val height: Int = 0
-
                 @Suppress("PrimitiveInCollection")
                 override val alignmentLines: Map<AlignmentLine, Int> = emptyMap()
 
@@ -280,19 +282,19 @@ internal val EmptyLazyStaggeredGridLayoutInfo =
         scrollBackAmount = 0f,
         coroutineScope = CoroutineScope(EmptyCoroutineContext),
         reverseLayout = false,
+        cacheWindowLogic = null,
     )
 
 internal fun LazyStaggeredGridLayoutInfo.visibleItemsAverageSize(): Int {
     val visibleItems = visibleItemsInfo
     if (visibleItems.isEmpty()) return 0
-    val itemSizeSum =
-        visibleItems.fastSumBy {
-            if (orientation == Orientation.Vertical) {
-                it.size.height
-            } else {
-                it.size.width
-            }
+    val itemSizeSum = visibleItems.fastSumBy {
+        if (orientation == Orientation.Vertical) {
+            it.size.height
+        } else {
+            it.size.width
         }
+    }
     return itemSizeSum / visibleItems.size + mainAxisItemSpacing
 }
 

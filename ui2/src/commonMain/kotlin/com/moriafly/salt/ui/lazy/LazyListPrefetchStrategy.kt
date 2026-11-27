@@ -33,9 +33,17 @@ import com.moriafly.salt.ui.lazy.layout.UnspecifiedNestedPrefetchCount
  * from the [onScroll] and [onVisibleItemsUpdated] callbacks. If any of the returned PrefetchHandles
  * no longer need to be prefetched, use [LazyLayoutPrefetchState.PrefetchHandle.cancel] to cancel
  * the request.
+ *
+ * @sample androidx.compose.foundation.samples.LazyListPrefetchStrategyMigrationSample
  */
+@Deprecated(
+    "LazyListPrefetchStrategy is deprecated in favor of LazyLayoutCacheWindow. " +
+        "LazyLayoutCacheWindow provides a declarative, viewport-based prefetching window passed " +
+        "directly to LazyColumn or LazyRow."
+)
 @ExperimentalFoundationApi
 interface LazyListPrefetchStrategy {
+
     /**
      * A [PrefetchScheduler] implementation which will be used to execute prefetch requests for this
      * strategy implementation. If null, the default [PrefetchScheduler] for the platform will be
@@ -88,8 +96,13 @@ interface LazyListPrefetchStrategy {
 }
 
 /** Scope for callbacks in [LazyListPrefetchStrategy] which allows prefetches to be requested. */
+@Deprecated(
+    "LazyListPrefetchScope is deprecated alongside LazyListPrefetchStrategy. Prefetching " +
+        "behavior should be configured using LazyLayoutCacheWindow."
+)
 @ExperimentalFoundationApi
 interface LazyListPrefetchScope {
+
     /**
      * Schedules a prefetch for the given index. Requests are executed in the order they're
      * requested. If a requested prefetch is no longer necessary (for example, due to changing
@@ -122,6 +135,10 @@ interface LazyListPrefetchScope {
  *   is enabled, this value will be used as the initial count and the strategy will adapt the count
  *   automatically.
  */
+@Deprecated(
+    "LazyListPrefetchStrategy is deprecated. Prefetching behavior should be configured using " +
+        "LazyLayoutCacheWindow on LazyColumn or LazyRow."
+)
 @ExperimentalFoundationApi
 fun LazyListPrefetchStrategy(nestedPrefetchItemCount: Int = 2): LazyListPrefetchStrategy =
     DefaultLazyListPrefetchStrategy(nestedPrefetchItemCount)
@@ -132,9 +149,10 @@ fun LazyListPrefetchStrategy(nestedPrefetchItemCount: Int = 2): LazyListPrefetch
  */
 @OptIn(ExperimentalFoundationApi::class)
 @Stable
-private class DefaultLazyListPrefetchStrategy(
+internal class DefaultLazyListPrefetchStrategy(
     private val initialNestedPrefetchItemCount: Int = 2
 ) : LazyListPrefetchStrategy {
+
     /**
      * The index scheduled to be prefetched (or the last prefetched index if the prefetch is done).
      */
@@ -192,15 +210,16 @@ private class DefaultLazyListPrefetchStrategy(
     }
 
     override fun LazyListPrefetchScope.onVisibleItemsUpdated(layoutInfo: LazyListLayoutInfo) {
+
         layoutInfo.evaluatePrefetchForCancellation(indexToPrefetch, wasScrollingForward)
 
         val currentPassItemCount = layoutInfo.totalItemsCount
         // total item count changed, re-trigger prefetch.
         if (
             previousPassItemCount != UnsetItemCount && // we already have info about the item count
-            previousPassDelta != 0.0f && // and scroll direction
-            previousPassItemCount != currentPassItemCount && // and the item count changed
-            layoutInfo.visibleItemsInfo.isNotEmpty()
+                previousPassDelta != 0.0f && // and scroll direction
+                previousPassItemCount != currentPassItemCount && // and the item count changed
+                layoutInfo.visibleItemsInfo.isNotEmpty()
         ) {
             val indexToPrefetch = layoutInfo.calculateIndexToPrefetch(previousPassDelta < 0)
             if (indexToPrefetch in 0 until currentPassItemCount) {
@@ -230,12 +249,13 @@ private class DefaultLazyListPrefetchStrategy(
         currentPrefetchHandle = null
     }
 
-    private fun LazyListLayoutInfo.calculateIndexToPrefetch(scrollingForward: Boolean): Int =
-        if (scrollingForward) {
+    private fun LazyListLayoutInfo.calculateIndexToPrefetch(scrollingForward: Boolean): Int {
+        return if (scrollingForward) {
             visibleItemsInfo.last().index + 1
         } else {
             visibleItemsInfo.first().index - 1
         }
+    }
 
     private fun LazyListLayoutInfo.evaluatePrefetchForCancellation(
         currentPrefetchingIndex: Int,
@@ -254,8 +274,13 @@ private class DefaultLazyListPrefetchStrategy(
  * A scope for [LazyListPrefetchScope.schedulePrefetch] callbacks. The scope provides additional
  * information about a prefetched item.
  */
+@Deprecated(
+    "LazyListPrefetchResultScope is deprecated alongside LazyListPrefetchStrategy. " +
+        "Prefetching behavior should be configured using LazyLayoutCacheWindow."
+)
 @ExperimentalFoundationApi
 sealed interface LazyListPrefetchResultScope {
+
     /** The index of the prefetched item */
     val index: Int
 
@@ -269,5 +294,4 @@ internal class LazyListPrefetchResultScopeImpl(
     override val mainAxisSize: Int,
 ) : LazyListPrefetchResultScope
 
-@Suppress("ktlint:standard:property-naming")
 private const val UnsetItemCount = -1

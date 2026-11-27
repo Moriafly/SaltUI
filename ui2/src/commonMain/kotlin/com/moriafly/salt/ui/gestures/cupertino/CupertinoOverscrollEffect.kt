@@ -21,9 +21,11 @@
 package com.moriafly.salt.ui.gestures.cupertino
 
 import androidx.compose.animation.core.AnimationState
+import androidx.compose.animation.core.Easing
 import androidx.compose.animation.core.VectorConverter
 import androidx.compose.animation.core.animateTo
 import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.OverscrollEffect
 import androidx.compose.foundation.OverscrollFactory
 import androidx.compose.foundation.layout.offset
@@ -71,7 +73,9 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.isActive
 import kotlin.math.abs
+import kotlin.math.exp
 import kotlin.math.sign
+import kotlin.math.sqrt
 
 /**
  * A factory for creating [CupertinoOverscrollEffect] instances.
@@ -499,10 +503,22 @@ internal class CupertinoOverscrollEffect(
 
         val spec = when (reason) {
             CupertinoSpringAnimationReason.FLING_FROM_OVERSCROLL -> {
-                spring(
-                    stiffness = 300f,
-                    visibilityThreshold = visibilityThreshold
-                )
+                val overscrollDp = abs(initialValue) / density
+                val velocityDp = abs(initialVelocity) / density
+                val springVelocityThreshold = sqrt(FLING_FROM_OVERSCROLL_STIFFNESS) * overscrollDp
+                if (velocityDp >= springVelocityThreshold) {
+                    spring(
+                        stiffness = FLING_FROM_OVERSCROLL_STIFFNESS,
+                        visibilityThreshold = visibilityThreshold
+                    )
+                } else {
+                    tween(
+                        durationMillis = easeOutReturnDurationMillis(overscrollDp),
+                        easing = Easing { fraction ->
+                            1f - exp(-EASE_OUT_RETURN_DECAY_RATE * fraction)
+                        }
+                    )
+                }
             }
 
             CupertinoSpringAnimationReason.POSSIBLE_SPRING_IN_THE_END -> {
@@ -565,6 +581,12 @@ internal class CupertinoOverscrollEffect(
         ) * density
     }
 
+    private fun easeOutReturnDurationMillis(overscrollDp: Float): Int {
+        val fraction = (overscrollDp / EASE_OUT_RETURN_FULL_DURATION_DP).coerceIn(0f, 1f)
+        val durationRange = EASE_OUT_RETURN_MAX_DURATION_MILLIS - EASE_OUT_RETURN_MIN_DURATION_MILLIS
+        return (EASE_OUT_RETURN_MIN_DURATION_MILLIS + fraction * durationRange).toInt()
+    }
+
     /*
      * Maps raw delta offset [value] on an axis within scroll container with [dimension]
      * to actual visible offset
@@ -575,6 +597,11 @@ internal class CupertinoOverscrollEffect(
 
     companion object Companion {
         private const val RUBBER_BAND_COEFFICIENT = 0.55f
+        private const val FLING_FROM_OVERSCROLL_STIFFNESS = 300f
+        private const val EASE_OUT_RETURN_FULL_DURATION_DP = 120f
+        private const val EASE_OUT_RETURN_MIN_DURATION_MILLIS = 200f
+        private const val EASE_OUT_RETURN_MAX_DURATION_MILLIS = 400f
+        private const val EASE_OUT_RETURN_DECAY_RATE = 6.625f
     }
 }
 
