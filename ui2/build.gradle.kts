@@ -175,6 +175,7 @@ kotlin {
         commonMain.dependencies {
             api(project(":core"))
             api(project(":salt-adaptive-window"))
+            implementation(libs.atomicfu)
             implementation(libs.compose.runtime)
             implementation(libs.compose.foundation)
             implementation(libs.compose.ui)

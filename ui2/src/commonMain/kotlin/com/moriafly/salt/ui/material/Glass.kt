@@ -162,18 +162,17 @@ class GlassSource internal constructor() {
     internal val hazeInput = HazeInput.Sources(hazeState)
     private val surfaces = mutableStateListOf<GlassSurface>()
     private val fadingLayers by derivedStateOf(structuralEqualityPolicy()) {
-        val opacity = glassLayerOpacity ?: return@derivedStateOf emptyMap()
         if (surfaces.none { it.bounds != null && !it.properties.useWindowCoordinates }) {
             return@derivedStateOf emptyMap()
         }
 
-        opacity.revision.intValue
+        GlassLayerOpacity.revision.intValue
         var layersBySurface: MutableMap<GlassSurface, List<FadingGlassLayer>>? = null
         for (surface in surfaces) {
             val bounds = surface.bounds ?: continue
             if (surface.properties.useWindowCoordinates) continue
 
-            val layers = opacity.fadingLayers(bounds.coordinates)
+            val layers = GlassLayerOpacity.findFadingLayers(bounds.coordinates)
             if (layers.isNotEmpty()) {
                 if (layersBySurface == null) {
                     layersBySurface = mutableMapOf()
@@ -621,7 +620,7 @@ class GlassSource internal constructor() {
 
         override fun onPlaced(coordinates: LayoutCoordinates) {
             if (layerObserver == null && !surface.properties.useWindowCoordinates) {
-                layerObserver = glassLayerOpacity?.observe()
+                layerObserver = GlassLayerOpacity.observe()
             }
             // Global positioning refreshes the transformed bounds after placement.
             if (surface.bounds?.coordinates !== coordinates) {
@@ -709,7 +708,7 @@ fun Modifier.glassSource(source: GlassSource): Modifier = glassSource(
  * available as input to the effect. Solid surfaces do not capture or clip source content.
  * Sources should be drawn before their glass surfaces.
  * On Android below 13, transparent glass leaves the original source visible during fallback.
- * On desktop, the cutout fades with graphics layer opacity applied to the glass.
+ * The cutout fades with graphics layer opacity driven by Compose state.
  * Ancestor clipping is tracked using rectangular layout bounds.
  * The content and source cutout follow the pressed material as it scales and moves, while the
  * content's hit region remains at its original layout position. The press ends when another

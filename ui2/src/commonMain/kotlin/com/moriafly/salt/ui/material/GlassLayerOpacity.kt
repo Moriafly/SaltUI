@@ -15,26 +15,58 @@
  * limitations under the License.
  */
 
+@file:Suppress("INVISIBLE_MEMBER", "INVISIBLE_REFERENCE")
+
 package com.moriafly.salt.ui.material
 
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.snapshots.ObserverHandle
+import androidx.compose.runtime.snapshots.Snapshot
 import androidx.compose.ui.layout.LayoutCoordinates
+import androidx.compose.ui.node.NodeCoordinator
+import kotlinx.atomicfu.locks.SynchronizedObject
+import kotlinx.atomicfu.locks.synchronized
 
-internal abstract class GlassLayerOpacity {
+internal object GlassLayerOpacity {
+    private val observerLock = SynchronizedObject()
+    private var observer: ObserverHandle? = null
+    private var placedSurfaces = 0
+
     val revision = mutableIntStateOf(0)
 
-    abstract fun observe(): AutoCloseable
+    fun observe(): AutoCloseable {
+        synchronized(observerLock) {
+            placedSurfaces++
+            if (observer == null) {
+                // Compose updates layer alpha without invalidating sibling draws.
+                observer = Snapshot.registerApplyObserver { changes, _ ->
+                    if (changes.any { it !== revision }) {
+                        synchronized(observerLock) {
+                            if (placedSurfaces > 0) revision.intValue++
+                        }
+                    }
+                }
+            }
+        }
+        return AutoCloseable {
+            synchronized(observerLock) {
+                placedSurfaces--
+                if (placedSurfaces == 0) {
+                    observer?.dispose()
+                    observer = null
+                }
+            }
+        }
+    }
 
-    protected abstract fun alphaOf(coordinates: LayoutCoordinates): Float
-
-    fun fadingLayers(
+    fun findFadingLayers(
         coordinates: LayoutCoordinates
     ): List<FadingGlassLayer> {
         var fadingLayers: MutableList<FadingGlassLayer>? = null
         var opacity = 1f
         var ancestor: LayoutCoordinates? = coordinates
         while (ancestor?.isAttached == true) {
-            val alpha = alphaOf(ancestor)
+            val alpha = (ancestor as? NodeCoordinator)?.alpha ?: 1f
             if (alpha < 1f) {
                 opacity *= alpha
                 val coverage = ((opacity - CutoutFadeStartOpacity) / (1f - CutoutFadeStartOpacity))
@@ -53,14 +85,10 @@ internal abstract class GlassLayerOpacity {
         return fadingLayers.orEmpty()
     }
 
-    private companion object {
-        // A nearly opaque glass surface can gradually replace the source underneath it.
-        @Suppress("ConstPropertyName")
-        const val CutoutFadeStartOpacity = 0.8f
-    }
+    // A nearly opaque glass surface can gradually replace the source underneath it.
+    @Suppress("ConstPropertyName")
+    private const val CutoutFadeStartOpacity = 0.8f
 }
-
-internal expect val glassLayerOpacity: GlassLayerOpacity?
 
 internal data class FadingGlassLayer(
     val coordinates: LayoutCoordinates,
