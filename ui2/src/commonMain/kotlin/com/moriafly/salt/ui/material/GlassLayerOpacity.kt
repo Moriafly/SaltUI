@@ -45,7 +45,10 @@ internal object GlassLayerOpacity {
                     if (changes.any { it !== snapshotRevision }) {
                         synchronized(observerLock) {
                             if (placedSurfaces > 0) {
-                                snapshotRevision.intValue++
+                                // An apply observer can run inside an unrelated composition snapshot.
+                                Snapshot.global {
+                                    snapshotRevision.intValue++
+                                }
                             }
                         }
                     }
