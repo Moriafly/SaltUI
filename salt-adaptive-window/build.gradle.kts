@@ -127,6 +127,7 @@ kotlin {
         commonMain.dependencies {
             implementation(libs.compose.runtime)
             implementation(libs.compose.ui)
+            implementation(libs.bundles.compose.support)
         }
 
         androidMain.dependencies {

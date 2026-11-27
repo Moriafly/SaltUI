@@ -16,19 +16,22 @@
 
 package com.moriafly.salt.ui.lazy
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.ui.layout.MeasureResult
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.util.fastForEach
+import com.moriafly.salt.ui.lazy.layout.LazyLayoutPrefetchState
 import kotlinx.coroutines.CoroutineScope
 
 /** The result of the measure pass for lazy list layout. */
-internal class LazyListMeasureResult(
+internal class LazyListMeasureResult
+@OptIn(ExperimentalFoundationApi::class)
+constructor(
     // properties defining the scroll position:
     /** The new first visible item. */
-    @Suppress("ktlint:standard:no-consecutive-comments")
     val firstVisibleItem: LazyListMeasuredItem?,
     /** The new value for [LazyListState.firstVisibleItemScrollOffset]. */
     val firstVisibleItemScrollOffset: Int,
@@ -50,8 +53,11 @@ internal class LazyListMeasureResult(
     val childConstraints: Constraints,
     /** Main axis size of sticking header items. */
     val stickingItemsCombinedSize: Int,
+    /** Prefetch state used by the lazy layout. */
+    val prefetchState: LazyLayoutPrefetchState?,
+    /** Prefetch strategy used in our layout */
+    @Suppress("DEPRECATION") val prefetchStrategy: LazyListPrefetchStrategy?,
     // properties representing the info needed for LazyListLayoutInfo:
-    @Suppress("ktlint:standard:no-consecutive-comments")
     /** see [LazyListLayoutInfo.visibleItemsInfo] */
     override val visibleItemsInfo: List<LazyListMeasuredItem>,
     /** see [LazyListLayoutInfo.viewportStartOffset] */
@@ -68,8 +74,8 @@ internal class LazyListMeasureResult(
     override val afterContentPadding: Int,
     /** see [LazyListLayoutInfo.mainAxisItemSpacing] */
     override val mainAxisItemSpacing: Int,
-) : LazyListLayoutInfo,
-    MeasureResult by measureResult {
+) : LazyListLayoutInfo, MeasureResult by measureResult {
+
     val canScrollBackward
         get() = (firstVisibleItem?.index ?: 0) != 0 || firstVisibleItemScrollOffset != 0
 
@@ -90,17 +96,18 @@ internal class LazyListMeasureResult(
      *   If new layout info is returned, only the placement phase is needed to apply new offsets. If
      *   null is returned, it means we have to rerun the full measure phase to apply the [delta].
      */
+    @OptIn(ExperimentalFoundationApi::class)
     fun copyWithScrollDeltaWithoutRemeasure(
         delta: Int,
         updateAnimations: Boolean,
     ): LazyListMeasureResult? {
         if (
             remeasureNeeded ||
-            visibleItemsInfo.isEmpty() ||
-            firstVisibleItem == null ||
-            // applying this delta will change firstVisibleItem
-            (firstVisibleItemScrollOffset - delta) !in
-            0 until firstVisibleItem.mainAxisSizeWithSpacings
+                visibleItemsInfo.isEmpty() ||
+                firstVisibleItem == null ||
+                // applying this delta will change firstVisibleItem
+                (firstVisibleItemScrollOffset - delta) !in
+                    0 until firstVisibleItem.mainAxisSizeWithSpacings
         ) {
             return null
         }
@@ -148,6 +155,8 @@ internal class LazyListMeasureResult(
                 afterContentPadding = afterContentPadding,
                 mainAxisItemSpacing = mainAxisItemSpacing,
                 stickingItemsCombinedSize = stickingItemsCombinedSize,
+                prefetchState = prefetchState,
+                prefetchStrategy = prefetchStrategy,
             )
         } else {
             null

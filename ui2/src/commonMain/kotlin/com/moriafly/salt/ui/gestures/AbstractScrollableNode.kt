@@ -72,14 +72,11 @@ internal abstract class AbstractScrollableNode(
     private var scrollByAction: ((x: Float, y: Float) -> Boolean)? = null
     private var scrollByOffsetAction: (suspend (Offset) -> Offset)? = null
 
-    private var createdMouseWheelScrollingLogic: Boolean = false
-    private var createdTrackpadScrollingLogic: Boolean = false
-
     private var mouseWheelScrollingLogic: NonTouchScrollingLogic? = null
     private var trackpadScrollingLogic: NonTouchScrollingLogic? = null
 
-    /** Creates a new scrolling logic for mouse-wheel events, or `null` if not supported. */
-    protected abstract fun createMouseWheelScrollingLogic(): NonTouchScrollingLogic?
+    /** Creates a new scrolling logic for mouse-wheel events. */
+    protected abstract fun createMouseWheelScrollingLogic(): NonTouchScrollingLogic
 
     /** Creates a new scrolling logic for trackpad events, or `null` if not supported. */
     protected abstract fun createTrackpadScrollingLogic(): NonTouchScrollingLogic?
@@ -125,18 +122,16 @@ internal abstract class AbstractScrollableNode(
     }
 
     private fun initializeMouseWheelScrollingLogic() {
-        if (!createdMouseWheelScrollingLogic) {
+        if (mouseWheelScrollingLogic == null) {
             mouseWheelScrollingLogic = createMouseWheelScrollingLogic()
-            createdMouseWheelScrollingLogic = true
         }
 
         mouseWheelScrollingLogic?.startReceivingEvents(coroutineScope)
     }
 
     private fun initializeTrackpadScrollingLogic() {
-        if (!createdTrackpadScrollingLogic) {
+        if (trackpadScrollingLogic == null) {
             trackpadScrollingLogic = createTrackpadScrollingLogic()
-            createdTrackpadScrollingLogic = true
         }
 
         trackpadScrollingLogic?.startReceivingEvents(coroutineScope)

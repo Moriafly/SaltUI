@@ -33,6 +33,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import com.moriafly.salt.ui.gestures.ScrollableDefaults
+import com.moriafly.salt.ui.lazy.layout.LazyLayoutCacheWindow
 import com.moriafly.salt.ui.internal.requirePrecondition
 
 /**
@@ -60,6 +61,7 @@ import com.moriafly.salt.ui.internal.requirePrecondition
  * @param overscrollEffect the [OverscrollEffect] that will be used to render overscroll for this
  *   layout. Note that the [OverscrollEffect.node] will be applied internally as well - you do not
  *   need to use Modifier.overscroll separately.
+ * @param cacheWindow the area outside the viewport used to prefetch and retain items.
  * @param content the [LazyGridScope] which describes the content
  */
 @Composable
@@ -75,6 +77,7 @@ fun LazyVerticalGrid(
     flingBehavior: FlingBehavior = ScrollableDefaults.flingBehavior(),
     userScrollEnabled: Boolean = true,
     overscrollEffect: OverscrollEffect? = rememberOverscrollEffect(),
+    cacheWindow: LazyLayoutCacheWindow,
     content: LazyGridScope.() -> Unit,
 ) {
     LazyGrid(
@@ -89,7 +92,39 @@ fun LazyVerticalGrid(
         flingBehavior = flingBehavior,
         userScrollEnabled = userScrollEnabled,
         overscrollEffect = overscrollEffect,
+        cacheWindow = cacheWindow,
         content = content,
+    )
+}
+
+@Composable
+fun LazyVerticalGrid(
+    columns: GridCells,
+    modifier: Modifier = Modifier,
+    state: LazyGridState = rememberLazyGridState(),
+    contentPadding: PaddingValues = PaddingValues(0.dp),
+    reverseLayout: Boolean = false,
+    verticalArrangement: Arrangement.Vertical =
+        if (!reverseLayout) Arrangement.Top else Arrangement.Bottom,
+    horizontalArrangement: Arrangement.Horizontal = Arrangement.Start,
+    flingBehavior: FlingBehavior = ScrollableDefaults.flingBehavior(),
+    userScrollEnabled: Boolean = true,
+    overscrollEffect: OverscrollEffect? = rememberOverscrollEffect(),
+    content: LazyGridScope.() -> Unit,
+) {
+    LazyVerticalGrid(
+        columns = columns,
+        modifier = modifier,
+        state = state,
+        contentPadding = contentPadding,
+        reverseLayout = reverseLayout,
+        verticalArrangement = verticalArrangement,
+        horizontalArrangement = horizontalArrangement,
+        flingBehavior = flingBehavior,
+        userScrollEnabled = userScrollEnabled,
+        overscrollEffect = overscrollEffect,
+        cacheWindow = LazyGridDefaults.cacheWindow(state),
+        content = content
     )
 }
 
@@ -112,6 +147,7 @@ fun LazyVerticalGrid(
  * @param overscrollEffect the [OverscrollEffect] that will be used to render overscroll for this
  *   layout. Note that the [OverscrollEffect.node] will be applied internally as well - you do not
  *   need to use Modifier.overscroll separately.
+ * @param cacheWindow the area outside the viewport used to prefetch and retain items.
  * @param content the [LazyGridScope] which describes the content
  */
 @Composable
@@ -127,6 +163,7 @@ fun LazyHorizontalGrid(
     flingBehavior: FlingBehavior = ScrollableDefaults.flingBehavior(),
     userScrollEnabled: Boolean = true,
     overscrollEffect: OverscrollEffect? = rememberOverscrollEffect(),
+    cacheWindow: LazyLayoutCacheWindow,
     content: LazyGridScope.() -> Unit,
 ) {
     LazyGrid(
@@ -141,7 +178,39 @@ fun LazyHorizontalGrid(
         flingBehavior = flingBehavior,
         userScrollEnabled = userScrollEnabled,
         overscrollEffect = overscrollEffect,
+        cacheWindow = cacheWindow,
         content = content,
+    )
+}
+
+@Composable
+fun LazyHorizontalGrid(
+    rows: GridCells,
+    modifier: Modifier = Modifier,
+    state: LazyGridState = rememberLazyGridState(),
+    contentPadding: PaddingValues = PaddingValues(0.dp),
+    reverseLayout: Boolean = false,
+    horizontalArrangement: Arrangement.Horizontal =
+        if (!reverseLayout) Arrangement.Start else Arrangement.End,
+    verticalArrangement: Arrangement.Vertical = Arrangement.Top,
+    flingBehavior: FlingBehavior = ScrollableDefaults.flingBehavior(),
+    userScrollEnabled: Boolean = true,
+    overscrollEffect: OverscrollEffect? = rememberOverscrollEffect(),
+    content: LazyGridScope.() -> Unit,
+) {
+    LazyHorizontalGrid(
+        rows = rows,
+        modifier = modifier,
+        state = state,
+        contentPadding = contentPadding,
+        reverseLayout = reverseLayout,
+        horizontalArrangement = horizontalArrangement,
+        verticalArrangement = verticalArrangement,
+        flingBehavior = flingBehavior,
+        userScrollEnabled = userScrollEnabled,
+        overscrollEffect = overscrollEffect,
+        cacheWindow = LazyGridDefaults.cacheWindow(state),
+        content = content
     )
 }
 

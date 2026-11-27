@@ -44,13 +44,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInRoot
 import androidx.compose.ui.node.DelegatableNode
 import androidx.compose.ui.unit.Velocity
+import androidx.compose.ui.unit.dp
 import androidx.test.core.app.ActivityScenario
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.uiautomator.UiDevice
 import com.moriafly.salt.ui.ScrollState
+import com.moriafly.salt.ui.UnstableSaltUiApi
+import com.moriafly.salt.ui.gestures.cupertino.rememberCupertinoOverscrollEffect
 import com.moriafly.salt.ui.horizontalScroll
 import com.moriafly.salt.ui.verticalScroll
 import kotlinx.coroutines.Job
@@ -62,6 +67,8 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
+import java.util.concurrent.atomic.AtomicReference
+import kotlin.math.abs
 
 @RunWith(AndroidJUnit4::class)
 class ScrollInterruptionTest {
@@ -71,6 +78,48 @@ class ScrollInterruptionTest {
     fun closeActivity() {
         scenario?.close()
         scenario = null
+    }
+
+    @Test
+    @OptIn(UnstableSaltUiApi::class)
+    fun shortContentPullsPastEitherEdgeAndReturnsOnRelease() {
+        val contentTop = AtomicReference(Float.NaN)
+        scenario = ActivityScenario.launch(MainActivity::class.java).also { scenario ->
+            scenario.onActivity { activity ->
+                activity.setContent {
+                    Column(
+                        Modifier.fillMaxSize().verticalScroll(
+                            state = remember { ScrollState(0) },
+                            overscrollEffect = rememberCupertinoOverscrollEffect()
+                        )
+                    ) {
+                        Box(
+                            Modifier.fillMaxWidth()
+                                .height(120.dp)
+                                .background(Color.Red)
+                                .onGloballyPositioned { contentTop.set(it.positionInRoot().y) }
+                        )
+                    }
+                }
+            }
+        }
+        waitUntil { contentTop.get().isFinite() }
+        val restingTop = contentTop.get()
+        val center = screenCenter()
+
+        for (direction in listOf(1f, -1f)) {
+            val step = center.y * 0.08f * direction
+            InjectedTouchGesture(center).use { gesture ->
+                repeat(5) { index ->
+                    gesture.moveTo(center + Offset(x = 0f, y = step * (index + 1)))
+                }
+                waitUntil { (contentTop.get() - restingTop) * direction > 20f }
+                repeat(6) {
+                    gesture.moveTo(center + Offset(x = 0f, y = step * 5))
+                }
+            }
+            waitUntil { abs(contentTop.get() - restingTop) <= 1f }
+        }
     }
 
     @Test

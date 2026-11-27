@@ -30,7 +30,7 @@ import java.lang.reflect.Field
 import javax.swing.SwingUtilities
 
 /**
- * ComposeWindow does not expose its ComposeScene. Keep the Compose 1.12 internals here so
+ * ComposeWindow does not expose its ComposeScene. Keep the Compose 1.13 internals here so
  * upgrading Compose only requires checking this adapter. Resolve it before consuming native input.
  */
 @OptIn(InternalComposeUiApi::class)

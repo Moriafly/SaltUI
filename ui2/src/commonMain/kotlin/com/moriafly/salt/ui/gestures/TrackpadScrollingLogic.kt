@@ -22,11 +22,11 @@ import androidx.compose.foundation.gestures.NestedScrollScope
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.nestedscroll.NestedScrollSource
 import androidx.compose.ui.input.pointer.PointerEvent
-import androidx.compose.ui.input.pointer.PointerEventPass
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.Velocity
+import androidx.compose.ui.util.fastAll
 import androidx.compose.ui.util.fastForEach
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -39,41 +39,10 @@ internal class TrackpadScrollingLogic(
     onScrollStopped: suspend (velocity: Velocity) -> Unit,
     density: Density,
 ) : NonTouchScrollingLogic(scrollingLogic, onScrollStopped, density) {
-    override fun onPointerEvent(
-        pointerEvent: PointerEvent,
-        pass: PointerEventPass,
-        bounds: IntSize,
-    ) {
-        if (
-            pointerEvent.type != PointerEventType.PanStart &&
-                pointerEvent.type != PointerEventType.PanMove &&
-                pointerEvent.type != PointerEventType.PanEnd
-        ) {
-            return
-        }
-        if (pointerEvent.isConsumed) return
-
-        /**
-         * If this scrollable is already scrolling from a previous interaction, consume immediately
-         * to give it priority.
-         */
-        if (pass == PointerEventPass.Initial && isScrolling) {
-            onPan(pointerEvent)
-            pointerEvent.consume()
-        }
-
-        /**
-         * During the main pass. If this scrollable is not scrolling, decide if it should based on
-         * the consumption. If the scrollable is scrolling we don't need to worry because it
-         * consumed during the initial pass.
-         */
-        if (pass == PointerEventPass.Main && !isScrolling) {
-            val consumed = onPan(pointerEvent)
-            if (consumed) {
-                pointerEvent.consume()
-            }
-        }
-    }
+    override fun isScrollingEvent(pointerEvent: PointerEvent): Boolean =
+        pointerEvent.type == PointerEventType.PanStart ||
+            pointerEvent.type == PointerEventType.PanMove ||
+            pointerEvent.type == PointerEventType.PanEnd
 
     private class TrackpadScrollDelta(
         val value: Offset,
@@ -109,42 +78,40 @@ internal class TrackpadScrollingLogic(
         }
     }
 
-    private fun onPan(pointerEvent: PointerEvent): Boolean {
-        var sent = false
-
-        pointerEvent.changes.firstOrNull()?.let {
-            it.historical.fastForEach { historicalChange ->
-                val delta = -historicalChange.panOffset
-                if (scrollingLogic.canConsumeDelta(delta)) {
-                    sent =
-                        channel
-                            .trySend(
-                                TrackpadScrollDelta(
-                                    value = delta,
-                                    timeMillis = historicalChange.uptimeMillis,
-                                    isEnd = false,
-                                )
-                            )
-                            .isSuccess || sent
-                }
-            }
-            val delta = -it.panOffset
-            val isPanEnd = pointerEvent.type == PointerEventType.PanEnd
-            if (scrollingLogic.canConsumeDelta(delta) || isPanEnd) {
-                sent =
-                    channel
-                        .trySend(
-                            TrackpadScrollDelta(
-                                value = delta,
-                                timeMillis = it.uptimeMillis,
-                                isEnd = isPanEnd,
-                            )
-                        )
-                        .isSuccess || sent
-            }
+    override fun onScrollingEvent(pointerEvent: PointerEvent, bounds: IntSize): Boolean {
+        val change = pointerEvent.changes.firstOrNull() ?: return isScrolling
+        // A zero-delta PanStart must leave descendants free to claim the next pan event.
+        if (pointerEvent.type == PointerEventType.PanStart &&
+            change.panOffset.isZero() &&
+            change.historical.fastAll { it.panOffset.isZero() }
+        ) {
+            return isScrolling
         }
 
+        var sent = false
+        change.historical.fastForEach { historicalChange ->
+            val delta = -historicalChange.panOffset
+            if (isOnScrollAxis(delta)) {
+                sent = channel.trySend(
+                    TrackpadScrollDelta(delta, historicalChange.uptimeMillis, isEnd = false)
+                ).isSuccess || sent
+            }
+        }
+        val delta = -change.panOffset
+        val isPanEnd = pointerEvent.type == PointerEventType.PanEnd
+        if (isOnScrollAxis(delta) || isPanEnd) {
+            sent = channel.trySend(
+                TrackpadScrollDelta(delta, change.uptimeMillis, isEnd = isPanEnd)
+            ).isSuccess || sent
+        }
         return sent || isScrolling
+    }
+
+    private fun Offset.isZero(): Boolean = x == 0f && y == 0f
+
+    private fun isOnScrollAxis(delta: Offset): Boolean = with(scrollingLogic) {
+        // Forward edge deltas to nested scroll and overscroll even at the end of the local range.
+        delta.toSingleAxisDeltaFromAngle() != 0f
     }
 
     private fun Channel<TrackpadScrollDelta>.sumOrNull(): TrackpadScrollDelta? {
@@ -154,9 +121,6 @@ internal class TrackpadScrollingLogic(
         }
         return sum
     }
-
-    private fun ScrollingLogic.canConsumeDelta(scrollDelta: Offset): Boolean =
-        scrollDelta.reverseIfNeeded().toSingleAxisDeltaFromAngle() != 0f
 
     private fun trackVelocity(scrollDelta: TrackpadScrollDelta) {
         velocityTracker.addDelta(scrollDelta.timeMillis, scrollDelta.value)
@@ -173,7 +137,7 @@ internal class TrackpadScrollingLogic(
 
         userScroll {
             dispatchTrackpadScroll(
-                targetScrollDelta.value.reverseIfNeeded().toSingleAxisDeltaFromAngle()
+                targetScrollDelta.value.toSingleAxisDeltaFromAngle()
             )
             while (!targetScrollDelta.isEnd) {
                 targetScrollDelta = channel.busyReceive()
@@ -183,7 +147,7 @@ internal class TrackpadScrollingLogic(
                     targetScrollDelta += it
                 }
                 dispatchTrackpadScroll(
-                    targetScrollDelta.value.reverseIfNeeded().toSingleAxisDeltaFromAngle()
+                    targetScrollDelta.value.toSingleAxisDeltaFromAngle()
                 )
             }
         }
@@ -193,8 +157,8 @@ internal class TrackpadScrollingLogic(
 
     private fun NestedScrollScope.dispatchTrackpadScroll(delta: Float) =
         with(scrollingLogic) {
-            val offset = delta.reverseIfNeeded().toOffset()
+            val offset = delta.toOffset()
             val consumed = scrollByWithOverscroll(offset, NestedScrollSource.UserInput)
-            consumed.reverseIfNeeded().toFloat()
+            consumed.toSingleAxisDeltaFromAngle()
         }
 }

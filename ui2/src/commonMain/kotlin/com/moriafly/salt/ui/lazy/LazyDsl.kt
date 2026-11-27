@@ -29,6 +29,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.moriafly.salt.ui.UnstableSaltUiApi
 import com.moriafly.salt.ui.gestures.ScrollableDefaults
+import com.moriafly.salt.ui.lazy.layout.LazyLayoutCacheWindow
 import com.moriafly.salt.ui.internal.JvmDefaultWithCompatibility
 
 /** Receiver scope which is used by [LazyColumn] and [LazyRow]. */
@@ -251,6 +252,7 @@ inline fun <T> LazyListScope.itemsIndexed(
  * @param overscrollEffect the [OverscrollEffect] that will be used to render overscroll for this
  *   layout. Note that the [OverscrollEffect.node] will be applied internally as well - you do not
  *   need to use Modifier.overscroll separately.
+ * @param cacheWindow the area outside the viewport used to prefetch and retain items.
  * @param content a block which describes the content. Inside this block you can use methods like
  *   [LazyListScope.item] to add a single item or [LazyListScope.items] to add a list of items.
  */
@@ -266,6 +268,7 @@ fun LazyRow(
     flingBehavior: FlingBehavior = ScrollableDefaults.flingBehavior(),
     userScrollEnabled: Boolean = true,
     overscrollEffect: OverscrollEffect? = rememberOverscrollEffect(),
+    cacheWindow: LazyLayoutCacheWindow,
     content: LazyListScope.() -> Unit
 ) {
     LazyList(
@@ -279,6 +282,36 @@ fun LazyRow(
         reverseLayout = reverseLayout,
         userScrollEnabled = userScrollEnabled,
         overscrollEffect = overscrollEffect,
+        cacheWindow = cacheWindow,
+        content = content
+    )
+}
+
+@Composable
+fun LazyRow(
+    modifier: Modifier = Modifier,
+    state: LazyListState = rememberLazyListState(),
+    contentPadding: PaddingValues = PaddingValues(0.dp),
+    reverseLayout: Boolean = false,
+    horizontalArrangement: Arrangement.Horizontal =
+        if (!reverseLayout) Arrangement.Start else Arrangement.End,
+    verticalAlignment: Alignment.Vertical = Alignment.Top,
+    flingBehavior: FlingBehavior = ScrollableDefaults.flingBehavior(),
+    userScrollEnabled: Boolean = true,
+    overscrollEffect: OverscrollEffect? = rememberOverscrollEffect(),
+    content: LazyListScope.() -> Unit
+) {
+    LazyRow(
+        modifier = modifier,
+        state = state,
+        contentPadding = contentPadding,
+        reverseLayout = reverseLayout,
+        horizontalArrangement = horizontalArrangement,
+        verticalAlignment = verticalAlignment,
+        flingBehavior = flingBehavior,
+        userScrollEnabled = userScrollEnabled,
+        overscrollEffect = overscrollEffect,
+        cacheWindow = LazyListDefaults.cacheWindow(state),
         content = content
     )
 }
@@ -310,6 +343,7 @@ fun LazyRow(
  * @param overscrollEffect the [OverscrollEffect] that will be used to render overscroll for this
  *   layout. Note that the [OverscrollEffect.node] will be applied internally as well - you do not
  *   need to use Modifier.overscroll separately.
+ * @param cacheWindow the area outside the viewport used to prefetch and retain items.
  * @param content a block which describes the content. Inside this block you can use methods like
  *   [LazyListScope.item] to add a single item or [LazyListScope.items] to add a list of items.
  */
@@ -325,6 +359,7 @@ fun LazyColumn(
     flingBehavior: FlingBehavior = ScrollableDefaults.flingBehavior(),
     userScrollEnabled: Boolean = true,
     overscrollEffect: OverscrollEffect? = rememberOverscrollEffect(),
+    cacheWindow: LazyLayoutCacheWindow,
     content: LazyListScope.() -> Unit
 ) {
     LazyList(
@@ -338,6 +373,36 @@ fun LazyColumn(
         reverseLayout = reverseLayout,
         userScrollEnabled = userScrollEnabled,
         overscrollEffect = overscrollEffect,
+        cacheWindow = cacheWindow,
+        content = content
+    )
+}
+
+@Composable
+fun LazyColumn(
+    modifier: Modifier = Modifier,
+    state: LazyListState = rememberLazyListState(),
+    contentPadding: PaddingValues = PaddingValues(0.dp),
+    reverseLayout: Boolean = false,
+    verticalArrangement: Arrangement.Vertical =
+        if (!reverseLayout) Arrangement.Top else Arrangement.Bottom,
+    horizontalAlignment: Alignment.Horizontal = Alignment.Start,
+    flingBehavior: FlingBehavior = ScrollableDefaults.flingBehavior(),
+    userScrollEnabled: Boolean = true,
+    overscrollEffect: OverscrollEffect? = rememberOverscrollEffect(),
+    content: LazyListScope.() -> Unit
+) {
+    LazyColumn(
+        modifier = modifier,
+        state = state,
+        contentPadding = contentPadding,
+        reverseLayout = reverseLayout,
+        verticalArrangement = verticalArrangement,
+        horizontalAlignment = horizontalAlignment,
+        flingBehavior = flingBehavior,
+        userScrollEnabled = userScrollEnabled,
+        overscrollEffect = overscrollEffect,
+        cacheWindow = LazyListDefaults.cacheWindow(state),
         content = content
     )
 }
@@ -359,6 +424,7 @@ fun LazyRow(
     userScrollEnabled: Boolean = true,
     overscrollEffect: OverscrollEffect? = rememberOverscrollEffect(),
     beyondBoundsItemCount: Int = defaultLazyListBeyondBoundsItemCount(),
+    cacheWindow: LazyLayoutCacheWindow,
     content: LazyListScope.() -> Unit
 ) {
     LazyList(
@@ -373,6 +439,39 @@ fun LazyRow(
         userScrollEnabled = userScrollEnabled,
         overscrollEffect = overscrollEffect,
         beyondBoundsItemCount = beyondBoundsItemCount,
+        cacheWindow = cacheWindow,
+        content = content
+    )
+}
+
+@UnstableSaltUiApi
+@Composable
+fun LazyRow(
+    modifier: Modifier = Modifier,
+    state: LazyListState = rememberLazyListState(),
+    contentPadding: PaddingValues = PaddingValues(0.dp),
+    reverseLayout: Boolean = false,
+    horizontalArrangement: Arrangement.Horizontal =
+        if (!reverseLayout) Arrangement.Start else Arrangement.End,
+    verticalAlignment: Alignment.Vertical = Alignment.Top,
+    flingBehavior: FlingBehavior = ScrollableDefaults.flingBehavior(),
+    userScrollEnabled: Boolean = true,
+    overscrollEffect: OverscrollEffect? = rememberOverscrollEffect(),
+    beyondBoundsItemCount: Int = defaultLazyListBeyondBoundsItemCount(),
+    content: LazyListScope.() -> Unit
+) {
+    LazyRow(
+        modifier = modifier,
+        state = state,
+        contentPadding = contentPadding,
+        reverseLayout = reverseLayout,
+        horizontalArrangement = horizontalArrangement,
+        verticalAlignment = verticalAlignment,
+        flingBehavior = flingBehavior,
+        userScrollEnabled = userScrollEnabled,
+        overscrollEffect = overscrollEffect,
+        beyondBoundsItemCount = beyondBoundsItemCount,
+        cacheWindow = LazyListDefaults.cacheWindow(state),
         content = content
     )
 }
@@ -394,6 +493,7 @@ fun LazyColumn(
     userScrollEnabled: Boolean = true,
     overscrollEffect: OverscrollEffect? = rememberOverscrollEffect(),
     beyondBoundsItemCount: Int = defaultLazyListBeyondBoundsItemCount(),
+    cacheWindow: LazyLayoutCacheWindow,
     content: LazyListScope.() -> Unit
 ) {
     LazyList(
@@ -408,6 +508,39 @@ fun LazyColumn(
         userScrollEnabled = userScrollEnabled,
         overscrollEffect = overscrollEffect,
         beyondBoundsItemCount = beyondBoundsItemCount,
+        cacheWindow = cacheWindow,
+        content = content
+    )
+}
+
+@UnstableSaltUiApi
+@Composable
+fun LazyColumn(
+    modifier: Modifier = Modifier,
+    state: LazyListState = rememberLazyListState(),
+    contentPadding: PaddingValues = PaddingValues(0.dp),
+    reverseLayout: Boolean = false,
+    verticalArrangement: Arrangement.Vertical =
+        if (!reverseLayout) Arrangement.Top else Arrangement.Bottom,
+    horizontalAlignment: Alignment.Horizontal = Alignment.Start,
+    flingBehavior: FlingBehavior = ScrollableDefaults.flingBehavior(),
+    userScrollEnabled: Boolean = true,
+    overscrollEffect: OverscrollEffect? = rememberOverscrollEffect(),
+    beyondBoundsItemCount: Int = defaultLazyListBeyondBoundsItemCount(),
+    content: LazyListScope.() -> Unit
+) {
+    LazyColumn(
+        modifier = modifier,
+        state = state,
+        contentPadding = contentPadding,
+        reverseLayout = reverseLayout,
+        verticalArrangement = verticalArrangement,
+        horizontalAlignment = horizontalAlignment,
+        flingBehavior = flingBehavior,
+        userScrollEnabled = userScrollEnabled,
+        overscrollEffect = overscrollEffect,
+        beyondBoundsItemCount = beyondBoundsItemCount,
+        cacheWindow = LazyListDefaults.cacheWindow(state),
         content = content
     )
 }

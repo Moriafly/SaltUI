@@ -36,6 +36,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import com.moriafly.salt.ui.internal.requirePrecondition
+import com.moriafly.salt.ui.lazy.layout.LazyLayoutCacheWindow
 
 /**
  * Vertical staggered grid layout that composes and lays out only items currently visible on screen.
@@ -57,6 +58,7 @@ import com.moriafly.salt.ui.internal.requirePrecondition
  * @param overscrollEffect the [OverscrollEffect] that will be used to render overscroll for this
  *   layout. Note that the [OverscrollEffect.node] will be applied internally as well - you do not
  *   need to use Modifier.overscroll separately.
+ * @param cacheWindow the area outside the viewport used to prefetch and retain items.
  * @param content a lambda describing the staggered grid content. Inside this block you can use
  *   [LazyStaggeredGridScope.items] to present list of items or [LazyStaggeredGridScope.item] for a
  *   single one.
@@ -73,6 +75,7 @@ fun LazyVerticalStaggeredGrid(
     flingBehavior: FlingBehavior = ScrollableDefaults.flingBehavior(),
     userScrollEnabled: Boolean = true,
     overscrollEffect: OverscrollEffect? = rememberOverscrollEffect(),
+    cacheWindow: LazyLayoutCacheWindow,
     content: LazyStaggeredGridScope.() -> Unit,
 ) {
     LazyStaggeredGrid(
@@ -87,7 +90,38 @@ fun LazyVerticalStaggeredGrid(
         userScrollEnabled = userScrollEnabled,
         overscrollEffect = overscrollEffect,
         slots = rememberColumnSlots(columns, horizontalArrangement, contentPadding),
+        cacheWindow = cacheWindow,
         content = content,
+    )
+}
+
+@Composable
+fun LazyVerticalStaggeredGrid(
+    columns: StaggeredGridCells,
+    modifier: Modifier = Modifier,
+    state: LazyStaggeredGridState = rememberLazyStaggeredGridState(),
+    contentPadding: PaddingValues = PaddingValues(0.dp),
+    reverseLayout: Boolean = false,
+    verticalItemSpacing: Dp = 0.dp,
+    horizontalArrangement: Arrangement.Horizontal = Arrangement.spacedBy(0.dp),
+    flingBehavior: FlingBehavior = ScrollableDefaults.flingBehavior(),
+    userScrollEnabled: Boolean = true,
+    overscrollEffect: OverscrollEffect? = rememberOverscrollEffect(),
+    content: LazyStaggeredGridScope.() -> Unit,
+) {
+    LazyVerticalStaggeredGrid(
+        columns = columns,
+        modifier = modifier,
+        state = state,
+        contentPadding = contentPadding,
+        reverseLayout = reverseLayout,
+        verticalItemSpacing = verticalItemSpacing,
+        horizontalArrangement = horizontalArrangement,
+        flingBehavior = flingBehavior,
+        userScrollEnabled = userScrollEnabled,
+        overscrollEffect = overscrollEffect,
+        cacheWindow = LazyStaggeredGridDefaults.cacheWindow(state),
+        content = content
     )
 }
 
@@ -171,6 +205,7 @@ private fun rememberColumnSlots(
  * @param overscrollEffect the [OverscrollEffect] that will be used to render overscroll for this
  *   layout. Note that the [OverscrollEffect.node] will be applied internally as well - you do not
  *   need to use Modifier.overscroll separately.
+ * @param cacheWindow the area outside the viewport used to prefetch and retain items.
  * @param content a lambda describing the staggered grid content. Inside this block you can use
  *   [LazyStaggeredGridScope.items] to present list of items or [LazyStaggeredGridScope.item] for a
  *   single one.
@@ -187,6 +222,7 @@ fun LazyHorizontalStaggeredGrid(
     flingBehavior: FlingBehavior = ScrollableDefaults.flingBehavior(),
     userScrollEnabled: Boolean = true,
     overscrollEffect: OverscrollEffect? = rememberOverscrollEffect(),
+    cacheWindow: LazyLayoutCacheWindow,
     content: LazyStaggeredGridScope.() -> Unit,
 ) {
     LazyStaggeredGrid(
@@ -201,7 +237,38 @@ fun LazyHorizontalStaggeredGrid(
         userScrollEnabled = userScrollEnabled,
         overscrollEffect = overscrollEffect,
         slots = rememberRowSlots(rows, verticalArrangement, contentPadding),
+        cacheWindow = cacheWindow,
         content = content,
+    )
+}
+
+@Composable
+fun LazyHorizontalStaggeredGrid(
+    rows: StaggeredGridCells,
+    modifier: Modifier = Modifier,
+    state: LazyStaggeredGridState = rememberLazyStaggeredGridState(),
+    contentPadding: PaddingValues = PaddingValues(0.dp),
+    reverseLayout: Boolean = false,
+    verticalArrangement: Arrangement.Vertical = Arrangement.spacedBy(0.dp),
+    horizontalItemSpacing: Dp = 0.dp,
+    flingBehavior: FlingBehavior = ScrollableDefaults.flingBehavior(),
+    userScrollEnabled: Boolean = true,
+    overscrollEffect: OverscrollEffect? = rememberOverscrollEffect(),
+    content: LazyStaggeredGridScope.() -> Unit,
+) {
+    LazyHorizontalStaggeredGrid(
+        rows = rows,
+        modifier = modifier,
+        state = state,
+        contentPadding = contentPadding,
+        reverseLayout = reverseLayout,
+        verticalArrangement = verticalArrangement,
+        horizontalItemSpacing = horizontalItemSpacing,
+        flingBehavior = flingBehavior,
+        userScrollEnabled = userScrollEnabled,
+        overscrollEffect = overscrollEffect,
+        cacheWindow = LazyStaggeredGridDefaults.cacheWindow(state),
+        content = content
     )
 }
 

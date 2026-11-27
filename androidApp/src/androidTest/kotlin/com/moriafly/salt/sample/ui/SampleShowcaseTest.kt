@@ -64,8 +64,10 @@ class SampleShowcaseTest {
         ActivityScenario.launch(MainActivity::class.java).use { scenario ->
             scenario.onActivity { it.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT }
             waitForOrientation(isLandscape = false)
+            val dialog = By.clickable(true).hasChild(By.text("Dialog"))
             scrollTo("Dialog")
-            click(By.text("Dialog"))
+            val row = shown(dialog).visibleBounds
+            device.executeShellCommand("input tap ${row.centerX()} ${row.centerY()}")
             click(By.text("InputDialog"))
             shown(By.text("Edit name"))
             val edit = shown(By.clazz("android.widget.EditText"))
@@ -86,6 +88,7 @@ class SampleShowcaseTest {
         ActivityScenario.launch(MainActivity::class.java).use { scenario ->
             scenario.onActivity { it.requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT }
             waitForOrientation(isLandscape = false)
+            scrollTo("Bottom sheet scaffold")
             click(By.text("Bottom sheet scaffold"))
             val handle = shown(By.text("Now playing")).visibleBounds
             device.swipe(
@@ -153,7 +156,8 @@ class SampleShowcaseTest {
             }
             val width = device.displayWidth
             val height = device.displayHeight
-            device.swipe(width / 2, height * 4 / 5, width / 2, height / 3, 20)
+            device.swipe(width / 2, height * 4 / 5, width / 2, height / 3, 120)
+            device.waitForIdle()
         }
         shown(By.text(text))
     }
