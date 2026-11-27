@@ -166,7 +166,7 @@ class GlassSource internal constructor() {
             return@derivedStateOf emptyMap()
         }
 
-        GlassLayerOpacity.revision.intValue
+        GlassLayerOpacity.revision
         var layersBySurface: MutableMap<GlassSurface, List<FadingGlassLayer>>? = null
         for (surface in surfaces) {
             val bounds = surface.bounds ?: continue

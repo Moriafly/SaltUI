@@ -32,7 +32,9 @@ internal object GlassLayerOpacity {
     private var observer: ObserverHandle? = null
     private var placedSurfaces = 0
 
-    val revision = mutableIntStateOf(0)
+    private val snapshotRevision = mutableIntStateOf(0)
+
+    val revision: Int get() = snapshotRevision.intValue
 
     fun observe(): AutoCloseable {
         synchronized(observerLock) {
@@ -40,9 +42,11 @@ internal object GlassLayerOpacity {
             if (observer == null) {
                 // Compose updates layer alpha without invalidating sibling draws.
                 observer = Snapshot.registerApplyObserver { changes, _ ->
-                    if (changes.any { it !== revision }) {
+                    if (changes.any { it !== snapshotRevision }) {
                         synchronized(observerLock) {
-                            if (placedSurfaces > 0) revision.intValue++
+                            if (placedSurfaces > 0) {
+                                snapshotRevision.intValue++
+                            }
                         }
                     }
                 }
@@ -69,7 +73,7 @@ internal object GlassLayerOpacity {
             val alpha = (ancestor as? NodeCoordinator)?.alpha ?: 1f
             if (alpha < 1f) {
                 opacity *= alpha
-                val coverage = ((opacity - CutoutFadeStartOpacity) / (1f - CutoutFadeStartOpacity))
+                val coverage = ((opacity - CUTOUT_FADE_START) / (1f - CUTOUT_FADE_START))
                     .coerceAtLeast(0f)
                 if (fadingLayers == null) {
                     fadingLayers = ArrayList()
@@ -86,8 +90,7 @@ internal object GlassLayerOpacity {
     }
 
     // A nearly opaque glass surface can gradually replace the source underneath it.
-    @Suppress("ConstPropertyName")
-    private const val CutoutFadeStartOpacity = 0.8f
+    private const val CUTOUT_FADE_START = 0.8f
 }
 
 internal data class FadingGlassLayer(
@@ -98,15 +101,15 @@ internal data class FadingGlassLayer(
 internal fun List<FadingGlassLayer>.cutoutCoverageOver(source: LayoutCoordinates): Float {
     if (isEmpty() || !source.isAttached) return 1f
 
-    var coverage = 1f
-    for (layer in this) {
-        // A shared layer fades the source and the glass together.
-        var ancestor: LayoutCoordinates? = source
-        while (ancestor?.isAttached == true && ancestor !== layer.coordinates) {
-            ancestor = ancestor.parentCoordinates
+    // A shared fading layer applies to both the source and the glass.
+    var ancestor: LayoutCoordinates? = source
+    while (ancestor?.isAttached == true) {
+        for (index in indices) {
+            if (this[index].coordinates === ancestor) {
+                return getOrNull(index - 1)?.coverage ?: 1f
+            }
         }
-        if (ancestor === layer.coordinates) break
-        coverage = layer.coverage
+        ancestor = ancestor.parentCoordinates
     }
-    return coverage
+    return last().coverage
 }

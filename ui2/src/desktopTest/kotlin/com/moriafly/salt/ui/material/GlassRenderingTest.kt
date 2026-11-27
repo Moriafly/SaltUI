@@ -387,6 +387,9 @@ class GlassRenderingTest {
                 frame()[150, 90].alpha,
                 absoluteTolerance = 0.01f
             )
+
+            glassOpacity.floatValue = 0.5f
+            assertEquals(0.5f, frame()[65, 90].alpha, absoluteTolerance = 0.01f)
         }
     }
 
