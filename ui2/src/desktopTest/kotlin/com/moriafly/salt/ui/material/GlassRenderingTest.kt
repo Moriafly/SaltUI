@@ -24,7 +24,9 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
@@ -215,6 +217,94 @@ class GlassRenderingTest {
         }
     }
 
+    @Test
+    fun keyedGlassSamplesOnlySelectedLayersOutsideItsAncestors() {
+        val wallpaperKey = "wallpaper"
+        val listKey = "list"
+        val bothLayers = setOf(wallpaperKey, listKey)
+        val pixels = ImageComposeScene(
+            width = SCENE_WIDTH,
+            height = SCENE_HEIGHT,
+            density = Density(1f),
+            coroutineContext = Dispatchers.Unconfined
+        ) {
+            SaltTheme(configs = SaltConfigs.default(isDarkTheme = false)) {
+                val source = rememberGlassSource()
+                Box(modifier = Modifier.fillMaxSize()) {
+                    Box(
+                        modifier = Modifier
+                            .matchParentSize()
+                            .glassSource(
+                                source = source,
+                                key = wallpaperKey
+                            )
+                            .background(Color.Blue)
+                    )
+                    LazyColumn(
+                        modifier = Modifier
+                            .matchParentSize()
+                            .glassSource(
+                                source = source,
+                                key = listKey
+                            )
+                            .background(Color.Red)
+                    ) {
+                        item {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(SCENE_HEIGHT.dp)
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .align(Alignment.CenterStart)
+                                        .size(100.dp)
+                                        .glass(
+                                            source = source,
+                                            effect = GlassEffect.Transparent,
+                                            sourceKeys = bothLayers
+                                        )
+                                )
+                            }
+                        }
+                    }
+                    val overlays = listOf(
+                        Alignment.Center to setOf(wallpaperKey),
+                        Alignment.CenterEnd to bothLayers
+                    )
+                    for ((alignment, keys) in overlays) {
+                        Box(
+                            modifier = Modifier
+                                .align(alignment)
+                                .size(100.dp)
+                                .glass(
+                                    source = source,
+                                    effect = GlassEffect.Transparent,
+                                    sourceKeys = keys
+                                )
+                        )
+                    }
+                }
+            }
+        }.renderPixels()
+
+        val header = pixels[50, 90]
+        val wallpaperOnly = pixels[150, 90]
+        val overlay = pixels[250, 90]
+        assertTrue(
+            header.blue - header.red > 0.5f,
+            "Expected wallpaper through the list header: $header"
+        )
+        assertTrue(
+            wallpaperOnly.blue - wallpaperOnly.red > 0.5f,
+            "Expected only wallpaper through the overlay: $wallpaperOnly"
+        )
+        assertTrue(
+            overlay.red - overlay.blue > 0.5f,
+            "Expected the list over the wallpaper through the overlay: $overlay"
+        )
+    }
+
     private fun renderGlass(
         isDarkTheme: Boolean,
         surfaceSize: DpSize = DpSize(240.dp, 100.dp),
@@ -247,14 +337,16 @@ class GlassRenderingTest {
                     )
                 }
             }
-        }.use { scene ->
-            repeat(4) { frame -> scene.render((frame + 1) * 16_666_667L).close() }
-            scene.render(100_000_000L).use { image ->
-                Bitmap.makeFromImage(image).use { bitmap ->
-                    bitmap.asComposeImageBitmap().toPixelMap()
-                }
+        }.renderPixels()
+
+    private fun ImageComposeScene.renderPixels(): PixelMap = use { scene ->
+        repeat(4) { frame -> scene.render((frame + 1) * 16_666_667L).close() }
+        scene.render(100_000_000L).use { image ->
+            Bitmap.makeFromImage(image).use { bitmap ->
+                bitmap.asComposeImageBitmap().toPixelMap()
             }
         }
+    }
 
     @Composable
     private fun StripedBackdrop(image: ImageBitmap? = null) {
